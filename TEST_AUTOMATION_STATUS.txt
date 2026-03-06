@@ -1,0 +1,12 @@
+TEST AUTOMATION STATUS
+
+- Playwright browsers installed successfully
+- Smoke tests now pass locally
+- Current passing tests:
+  - inputs page loads
+  - materials page loads
+  - results page loads without crashing
+
+Meaning:
+- basic wizard flow is now covered by automated smoke tests
+- local test command is: npm test
