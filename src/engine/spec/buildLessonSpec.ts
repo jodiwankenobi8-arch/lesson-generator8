@@ -19,6 +19,10 @@ const DEFAULT_ORDER: SlideType[] = [
   "exit-ticket",
 ];
 
+function isTeacherLedEarlyElementary(input: LessonInput) {
+  return input.grade === "K" || input.grade === "1";
+}
+
 function inferSlideType(title?: string, purpose?: string): SlideType | null {
   const text = `${title || ""} ${purpose || ""}`.toLowerCase();
   if (!text.trim()) return null;
@@ -33,9 +37,36 @@ function inferSlideType(title?: string, purpose?: string): SlideType | null {
   return null;
 }
 
+function cleanCueText(raw: string) {
+  return String(raw || "")
+    .replace(/[?]+/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/^[-•\s]+/, "")
+    .replace(/\b(clicker|timer|script|transition)\s*:\s*/gi, "")
+    .trim();
+}
+
 function formatCue(cue: PresenterCue): string {
-  const label = cue.type === "timer" && cue.timeSeconds ? `Timer cue: ${cue.timeSeconds}s` : `${cue.type} cue`;
-  return `${label} - ${cue.rawText}`;
+  const cleaned = cleanCueText(cue.rawText);
+  if (!cleaned) return "";
+
+  if (cue.type === "timer" && cue.timeSeconds) {
+    return `Keep the practice brisk. Suggested timing: about ${cue.timeSeconds} seconds.`;
+  }
+
+  if (cue.type === "clicker") {
+    return `Advance slides deliberately during instruction: ${cleaned}`;
+  }
+
+  if (cue.type === "transition") {
+    return `Use a clear transition cue: ${cleaned}`;
+  }
+
+  if (cue.type === "script") {
+    return `Teacher wording idea: ${cleaned}`;
+  }
+
+  return cleaned;
 }
 
 function uniq<T>(items: T[]): T[] {
@@ -43,8 +74,6 @@ function uniq<T>(items: T[]): T[] {
 }
 
 export function buildLessonSpec(input: LessonInput, blueprint?: LessonBlueprint | null): LessonSpec {
-  void input;
-
   if (!blueprint) {
     return {
       frameworkApplied: "linear",
@@ -54,11 +83,13 @@ export function buildLessonSpec(input: LessonInput, blueprint?: LessonBlueprint 
     };
   }
 
+  const teacherLed = isTeacherLedEarlyElementary(input);
   const ordered = (blueprint.synthesis?.slides || [])
     .map((slide) => inferSlideType(slide.title, slide.purpose))
     .filter((value): value is SlideType => Boolean(value));
 
-  const frameworkApplied = blueprint.synthesis?.frameworkApplied || "linear";
+  const originalFramework = blueprint.synthesis?.frameworkApplied || "linear";
+  const frameworkApplied = teacherLed && originalFramework === "clickableHub" ? "linear" : originalFramework;
 
   let slideOrder: SlideType[];
   if (ordered.length >= 4) {
@@ -72,9 +103,18 @@ export function buildLessonSpec(input: LessonInput, blueprint?: LessonBlueprint 
     slideOrder = DEFAULT_ORDER;
   }
 
+  if (teacherLed) {
+    slideOrder = DEFAULT_ORDER;
+  }
+
   const teacherNoteAdditions: Partial<Record<SlideType, string[]>> = {};
 
-  (blueprint.exemplar?.presenterCues || []).slice(0, 10).forEach((cue, index) => {
+  const cues = (blueprint.exemplar?.presenterCues || []).slice(0, teacherLed ? 4 : 10);
+
+  cues.forEach((cue, index) => {
+    const formatted = formatCue(cue);
+    if (!formatted) return;
+
     const target: SlideType =
       cue.type === "timer"
         ? "guided"
@@ -87,17 +127,29 @@ export function buildLessonSpec(input: LessonInput, blueprint?: LessonBlueprint 
               : "practice";
 
     teacherNoteAdditions[target] = teacherNoteAdditions[target] || [];
-    teacherNoteAdditions[target]!.push(formatCue(cue));
+    teacherNoteAdditions[target]!.push(formatted);
   });
 
-  if (frameworkApplied === "clickableHub") {
-    teacherNoteAdditions.title = [...(teacherNoteAdditions.title || []), "Use the hub slide to preview lesson pathways before direct instruction."];
-    teacherNoteAdditions.practice = [...(teacherNoteAdditions.practice || []), "Send students through center or station choices before closing."];
+  if (frameworkApplied === "clickableHub" && !teacherLed) {
+    teacherNoteAdditions.title = [
+      ...(teacherNoteAdditions.title || []),
+      "Use the hub slide to preview lesson pathways before direct instruction.",
+    ];
+    teacherNoteAdditions.practice = [
+      ...(teacherNoteAdditions.practice || []),
+      "Send students through center or station choices before closing.",
+    ];
   }
 
-  if (frameworkApplied === "guidepost") {
-    teacherNoteAdditions.discussion = [...(teacherNoteAdditions.discussion || []), "Use a bridge or connection moment before direct teaching."];
-    teacherNoteAdditions["exit-ticket"] = [...(teacherNoteAdditions["exit-ticket"] || []), "Close with reflection tied to the guidepost structure."];
+  if (frameworkApplied === "guidepost" && !teacherLed) {
+    teacherNoteAdditions.discussion = [
+      ...(teacherNoteAdditions.discussion || []),
+      "Use a bridge or connection moment before direct teaching.",
+    ];
+    teacherNoteAdditions["exit-ticket"] = [
+      ...(teacherNoteAdditions["exit-ticket"] || []),
+      "Close with reflection tied to the guidepost structure.",
+    ];
   }
 
   const sectionNames = (blueprint.synthesis?.slides || [])
