@@ -12,6 +12,28 @@ import {
 
 import { K_ELA_BEST_DATASET } from "../engine/standards/data/k_ela_best_dataset";
 
+const COLORS = {
+  page: "#F7F1E8",
+  panel: "#FFFDF9",
+  panelAlt: "#F9F4EC",
+  border: "#D8CBB8",
+  borderSoft: "#E8DDD0",
+  text: "#2F2A24",
+  muted: "#6F655B",
+  heading: "#314B3A",
+  accent: "#6E8B5E",
+  accentDark: "#4E6542",
+  blush: "#D9A58F",
+  honey: "#E8C47A",
+  info: "#EAF2FB",
+  infoBorder: "#BDD0E6",
+  success: "#EEF5EA",
+  successBorder: "#C9DABD",
+  warn: "#FFF6E8",
+  warnBorder: "#E9D3A5",
+  shadow: "rgba(73, 52, 33, 0.08)",
+};
+
 function percent(conf: any) {
   const n = Number(conf);
   if (!Number.isFinite(n)) return "";
@@ -45,23 +67,52 @@ function readBlueprint() {
   }
 }
 
-function cardStyle(border: string): React.CSSProperties {
+function pageShellStyle(): React.CSSProperties {
   return {
-    border: `1px solid ${border}`,
-    borderRadius: 12,
-    padding: 12,
-    background: "#fff",
+    minHeight: "100vh",
+    background: COLORS.page,
+    color: COLORS.text,
   };
 }
 
-function pillStyle(background: string): React.CSSProperties {
+function contentWrapStyle(): React.CSSProperties {
+  return {
+    maxWidth: 1080,
+    margin: "0 auto",
+    padding: 24,
+  };
+}
+
+function sectionCardStyle(): React.CSSProperties {
+  return {
+    background: COLORS.panel,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 22,
+    padding: 18,
+    boxShadow: `0 8px 24px ${COLORS.shadow}`,
+    marginBottom: 18,
+  };
+}
+
+function softCardStyle(background = COLORS.panelAlt): React.CSSProperties {
+  return {
+    background,
+    border: `1px solid ${COLORS.borderSoft}`,
+    borderRadius: 18,
+    padding: 14,
+  };
+}
+
+function pillStyle(background: string, border: string): React.CSSProperties {
   return {
     display: "inline-block",
-    padding: "4px 8px",
+    padding: "6px 10px",
     borderRadius: 999,
     background,
+    border: `1px solid ${border}`,
     fontSize: 12,
     fontWeight: 700,
+    color: COLORS.text,
     marginRight: 8,
     marginBottom: 8,
   };
@@ -77,11 +128,19 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <details open={!!defaultOpen} style={{ marginBottom: 14 }}>
-      <summary style={{ cursor: "pointer", fontWeight: 900, fontSize: 18, padding: "6px 0" }}>
+    <details open={!!defaultOpen} style={sectionCardStyle()}>
+      <summary
+        style={{
+          cursor: "pointer",
+          fontWeight: 900,
+          fontSize: 20,
+          color: COLORS.heading,
+          listStyle: "none",
+        }}
+      >
         {title}
       </summary>
-      <div style={{ paddingTop: 10 }}>{children}</div>
+      <div style={{ paddingTop: 14 }}>{children}</div>
     </details>
   );
 }
@@ -89,11 +148,7 @@ function Section({
 function BlueprintInsights() {
   const bp = useMemo(() => readBlueprint(), []);
   if (!bp) {
-    return (
-      <div style={{ opacity: 0.8 }}>
-        No saved Blueprint found for this package yet.
-      </div>
-    );
+    return <div style={{ opacity: 0.8, color: COLORS.muted }}>No saved Blueprint found for this package yet.</div>;
   }
 
   const frameworkApplied = bp?.synthesis?.frameworkApplied || "linear";
@@ -107,27 +162,47 @@ function BlueprintInsights() {
   const synthesisNotes = String(bp?.synthesis?.notes || "").trim();
 
   return (
-    <div style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}>
-      <div style={{ fontWeight: 900, marginBottom: 12 }}>Blueprint Influence Summary</div>
-
-      <div style={{ marginBottom: 12 }}>
-        <span style={pillStyle("#eef6ff")}>Applied framework: {frameworkApplied}</span>
-        <span style={pillStyle("#eefbf2")}>Curriculum items: {curriculumItems.length}</span>
-        <span style={pillStyle("#fff6e8")}>Presenter cues: {cueItems.length}</span>
-        <span style={pillStyle("#f4f1ff")}>Planned slides: {plannedSlides.length}</span>
+    <div>
+      <div
+        style={{
+          ...softCardStyle(),
+          marginBottom: 14,
+          background: "linear-gradient(135deg, #FFF8EF 0%, #F8F1E6 100%)",
+        }}
+      >
+        <div style={{ fontWeight: 900, fontSize: 18, color: COLORS.heading, marginBottom: 8 }}>
+          Blueprint Influence Summary
+        </div>
+        <div style={{ color: COLORS.muted, lineHeight: 1.5 }}>
+          This explains what the system used from your lesson plan, uploaded curriculum, and exemplar cues to shape the lesson package.
+        </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 12 }}>
-        <div style={cardStyle("#cfe8ff")}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Framework</div>
+      <div style={{ marginBottom: 12 }}>
+        <span style={pillStyle(COLORS.info, COLORS.infoBorder)}>Applied framework: {frameworkApplied}</span>
+        <span style={pillStyle(COLORS.success, COLORS.successBorder)}>Curriculum items: {curriculumItems.length}</span>
+        <span style={pillStyle(COLORS.warn, COLORS.warnBorder)}>Presenter cues: {cueItems.length}</span>
+        <span style={pillStyle("#F4EDF8", "#D7C6E4")}>Planned slides: {plannedSlides.length}</span>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <div style={{ ...softCardStyle(COLORS.info), border: `1px solid ${COLORS.infoBorder}` }}>
+          <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Framework</div>
           <div style={{ fontSize: 14, marginBottom: 4 }}><b>Applied:</b> {frameworkApplied}</div>
           <div style={{ fontSize: 14 }}>
             <b>Detected exemplar pattern:</b> {detectedFramework} ({detectedConfidence}%)
           </div>
         </div>
 
-        <div style={cardStyle("#d8f5d8")}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Curriculum Used</div>
+        <div style={{ ...softCardStyle(COLORS.success), border: `1px solid ${COLORS.successBorder}` }}>
+          <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Curriculum Used</div>
           {curriculumItems.length ? (
             <ul style={{ margin: 0, paddingLeft: 18 }}>
               {curriculumItems.map((item: string, i: number) => (
@@ -135,12 +210,12 @@ function BlueprintInsights() {
               ))}
             </ul>
           ) : (
-            <div style={{ opacity: 0.8 }}>No curriculum checklist items found.</div>
+            <div style={{ opacity: 0.8, color: COLORS.muted }}>No curriculum checklist items found.</div>
           )}
         </div>
 
-        <div style={cardStyle("#fff1cc")}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Exemplar Cues Used</div>
+        <div style={{ ...softCardStyle(COLORS.warn), border: `1px solid ${COLORS.warnBorder}` }}>
+          <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Exemplar Cues Used</div>
           {cueItems.length ? (
             <ul style={{ margin: 0, paddingLeft: 18 }}>
               {cueItems.map((item: string, i: number) => (
@@ -148,14 +223,14 @@ function BlueprintInsights() {
               ))}
             </ul>
           ) : (
-            <div style={{ opacity: 0.8 }}>No presenter cues found.</div>
+            <div style={{ opacity: 0.8, color: COLORS.muted }}>No presenter cues found.</div>
           )}
         </div>
       </div>
 
-      <div style={{ ...cardStyle("#eee"), marginBottom: 12 }}>
-        <div style={{ fontWeight: 800, marginBottom: 6 }}>Why this lesson changed</div>
-        <ul style={{ margin: 0, paddingLeft: 18 }}>
+      <div style={{ ...softCardStyle(), marginBottom: 14 }}>
+        <div style={{ fontWeight: 800, marginBottom: 8, color: COLORS.heading }}>Why this lesson changed</div>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.55 }}>
           <li style={{ marginBottom: 6 }}>
             {frameworkApplied === "clickableHub"
               ? "The Results Hub is using a clickable-hub structure because an exemplar was present and the blueprint applied that framework."
@@ -176,45 +251,57 @@ function BlueprintInsights() {
         </ul>
       </div>
 
-      <div style={{ ...cardStyle("#f8f8f8"), marginBottom: 12 }}>
-        <div style={{ fontWeight: 800, marginBottom: 6 }}>Source Files</div>
-        <div style={{ fontSize: 14, marginBottom: 6 }}>
-          <b>Curriculum files:</b> {curriculumFiles.join(", ") || "none"}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <div style={softCardStyle()}>
+          <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Source Files</div>
+          <div style={{ fontSize: 14, marginBottom: 6 }}>
+            <b>Curriculum files:</b> {curriculumFiles.join(", ") || "none"}
+          </div>
+          <div style={{ fontSize: 14 }}>
+            <b>Exemplar files:</b> {exemplarFiles.join(", ") || "none"}
+          </div>
         </div>
-        <div style={{ fontSize: 14 }}>
-          <b>Exemplar files:</b> {exemplarFiles.join(", ") || "none"}
-        </div>
-      </div>
 
-      <div style={{ ...cardStyle("#fafafa"), marginBottom: 12 }}>
-        <div style={{ fontWeight: 800, marginBottom: 6 }}>Planned Slide Skeleton</div>
-        {plannedSlides.length ? (
-          <ol style={{ margin: 0, paddingLeft: 18 }}>
-            {plannedSlides.map((title: string, i: number) => (
-              <li key={title + i} style={{ marginBottom: 4 }}>{title}</li>
-            ))}
-          </ol>
-        ) : (
-          <div style={{ opacity: 0.8 }}>No planned slides found in the blueprint.</div>
-        )}
+        <div style={softCardStyle()}>
+          <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Planned Slide Skeleton</div>
+          {plannedSlides.length ? (
+            <ol style={{ margin: 0, paddingLeft: 18 }}>
+              {plannedSlides.map((title: string, i: number) => (
+                <li key={title + i} style={{ marginBottom: 4 }}>{title}</li>
+              ))}
+            </ol>
+          ) : (
+            <div style={{ opacity: 0.8, color: COLORS.muted }}>No planned slides found in the blueprint.</div>
+          )}
+        </div>
       </div>
 
       {synthesisNotes && (
-        <div style={cardStyle("#eee")}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Blueprint Notes</div>
-          <div style={{ whiteSpace: "pre-wrap" }}>{synthesisNotes}</div>
+        <div style={softCardStyle()}>
+          <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Blueprint Notes</div>
+          <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{synthesisNotes}</div>
         </div>
       )}
 
-      <details style={{ marginTop: 12 }}>
-        <summary style={{ cursor: "pointer" }}>View raw Blueprint JSON</summary>
+      <details style={{ marginTop: 14 }}>
+        <summary style={{ cursor: "pointer", color: COLORS.accentDark, fontWeight: 700 }}>
+          View raw Blueprint JSON
+        </summary>
         <pre
           style={{
             whiteSpace: "pre-wrap",
             fontSize: 12,
-            background: "#fafafa",
+            background: "#FBF8F2",
+            border: `1px solid ${COLORS.borderSoft}`,
             padding: 12,
-            borderRadius: 10,
+            borderRadius: 14,
             overflow: "auto",
             marginTop: 10,
           }}
@@ -234,12 +321,18 @@ export default function ResultsHubPage() {
 
   if (!pkg) {
     return (
-      <div style={{ maxWidth: 980, margin: "0 auto", padding: 20 }}>
-        <h1 style={{ marginTop: 0 }}>Results Hub</h1>
-        <p style={{ opacity: 0.85 }}>
-          No generated lesson found yet. Go back and run the flow again.
-        </p>
-        <Link to="/">Back to Inputs</Link>
+      <div style={pageShellStyle()}>
+        <div style={contentWrapStyle()}>
+          <div style={sectionCardStyle()}>
+            <h1 style={{ marginTop: 0, marginBottom: 10, color: COLORS.heading }}>Results Hub</h1>
+            <p style={{ opacity: 0.9, color: COLORS.muted }}>
+              No generated lesson found yet. Go back and run the flow again.
+            </p>
+            <Link to="/" style={{ color: COLORS.accentDark, fontWeight: 700 }}>
+              Back to Inputs
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -288,182 +381,344 @@ export default function ResultsHubPage() {
   }
 
   return (
-    <div style={{ maxWidth: 980, margin: "0 auto", padding: 20 }}>
-      <h1 style={{ marginTop: 0 }}>Results Hub</h1>
+    <div style={pageShellStyle()}>
+      <div style={contentWrapStyle()}>
+        <div
+          style={{
+            ...sectionCardStyle(),
+            background: "linear-gradient(135deg, #FFF8EF 0%, #F7F1E8 100%)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 16,
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  background: "#EEF5EA",
+                  border: `1px solid ${COLORS.successBorder}`,
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: COLORS.accentDark,
+                  marginBottom: 10,
+                }}
+              >
+                Results Hub
+              </div>
+              <h1
+                style={{
+                  margin: "0 0 8px 0",
+                  color: COLORS.heading,
+                  fontSize: 34,
+                  lineHeight: 1.1,
+                }}
+              >
+                {(pkg as any)?.input?.lessonTitle ?? "Generated Lesson"}
+              </h1>
+              <div style={{ color: COLORS.muted, fontSize: 15, lineHeight: 1.5 }}>
+                {(pkg as any)?.input?.date ?? ""} | Grade {(pkg as any)?.input?.grade ?? ""} | {(pkg as any)?.input?.subject ?? ""}
+              </div>
+            </div>
 
-      <div style={{ opacity: 0.85, marginBottom: 12 }}>
-        {(pkg as any)?.input?.date ?? ""} | {(pkg as any)?.input?.lessonTitle ?? ""} | Grade{" "}
-        {(pkg as any)?.input?.grade ?? ""} | {(pkg as any)?.input?.subject ?? ""}
-      </div>
-
-      <div style={{ border: "2px solid #111", borderRadius: 14, padding: 14, marginBottom: 16 }}>
-        <div style={{ fontWeight: 900, marginBottom: 10 }}>Exports</div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button onClick={() => runExport("pptx")} disabled={busy !== null} style={{ padding: "10px 14px", borderRadius: 10 }}>
-            {busy === "pptx" ? "Exporting PPTX..." : "Export PPTX"}
-          </button>
-
-          <button onClick={() => runExport("docx")} disabled={busy !== null} style={{ padding: "10px 14px", borderRadius: 10 }}>
-            {busy === "docx" ? "Exporting DOCX..." : "Export DOCX"}
-          </button>
-
-          <button onClick={() => runExport("zip")} disabled={busy !== null} style={{ padding: "10px 14px", borderRadius: 10 }}>
-            {busy === "zip" ? "Exporting ZIP..." : "Full Export (ZIP)"}
-          </button>
-
-          <Link to="/" style={{ alignSelf: "center", marginLeft: 6 }}>
-            Back to Inputs
-          </Link>
+            <div style={{ ...softCardStyle("#FFFDF9"), minWidth: 260 }}>
+              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Lesson Snapshot</div>
+              <div style={{ color: COLORS.text, fontSize: 14, lineHeight: 1.6 }}>
+                <div><b>Slides:</b> {slides.length}</div>
+                <div><b>Centers:</b> {centers.length}</div>
+                <div><b>Lesson plan sections:</b> {lessonPlan.length}</div>
+                <div><b>Rotation items:</b> {rotationPlan.length}</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {err && (
-          <div style={{ background: "#fff2f2", border: "1px solid #ffcccc", padding: 10, borderRadius: 10, marginTop: 12 }}>
-            <b>Export error:</b> {err}
+        <div style={sectionCardStyle()}>
+          <div style={{ fontWeight: 900, marginBottom: 12, color: COLORS.heading, fontSize: 18 }}>Exports</div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <button
+              onClick={() => runExport("pptx")}
+              disabled={busy !== null}
+              style={{
+                padding: "11px 15px",
+                borderRadius: 14,
+                border: `1px solid ${COLORS.accent}`,
+                background: COLORS.accent,
+                color: "#fff",
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              {busy === "pptx" ? "Exporting PPTX..." : "Export PPTX"}
+            </button>
+
+            <button
+              onClick={() => runExport("docx")}
+              disabled={busy !== null}
+              style={{
+                padding: "11px 15px",
+                borderRadius: 14,
+                border: `1px solid ${COLORS.border}`,
+                background: COLORS.panelAlt,
+                color: COLORS.text,
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              {busy === "docx" ? "Exporting DOCX..." : "Export DOCX"}
+            </button>
+
+            <button
+              onClick={() => runExport("zip")}
+              disabled={busy !== null}
+              style={{
+                padding: "11px 15px",
+                borderRadius: 14,
+                border: `1px solid ${COLORS.border}`,
+                background: "#FFF7EC",
+                color: COLORS.text,
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              {busy === "zip" ? "Exporting ZIP..." : "Full Export (ZIP)"}
+            </button>
+
+            <Link to="/" style={{ color: COLORS.accentDark, fontWeight: 700, marginLeft: 4 }}>
+              Back to Inputs
+            </Link>
           </div>
-        )}
-      </div>
 
-      <div style={{ padding: 12, border: "1px solid #eee", borderRadius: 12, marginBottom: 18 }}>
-        {standards.length === 0 ? (
-          <div style={{ fontWeight: 800 }}>Standards: (none detected yet — check inputs or add an override)</div>
-        ) : (
-          <>
-            <div style={{ fontWeight: 900, marginBottom: 8 }}>
-              Primary: {primary?.code ?? ""}{" "}
-              <span style={{ opacity: 0.8 }}>{primary?.confidence != null ? `(${percent(primary.confidence)})` : ""}</span>
+          {err && (
+            <div
+              style={{
+                background: "#FFF2F1",
+                border: "1px solid #E6B8B4",
+                padding: 10,
+                borderRadius: 12,
+                marginTop: 12,
+              }}
+            >
+              <b>Export error:</b> {err}
             </div>
-            <div style={{ opacity: 0.92, marginBottom: 10 }}>{short(primary?.label)}</div>
+          )}
+        </div>
 
-            {supporting.length > 0 && (
-              <div style={{ marginBottom: 8 }}>
-                <div style={{ fontWeight: 900, marginBottom: 6 }}>Supporting</div>
+        <div style={sectionCardStyle()}>
+          {standards.length === 0 ? (
+            <div style={{ fontWeight: 800 }}>Standards: (none detected yet — check inputs or add an override)</div>
+          ) : (
+            <>
+              <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading, fontSize: 18 }}>
+                Primary: {primary?.code ?? ""}{" "}
+                <span style={{ opacity: 0.8, color: COLORS.muted }}>
+                  {primary?.confidence != null ? `(${percent(primary.confidence)})` : ""}
+                </span>
+              </div>
+              <div style={{ opacity: 0.95, marginBottom: 12, lineHeight: 1.55 }}>{short(primary?.label)}</div>
+
+              {supporting.length > 0 && (
+                <div style={{ ...softCardStyle(), marginBottom: 10 }}>
+                  <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading }}>Supporting</div>
+                  <ul style={{ margin: 0, paddingLeft: 18 }}>
+                    {supporting.map((s: any, i: number) => (
+                      <li key={(s.code ?? "") + i} style={{ marginBottom: 10 }}>
+                        <div>
+                          <b>{s.code}</b>{" "}
+                          <span style={{ opacity: 0.8, color: COLORS.muted }}>
+                            {s?.confidence != null ? `(${percent(s.confidence)})` : ""}
+                          </span>
+                        </div>
+                        <div style={{ opacity: 0.92, lineHeight: 1.45 }}>{short(s.label)}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div style={{ opacity: 0.85, color: COLORS.muted }}>
+                <b>All codes:</b> {standards.map((s: any) => s.code).join(", ")}
+              </div>
+            </>
+          )}
+        </div>
+
+        <Section title="Blueprint Influence" defaultOpen>
+          <BlueprintInsights />
+        </Section>
+
+        <Section title="Teacher Lesson Plan" defaultOpen>
+          {lessonPlan.length === 0 ? (
+            <div style={{ opacity: 0.8, color: COLORS.muted }}>No lesson plan sections found in package.</div>
+          ) : (
+            <div style={{ display: "grid", gap: 12 }}>
+              {lessonPlan.map((sec: any, i: number) => (
+                <div key={i} style={softCardStyle()}>
+                  <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 17 }}>
+                    {sec?.heading ?? `Section ${i + 1}`}
+                  </div>
+                  {Array.isArray(sec?.slides) && (
+                    <div style={{ opacity: 0.8, marginTop: 4, color: COLORS.muted }}>
+                      Slides: {sec.slides.length ? sec.slides.join(", ") : "-"}
+                    </div>
+                  )}
+                  <div style={{ whiteSpace: "pre-wrap", marginTop: 8, lineHeight: 1.55 }}>
+                    {String(sec?.description ?? "")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <Section title={`Slides (Student-facing) — ${slides.length}`}>
+          {slides.length === 0 ? (
+            <div style={{ opacity: 0.8, color: COLORS.muted }}>No slides found in package.</div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 12,
+              }}
+            >
+              {slides.map((s: any, i: number) => (
+                <div key={i} style={softCardStyle()}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: COLORS.blush, marginBottom: 6 }}>
+                    Slide {i + 1}
+                  </div>
+                  <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 8 }}>
+                    {s?.title ?? s?.heading ?? `Slide ${i + 1}`}
+                  </div>
+                  {Array.isArray(s?.bullets) && s.bullets.length > 0 && (
+                    <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.5 }}>
+                      {s.bullets.map((b: any, idx: number) => (
+                        <li key={idx} style={{ marginBottom: 4 }}>{String(b)}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {s?.text && <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{String(s.text)}</div>}
+                  {s?.body && <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{String(s.body)}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <Section title={`Centers — ${centers.length}`}>
+          {centers.length === 0 ? (
+            <div style={{ opacity: 0.8, color: COLORS.muted }}>No centers generated.</div>
+          ) : (
+            <div style={{ display: "grid", gap: 12 }}>
+              {centers.map((c: any, i: number) => (
+                <div key={i} style={softCardStyle()}>
+                  <div style={{ fontWeight: 900, color: COLORS.heading }}>
+                    {c?.title ?? c?.name ?? `Center ${i + 1}`}
+                  </div>
+                  {c?.objective && (
+                    <div style={{ marginTop: 6, color: COLORS.muted }}>
+                      <b>Objective:</b> {String(c.objective)}
+                    </div>
+                  )}
+                  {c?.focusSkill && (
+                    <div style={{ marginTop: 6, color: COLORS.muted }}>
+                      <b>Objective:</b> {String(c.focusSkill)}
+                    </div>
+                  )}
+                  {(c?.direction || c?.instructions) && (
+                    <div style={{ whiteSpace: "pre-wrap", marginTop: 8, lineHeight: 1.55 }}>
+                      {String(c?.direction ?? c?.instructions ?? "")}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <Section title="Rotation Plan">
+          {rotationPlan.length === 0 ? (
+            <div style={{ opacity: 0.8, color: COLORS.muted }}>No rotation plan generated.</div>
+          ) : (
+            <div style={{ display: "grid", gap: 12 }}>
+              {rotationPlan.map((r: any, i: number) => (
+                <div key={i} style={softCardStyle()}>
+                  <div style={{ fontWeight: 800, color: COLORS.heading }}>
+                    {r?.title ?? `Rotation ${i + 1}`}
+                  </div>
+                  <div style={{ whiteSpace: "pre-wrap", marginTop: 6, lineHeight: 1.55 }}>
+                    {String(r?.description ?? r?.text ?? r ?? "")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <Section title="Interventions">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 12,
+            }}
+          >
+            <div style={softCardStyle()}>
+              <h3 style={{ marginTop: 0, color: COLORS.heading }}>Tier 3</h3>
+              {tier3.length ? (
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  {supporting.map((s: any, i: number) => (
-                    <li key={(s.code ?? "") + i} style={{ marginBottom: 10 }}>
-                      <div>
-                        <b>{s.code}</b>{" "}
-                        <span style={{ opacity: 0.8 }}>{s?.confidence != null ? `(${percent(s.confidence)})` : ""}</span>
-                      </div>
-                      <div style={{ opacity: 0.92 }}>{short(s.label)}</div>
+                  {tier3.map((x: any, i: number) => (
+                    <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6, lineHeight: 1.5 }}>
+                      {String(x?.description ?? x?.text ?? x ?? "")}
                     </li>
                   ))}
                 </ul>
-              </div>
-            )}
-
-            <div style={{ opacity: 0.85 }}>
-              <b>All codes:</b> {standards.map((s: any) => s.code).join(", ")}
-            </div>
-          </>
-        )}
-      </div>
-
-      <Section title="Blueprint Influence" defaultOpen>
-        <BlueprintInsights />
-      </Section>
-
-      <Section title="Teacher Lesson Plan" defaultOpen>
-        {lessonPlan.length === 0 ? (
-          <div style={{ opacity: 0.8 }}>No lesson plan sections found in package.</div>
-        ) : (
-          lessonPlan.map((sec: any, i: number) => (
-            <div key={i} style={{ marginBottom: 18 }}>
-              <div style={{ fontWeight: 900 }}>{sec?.heading ?? `Section ${i + 1}`}</div>
-              {Array.isArray(sec?.slides) && (
-                <div style={{ opacity: 0.8, marginTop: 2 }}>
-                  Slides: {sec.slides.length ? sec.slides.join(", ") : "-"}
-                </div>
+              ) : (
+                <div style={{ opacity: 0.8, color: COLORS.muted }}>None</div>
               )}
-              <div style={{ whiteSpace: "pre-wrap", marginTop: 6 }}>{String(sec?.description ?? "")}</div>
             </div>
-          ))
-        )}
-      </Section>
 
-      <Section title={`Slides (Student-facing) — ${slides.length}`}>
-        {slides.length === 0 ? (
-          <div style={{ opacity: 0.8 }}>No slides found in package.</div>
-        ) : (
-          <ol>
-            {slides.map((s: any, i: number) => (
-              <li key={i} style={{ marginBottom: 10 }}>
-                <div style={{ fontWeight: 700 }}>{s?.title ?? s?.heading ?? `Slide ${i + 1}`}</div>
-                {s?.text && <div style={{ whiteSpace: "pre-wrap" }}>{String(s.text)}</div>}
-                {s?.body && <div style={{ whiteSpace: "pre-wrap" }}>{String(s.body)}</div>}
-              </li>
-            ))}
-          </ol>
-        )}
-      </Section>
-
-      <Section title={`Centers — ${centers.length}`}>
-        {centers.length === 0 ? (
-          <div style={{ opacity: 0.8 }}>No centers generated.</div>
-        ) : (
-          centers.map((c: any, i: number) => (
-            <div key={i} style={{ marginBottom: 16 }}>
-              <div style={{ fontWeight: 900 }}>{c?.title ?? c?.name ?? `Center ${i + 1}`}</div>
-              {c?.direction && <div style={{ whiteSpace: "pre-wrap", marginTop: 6 }}>{String(c.direction)}</div>}
+            <div style={softCardStyle()}>
+              <h3 style={{ marginTop: 0, color: COLORS.heading }}>Tier 2</h3>
+              {tier2.length ? (
+                <ul style={{ margin: 0, paddingLeft: 18 }}>
+                  {tier2.map((x: any, i: number) => (
+                    <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6, lineHeight: 1.5 }}>
+                      {String(x?.description ?? x?.text ?? x ?? "")}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div style={{ opacity: 0.8, color: COLORS.muted }}>None</div>
+              )}
             </div>
-          ))
-        )}
-      </Section>
 
-      <Section title="Rotation Plan">
-        {rotationPlan.length === 0 ? (
-          <div style={{ opacity: 0.8 }}>No rotation plan generated.</div>
-        ) : (
-          <ol>
-            {rotationPlan.map((r: any, i: number) => (
-              <li key={i} style={{ marginBottom: 10 }}>
-                <div style={{ fontWeight: 700 }}>{r?.title ?? `Rotation ${i + 1}`}</div>
-                <div style={{ whiteSpace: "pre-wrap" }}>{String(r?.description ?? r?.text ?? r ?? "")}</div>
-              </li>
-            ))}
-          </ol>
-        )}
-      </Section>
-
-      <Section title="Interventions">
-        <h3>Tier 3</h3>
-        {tier3.length ? (
-          <ul>
-            {tier3.map((x: any, i: number) => (
-              <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6 }}>
-                {String(x?.description ?? x?.text ?? x ?? "")}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div style={{ opacity: 0.8 }}>None</div>
-        )}
-
-        <h3>Tier 2</h3>
-        {tier2.length ? (
-          <ul>
-            {tier2.map((x: any, i: number) => (
-              <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6 }}>
-                {String(x?.description ?? x?.text ?? x ?? "")}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div style={{ opacity: 0.8 }}>None</div>
-        )}
-
-        <h3>Enrichment</h3>
-        {enrichment.length ? (
-          <ul>
-            {enrichment.map((x: any, i: number) => (
-              <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6 }}>
-                {String(x?.description ?? x?.text ?? x ?? "")}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div style={{ opacity: 0.8 }}>None</div>
-        )}
-      </Section>
+            <div style={softCardStyle()}>
+              <h3 style={{ marginTop: 0, color: COLORS.heading }}>Enrichment</h3>
+              {enrichment.length ? (
+                <ul style={{ margin: 0, paddingLeft: 18 }}>
+                  {enrichment.map((x: any, i: number) => (
+                    <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6, lineHeight: 1.5 }}>
+                      {String(x?.description ?? x?.text ?? x ?? "")}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div style={{ opacity: 0.8, color: COLORS.muted }}>None</div>
+              )}
+            </div>
+          </div>
+        </Section>
+      </div>
     </div>
   );
 }
