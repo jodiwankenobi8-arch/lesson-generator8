@@ -75,7 +75,7 @@ test("default results show default structure when package is seeded", async ({ p
     localStorage.setItem("lesson_generator__package_v2", JSON.stringify(pkg));
   }, makeDefaultPackage());
   await page.goto("http://127.0.0.1:4173/results");
-  await expect(page.locator("body")).toContainText("Slides (Student-facing)");
+  await expect(page.locator("body")).toContainText("Slide Preview Deck");
   await expect(page.locator("body")).toContainText("Centers");
   await expect(page.locator("body")).toContainText("Launch and Objective");
   await expect(page.locator("body")).toContainText("Assessment and Next Steps");
@@ -128,7 +128,7 @@ test("results page renders hub-style structure when seeded", async ({ page }) =>
     localStorage.setItem("lesson_generator__package_v2", JSON.stringify(pkg));
   });
   await page.goto("http://127.0.0.1:4173/results");
-  await expect(page.locator("body")).toContainText("Slides (Student-facing)");
+  await expect(page.locator("body")).toContainText("Slide Preview Deck");
   await expect(page.locator("body")).toContainText("Centers");
   await expect(page.locator("body")).toContainText("Launch and Navigation");
   await expect(page.locator("body")).toContainText("Check and Close");
@@ -163,4 +163,5 @@ test("docx export triggers a download", async ({ page }) => {
   expect(download.suggestedFilename()).toContain("CVC_Words_2026-03-06");
   expect(download.suggestedFilename().toLowerCase().endsWith(".docx")).toBeTruthy();
 });
+
 
