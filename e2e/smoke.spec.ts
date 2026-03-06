@@ -61,7 +61,7 @@ test("wizard app loads inputs page", async ({ page }) => {
 
 test("materials page opens directly", async ({ page }) => {
   await page.goto("http://127.0.0.1:4173/materials");
-  await expect(page.locator("body")).toContainText("Materials Upload");
+  await expect(page.locator("body")).toContainText("Materials + Exemplars");
 });
 
 test("results page opens without crashing", async ({ page }) => {
@@ -163,5 +163,6 @@ test("docx export triggers a download", async ({ page }) => {
   expect(download.suggestedFilename()).toContain("CVC_Words_2026-03-06");
   expect(download.suggestedFilename().toLowerCase().endsWith(".docx")).toBeTruthy();
 });
+
 
 
