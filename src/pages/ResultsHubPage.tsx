@@ -24,6 +24,7 @@ import {
   orchardSecondaryButtonStyle,
   orchardLinkStyle,
 } from "./orchardUi";
+import { WizardProgress } from "./WizardProgress";
 
 function percent(conf: any) {
   const n = Number(conf);
@@ -263,6 +264,7 @@ export default function ResultsHubPage() {
     return (
       <div style={orchardShellStyle()}>
         <div style={orchardWrapStyle()}>
+          <WizardProgress current="results" />
           <div style={orchardCardStyle()}>
             <h1 style={{ marginTop: 0, marginBottom: 10, color: COLORS.heading }}>Results Hub</h1>
             <p style={{ opacity: 0.9, color: COLORS.muted }}>
@@ -323,6 +325,8 @@ export default function ResultsHubPage() {
   return (
     <div style={orchardShellStyle()}>
       <div style={orchardWrapStyle()}>
+        <WizardProgress current="results" />
+
         <div style={orchardHeroCardStyle()}>
           <div
             style={{

@@ -15,6 +15,7 @@ import {
   orchardTextareaStyle,
   orchardPrimaryButtonStyle,
 } from "./orchardUi";
+import { WizardProgress } from "./WizardProgress";
 
 export default function InputsPage() {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ export default function InputsPage() {
   return (
     <div style={orchardShellStyle()}>
       <div style={orchardWrapStyle()}>
+        <WizardProgress current="inputs" />
+
         <div style={orchardHeroCardStyle()}>
           <div
             style={{

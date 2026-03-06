@@ -18,6 +18,7 @@ import {
   orchardPrimaryButtonStyle,
   orchardLinkStyle,
 } from "./orchardUi";
+import { WizardProgress } from "./WizardProgress";
 
 export default function MaterialsPage() {
   const navigate = useNavigate();
@@ -72,6 +73,8 @@ export default function MaterialsPage() {
   return (
     <div style={orchardShellStyle()}>
       <div style={orchardWrapStyle()}>
+        <WizardProgress current="materials" />
+
         <div style={orchardHeroCardStyle()}>
           <div
             style={{
