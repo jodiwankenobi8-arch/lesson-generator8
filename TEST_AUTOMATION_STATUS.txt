@@ -7,6 +7,5 @@ TEST AUTOMATION STATUS
   - materials page loads
   - results page loads without crashing
 
-Meaning:
-- basic wizard flow is now covered by automated smoke tests
-- local test command is: npm test
+Next test goal:
+- verify structure changes when exemplar/curriculum presence changes
