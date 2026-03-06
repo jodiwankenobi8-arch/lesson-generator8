@@ -236,3 +236,44 @@ The uploaded zip is NOT:
 Final rule:
 Use the zip to guide style and visual language.
 Do not let legacy theme leftovers override the Apple Orchard brief.
+==================================================
+6A. TEXTURE + SCRAPBOOK DIRECTION
+==================================================
+
+Additional style rule:
+The app should feel like a classy scrapbook with layered textures.
+
+Meaning:
+- tactile
+- curated
+- warm
+- elegant
+- slightly handmade in a refined way
+- varied in surface feel, but still cohesive
+
+This does NOT mean:
+- crafty-chaotic
+- junky collage
+- messy patchwork
+- childish scrapbook stickers everywhere
+- visual clutter
+- cheap decorative overload
+
+Approved texture direction:
+- subtle paper/canvas grain
+- lightly painted or soft printed feel
+- layered surfaces that feel collected and intentional
+- quiet variation between page background, cards, ribbons, and accent panels
+- gentle contrast in texture rather than loud contrast in color
+
+Implementation guidance:
+- texture should stay subtle and low-contrast
+- texture should support the teacher-first calm mood
+- texture should make the interface feel human and tactile, not noisy
+- different surfaces can feel slightly different, but all must remain polished and coordinated
+- if a texture feels kitschy, busy, crafty, or “riffraff,” it is wrong
+
+Decision rule:
+Prefer “curated elegant scrapbook” over both:
+1. sterile SaaS flatness
+2. overly decorated crafty clutter
