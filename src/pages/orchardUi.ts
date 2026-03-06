@@ -2,86 +2,77 @@ import React from "react";
 
 export const ORCHARD_COLORS = {
   page: "#FFF6E9",
-  pageTint: "#FDF1E3",
   panel: "#FFFFFF",
-  panelAlt: "#FCF6EE",
-  border: "#E7E2DA",
-  borderSoft: "#EFE7DC",
-  borderStrong: "#DCCFBE",
+  panelAlt: "#FFFDF9",
+  panelWarm: "#FFF9F2",
   text: "#2F2F2F",
-  muted: "#6C6258",
   heading: "#3F5A40",
+  muted: "#6F6A63",
+  border: "#E7E2DA",
+  borderSoft: "#EEE7DE",
+  borderStrong: "#D8CEC0",
   accent: "#6E8B6B",
   accentDark: "#3F5A40",
-  accentSoft: "#EEF4EC",
   blush: "#F7D6D0",
   honey: "#F2C078",
   cranberry: "#B8545A",
-  info: "#EEF5FB",
-  infoBorder: "#C9D9E6",
-  success: "#EEF6EE",
-  successBorder: "#C9DBC8",
-  warn: "#FFF6E8",
-  warnBorder: "#E7D2A6",
-  stitch: "#F7FBF4",
-  shadow: "rgba(63, 90, 64, 0.12)",
-  shadowSoft: "rgba(47, 47, 47, 0.07)",
+  stitch: "#D8CFC4",
+  shadow: "rgba(63,90,64,0.10)",
+  warnBorder: "#D7B27A",
 };
 
 export function orchardShellStyle(): React.CSSProperties {
   return {
     minHeight: "100vh",
-    backgroundColor: ORCHARD_COLORS.page,
-    backgroundImage: [
-      "radial-gradient(circle at 12% 10%, rgba(247, 214, 208, 0.32), transparent 0 18%)",
-      "radial-gradient(circle at 86% 14%, rgba(242, 192, 120, 0.18), transparent 0 16%)",
-      "radial-gradient(circle at 18% 82%, rgba(110, 139, 107, 0.08), transparent 0 20%)",
-      "linear-gradient(rgba(255,255,255,0.18), rgba(255,255,255,0.18))",
-      "repeating-linear-gradient(0deg, rgba(255,255,255,0.00) 0px, rgba(255,255,255,0.00) 27px, rgba(63,90,64,0.018) 28px)"
-    ].join(", "),
+    background: "transparent",
     color: ORCHARD_COLORS.text,
+    padding: "28px 16px 56px",
+    fontFamily: '"Inter", "Source Sans 3", system-ui, sans-serif',
   };
 }
 
 export function orchardWrapStyle(): React.CSSProperties {
   return {
-    maxWidth: 1080,
+    width: "100%",
+    maxWidth: 1180,
     margin: "0 auto",
-    padding: 24,
+    display: "grid",
+    gap: 16,
   };
 }
 
-export function orchardCardStyle(): React.CSSProperties {
+export function orchardCardStyle(background = ORCHARD_COLORS.panel): React.CSSProperties {
   return {
-    background: "linear-gradient(180deg, #FFFDFC 0%, #FFF9F3 100%)",
+    background,
+    backgroundImage:
+      "linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(255,252,247,0.96) 100%), radial-gradient(circle at 12% 18%, rgba(255,255,255,0.55) 0, rgba(255,255,255,0) 24%), radial-gradient(circle at 82% 10%, rgba(242,192,120,0.08) 0, rgba(242,192,120,0) 18%)",
     border: `1px solid ${ORCHARD_COLORS.border}`,
-    borderRadius: 26,
-    padding: 20,
-    boxShadow: `0 12px 30px ${ORCHARD_COLORS.shadowSoft}`,
-    marginBottom: 18,
+    borderRadius: 24,
+    padding: 18,
+    boxShadow: "0 10px 24px rgba(47,47,47,0.05)",
     position: "relative",
+    overflow: "hidden",
   };
 }
 
 export function orchardHeroCardStyle(): React.CSSProperties {
   return {
-    ...orchardCardStyle(),
-    background: [
-      "linear-gradient(180deg, rgba(255,255,255,0.70), rgba(255,255,255,0.40))",
-      "linear-gradient(135deg, #FFF9F0 0%, #FFF6E9 52%, #FCEEDB 100%)"
-    ].join(", "),
-    border: `1px solid ${ORCHARD_COLORS.borderStrong}`,
-    boxShadow: `0 18px 38px ${ORCHARD_COLORS.shadow}`,
+    ...orchardCardStyle("#FFF9F2"),
+    backgroundImage:
+      "linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,248,239,0.92) 100%), radial-gradient(circle at 14% 22%, rgba(255,255,255,0.72) 0, rgba(255,255,255,0) 26%), radial-gradient(circle at 86% 18%, rgba(247,214,208,0.26) 0, rgba(247,214,208,0) 22%), radial-gradient(circle at 72% 78%, rgba(242,192,120,0.16) 0, rgba(242,192,120,0) 18%)",
+    boxShadow: "0 14px 30px rgba(47,47,47,0.06)",
   };
 }
 
 export function orchardSoftCardStyle(background = ORCHARD_COLORS.panelAlt): React.CSSProperties {
   return {
     background,
+    backgroundImage:
+      "linear-gradient(180deg, rgba(255,255,255,0.82) 0%, rgba(255,252,248,0.94) 100%), radial-gradient(circle at 18% 16%, rgba(255,255,255,0.42) 0, rgba(255,255,255,0) 24%)",
     border: `1px solid ${ORCHARD_COLORS.borderSoft}`,
     borderRadius: 20,
     padding: 14,
-    boxShadow: `0 6px 14px rgba(47,47,47,0.03)`,
+    boxShadow: "0 6px 14px rgba(47,47,47,0.03)",
   };
 }
 
