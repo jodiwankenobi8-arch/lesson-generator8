@@ -14,6 +14,9 @@ import {
   orchardInputStyle,
   orchardTextareaStyle,
   orchardPrimaryButtonStyle,
+  orchardRibbonHeaderStyle,
+  orchardHeroTitleStyle,
+  orchardStitchDividerStyle,
 } from "./orchardUi";
 import { WizardProgress } from "./WizardProgress";
 
@@ -21,6 +24,11 @@ export default function InputsPage() {
   const navigate = useNavigate();
   const input = useLessonStore((s) => s.input);
   const patch = useLessonStore((s) => s.setInput);
+
+  const missingCore =
+    !(input.lessonTitle ?? "").trim() ||
+    !(input.objective ?? "").trim() ||
+    !(input.textOrTopic ?? "").trim();
 
   return (
     <div style={orchardShellStyle()}>
@@ -32,49 +40,27 @@ export default function InputsPage() {
             style={{
               display: "flex",
               justifyContent: "space-between",
-              gap: 16,
+              gap: 18,
               alignItems: "flex-start",
               flexWrap: "wrap",
             }}
           >
-            <div style={{ maxWidth: 700 }}>
-              <div
-                style={{
-                  display: "inline-block",
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  background: COLORS.accentSoft,
-                  border: `1px solid ${COLORS.successBorder}`,
-                  fontSize: 12,
-                  fontWeight: 800,
-                  color: COLORS.accentDark,
-                  marginBottom: 10,
-                }}
-              >
-                Lesson Generator
-              </div>
-
-              <h1
-                style={{
-                  margin: "0 0 8px 0",
-                  color: COLORS.heading,
-                  fontSize: 34,
-                  lineHeight: 1.1,
-                }}
-              >
-                Build a lesson from teacher inputs
-              </h1>
-
-              <div style={{ ...orchardHelpTextStyle(), fontSize: 15 }}>
-                Start with the core lesson plan. You’ll upload curriculum and exemplar materials on the next step.
+            <div style={{ maxWidth: 720 }}>
+              <div style={orchardRibbonHeaderStyle()}>Inputs</div>
+              <div style={orchardStitchDividerStyle()} />
+              <h1 style={orchardHeroTitleStyle()}>Set the lesson foundation</h1>
+              <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 680 }}>
+                Start with the lesson basics, the teaching goal, and any group or standards notes you already know.
+                On the next step, you’ll add curriculum materials and exemplars that can shape structure, wording,
+                pacing, and output style.
               </div>
             </div>
 
-            <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 260 }}>
+            <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 270, maxWidth: 320 }}>
               <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 8 }}>
                 What happens next
               </div>
-              <div style={{ fontSize: 14, lineHeight: 1.6 }}>
+              <div style={{ fontSize: 14, lineHeight: 1.65 }}>
                 <div>1. Enter lesson details</div>
                 <div>2. Add curriculum and exemplars</div>
                 <div>3. Build the lesson package</div>
@@ -85,7 +71,10 @@ export default function InputsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={orchardSectionTitleStyle()}>Lesson Inputs</div>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Lesson Basics</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
+            These are the core inputs the generator uses to anchor the lesson before it sees uploaded materials.
+          </div>
 
           <div
             style={{
@@ -144,8 +133,23 @@ export default function InputsPage() {
                 style={orchardInputStyle()}
               />
             </label>
+          </div>
+        </div>
 
-            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+        <div style={orchardCardStyle()}>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Instructional Core</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
+            This is the heart of the lesson. Title, objective, and text or topic are the most important fields to complete.
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: 14,
+            }}
+          >
+            <label style={{ display: "block" }}>
               <div style={orchardLabelTitleStyle()}>Lesson Title</div>
               <input
                 value={input.lessonTitle ?? ""}
@@ -155,7 +159,7 @@ export default function InputsPage() {
               />
             </label>
 
-            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+            <label style={{ display: "block" }}>
               <div style={orchardLabelTitleStyle()}>Objective</div>
               <input
                 value={input.objective ?? ""}
@@ -165,7 +169,7 @@ export default function InputsPage() {
               />
             </label>
 
-            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+            <label style={{ display: "block" }}>
               <div style={orchardLabelTitleStyle()}>Essential Question (optional)</div>
               <input
                 value={input.essentialQuestion ?? ""}
@@ -175,22 +179,22 @@ export default function InputsPage() {
               />
             </label>
 
-            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+            <label style={{ display: "block" }}>
               <div style={orchardLabelTitleStyle()}>Text / Topic</div>
               <textarea
                 value={input.textOrTopic ?? ""}
                 onChange={(e) => patch({ textOrTopic: e.target.value })}
-                style={orchardTextareaStyle(100)}
+                style={orchardTextareaStyle(110)}
                 placeholder="What is the lesson about? (decodable, skill, topic, etc.)"
               />
             </label>
 
-            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+            <label style={{ display: "block" }}>
               <div style={orchardLabelTitleStyle()}>Materials (optional)</div>
               <textarea
                 value={input.materials ?? ""}
                 onChange={(e) => patch({ materials: e.target.value })}
-                style={orchardTextareaStyle(80)}
+                style={orchardTextareaStyle(86)}
                 placeholder="Books, decodables, whiteboards, counters, etc."
               />
             </label>
@@ -272,6 +276,23 @@ export default function InputsPage() {
           </label>
         </div>
 
+        {missingCore && (
+          <div
+            style={{
+              ...orchardCardStyle(),
+              background: "#FFF8EE",
+              border: `1px solid ${COLORS.warnBorder}`,
+            }}
+          >
+            <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>
+              Before you continue
+            </div>
+            <div style={orchardHelpTextStyle()}>
+              The strongest lesson runs usually include a lesson title, objective, and text or topic. You can still fill in the rest later.
+            </div>
+          </div>
+        )}
+
         <div
           style={{
             ...orchardCardStyle(),
@@ -290,7 +311,7 @@ export default function InputsPage() {
             onClick={() => navigate("/materials")}
             style={orchardPrimaryButtonStyle(false)}
           >
-            Continue to Materials Upload ?
+            Continue to Materials ->
           </button>
         </div>
       </div>
