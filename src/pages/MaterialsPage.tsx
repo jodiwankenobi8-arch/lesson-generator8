@@ -4,87 +4,15 @@ import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
 import type { UploadedTextFile } from "../engine/blueprint/types";
 import { useLessonStore } from "../state/useLessonStore";
 import { filesToUploaded } from "../utils/readUploadedText";
-
-const COLORS = {
-  page: "#F7F1E8",
-  panel: "#FFFDF9",
-  panelAlt: "#F9F4EC",
-  border: "#D8CBB8",
-  borderSoft: "#E8DDD0",
-  text: "#2F2A24",
-  muted: "#6F655B",
-  heading: "#314B3A",
-  accent: "#6E8B5E",
-  accentDark: "#4E6542",
-  blush: "#D9A58F",
-  honey: "#E8C47A",
-  info: "#EAF2FB",
-  infoBorder: "#BDD0E6",
-  success: "#EEF5EA",
-  successBorder: "#C9DABD",
-  warn: "#FFF6E8",
-  warnBorder: "#E9D3A5",
-  shadow: "rgba(73, 52, 33, 0.08)",
-};
-
-function shellStyle(): React.CSSProperties {
-  return {
-    minHeight: "100vh",
-    background: COLORS.page,
-    color: COLORS.text,
-  };
-}
-
-function wrapStyle(): React.CSSProperties {
-  return {
-    maxWidth: 1080,
-    margin: "0 auto",
-    padding: 24,
-  };
-}
-
-function cardStyle(): React.CSSProperties {
-  return {
-    background: COLORS.panel,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 22,
-    padding: 18,
-    boxShadow: `0 8px 24px ${COLORS.shadow}`,
-    marginBottom: 18,
-  };
-}
-
-function softCardStyle(background = COLORS.panelAlt): React.CSSProperties {
-  return {
-    background,
-    border: `1px solid ${COLORS.borderSoft}`,
-    borderRadius: 18,
-    padding: 14,
-  };
-}
-
-function labelTitleStyle(): React.CSSProperties {
-  return {
-    fontWeight: 800,
-    color: COLORS.heading,
-    marginBottom: 6,
-  };
-}
-
-function textareaStyle(minHeight = 90): React.CSSProperties {
-  return {
-    width: "100%",
-    padding: 12,
-    minHeight,
-    resize: "vertical",
-    borderRadius: 14,
-    border: `1px solid ${COLORS.border}`,
-    background: "#FFFDFC",
-    color: COLORS.text,
-    boxSizing: "border-box",
-    outline: "none",
-  };
-}
+import {
+  ORCHARD_COLORS as COLORS,
+  orchardShellStyle,
+  orchardWrapStyle,
+  orchardCardStyle,
+  orchardSoftCardStyle,
+  orchardLabelTitleStyle,
+  orchardTextareaStyle,
+} from "./orchardUi";
 
 export default function MaterialsPage() {
   const navigate = useNavigate();
@@ -137,11 +65,11 @@ export default function MaterialsPage() {
     !(input.textOrTopic ?? "").trim();
 
   return (
-    <div style={shellStyle()}>
-      <div style={wrapStyle()}>
+    <div style={orchardShellStyle()}>
+      <div style={orchardWrapStyle()}>
         <div
           style={{
-            ...cardStyle(),
+            ...orchardCardStyle(),
             background: "linear-gradient(135deg, #FFF8EF 0%, #F7F1E8 100%)",
           }}
         >
@@ -191,7 +119,7 @@ export default function MaterialsPage() {
               </div>
             </div>
 
-            <div style={{ ...softCardStyle("#FFFDF9"), minWidth: 260 }}>
+            <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 260 }}>
               <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 8 }}>
                 What this step does
               </div>
@@ -208,7 +136,7 @@ export default function MaterialsPage() {
         {missingBasics && (
           <div
             style={{
-              ...cardStyle(),
+              ...orchardCardStyle(),
               background: "#FFF8E7",
               border: `1px solid ${COLORS.warnBorder}`,
             }}
@@ -227,7 +155,7 @@ export default function MaterialsPage() {
           </div>
         )}
 
-        <div style={cardStyle()}>
+        <div style={orchardCardStyle()}>
           <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 14 }}>
             New Lesson Materials + Exemplars
           </div>
@@ -241,7 +169,7 @@ export default function MaterialsPage() {
           >
             <div
               style={{
-                ...softCardStyle(COLORS.success),
+                ...orchardSoftCardStyle(COLORS.success),
                 border: `1px solid ${COLORS.successBorder}`,
               }}
             >
@@ -259,7 +187,7 @@ export default function MaterialsPage() {
 
             <div
               style={{
-                ...softCardStyle(COLORS.info),
+                ...orchardSoftCardStyle(COLORS.info),
                 border: `1px solid ${COLORS.infoBorder}`,
               }}
             >
@@ -277,7 +205,7 @@ export default function MaterialsPage() {
           </div>
         </div>
 
-        <div style={cardStyle()}>
+        <div style={orchardCardStyle()}>
           <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 6 }}>
             Lesson Notes (optional)
           </div>
@@ -286,11 +214,11 @@ export default function MaterialsPage() {
           </div>
 
           <label style={{ display: "block" }}>
-            <div style={labelTitleStyle()}>Notes</div>
+            <div style={orchardLabelTitleStyle()}>Notes</div>
             <textarea
               value={lessonNotes}
               onChange={(e) => setLessonNotes(e.target.value)}
-              style={textareaStyle(90)}
+              style={orchardTextareaStyle(90)}
               placeholder="Pacing, special routines, constraints, or anything the blueprint should remember"
             />
           </label>
@@ -299,7 +227,7 @@ export default function MaterialsPage() {
         {(msg || errorMessage) && (
           <div
             style={{
-              ...cardStyle(),
+              ...orchardCardStyle(),
               background: "#FFF2F1",
               border: "1px solid #E6B8B4",
             }}
@@ -310,7 +238,7 @@ export default function MaterialsPage() {
 
         <div
           style={{
-            ...cardStyle(),
+            ...orchardCardStyle(),
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",

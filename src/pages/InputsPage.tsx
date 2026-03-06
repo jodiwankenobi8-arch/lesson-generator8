@@ -1,93 +1,16 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLessonStore } from "../state/useLessonStore";
-
-const COLORS = {
-  page: "#F7F1E8",
-  panel: "#FFFDF9",
-  panelAlt: "#F9F4EC",
-  border: "#D8CBB8",
-  borderSoft: "#E8DDD0",
-  text: "#2F2A24",
-  muted: "#6F655B",
-  heading: "#314B3A",
-  accent: "#6E8B5E",
-  accentDark: "#4E6542",
-  blush: "#D9A58F",
-  honey: "#E8C47A",
-  shadow: "rgba(73, 52, 33, 0.08)",
-};
-
-function shellStyle(): React.CSSProperties {
-  return {
-    minHeight: "100vh",
-    background: COLORS.page,
-    color: COLORS.text,
-  };
-}
-
-function wrapStyle(): React.CSSProperties {
-  return {
-    maxWidth: 1080,
-    margin: "0 auto",
-    padding: 24,
-  };
-}
-
-function cardStyle(): React.CSSProperties {
-  return {
-    background: COLORS.panel,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 22,
-    padding: 18,
-    boxShadow: `0 8px 24px ${COLORS.shadow}`,
-    marginBottom: 18,
-  };
-}
-
-function fieldLabelStyle(): React.CSSProperties {
-  return {
-    display: "block",
-  };
-}
-
-function labelTitleStyle(): React.CSSProperties {
-  return {
-    fontWeight: 800,
-    color: COLORS.heading,
-    marginBottom: 6,
-  };
-}
-
-function inputStyle(): React.CSSProperties {
-  return {
-    width: "100%",
-    padding: 12,
-    borderRadius: 14,
-    border: `1px solid ${COLORS.border}`,
-    background: "#FFFDFC",
-    color: COLORS.text,
-    outline: "none",
-    boxSizing: "border-box",
-  };
-}
-
-function textareaStyle(minHeight = 90): React.CSSProperties {
-  return {
-    ...inputStyle(),
-    minHeight,
-    resize: "vertical",
-  };
-}
-
-function smallCardStyle(): React.CSSProperties {
-  return {
-    background: COLORS.panelAlt,
-    border: `1px solid ${COLORS.borderSoft}`,
-    borderRadius: 18,
-    padding: 14,
-  };
-}
+import {
+  ORCHARD_COLORS as COLORS,
+  orchardShellStyle,
+  orchardWrapStyle,
+  orchardCardStyle,
+  orchardSoftCardStyle,
+  orchardLabelTitleStyle,
+  orchardInputStyle,
+  orchardTextareaStyle,
+} from "./orchardUi";
 
 export default function InputsPage() {
   const navigate = useNavigate();
@@ -95,11 +18,11 @@ export default function InputsPage() {
   const patch = useLessonStore((s) => s.setInput);
 
   return (
-    <div style={shellStyle()}>
-      <div style={wrapStyle()}>
+    <div style={orchardShellStyle()}>
+      <div style={orchardWrapStyle()}>
         <div
           style={{
-            ...cardStyle(),
+            ...orchardCardStyle(),
             background: "linear-gradient(135deg, #FFF8EF 0%, #F7F1E8 100%)",
           }}
         >
@@ -145,7 +68,7 @@ export default function InputsPage() {
               </div>
             </div>
 
-            <div style={{ ...smallCardStyle(), minWidth: 260 }}>
+            <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 260 }}>
               <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 8 }}>
                 What happens next
               </div>
@@ -159,7 +82,7 @@ export default function InputsPage() {
           </div>
         </div>
 
-        <div style={cardStyle()}>
+        <div style={orchardCardStyle()}>
           <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 14 }}>
             Lesson Inputs
           </div>
@@ -171,12 +94,12 @@ export default function InputsPage() {
               gap: 14,
             }}
           >
-            <label style={fieldLabelStyle()}>
-              <div style={labelTitleStyle()}>Grade</div>
+            <label style={{ display: "block" }}>
+              <div style={orchardLabelTitleStyle()}>Grade</div>
               <select
                 value={input.grade ?? "K"}
                 onChange={(e) => patch({ grade: e.target.value as any })}
-                style={inputStyle()}
+                style={orchardInputStyle()}
               >
                 <option value="K">K</option>
                 <option value="1">1</option>
@@ -187,12 +110,12 @@ export default function InputsPage() {
               </select>
             </label>
 
-            <label style={fieldLabelStyle()}>
-              <div style={labelTitleStyle()}>Subject</div>
+            <label style={{ display: "block" }}>
+              <div style={orchardLabelTitleStyle()}>Subject</div>
               <select
                 value={input.subject ?? "ELA"}
                 onChange={(e) => patch({ subject: e.target.value as any })}
-                style={inputStyle()}
+                style={orchardInputStyle()}
               >
                 <option value="ELA">ELA</option>
                 <option value="Math">Math</option>
@@ -201,80 +124,80 @@ export default function InputsPage() {
               </select>
             </label>
 
-            <label style={fieldLabelStyle()}>
-              <div style={labelTitleStyle()}>Date</div>
+            <label style={{ display: "block" }}>
+              <div style={orchardLabelTitleStyle()}>Date</div>
               <input
                 type="date"
                 value={input.date ?? ""}
                 onChange={(e) => patch({ date: e.target.value })}
-                style={inputStyle()}
+                style={orchardInputStyle()}
               />
             </label>
 
-            <label style={fieldLabelStyle()}>
-              <div style={labelTitleStyle()}>Duration (minutes)</div>
+            <label style={{ display: "block" }}>
+              <div style={orchardLabelTitleStyle()}>Duration (minutes)</div>
               <input
                 type="number"
                 min={1}
                 value={input.durationMinutes ?? 60}
                 onChange={(e) => patch({ durationMinutes: Number(e.target.value || 60) })}
-                style={inputStyle()}
+                style={orchardInputStyle()}
               />
             </label>
 
-            <label style={{ ...fieldLabelStyle(), gridColumn: "1 / -1" }}>
-              <div style={labelTitleStyle()}>Lesson Title</div>
+            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+              <div style={orchardLabelTitleStyle()}>Lesson Title</div>
               <input
                 value={input.lessonTitle ?? ""}
                 onChange={(e) => patch({ lessonTitle: e.target.value })}
-                style={inputStyle()}
+                style={orchardInputStyle()}
                 placeholder="e.g., CVC Words"
               />
             </label>
 
-            <label style={{ ...fieldLabelStyle(), gridColumn: "1 / -1" }}>
-              <div style={labelTitleStyle()}>Objective</div>
+            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+              <div style={orchardLabelTitleStyle()}>Objective</div>
               <input
                 value={input.objective ?? ""}
                 onChange={(e) => patch({ objective: e.target.value })}
-                style={inputStyle()}
+                style={orchardInputStyle()}
                 placeholder="Students will..."
               />
             </label>
 
-            <label style={{ ...fieldLabelStyle(), gridColumn: "1 / -1" }}>
-              <div style={labelTitleStyle()}>Essential Question (optional)</div>
+            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+              <div style={orchardLabelTitleStyle()}>Essential Question (optional)</div>
               <input
                 value={input.essentialQuestion ?? ""}
                 onChange={(e) => patch({ essentialQuestion: e.target.value })}
-                style={inputStyle()}
+                style={orchardInputStyle()}
                 placeholder="e.g., How can we tell where a story takes place?"
               />
             </label>
 
-            <label style={{ ...fieldLabelStyle(), gridColumn: "1 / -1" }}>
-              <div style={labelTitleStyle()}>Text / Topic</div>
+            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+              <div style={orchardLabelTitleStyle()}>Text / Topic</div>
               <textarea
                 value={input.textOrTopic ?? ""}
                 onChange={(e) => patch({ textOrTopic: e.target.value })}
-                style={textareaStyle(100)}
+                style={orchardTextareaStyle(100)}
                 placeholder="What is the lesson about? (decodable, skill, topic, etc.)"
               />
             </label>
 
-            <label style={{ ...fieldLabelStyle(), gridColumn: "1 / -1" }}>
-              <div style={labelTitleStyle()}>Materials (optional)</div>
+            <label style={{ display: "block", gridColumn: "1 / -1" }}>
+              <div style={orchardLabelTitleStyle()}>Materials (optional)</div>
               <textarea
                 value={input.materials ?? ""}
                 onChange={(e) => patch({ materials: e.target.value })}
-                style={textareaStyle(80)}
+                style={orchardTextareaStyle(80)}
                 placeholder="Books, decodables, whiteboards, counters, etc."
               />
             </label>
           </div>
         </div>
 
-        <div style={cardStyle()}>
+        <div style={orchardCardStyle()}>
           <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 6 }}>
             Group Notes (optional)
           </div>
@@ -289,45 +212,45 @@ export default function InputsPage() {
               gap: 14,
             }}
           >
-            <label style={fieldLabelStyle()}>
-              <div style={labelTitleStyle()}>Tier 3</div>
+            <label style={{ display: "block" }}>
+              <div style={orchardLabelTitleStyle()}>Tier 3</div>
               <textarea
                 value={input.groupNotes?.tier3 ?? ""}
                 onChange={(e) => patch({ groupNotes: { ...(input.groupNotes ?? {}), tier3: e.target.value } })}
-                style={textareaStyle(90)}
+                style={orchardTextareaStyle(90)}
               />
             </label>
 
-            <label style={fieldLabelStyle()}>
-              <div style={labelTitleStyle()}>Tier 2</div>
+            <label style={{ display: "block" }}>
+              <div style={orchardLabelTitleStyle()}>Tier 2</div>
               <textarea
                 value={input.groupNotes?.tier2 ?? ""}
                 onChange={(e) => patch({ groupNotes: { ...(input.groupNotes ?? {}), tier2: e.target.value } })}
-                style={textareaStyle(90)}
+                style={orchardTextareaStyle(90)}
               />
             </label>
 
-            <label style={fieldLabelStyle()}>
-              <div style={labelTitleStyle()}>On Level</div>
+            <label style={{ display: "block" }}>
+              <div style={orchardLabelTitleStyle()}>On Level</div>
               <textarea
                 value={input.groupNotes?.onLevel ?? ""}
                 onChange={(e) => patch({ groupNotes: { ...(input.groupNotes ?? {}), onLevel: e.target.value } })}
-                style={textareaStyle(90)}
+                style={orchardTextareaStyle(90)}
               />
             </label>
 
-            <label style={fieldLabelStyle()}>
-              <div style={labelTitleStyle()}>Enrichment</div>
+            <label style={{ display: "block" }}>
+              <div style={orchardLabelTitleStyle()}>Enrichment</div>
               <textarea
                 value={input.groupNotes?.enrichment ?? ""}
                 onChange={(e) => patch({ groupNotes: { ...(input.groupNotes ?? {}), enrichment: e.target.value } })}
-                style={textareaStyle(90)}
+                style={orchardTextareaStyle(90)}
               />
             </label>
           </div>
         </div>
 
-        <div style={cardStyle()}>
+        <div style={orchardCardStyle()}>
           <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 6 }}>
             Standards
           </div>
@@ -335,8 +258,8 @@ export default function InputsPage() {
             Leave this blank to let the app auto-detect Florida B.E.S.T. standards from the lesson details.
           </div>
 
-          <label style={fieldLabelStyle()}>
-            <div style={labelTitleStyle()}>Manual Standard Override (optional)</div>
+          <label style={{ display: "block" }}>
+            <div style={orchardLabelTitleStyle()}>Manual Standard Override (optional)</div>
             <input
               value={(input.manualStandardOverride ?? []).join(", ")}
               onChange={(e) =>
@@ -347,7 +270,7 @@ export default function InputsPage() {
                     .filter(Boolean),
                 })
               }
-              style={inputStyle()}
+              style={orchardInputStyle()}
               placeholder="ELA.K.R.1.1, ELA.K.F.2.1 ..."
             />
           </label>
@@ -355,7 +278,7 @@ export default function InputsPage() {
 
         <div
           style={{
-            ...cardStyle(),
+            ...orchardCardStyle(),
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",

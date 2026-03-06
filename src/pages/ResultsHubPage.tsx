@@ -9,30 +9,15 @@ import {
   getRotationPlanItems,
   getInterventions,
 } from "../engine/packageCompat";
-
 import { K_ELA_BEST_DATASET } from "../engine/standards/data/k_ela_best_dataset";
-
-const COLORS = {
-  page: "#F7F1E8",
-  panel: "#FFFDF9",
-  panelAlt: "#F9F4EC",
-  border: "#D8CBB8",
-  borderSoft: "#E8DDD0",
-  text: "#2F2A24",
-  muted: "#6F655B",
-  heading: "#314B3A",
-  accent: "#6E8B5E",
-  accentDark: "#4E6542",
-  blush: "#D9A58F",
-  honey: "#E8C47A",
-  info: "#EAF2FB",
-  infoBorder: "#BDD0E6",
-  success: "#EEF5EA",
-  successBorder: "#C9DABD",
-  warn: "#FFF6E8",
-  warnBorder: "#E9D3A5",
-  shadow: "rgba(73, 52, 33, 0.08)",
-};
+import {
+  ORCHARD_COLORS as COLORS,
+  orchardShellStyle,
+  orchardWrapStyle,
+  orchardCardStyle,
+  orchardSoftCardStyle,
+  orchardPillStyle,
+} from "./orchardUi";
 
 function percent(conf: any) {
   const n = Number(conf);
@@ -67,57 +52,6 @@ function readBlueprint() {
   }
 }
 
-function pageShellStyle(): React.CSSProperties {
-  return {
-    minHeight: "100vh",
-    background: COLORS.page,
-    color: COLORS.text,
-  };
-}
-
-function contentWrapStyle(): React.CSSProperties {
-  return {
-    maxWidth: 1080,
-    margin: "0 auto",
-    padding: 24,
-  };
-}
-
-function sectionCardStyle(): React.CSSProperties {
-  return {
-    background: COLORS.panel,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 22,
-    padding: 18,
-    boxShadow: `0 8px 24px ${COLORS.shadow}`,
-    marginBottom: 18,
-  };
-}
-
-function softCardStyle(background = COLORS.panelAlt): React.CSSProperties {
-  return {
-    background,
-    border: `1px solid ${COLORS.borderSoft}`,
-    borderRadius: 18,
-    padding: 14,
-  };
-}
-
-function pillStyle(background: string, border: string): React.CSSProperties {
-  return {
-    display: "inline-block",
-    padding: "6px 10px",
-    borderRadius: 999,
-    background,
-    border: `1px solid ${border}`,
-    fontSize: 12,
-    fontWeight: 700,
-    color: COLORS.text,
-    marginRight: 8,
-    marginBottom: 8,
-  };
-}
-
 function Section({
   title,
   defaultOpen,
@@ -128,7 +62,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <details open={!!defaultOpen} style={sectionCardStyle()}>
+    <details open={!!defaultOpen} style={orchardCardStyle()}>
       <summary
         style={{
           cursor: "pointer",
@@ -165,7 +99,7 @@ function BlueprintInsights() {
     <div>
       <div
         style={{
-          ...softCardStyle(),
+          ...orchardSoftCardStyle(),
           marginBottom: 14,
           background: "linear-gradient(135deg, #FFF8EF 0%, #F8F1E6 100%)",
         }}
@@ -179,10 +113,10 @@ function BlueprintInsights() {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <span style={pillStyle(COLORS.info, COLORS.infoBorder)}>Applied framework: {frameworkApplied}</span>
-        <span style={pillStyle(COLORS.success, COLORS.successBorder)}>Curriculum items: {curriculumItems.length}</span>
-        <span style={pillStyle(COLORS.warn, COLORS.warnBorder)}>Presenter cues: {cueItems.length}</span>
-        <span style={pillStyle("#F4EDF8", "#D7C6E4")}>Planned slides: {plannedSlides.length}</span>
+        <span style={orchardPillStyle(COLORS.info, COLORS.infoBorder)}>Applied framework: {frameworkApplied}</span>
+        <span style={orchardPillStyle(COLORS.success, COLORS.successBorder)}>Curriculum items: {curriculumItems.length}</span>
+        <span style={orchardPillStyle(COLORS.warn, COLORS.warnBorder)}>Presenter cues: {cueItems.length}</span>
+        <span style={orchardPillStyle("#F4EDF8", "#D7C6E4")}>Planned slides: {plannedSlides.length}</span>
       </div>
 
       <div
@@ -193,7 +127,7 @@ function BlueprintInsights() {
           marginBottom: 14,
         }}
       >
-        <div style={{ ...softCardStyle(COLORS.info), border: `1px solid ${COLORS.infoBorder}` }}>
+        <div style={{ ...orchardSoftCardStyle(COLORS.info), border: `1px solid ${COLORS.infoBorder}` }}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Framework</div>
           <div style={{ fontSize: 14, marginBottom: 4 }}><b>Applied:</b> {frameworkApplied}</div>
           <div style={{ fontSize: 14 }}>
@@ -201,7 +135,7 @@ function BlueprintInsights() {
           </div>
         </div>
 
-        <div style={{ ...softCardStyle(COLORS.success), border: `1px solid ${COLORS.successBorder}` }}>
+        <div style={{ ...orchardSoftCardStyle(COLORS.success), border: `1px solid ${COLORS.successBorder}` }}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Curriculum Used</div>
           {curriculumItems.length ? (
             <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -214,7 +148,7 @@ function BlueprintInsights() {
           )}
         </div>
 
-        <div style={{ ...softCardStyle(COLORS.warn), border: `1px solid ${COLORS.warnBorder}` }}>
+        <div style={{ ...orchardSoftCardStyle(COLORS.warn), border: `1px solid ${COLORS.warnBorder}` }}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Exemplar Cues Used</div>
           {cueItems.length ? (
             <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -228,7 +162,7 @@ function BlueprintInsights() {
         </div>
       </div>
 
-      <div style={{ ...softCardStyle(), marginBottom: 14 }}>
+      <div style={{ ...orchardSoftCardStyle(), marginBottom: 14 }}>
         <div style={{ fontWeight: 800, marginBottom: 8, color: COLORS.heading }}>Why this lesson changed</div>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.55 }}>
           <li style={{ marginBottom: 6 }}>
@@ -259,7 +193,7 @@ function BlueprintInsights() {
           marginBottom: 14,
         }}
       >
-        <div style={softCardStyle()}>
+        <div style={orchardSoftCardStyle()}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Source Files</div>
           <div style={{ fontSize: 14, marginBottom: 6 }}>
             <b>Curriculum files:</b> {curriculumFiles.join(", ") || "none"}
@@ -269,7 +203,7 @@ function BlueprintInsights() {
           </div>
         </div>
 
-        <div style={softCardStyle()}>
+        <div style={orchardSoftCardStyle()}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Planned Slide Skeleton</div>
           {plannedSlides.length ? (
             <ol style={{ margin: 0, paddingLeft: 18 }}>
@@ -284,7 +218,7 @@ function BlueprintInsights() {
       </div>
 
       {synthesisNotes && (
-        <div style={softCardStyle()}>
+        <div style={orchardSoftCardStyle()}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Blueprint Notes</div>
           <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{synthesisNotes}</div>
         </div>
@@ -321,9 +255,9 @@ export default function ResultsHubPage() {
 
   if (!pkg) {
     return (
-      <div style={pageShellStyle()}>
-        <div style={contentWrapStyle()}>
-          <div style={sectionCardStyle()}>
+      <div style={orchardShellStyle()}>
+        <div style={orchardWrapStyle()}>
+          <div style={orchardCardStyle()}>
             <h1 style={{ marginTop: 0, marginBottom: 10, color: COLORS.heading }}>Results Hub</h1>
             <p style={{ opacity: 0.9, color: COLORS.muted }}>
               No generated lesson found yet. Go back and run the flow again.
@@ -381,11 +315,11 @@ export default function ResultsHubPage() {
   }
 
   return (
-    <div style={pageShellStyle()}>
-      <div style={contentWrapStyle()}>
+    <div style={orchardShellStyle()}>
+      <div style={orchardWrapStyle()}>
         <div
           style={{
-            ...sectionCardStyle(),
+            ...orchardCardStyle(),
             background: "linear-gradient(135deg, #FFF8EF 0%, #F7F1E8 100%)",
             overflow: "hidden",
           }}
@@ -430,7 +364,7 @@ export default function ResultsHubPage() {
               </div>
             </div>
 
-            <div style={{ ...softCardStyle("#FFFDF9"), minWidth: 260 }}>
+            <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 260 }}>
               <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Lesson Snapshot</div>
               <div style={{ color: COLORS.text, fontSize: 14, lineHeight: 1.6 }}>
                 <div><b>Slides:</b> {slides.length}</div>
@@ -442,7 +376,7 @@ export default function ResultsHubPage() {
           </div>
         </div>
 
-        <div style={sectionCardStyle()}>
+        <div style={orchardCardStyle()}>
           <div style={{ fontWeight: 900, marginBottom: 12, color: COLORS.heading, fontSize: 18 }}>Exports</div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <button
@@ -513,7 +447,7 @@ export default function ResultsHubPage() {
           )}
         </div>
 
-        <div style={sectionCardStyle()}>
+        <div style={orchardCardStyle()}>
           {standards.length === 0 ? (
             <div style={{ fontWeight: 800 }}>Standards: (none detected yet — check inputs or add an override)</div>
           ) : (
@@ -527,7 +461,7 @@ export default function ResultsHubPage() {
               <div style={{ opacity: 0.95, marginBottom: 12, lineHeight: 1.55 }}>{short(primary?.label)}</div>
 
               {supporting.length > 0 && (
-                <div style={{ ...softCardStyle(), marginBottom: 10 }}>
+                <div style={{ ...orchardSoftCardStyle(), marginBottom: 10 }}>
                   <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading }}>Supporting</div>
                   <ul style={{ margin: 0, paddingLeft: 18 }}>
                     {supporting.map((s: any, i: number) => (
@@ -562,7 +496,7 @@ export default function ResultsHubPage() {
           ) : (
             <div style={{ display: "grid", gap: 12 }}>
               {lessonPlan.map((sec: any, i: number) => (
-                <div key={i} style={softCardStyle()}>
+                <div key={i} style={orchardSoftCardStyle()}>
                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 17 }}>
                     {sec?.heading ?? `Section ${i + 1}`}
                   </div>
@@ -592,7 +526,7 @@ export default function ResultsHubPage() {
               }}
             >
               {slides.map((s: any, i: number) => (
-                <div key={i} style={softCardStyle()}>
+                <div key={i} style={orchardSoftCardStyle()}>
                   <div style={{ fontSize: 12, fontWeight: 800, color: COLORS.blush, marginBottom: 6 }}>
                     Slide {i + 1}
                   </div>
@@ -620,7 +554,7 @@ export default function ResultsHubPage() {
           ) : (
             <div style={{ display: "grid", gap: 12 }}>
               {centers.map((c: any, i: number) => (
-                <div key={i} style={softCardStyle()}>
+                <div key={i} style={orchardSoftCardStyle()}>
                   <div style={{ fontWeight: 900, color: COLORS.heading }}>
                     {c?.title ?? c?.name ?? `Center ${i + 1}`}
                   </div>
@@ -651,7 +585,7 @@ export default function ResultsHubPage() {
           ) : (
             <div style={{ display: "grid", gap: 12 }}>
               {rotationPlan.map((r: any, i: number) => (
-                <div key={i} style={softCardStyle()}>
+                <div key={i} style={orchardSoftCardStyle()}>
                   <div style={{ fontWeight: 800, color: COLORS.heading }}>
                     {r?.title ?? `Rotation ${i + 1}`}
                   </div>
@@ -672,7 +606,7 @@ export default function ResultsHubPage() {
               gap: 12,
             }}
           >
-            <div style={softCardStyle()}>
+            <div style={orchardSoftCardStyle()}>
               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Tier 3</h3>
               {tier3.length ? (
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -687,7 +621,7 @@ export default function ResultsHubPage() {
               )}
             </div>
 
-            <div style={softCardStyle()}>
+            <div style={orchardSoftCardStyle()}>
               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Tier 2</h3>
               {tier2.length ? (
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -702,7 +636,7 @@ export default function ResultsHubPage() {
               )}
             </div>
 
-            <div style={softCardStyle()}>
+            <div style={orchardSoftCardStyle()}>
               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Enrichment</h3>
               {enrichment.length ? (
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
