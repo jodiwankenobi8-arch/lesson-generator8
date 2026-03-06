@@ -9,9 +9,14 @@ import {
   orchardShellStyle,
   orchardWrapStyle,
   orchardCardStyle,
+  orchardHeroCardStyle,
   orchardSoftCardStyle,
   orchardLabelTitleStyle,
+  orchardSectionTitleStyle,
+  orchardHelpTextStyle,
   orchardTextareaStyle,
+  orchardPrimaryButtonStyle,
+  orchardLinkStyle,
 } from "./orchardUi";
 
 export default function MaterialsPage() {
@@ -67,12 +72,7 @@ export default function MaterialsPage() {
   return (
     <div style={orchardShellStyle()}>
       <div style={orchardWrapStyle()}>
-        <div
-          style={{
-            ...orchardCardStyle(),
-            background: "linear-gradient(135deg, #FFF8EF 0%, #F7F1E8 100%)",
-          }}
-        >
+        <div style={orchardHeroCardStyle()}>
           <div
             style={{
               display: "flex",
@@ -110,7 +110,7 @@ export default function MaterialsPage() {
                 Add curriculum and exemplar materials
               </h1>
 
-              <div style={{ color: COLORS.muted, fontSize: 15, lineHeight: 1.55 }}>
+              <div style={{ ...orchardHelpTextStyle(), fontSize: 15 }}>
                 Upload the materials that should shape the lesson structure, wording, pacing, and teacher cues.
               </div>
 
@@ -148,7 +148,7 @@ export default function MaterialsPage() {
               The Inputs page is missing required fields: <b>Lesson Title</b>, <b>Objective</b>, and <b>Text / Topic</b>.
             </div>
             <div style={{ marginTop: 10 }}>
-              <Link to="/" style={{ color: COLORS.accentDark, fontWeight: 700 }}>
+              <Link to="/" style={orchardLinkStyle()}>
                 Go back to Inputs
               </Link>
             </div>
@@ -156,9 +156,7 @@ export default function MaterialsPage() {
         )}
 
         <div style={orchardCardStyle()}>
-          <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 14 }}>
-            New Lesson Materials + Exemplars
-          </div>
+          <div style={orchardSectionTitleStyle()}>New Lesson Materials + Exemplars</div>
 
           <div
             style={{
@@ -206,10 +204,8 @@ export default function MaterialsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 6 }}>
-            Lesson Notes (optional)
-          </div>
-          <div style={{ color: COLORS.muted, marginBottom: 12, lineHeight: 1.5 }}>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Lesson Notes (optional)</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
             Add pacing notes, routines, constraints, or anything the Blueprint should keep in mind while generating.
           </div>
 
@@ -246,7 +242,7 @@ export default function MaterialsPage() {
             flexWrap: "wrap",
           }}
         >
-          <div style={{ color: COLORS.muted, lineHeight: 1.55 }}>
+          <div style={orchardHelpTextStyle()}>
             Status: <b>{status}</b> | Materials files: <b>{materialsPack.length}</b> | Exemplar files: <b>{exemplarPack.length}</b>
           </div>
 
@@ -254,22 +250,14 @@ export default function MaterialsPage() {
             <button
               onClick={onBuildAndGenerate}
               disabled={busy || status === "generating" || missingBasics}
-              style={{
-                padding: "12px 16px",
-                borderRadius: 14,
-                border: `1px solid ${COLORS.accent}`,
-                background: COLORS.accent,
-                color: "#fff",
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
+              style={orchardPrimaryButtonStyle(busy || status === "generating" || missingBasics)}
             >
               {busy || status === "generating"
                 ? "Building + Generating..."
                 : "Build Blueprint + Generate Lesson + Open Results ?"}
             </button>
 
-            <Link to="/" style={{ color: COLORS.accentDark, fontWeight: 700 }}>
+            <Link to="/" style={orchardLinkStyle()}>
               Back to Inputs
             </Link>
           </div>

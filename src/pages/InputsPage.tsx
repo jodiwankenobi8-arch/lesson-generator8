@@ -6,10 +6,14 @@ import {
   orchardShellStyle,
   orchardWrapStyle,
   orchardCardStyle,
+  orchardHeroCardStyle,
   orchardSoftCardStyle,
+  orchardSectionTitleStyle,
   orchardLabelTitleStyle,
+  orchardHelpTextStyle,
   orchardInputStyle,
   orchardTextareaStyle,
+  orchardPrimaryButtonStyle,
 } from "./orchardUi";
 
 export default function InputsPage() {
@@ -20,12 +24,7 @@ export default function InputsPage() {
   return (
     <div style={orchardShellStyle()}>
       <div style={orchardWrapStyle()}>
-        <div
-          style={{
-            ...orchardCardStyle(),
-            background: "linear-gradient(135deg, #FFF8EF 0%, #F7F1E8 100%)",
-          }}
-        >
+        <div style={orchardHeroCardStyle()}>
           <div
             style={{
               display: "flex",
@@ -41,8 +40,8 @@ export default function InputsPage() {
                   display: "inline-block",
                   padding: "6px 10px",
                   borderRadius: 999,
-                  background: "#EEF5EA",
-                  border: "1px solid #C9DABD",
+                  background: COLORS.accentSoft,
+                  border: `1px solid ${COLORS.successBorder}`,
                   fontSize: 12,
                   fontWeight: 800,
                   color: COLORS.accentDark,
@@ -63,7 +62,7 @@ export default function InputsPage() {
                 Build a lesson from teacher inputs
               </h1>
 
-              <div style={{ color: COLORS.muted, fontSize: 15, lineHeight: 1.55 }}>
+              <div style={{ ...orchardHelpTextStyle(), fontSize: 15 }}>
                 Start with the core lesson plan. You’ll upload curriculum and exemplar materials on the next step.
               </div>
             </div>
@@ -83,9 +82,7 @@ export default function InputsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 14 }}>
-            Lesson Inputs
-          </div>
+          <div style={orchardSectionTitleStyle()}>Lesson Inputs</div>
 
           <div
             style={{
@@ -198,10 +195,8 @@ export default function InputsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 6 }}>
-            Group Notes (optional)
-          </div>
-          <div style={{ color: COLORS.muted, marginBottom: 14, lineHeight: 1.5 }}>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Group Notes (optional)</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
             Capture what each group can do now, where they need support, or how you want to differentiate.
           </div>
 
@@ -251,10 +246,8 @@ export default function InputsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ fontWeight: 900, fontSize: 20, color: COLORS.heading, marginBottom: 6 }}>
-            Standards
-          </div>
-          <div style={{ color: COLORS.muted, marginBottom: 12, lineHeight: 1.5 }}>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
             Leave this blank to let the app auto-detect Florida B.E.S.T. standards from the lesson details.
           </div>
 
@@ -286,21 +279,13 @@ export default function InputsPage() {
             flexWrap: "wrap",
           }}
         >
-          <div style={{ color: COLORS.muted, lineHeight: 1.5 }}>
+          <div style={orchardHelpTextStyle()}>
             When you continue, you’ll upload lesson materials and exemplars that can change the lesson structure and wording.
           </div>
 
           <button
             onClick={() => navigate("/materials")}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 14,
-              border: `1px solid ${COLORS.accent}`,
-              background: COLORS.accent,
-              color: "#fff",
-              fontWeight: 800,
-              cursor: "pointer",
-            }}
+            style={orchardPrimaryButtonStyle(false)}
           >
             Continue to Materials Upload ?
           </button>

@@ -15,8 +15,14 @@ import {
   orchardShellStyle,
   orchardWrapStyle,
   orchardCardStyle,
+  orchardHeroCardStyle,
   orchardSoftCardStyle,
   orchardPillStyle,
+  orchardSectionTitleStyle,
+  orchardHelpTextStyle,
+  orchardPrimaryButtonStyle,
+  orchardSecondaryButtonStyle,
+  orchardLinkStyle,
 } from "./orchardUi";
 
 function percent(conf: any) {
@@ -107,7 +113,7 @@ function BlueprintInsights() {
         <div style={{ fontWeight: 900, fontSize: 18, color: COLORS.heading, marginBottom: 8 }}>
           Blueprint Influence Summary
         </div>
-        <div style={{ color: COLORS.muted, lineHeight: 1.5 }}>
+        <div style={{ ...orchardHelpTextStyle() }}>
           This explains what the system used from your lesson plan, uploaded curriculum, and exemplar cues to shape the lesson package.
         </div>
       </div>
@@ -262,7 +268,7 @@ export default function ResultsHubPage() {
             <p style={{ opacity: 0.9, color: COLORS.muted }}>
               No generated lesson found yet. Go back and run the flow again.
             </p>
-            <Link to="/" style={{ color: COLORS.accentDark, fontWeight: 700 }}>
+            <Link to="/" style={orchardLinkStyle()}>
               Back to Inputs
             </Link>
           </div>
@@ -317,13 +323,7 @@ export default function ResultsHubPage() {
   return (
     <div style={orchardShellStyle()}>
       <div style={orchardWrapStyle()}>
-        <div
-          style={{
-            ...orchardCardStyle(),
-            background: "linear-gradient(135deg, #FFF8EF 0%, #F7F1E8 100%)",
-            overflow: "hidden",
-          }}
-        >
+        <div style={orchardHeroCardStyle()}>
           <div
             style={{
               display: "flex",
@@ -377,20 +377,12 @@ export default function ResultsHubPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ fontWeight: 900, marginBottom: 12, color: COLORS.heading, fontSize: 18 }}>Exports</div>
+          <div style={orchardSectionTitleStyle()}>Exports</div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <button
               onClick={() => runExport("pptx")}
               disabled={busy !== null}
-              style={{
-                padding: "11px 15px",
-                borderRadius: 14,
-                border: `1px solid ${COLORS.accent}`,
-                background: COLORS.accent,
-                color: "#fff",
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
+              style={orchardPrimaryButtonStyle(busy !== null)}
             >
               {busy === "pptx" ? "Exporting PPTX..." : "Export PPTX"}
             </button>
@@ -398,15 +390,7 @@ export default function ResultsHubPage() {
             <button
               onClick={() => runExport("docx")}
               disabled={busy !== null}
-              style={{
-                padding: "11px 15px",
-                borderRadius: 14,
-                border: `1px solid ${COLORS.border}`,
-                background: COLORS.panelAlt,
-                color: COLORS.text,
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
+              style={orchardSecondaryButtonStyle(busy !== null)}
             >
               {busy === "docx" ? "Exporting DOCX..." : "Export DOCX"}
             </button>
@@ -414,20 +398,12 @@ export default function ResultsHubPage() {
             <button
               onClick={() => runExport("zip")}
               disabled={busy !== null}
-              style={{
-                padding: "11px 15px",
-                borderRadius: 14,
-                border: `1px solid ${COLORS.border}`,
-                background: "#FFF7EC",
-                color: COLORS.text,
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
+              style={orchardSecondaryButtonStyle(busy !== null)}
             >
               {busy === "zip" ? "Exporting ZIP..." : "Full Export (ZIP)"}
             </button>
 
-            <Link to="/" style={{ color: COLORS.accentDark, fontWeight: 700, marginLeft: 4 }}>
+            <Link to="/" style={{ ...orchardLinkStyle(), marginLeft: 4 }}>
               Back to Inputs
             </Link>
           </div>
