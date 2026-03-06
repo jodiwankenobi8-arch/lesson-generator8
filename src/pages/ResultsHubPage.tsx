@@ -165,7 +165,7 @@ function BlueprintInsights() {
           </li>
           <li style={{ marginBottom: 6 }}>
             {curriculumItems.length
-              ? `Curriculum titles are being used to shape teacher plan language, slide bullets, and center directions.`
+              ? "Curriculum titles are being used to shape teacher plan language, slide bullets, and center directions."
               : "No curriculum checklist items were available, so wording falls back to default lesson language."}
           </li>
           <li>
