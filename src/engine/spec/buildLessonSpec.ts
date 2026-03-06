@@ -97,7 +97,7 @@ export function buildLessonSpec(input: LessonInput, blueprint?: LessonBlueprint 
 
   if (frameworkApplied === "guidepost") {
     teacherNoteAdditions.discussion = [...(teacherNoteAdditions.discussion || []), "Use a bridge or connection moment before direct teaching."];
-    teacherNoteAdditions.exit-ticket = [...(teacherNoteAdditions["exit-ticket"] || []), "Close with reflection tied to the guidepost structure."];
+    teacherNoteAdditions["exit-ticket"] = [...(teacherNoteAdditions["exit-ticket"] || []), "Close with reflection tied to the guidepost structure."];
   }
 
   const sectionNames = (blueprint.synthesis?.slides || [])
