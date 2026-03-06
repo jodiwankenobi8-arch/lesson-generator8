@@ -1,0 +1,18 @@
+MILESTONE SAVE
+
+Date: 2026-03-06
+
+Confirmed working differences in Results Hub:
+- neither -> 6 slides, 3 centers, default structure
+- curriculum only -> 7 slides, 3 centers, added guided practice structure
+- exemplar only -> 8 slides, 4 centers, hub-style structure
+- curriculum + exemplar -> 8 slides, 4 centers, hub-style structure
+
+Conclusion:
+The generator now materially changes lesson structure based on curriculum and exemplar presence.
+
+Next priorities:
+1. Make curriculum content influence wording/content more deeply, not just structure
+2. Make exemplar framework detection smarter than forced presence
+3. Improve Blueprint Preview so users can clearly see why the structure changed
+4. Improve PPTX export so hub structure is visible in the deck
