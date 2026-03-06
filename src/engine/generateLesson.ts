@@ -13,7 +13,7 @@ import { makeId } from "../utils/makeId";
 import { detectKelaBest } from "./standards/detectKelaBest";
 import { buildLessonSpec } from "./spec/buildLessonSpec";
 
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.4.0";
 
 function computeDetectedStandards(input: LessonInput): DetectedStandard[] {
   if (Array.isArray(input.manualStandardOverride) && input.manualStandardOverride.length > 0) {
