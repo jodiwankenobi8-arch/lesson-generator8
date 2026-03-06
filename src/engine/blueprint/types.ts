@@ -1,6 +1,7 @@
-﻿export type SourceTag = "plan" | "curriculum" | "exemplar" | "ai";
+export type SourceTag = "plan" | "curriculum" | "exemplar" | "ai";
 export type UploadPack = "curriculum" | "exemplar";
 export type FrameworkType = "linear" | "clickableHub" | "guidepost" | "unknown";
+export type SourceRole = "curriculum" | "teachingTool" | "exemplar" | "mixed";
 
 export type PresenterCueType = "timer" | "clicker" | "instruction" | "transition" | "script";
 export type PresenterCue = {
@@ -28,6 +29,7 @@ export type UploadedTextFile = {
   name: string;
   kind: string; // mime or extension
   text?: string;
+  sourceRole?: SourceRole;
 };
 
 export type SlidePlan = {
@@ -47,12 +49,12 @@ export type LessonBlueprint = {
   };
 
   curriculum: {
-    files: { name: string; kind: string }[];
+    files: { name: string; kind: string; sourceRole?: SourceRole }[];
     coverageChecklist: { id: string; title: string; required: boolean; placed: boolean }[];
   };
 
   exemplar: {
-    files: { name: string; kind: string }[];
+    files: { name: string; kind: string; sourceRole?: SourceRole }[];
     frameworkDetection: FrameworkDetection;
     presenterCues: PresenterCue[];
   };

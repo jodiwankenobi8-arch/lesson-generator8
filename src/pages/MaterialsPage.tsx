@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
-import type { UploadedTextFile } from "../engine/blueprint/types";
+import type { UploadedTextFile, SourceRole } from "../engine/blueprint/types";
 import { useLessonStore } from "../state/useLessonStore";
 import { filesToUploaded } from "../utils/readUploadedText";
 import {
@@ -25,16 +25,52 @@ import { WizardProgress } from "./WizardProgress";
 
 const ACCEPT_ATTR = ".txt,.md,.doc,.docx,.pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp";
 
+function inferRoleForSource(item: { name: string; text?: string }, pack: "curriculum" | "exemplar"): SourceRole {
+  const joined = `${item.name} ${item.text ?? ""}`.toLowerCase();
+
+  if (pack === "curriculum") {
+    if (/\b(tool|game|interactive|practice site|resource)\b/.test(joined)) return "teachingTool";
+    return "curriculum";
+  }
+
+  if (/\b(starfall|pbs kids|abcya|boom cards|youtube|video|game|interactive)\b/.test(joined)) {
+    return "teachingTool";
+  }
+
+  if (/\b(model|exemplar|template|lesson flow|teacher guide|routine|slide deck|presentation|framework)\b/.test(joined)) {
+    return "exemplar";
+  }
+
+  if (/\b(decodable|phonics|cvc|story|text|passage|student practice|worksheet|resource)\b/.test(joined)) {
+    return "mixed";
+  }
+
+  return pack === "exemplar" ? "mixed" : "curriculum";
+}
+
+function roleLabel(role?: SourceRole) {
+  if (role === "curriculum") return "Curriculum";
+  if (role === "teachingTool") return "Teaching Tool";
+  if (role === "mixed") return "Mixed / Unsure";
+  return "Exemplar";
+}
+
 function makeUrlItems(raw: string, label: "curriculum" | "exemplar"): UploadedTextFile[] {
   return String(raw || "")
     .split(/\r?\n|,/)
     .map((s) => s.trim())
     .filter(Boolean)
-    .map((url, index) => ({
-      name: `${label}-link-${index + 1}: ${url}`,
-      kind: "url" as any,
-      text: `SOURCE URL: ${url}`,
-    }));
+    .map((url, index) => {
+      const base = {
+        name: `${label}-link-${index + 1}: ${url}`,
+        kind: "url" as any,
+        text: `SOURCE URL: ${url}`,
+      };
+      return {
+        ...base,
+        sourceRole: inferRoleForSource(base, label),
+      };
+    });
 }
 
 function normalizeText(value: string) {
@@ -137,6 +173,7 @@ function buildInfluenceSummary(curriculumItems: UploadedTextFile[], exemplarItem
   const exemplarReal = exemplarItems.filter((item) => item.text && !hasFallbackOnlyText(item)).length;
   const curriculumFallback = curriculumItems.filter((item) => !item.text || hasFallbackOnlyText(item)).length;
   const exemplarFallback = exemplarItems.filter((item) => !item.text || hasFallbackOnlyText(item)).length;
+  const trueExemplarCount = exemplarItems.filter((item) => item.sourceRole === "exemplar").length;
 
   return {
     curriculumInfluence: describeInfluence(curriculumItems),
@@ -145,10 +182,11 @@ function buildInfluenceSummary(curriculumItems: UploadedTextFile[], exemplarItem
     exemplarReal,
     curriculumFallback,
     exemplarFallback,
+    trueExemplarCount,
     overallMessage:
-      curriculumReal + exemplarReal > 0
-        ? "The generator has some real source text to work from, so the lesson should be more grounded than a default-only run."
-        : "Most current sources are filename/type signals only, so generation may still lean on the default framework unless more text-rich sources are added.",
+      trueExemplarCount > 0
+        ? "A true exemplar is present, so the generator may use some structural inspiration from it."
+        : "No strong exemplar was detected, so the generator should lean more on curriculum and the default teacher-led framework.",
   };
 }
 
@@ -185,7 +223,7 @@ function UploadItemCard({
             {item.name}
           </div>
           <div style={{ fontSize: 12, color: COLORS.muted }}>
-            {itemTypeLabel(item)} · {fallbackOnly ? "Fallback note only" : "Text available"}
+            {itemTypeLabel(item)} · {roleLabel(item.sourceRole)} · {fallbackOnly ? "Fallback note only" : "Text available"}
           </div>
         </div>
 
@@ -357,12 +395,18 @@ export default function MaterialsPage() {
 
   async function onPickMaterials(files: FileList | null) {
     const uploaded = await filesToUploaded(files);
-    setMaterialsPack((current) => [...current, ...uploaded]);
+    setMaterialsPack((current) => [
+      ...current,
+      ...uploaded.map((item) => ({ ...item, sourceRole: inferRoleForSource(item, "curriculum") })),
+    ]);
   }
 
   async function onPickExemplar(files: FileList | null) {
     const uploaded = await filesToUploaded(files);
-    setExemplarPack((current) => [...current, ...uploaded]);
+    setExemplarPack((current) => [
+      ...current,
+      ...uploaded.map((item) => ({ ...item, sourceRole: inferRoleForSource(item, "exemplar") })),
+    ]);
   }
 
   function removeCurriculumItem(index: number) {

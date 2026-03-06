@@ -17,15 +17,24 @@ export function buildBlueprint(args: {
     placed: false,
   }));
 
-  const exemplarTextAll = (args.exemplarFiles ?? []).map(f => f.text ?? "").join("\n\n");
-  const frameworkDetection = detectFramework(exemplarTextAll);
-  const presenterCues = args.exemplarFiles.flatMap(f => extractPresenterCues(f.text ?? "", f.name));
+  const trueExemplarFiles = (args.exemplarFiles ?? []).filter(
+    f => (f.sourceRole ?? "exemplar") === "exemplar"
+  );
+  const mixedExemplarFiles = (args.exemplarFiles ?? []).filter(
+    f => (f.sourceRole ?? "exemplar") === "mixed"
+  );
 
-  const hasExemplar = (args.exemplarFiles ?? []).length > 0;
+  const exemplarTextAll = trueExemplarFiles.map(f => f.text ?? "").join("\n\n");
+  const frameworkDetection = detectFramework(exemplarTextAll);
+
+  const presenterCueFiles = [...trueExemplarFiles, ...mixedExemplarFiles];
+  const presenterCues = presenterCueFiles.flatMap(f => extractPresenterCues(f.text ?? "", f.name));
+
+  const hasTrueExemplar = trueExemplarFiles.length > 0;
   const hasCurriculum = curriculumChecklist.length > 0;
 
   const frameworkApplied =
-    hasExemplar
+    hasTrueExemplar
       ? (frameworkDetection.framework !== "linear" ? frameworkDetection.framework : "clickableHub")
       : "linear";
 
@@ -75,11 +84,11 @@ export function buildBlueprint(args: {
     createdAtISO,
     plan: { input: args.plan },
     curriculum: {
-      files: (args.curriculumFiles ?? []).map(f => ({ name: f.name, kind: f.kind })),
+      files: (args.curriculumFiles ?? []).map(f => ({ name: f.name, kind: f.kind, sourceRole: f.sourceRole })),
       coverageChecklist: curriculumChecklist,
     },
     exemplar: {
-      files: (args.exemplarFiles ?? []).map(f => ({ name: f.name, kind: f.kind })),
+      files: (args.exemplarFiles ?? []).map(f => ({ name: f.name, kind: f.kind, sourceRole: f.sourceRole })),
       frameworkDetection,
       presenterCues,
     },
