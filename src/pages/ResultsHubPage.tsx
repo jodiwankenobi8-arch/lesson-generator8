@@ -23,6 +23,9 @@ import {
   orchardPrimaryButtonStyle,
   orchardSecondaryButtonStyle,
   orchardLinkStyle,
+  orchardRibbonHeaderStyle,
+  orchardHeroTitleStyle,
+  orchardStitchDividerStyle,
 } from "./orchardUi";
 import { WizardProgress } from "./WizardProgress";
 
@@ -120,9 +123,9 @@ function BlueprintInsights() {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <span style={orchardPillStyle(COLORS.info, COLORS.infoBorder)}>Applied framework: {frameworkApplied}</span>
-        <span style={orchardPillStyle(COLORS.success, COLORS.successBorder)}>Curriculum items: {curriculumItems.length}</span>
-        <span style={orchardPillStyle(COLORS.warn, COLORS.warnBorder)}>Presenter cues: {cueItems.length}</span>
+        <span style={orchardPillStyle("#EEF5EA", "#BFD6B8")}>Applied framework: {frameworkApplied}</span>
+        <span style={orchardPillStyle("#F2F8FF", "#C9DAEE")}>Curriculum items: {curriculumItems.length}</span>
+        <span style={orchardPillStyle("#FFF6E8", COLORS.warnBorder)}>Presenter cues: {cueItems.length}</span>
         <span style={orchardPillStyle("#F4EDF8", "#D7C6E4")}>Planned slides: {plannedSlides.length}</span>
       </div>
 
@@ -134,7 +137,7 @@ function BlueprintInsights() {
           marginBottom: 14,
         }}
       >
-        <div style={{ ...orchardSoftCardStyle(COLORS.info), border: `1px solid ${COLORS.infoBorder}` }}>
+        <div style={{ ...orchardSoftCardStyle("#F2F8FF"), border: "1px solid #C9DAEE" }}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Framework</div>
           <div style={{ fontSize: 14, marginBottom: 4 }}><b>Applied:</b> {frameworkApplied}</div>
           <div style={{ fontSize: 14 }}>
@@ -142,7 +145,7 @@ function BlueprintInsights() {
           </div>
         </div>
 
-        <div style={{ ...orchardSoftCardStyle(COLORS.success), border: `1px solid ${COLORS.successBorder}` }}>
+        <div style={{ ...orchardSoftCardStyle("#EEF5EA"), border: "1px solid #BFD6B8" }}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Curriculum Used</div>
           {curriculumItems.length ? (
             <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -155,7 +158,7 @@ function BlueprintInsights() {
           )}
         </div>
 
-        <div style={{ ...orchardSoftCardStyle(COLORS.warn), border: `1px solid ${COLORS.warnBorder}` }}>
+        <div style={{ ...orchardSoftCardStyle("#FFF6E8"), border: `1px solid ${COLORS.warnBorder}` }}>
           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Exemplar Cues Used</div>
           {cueItems.length ? (
             <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -425,45 +428,29 @@ export default function ResultsHubPage() {
             style={{
               display: "flex",
               justifyContent: "space-between",
-              gap: 16,
+              gap: 18,
               alignItems: "flex-start",
               flexWrap: "wrap",
             }}
           >
-            <div>
-              <div
-                style={{
-                  display: "inline-block",
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  background: "#EEF5EA",
-                  border: `1px solid ${COLORS.successBorder}`,
-                  fontSize: 12,
-                  fontWeight: 800,
-                  color: COLORS.accentDark,
-                  marginBottom: 10,
-                }}
-              >
-                Results Hub
-              </div>
-              <h1
-                style={{
-                  margin: "0 0 8px 0",
-                  color: COLORS.heading,
-                  fontSize: 34,
-                  lineHeight: 1.1,
-                }}
-              >
+            <div style={{ maxWidth: 720 }}>
+              <div style={orchardRibbonHeaderStyle()}>Results Hub</div>
+              <div style={orchardStitchDividerStyle()} />
+              <h1 style={orchardHeroTitleStyle()}>
                 {(pkg as any)?.input?.lessonTitle ?? "Generated Lesson"}
               </h1>
-              <div style={{ color: COLORS.muted, fontSize: 15, lineHeight: 1.5 }}>
+              <div style={{ ...orchardHelpTextStyle(), fontSize: 15 }}>
+                Review the generated package, scan the standards and blueprint influence, preview the teaching slides,
+                and export the pieces you want to use.
+              </div>
+              <div style={{ marginTop: 10, color: COLORS.muted, fontSize: 14, lineHeight: 1.5 }}>
                 {(pkg as any)?.input?.date ?? ""} | Grade {(pkg as any)?.input?.grade ?? ""} | {(pkg as any)?.input?.subject ?? ""}
               </div>
             </div>
 
-            <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 260 }}>
+            <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 270 }}>
               <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Lesson Snapshot</div>
-              <div style={{ color: COLORS.text, fontSize: 14, lineHeight: 1.6 }}>
+              <div style={{ color: COLORS.text, fontSize: 14, lineHeight: 1.65 }}>
                 <div><b>Slides:</b> {slides.length}</div>
                 <div><b>Centers:</b> {centers.length}</div>
                 <div><b>Lesson plan sections:</b> {lessonPlan.length}</div>
@@ -474,7 +461,11 @@ export default function ResultsHubPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={orchardSectionTitleStyle()}>Exports</div>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Exports</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+            Export only what you need, or download the full lesson package at once.
+          </div>
+
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <button
               onClick={() => runExport("pptx")}
@@ -521,6 +512,11 @@ export default function ResultsHubPage() {
         </div>
 
         <div style={orchardCardStyle()}>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards Snapshot</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+            This shows the primary standard detected for the lesson, along with a few supporting standards when available.
+          </div>
+
           {standards.length === 0 ? (
             <div style={{ fontWeight: 800 }}>Standards: (none detected yet — check inputs or add an override)</div>
           ) : (
