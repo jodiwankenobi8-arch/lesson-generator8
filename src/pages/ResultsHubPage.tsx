@@ -254,6 +254,88 @@ function BlueprintInsights() {
   );
 }
 
+function SlidePreviewCard({
+  slide,
+  index,
+}: {
+  slide: any;
+  index: number;
+}) {
+  const bullets = Array.isArray(slide?.bullets) ? slide.bullets.filter(Boolean) : [];
+  const bodyText = slide?.text || slide?.body || "";
+
+  return (
+    <div
+      style={{
+        background: "#FFFDF9",
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 20,
+        overflow: "hidden",
+        boxShadow: "0 8px 18px rgba(73, 52, 33, 0.06)",
+      }}
+    >
+      <div
+        style={{
+          background: "linear-gradient(135deg, #6E8B5E 0%, #4E6542 100%)",
+          color: "#fff",
+          padding: "12px 14px",
+        }}
+      >
+        <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.9, marginBottom: 4 }}>
+          Slide {index + 1}
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.2 }}>
+          {slide?.title ?? slide?.heading ?? `Slide ${index + 1}`}
+        </div>
+      </div>
+
+      <div style={{ padding: 16 }}>
+        {bullets.length > 0 ? (
+          <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+            {bullets.map((b: any, idx: number) => (
+              <li key={idx} style={{ marginBottom: 6 }}>
+                {String(b)}
+              </li>
+            ))}
+          </ul>
+        ) : bodyText ? (
+          <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+            {String(bodyText)}
+          </div>
+        ) : (
+          <div style={{ color: COLORS.muted, fontStyle: "italic" }}>
+            No preview text on this slide yet.
+          </div>
+        )}
+
+        {slide?.teacherNotes && (
+          <div
+            style={{
+              marginTop: 14,
+              paddingTop: 12,
+              borderTop: `1px solid ${COLORS.borderSoft}`,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 800,
+                color: COLORS.accentDark,
+                marginBottom: 4,
+              }}
+            >
+              Teacher note
+            </div>
+            <div style={{ color: COLORS.muted, lineHeight: 1.5, fontSize: 14 }}>
+              {String(slide.teacherNotes)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ResultsHubPage() {
   const pkg = useLessonStore((s) => s.package);
 
@@ -470,6 +552,28 @@ export default function ResultsHubPage() {
           <BlueprintInsights />
         </Section>
 
+        <Section title="Slide Preview Deck" defaultOpen>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
+            This preview is meant to feel closer to the actual teaching slides, not just a plain text list.
+          </div>
+
+          {slides.length === 0 ? (
+            <div style={{ opacity: 0.8, color: COLORS.muted }}>No slides found in package.</div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gap: 14,
+              }}
+            >
+              {slides.map((slide: any, index: number) => (
+                <SlidePreviewCard key={slide?.id ?? index} slide={slide} index={index} />
+              ))}
+            </div>
+          )}
+        </Section>
+
         <Section title="Teacher Lesson Plan" defaultOpen>
           {lessonPlan.length === 0 ? (
             <div style={{ opacity: 0.8, color: COLORS.muted }}>No lesson plan sections found in package.</div>
@@ -488,40 +592,6 @@ export default function ResultsHubPage() {
                   <div style={{ whiteSpace: "pre-wrap", marginTop: 8, lineHeight: 1.55 }}>
                     {String(sec?.description ?? "")}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Section>
-
-        <Section title={`Slides (Student-facing) — ${slides.length}`}>
-          {slides.length === 0 ? (
-            <div style={{ opacity: 0.8, color: COLORS.muted }}>No slides found in package.</div>
-          ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 12,
-              }}
-            >
-              {slides.map((s: any, i: number) => (
-                <div key={i} style={orchardSoftCardStyle()}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: COLORS.blush, marginBottom: 6 }}>
-                    Slide {i + 1}
-                  </div>
-                  <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 8 }}>
-                    {s?.title ?? s?.heading ?? `Slide ${i + 1}`}
-                  </div>
-                  {Array.isArray(s?.bullets) && s.bullets.length > 0 && (
-                    <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.5 }}>
-                      {s.bullets.map((b: any, idx: number) => (
-                        <li key={idx} style={{ marginBottom: 4 }}>{String(b)}</li>
-                      ))}
-                    </ul>
-                  )}
-                  {s?.text && <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{String(s.text)}</div>}
-                  {s?.body && <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{String(s.body)}</div>}
                 </div>
               ))}
             </div>
