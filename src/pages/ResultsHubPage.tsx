@@ -1,4 +1,4 @@
-ï»¿import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLessonStore } from "../state/useLessonStore";
 import {
@@ -35,62 +35,36 @@ function findLabelByCode(codeRaw: any) {
   return String(found?.label ?? found?.description ?? "");
 }
 
-// ---------- Blueprint Preview (read-only) ----------
-function BlueprintPreviewOnce() {
+function readBlueprint() {
   try {
     const raw = localStorage.getItem("lessonBlueprintV1");
     if (!raw) return null;
-
-    const bp = JSON.parse(raw);
-
-    return (
-      <div style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, marginBottom: 16 }}>
-        <div style={{ fontWeight: 900, marginBottom: 10 }}>Blueprint Preview (PLAN / NEW LESSON MATERIALS / EXEMPLAR / AI)</div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-          <div style={{ border: "1px solid #cfe8ff", borderRadius: 10, padding: 12 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Plan</div>
-            <div style={{ fontSize: 12 }}><b>Title:</b> {bp?.plan?.input?.lessonTitle || "(blank)"}</div>
-            <div style={{ fontSize: 12 }}><b>Objective:</b> {bp?.plan?.input?.objective || "(blank)"}</div>
-          </div>
-
-          <div style={{ border: "1px solid #d8f5d8", borderRadius: 10, padding: 12 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>New Lesson Materials</div>
-            <div style={{ fontSize: 12 }}><b>Files:</b> {(bp?.curriculum?.files || []).map((f: any) => f.name).join(", ") || "none"}</div>
-            <div style={{ fontSize: 12 }}><b>Checklist:</b> {(bp?.curriculum?.coverageChecklist || []).length}</div>
-          </div>
-
-          <div style={{ border: "1px solid #cfeeea", borderRadius: 10, padding: 12 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Exemplar</div>
-            <div style={{ fontSize: 12 }}><b>Files:</b> {(bp?.exemplar?.files || []).map((f: any) => f.name).join(", ") || "none"}</div>
-            <div style={{ fontSize: 12 }}>
-              <b>Framework:</b> {bp?.exemplar?.frameworkDetection?.framework || "unknown"} (
-              {Math.round((bp?.exemplar?.frameworkDetection?.confidence || 0) * 100)}%)
-            </div>
-            <div style={{ fontSize: 12 }}><b>Presenter cues:</b> {(bp?.exemplar?.presenterCues || []).length}</div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 12, border: "1px solid #eee", borderRadius: 10, padding: 12 }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>Synthesis</div>
-          <div style={{ fontSize: 12 }}><b>Slides planned:</b> {(bp?.synthesis?.slides || []).length}</div>
-
-          <details style={{ marginTop: 10 }}>
-            <summary style={{ cursor: "pointer" }}>View raw Blueprint JSON</summary>
-            <pre style={{ whiteSpace: "pre-wrap", fontSize: 12, background: "#fafafa", padding: 12, borderRadius: 10, overflow: "auto" }}>
-              {raw}
-            </pre>
-          </details>
-        </div>
-      </div>
-    );
-  } catch (e: any) {
-    return (
-      <div style={{ border: "1px solid #f5c2c7", borderRadius: 12, padding: 16, marginBottom: 16 }}>
-        <b>Blueprint Preview Error:</b> {e?.message ?? String(e)}
-      </div>
-    );
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
+}
+
+function cardStyle(border: string): React.CSSProperties {
+  return {
+    border: `1px solid ${border}`,
+    borderRadius: 12,
+    padding: 12,
+    background: "#fff",
+  };
+}
+
+function pillStyle(background: string): React.CSSProperties {
+  return {
+    display: "inline-block",
+    padding: "4px 8px",
+    borderRadius: 999,
+    background,
+    fontSize: 12,
+    fontWeight: 700,
+    marginRight: 8,
+    marginBottom: 8,
+  };
 }
 
 function Section({
@@ -109,6 +83,146 @@ function Section({
       </summary>
       <div style={{ paddingTop: 10 }}>{children}</div>
     </details>
+  );
+}
+
+function BlueprintInsights() {
+  const bp = useMemo(() => readBlueprint(), []);
+  if (!bp) {
+    return (
+      <div style={{ opacity: 0.8 }}>
+        No saved Blueprint found for this package yet.
+      </div>
+    );
+  }
+
+  const frameworkApplied = bp?.synthesis?.frameworkApplied || "linear";
+  const detectedFramework = bp?.exemplar?.frameworkDetection?.framework || "unknown";
+  const detectedConfidence = Math.round((bp?.exemplar?.frameworkDetection?.confidence || 0) * 100);
+  const curriculumFiles = (bp?.curriculum?.files || []).map((f: any) => f?.name).filter(Boolean);
+  const exemplarFiles = (bp?.exemplar?.files || []).map((f: any) => f?.name).filter(Boolean);
+  const curriculumItems = (bp?.curriculum?.coverageChecklist || []).map((item: any) => item?.title).filter(Boolean).slice(0, 5);
+  const cueItems = (bp?.exemplar?.presenterCues || []).map((cue: any) => cue?.rawText).filter(Boolean).slice(0, 5);
+  const plannedSlides = (bp?.synthesis?.slides || []).map((slide: any) => slide?.title).filter(Boolean).slice(0, 9);
+  const synthesisNotes = String(bp?.synthesis?.notes || "").trim();
+
+  return (
+    <div style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}>
+      <div style={{ fontWeight: 900, marginBottom: 12 }}>Blueprint Influence Summary</div>
+
+      <div style={{ marginBottom: 12 }}>
+        <span style={pillStyle("#eef6ff")}>Applied framework: {frameworkApplied}</span>
+        <span style={pillStyle("#eefbf2")}>Curriculum items: {curriculumItems.length}</span>
+        <span style={pillStyle("#fff6e8")}>Presenter cues: {cueItems.length}</span>
+        <span style={pillStyle("#f4f1ff")}>Planned slides: {plannedSlides.length}</span>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 12 }}>
+        <div style={cardStyle("#cfe8ff")}>
+          <div style={{ fontWeight: 800, marginBottom: 6 }}>Framework</div>
+          <div style={{ fontSize: 14, marginBottom: 4 }}><b>Applied:</b> {frameworkApplied}</div>
+          <div style={{ fontSize: 14 }}>
+            <b>Detected exemplar pattern:</b> {detectedFramework} ({detectedConfidence}%)
+          </div>
+        </div>
+
+        <div style={cardStyle("#d8f5d8")}>
+          <div style={{ fontWeight: 800, marginBottom: 6 }}>Curriculum Used</div>
+          {curriculumItems.length ? (
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {curriculumItems.map((item: string, i: number) => (
+                <li key={item + i} style={{ marginBottom: 4 }}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <div style={{ opacity: 0.8 }}>No curriculum checklist items found.</div>
+          )}
+        </div>
+
+        <div style={cardStyle("#fff1cc")}>
+          <div style={{ fontWeight: 800, marginBottom: 6 }}>Exemplar Cues Used</div>
+          {cueItems.length ? (
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {cueItems.map((item: string, i: number) => (
+                <li key={item + i} style={{ marginBottom: 4 }}>{short(item, 90)}</li>
+              ))}
+            </ul>
+          ) : (
+            <div style={{ opacity: 0.8 }}>No presenter cues found.</div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ ...cardStyle("#eee"), marginBottom: 12 }}>
+        <div style={{ fontWeight: 800, marginBottom: 6 }}>Why this lesson changed</div>
+        <ul style={{ margin: 0, paddingLeft: 18 }}>
+          <li style={{ marginBottom: 6 }}>
+            {frameworkApplied === "clickableHub"
+              ? "The Results Hub is using a clickable-hub structure because an exemplar was present and the blueprint applied that framework."
+              : frameworkApplied === "guidepost"
+                ? "The Results Hub is using a guidepost-style structure because the blueprint detected and applied that framework."
+                : "The Results Hub is using the default linear structure because no non-linear framework was applied."}
+          </li>
+          <li style={{ marginBottom: 6 }}>
+            {curriculumItems.length
+              ? `Curriculum titles are being used to shape teacher plan language, slide bullets, and center directions.`
+              : "No curriculum checklist items were available, so wording falls back to default lesson language."}
+          </li>
+          <li>
+            {cueItems.length
+              ? "Presenter cues from the exemplar are being used to influence notes, transitions, and rotation wording."
+              : "No exemplar presenter cues were available, so teacher cueing stays generic."}
+          </li>
+        </ul>
+      </div>
+
+      <div style={{ ...cardStyle("#f8f8f8"), marginBottom: 12 }}>
+        <div style={{ fontWeight: 800, marginBottom: 6 }}>Source Files</div>
+        <div style={{ fontSize: 14, marginBottom: 6 }}>
+          <b>Curriculum files:</b> {curriculumFiles.join(", ") || "none"}
+        </div>
+        <div style={{ fontSize: 14 }}>
+          <b>Exemplar files:</b> {exemplarFiles.join(", ") || "none"}
+        </div>
+      </div>
+
+      <div style={{ ...cardStyle("#fafafa"), marginBottom: 12 }}>
+        <div style={{ fontWeight: 800, marginBottom: 6 }}>Planned Slide Skeleton</div>
+        {plannedSlides.length ? (
+          <ol style={{ margin: 0, paddingLeft: 18 }}>
+            {plannedSlides.map((title: string, i: number) => (
+              <li key={title + i} style={{ marginBottom: 4 }}>{title}</li>
+            ))}
+          </ol>
+        ) : (
+          <div style={{ opacity: 0.8 }}>No planned slides found in the blueprint.</div>
+        )}
+      </div>
+
+      {synthesisNotes && (
+        <div style={cardStyle("#eee")}>
+          <div style={{ fontWeight: 800, marginBottom: 6 }}>Blueprint Notes</div>
+          <div style={{ whiteSpace: "pre-wrap" }}>{synthesisNotes}</div>
+        </div>
+      )}
+
+      <details style={{ marginTop: 12 }}>
+        <summary style={{ cursor: "pointer" }}>View raw Blueprint JSON</summary>
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            fontSize: 12,
+            background: "#fafafa",
+            padding: 12,
+            borderRadius: 10,
+            overflow: "auto",
+            marginTop: 10,
+          }}
+        >
+          {JSON.stringify(bp, null, 2)}
+        </pre>
+      </details>
+    </div>
   );
 }
 
@@ -211,7 +325,7 @@ export default function ResultsHubPage() {
 
       <div style={{ padding: 12, border: "1px solid #eee", borderRadius: 12, marginBottom: 18 }}>
         {standards.length === 0 ? (
-          <div style={{ fontWeight: 800 }}>Standards: (none detected yet â€” check inputs or add an override)</div>
+          <div style={{ fontWeight: 800 }}>Standards: (none detected yet — check inputs or add an override)</div>
         ) : (
           <>
             <div style={{ fontWeight: 900, marginBottom: 8 }}>
@@ -244,6 +358,10 @@ export default function ResultsHubPage() {
         )}
       </div>
 
+      <Section title="Blueprint Influence" defaultOpen>
+        <BlueprintInsights />
+      </Section>
+
       <Section title="Teacher Lesson Plan" defaultOpen>
         {lessonPlan.length === 0 ? (
           <div style={{ opacity: 0.8 }}>No lesson plan sections found in package.</div>
@@ -262,7 +380,7 @@ export default function ResultsHubPage() {
         )}
       </Section>
 
-      <Section title={`Slides (Student-facing) â€” ${slides.length}`}>
+      <Section title={`Slides (Student-facing) — ${slides.length}`}>
         {slides.length === 0 ? (
           <div style={{ opacity: 0.8 }}>No slides found in package.</div>
         ) : (
@@ -278,7 +396,7 @@ export default function ResultsHubPage() {
         )}
       </Section>
 
-      <Section title={`Centers â€” ${centers.length}`}>
+      <Section title={`Centers — ${centers.length}`}>
         {centers.length === 0 ? (
           <div style={{ opacity: 0.8 }}>No centers generated.</div>
         ) : (
@@ -345,11 +463,6 @@ export default function ResultsHubPage() {
         ) : (
           <div style={{ opacity: 0.8 }}>None</div>
         )}
-      </Section>
-
-      {/* Put Blueprint Preview at the very bottom */}
-      <Section title="Blueprint Preview (Auto)" defaultOpen={false}>
-        <BlueprintPreviewOnce />
       </Section>
     </div>
   );
