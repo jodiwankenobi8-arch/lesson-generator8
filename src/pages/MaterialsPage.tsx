@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
 import type { UploadedTextFile } from "../engine/blueprint/types";
@@ -15,10 +15,133 @@ import {
   orchardSectionTitleStyle,
   orchardHelpTextStyle,
   orchardTextareaStyle,
+  orchardInputStyle,
   orchardPrimaryButtonStyle,
+  orchardSecondaryButtonStyle,
   orchardLinkStyle,
+  orchardRibbonHeaderStyle,
+  orchardHeroTitleStyle,
+  orchardStitchDividerStyle,
 } from "./orchardUi";
 import { WizardProgress } from "./WizardProgress";
+
+const ACCEPT_ATTR = ".txt,.md,.doc,.docx,.pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp";
+
+function makeUrlItems(raw: string, label: "curriculum" | "exemplar"): UploadedTextFile[] {
+  return String(raw || "")
+    .split(/\r?\n|,/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((url, index) => ({
+      name: `${label}-link-${index + 1}: ${url}`,
+      kind: "url" as any,
+      text: `SOURCE URL: ${url}`,
+    }));
+}
+
+function fileListSummary(items: UploadedTextFile[]) {
+  if (!items.length) return "none";
+  return items.map((f) => f.name).join(", ");
+}
+
+function UploadDropZone({
+  title,
+  subtitle,
+  files,
+  onFilesChosen,
+  linksValue,
+  onLinksChange,
+}: {
+  title: string;
+  subtitle: string;
+  files: UploadedTextFile[];
+  onFilesChosen: (files: FileList | null) => Promise<void>;
+  linksValue: string;
+  onLinksChange: (value: string) => void;
+}) {
+  const [dragActive, setDragActive] = useState(false);
+
+  async function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    await onFilesChosen(e.dataTransfer.files);
+  }
+
+  return (
+    <div
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragActive(true);
+      }}
+      onDragEnter={(e) => {
+        e.preventDefault();
+        setDragActive(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        setDragActive(false);
+      }}
+      onDrop={handleDrop}
+      style={{
+        ...orchardSoftCardStyle(dragActive ? "#F7FBF5" : "#FFFDF9"),
+        border: `2px dashed ${dragActive ? COLORS.accent : COLORS.borderStrong}`,
+        background: dragActive ? "#F7FBF5" : "#FFFDF9",
+      }}
+    >
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 16, marginBottom: 6 }}>
+          {title}
+        </div>
+        <div style={orchardHelpTextStyle()}>{subtitle}</div>
+      </div>
+
+      <div
+        style={{
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 18,
+          padding: 18,
+          background: "linear-gradient(180deg, #FFFDFC 0%, #FBF6EF 100%)",
+          textAlign: "center",
+          marginBottom: 12,
+        }}
+      >
+        <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>
+          Drag and drop files here
+        </div>
+        <div style={{ fontSize: 14, color: COLORS.muted, marginBottom: 10 }}>
+          or choose files manually
+        </div>
+
+        <input
+          type="file"
+          multiple
+          accept={ACCEPT_ATTR}
+          onChange={(e) => onFilesChosen(e.target.files)}
+          style={{ marginBottom: 8 }}
+        />
+
+        <div style={{ fontSize: 12, color: COLORS.muted, lineHeight: 1.5 }}>
+          Accepted now: DOC, DOCX, PDF, PPT, PPTX, JPG, JPEG, PNG, WEBP, TXT, MD
+        </div>
+      </div>
+
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <div style={orchardLabelTitleStyle()}>Website links / online sources (optional)</div>
+        <textarea
+          value={linksValue}
+          onChange={(e) => onLinksChange(e.target.value)}
+          style={orchardTextareaStyle(84)}
+          placeholder="Paste one or more links here, separated by commas or new lines"
+        />
+      </label>
+
+      <div style={{ fontSize: 12, color: COLORS.muted, lineHeight: 1.55 }}>
+        <b>Attached items:</b> {fileListSummary(files)}
+      </div>
+    </div>
+  );
+}
 
 export default function MaterialsPage() {
   const navigate = useNavigate();
@@ -30,16 +153,30 @@ export default function MaterialsPage() {
   const [lessonNotes, setLessonNotes] = useState("");
   const [materialsPack, setMaterialsPack] = useState<UploadedTextFile[]>([]);
   const [exemplarPack, setExemplarPack] = useState<UploadedTextFile[]>([]);
+  const [curriculumLinks, setCurriculumLinks] = useState("");
+  const [exemplarLinks, setExemplarLinks] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function onPickMaterials(files: FileList | null) {
-    setMaterialsPack(await filesToUploaded(files));
+    const uploaded = await filesToUploaded(files);
+    setMaterialsPack(uploaded);
   }
 
   async function onPickExemplar(files: FileList | null) {
-    setExemplarPack(await filesToUploaded(files));
+    const uploaded = await filesToUploaded(files);
+    setExemplarPack(uploaded);
   }
+
+  const finalCurriculumItems = useMemo(
+    () => [...materialsPack, ...makeUrlItems(curriculumLinks, "curriculum")],
+    [materialsPack, curriculumLinks]
+  );
+
+  const finalExemplarItems = useMemo(
+    () => [...exemplarPack, ...makeUrlItems(exemplarLinks, "exemplar")],
+    [exemplarPack, exemplarLinks]
+  );
 
   async function onBuildAndGenerate() {
     setMsg("");
@@ -51,8 +188,8 @@ export default function MaterialsPage() {
           objective: input.objective ?? "",
           notes: lessonNotes ?? "",
         },
-        curriculumFiles: materialsPack,
-        exemplarFiles: exemplarPack,
+        curriculumFiles: finalCurriculumItems,
+        exemplarFiles: finalExemplarItems,
       });
 
       localStorage.setItem("lessonBlueprintV1", JSON.stringify(blueprint, null, 2));
@@ -85,52 +222,25 @@ export default function MaterialsPage() {
               flexWrap: "wrap",
             }}
           >
-            <div style={{ maxWidth: 700 }}>
-              <div
-                style={{
-                  display: "inline-block",
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  background: "#EEF5EA",
-                  border: `1px solid ${COLORS.successBorder}`,
-                  fontSize: 12,
-                  fontWeight: 800,
-                  color: COLORS.accentDark,
-                  marginBottom: 10,
-                }}
-              >
-                Materials Upload
-              </div>
-
-              <h1
-                style={{
-                  margin: "0 0 8px 0",
-                  color: COLORS.heading,
-                  fontSize: 34,
-                  lineHeight: 1.1,
-                }}
-              >
-                Add curriculum and exemplar materials
-              </h1>
-
+            <div style={{ maxWidth: 720 }}>
+              <div style={orchardRibbonHeaderStyle()}>Materials + Exemplars</div>
+              <div style={orchardStitchDividerStyle()} />
+              <h1 style={orchardHeroTitleStyle()}>Add the lesson sources the generator should use</h1>
               <div style={{ ...orchardHelpTextStyle(), fontSize: 15 }}>
-                Upload the materials that should shape the lesson structure, wording, pacing, and teacher cues.
-              </div>
-
-              <div style={{ color: COLORS.muted, fontSize: 14, lineHeight: 1.5, marginTop: 10 }}>
-                <b>{input.date ?? ""}</b> | <b>{input.lessonTitle ?? ""}</b> | Grade <b>{input.grade ?? ""}</b> | <b>{input.subject ?? ""}</b>
+                Upload curriculum files, exemplar files, and links. These materials can change the lesson structure,
+                wording, pacing cues, and output style.
               </div>
             </div>
 
             <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 260 }}>
               <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 8 }}>
-                What this step does
+                Current lesson
               </div>
               <div style={{ fontSize: 14, lineHeight: 1.6 }}>
-                <div>1. Reads lesson materials</div>
-                <div>2. Detects exemplar cues and structure</div>
-                <div>3. Builds the Blueprint</div>
-                <div>4. Generates the lesson package</div>
+                <div><b>Title:</b> {input.lessonTitle || "—"}</div>
+                <div><b>Objective:</b> {input.objective || "—"}</div>
+                <div><b>Grade:</b> {input.grade || "—"}</div>
+                <div><b>Subject:</b> {input.subject || "—"}</div>
               </div>
             </div>
           </div>
@@ -140,17 +250,12 @@ export default function MaterialsPage() {
           <div
             style={{
               ...orchardCardStyle(),
-              background: "#FFF8E7",
+              background: "#FFF6E8",
               border: `1px solid ${COLORS.warnBorder}`,
             }}
           >
-            <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>
-              Heads up
-            </div>
-            <div style={{ lineHeight: 1.55 }}>
-              The Inputs page is missing required fields: <b>Lesson Title</b>, <b>Objective</b>, and <b>Text / Topic</b>.
-            </div>
-            <div style={{ marginTop: 10 }}>
+            <b>Heads up:</b> the Inputs page is missing required fields: Lesson Title, Objective, and Text / Topic.
+            <div style={{ marginTop: 8 }}>
               <Link to="/" style={orchardLinkStyle()}>
                 Go back to Inputs
               </Link>
@@ -159,50 +264,35 @@ export default function MaterialsPage() {
         )}
 
         <div style={orchardCardStyle()}>
-          <div style={orchardSectionTitleStyle()}>New Lesson Materials + Exemplars</div>
+          <div style={orchardSectionTitleStyle()}>Upload Workspace</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
+            Curriculum sources shape the lesson content. Exemplars shape pacing, structure, cues, and model style.
+          </div>
 
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
               gap: 14,
             }}
           >
-            <div
-              style={{
-                ...orchardSoftCardStyle(COLORS.success),
-                border: `1px solid ${COLORS.successBorder}`,
-              }}
-            >
-              <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: 8 }}>
-                NEW LESSON MATERIALS
-              </div>
-              <input type="file" multiple onChange={(e) => onPickMaterials(e.target.files)} />
-              <div style={{ fontSize: 12, marginTop: 10, color: COLORS.muted, lineHeight: 1.5 }}>
-                <b>Files:</b> {materialsPack.length ? materialsPack.map((f) => f.name).join(", ") : "none"}
-              </div>
-              <div style={{ fontSize: 12, marginTop: 8, color: COLORS.muted, lineHeight: 1.5 }}>
-                Text, Markdown, and DOCX text are read now. PDFs, PPTX, and images are currently stored as filenames only.
-              </div>
-            </div>
+            <UploadDropZone
+              title="Curriculum Sources"
+              subtitle="Use this for lesson materials, teacher resources, texts, decodables, slides, PDFs, images, or website links."
+              files={finalCurriculumItems}
+              onFilesChosen={onPickMaterials}
+              linksValue={curriculumLinks}
+              onLinksChange={setCurriculumLinks}
+            />
 
-            <div
-              style={{
-                ...orchardSoftCardStyle(COLORS.info),
-                border: `1px solid ${COLORS.infoBorder}`,
-              }}
-            >
-              <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: 8 }}>
-                EXEMPLAR PACK
-              </div>
-              <input type="file" multiple onChange={(e) => onPickExemplar(e.target.files)} />
-              <div style={{ fontSize: 12, marginTop: 10, color: COLORS.muted, lineHeight: 1.5 }}>
-                <b>Files:</b> {exemplarPack.length ? exemplarPack.map((f) => f.name).join(", ") : "none"}
-              </div>
-              <div style={{ fontSize: 12, marginTop: 8, color: COLORS.muted, lineHeight: 1.5 }}>
-                Used for pacing, timers, clicker cues, and structure detection.
-              </div>
-            </div>
+            <UploadDropZone
+              title="Exemplar Sources"
+              subtitle="Use this for model lessons, example decks, teaching flow references, pacing cues, and structure examples."
+              files={finalExemplarItems}
+              onFilesChosen={onPickExemplar}
+              linksValue={exemplarLinks}
+              onLinksChange={setExemplarLinks}
+            />
           </div>
         </div>
 
@@ -246,7 +336,7 @@ export default function MaterialsPage() {
           }}
         >
           <div style={orchardHelpTextStyle()}>
-            Status: <b>{status}</b> | Materials files: <b>{materialsPack.length}</b> | Exemplar files: <b>{exemplarPack.length}</b>
+            Status: <b>{status}</b> | Curriculum items: <b>{finalCurriculumItems.length}</b> | Exemplar items: <b>{finalExemplarItems.length}</b>
           </div>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
@@ -257,7 +347,7 @@ export default function MaterialsPage() {
             >
               {busy || status === "generating"
                 ? "Building + Generating..."
-                : "Build Blueprint + Generate Lesson + Open Results ?"}
+                : "Build Blueprint + Generate Lesson + Open Results ->"}
             </button>
 
             <Link to="/" style={orchardLinkStyle()}>

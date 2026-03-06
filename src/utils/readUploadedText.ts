@@ -14,17 +14,21 @@ async function readDocx(file: File): Promise<string | undefined> {
 
 export async function readTextIfPossible(file: File): Promise<string | undefined> {
   const name = file.name.toLowerCase();
+
   if (name.endsWith(".txt") || name.endsWith(".md") || file.type.startsWith("text/")) {
     return file.text();
   }
+
   if (name.endsWith(".docx")) {
     return readDocx(file);
   }
+
   return undefined;
 }
 
 export async function filesToUploaded(files: FileList | null): Promise<UploadedTextFile[]> {
   if (!files) return [];
+
   const uploaded: UploadedTextFile[] = [];
   for (const file of Array.from(files)) {
     const text = await readTextIfPossible(file);
@@ -34,5 +38,6 @@ export async function filesToUploaded(files: FileList | null): Promise<UploadedT
       text,
     });
   }
+
   return uploaded;
 }
