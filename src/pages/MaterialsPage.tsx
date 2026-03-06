@@ -15,9 +15,7 @@ import {
   orchardSectionTitleStyle,
   orchardHelpTextStyle,
   orchardTextareaStyle,
-  orchardInputStyle,
   orchardPrimaryButtonStyle,
-  orchardSecondaryButtonStyle,
   orchardLinkStyle,
   orchardRibbonHeaderStyle,
   orchardHeroTitleStyle,
@@ -42,6 +40,75 @@ function makeUrlItems(raw: string, label: "curriculum" | "exemplar"): UploadedTe
 function fileListSummary(items: UploadedTextFile[]) {
   if (!items.length) return "none";
   return items.map((f) => f.name).join(", ");
+}
+
+function normalizeText(value: string) {
+  return String(value || "").toLowerCase();
+}
+
+function collectSignals(items: UploadedTextFile[]) {
+  const joined = items
+    .map((item) => `${item.name} ${item.text || ""}`)
+    .join(" | ")
+    .toLowerCase();
+
+  return {
+    intervention: /\b(intervention|tier 2|tier 3|remediation|reteach|below level|support)\b/.test(joined),
+    enrichment: /\b(enrichment|extension|above level|challenge|advanced)\b/.test(joined),
+    phonics: /\b(phonics|cvc|decodable|letter sound|segment|blend)\b/.test(joined),
+    comprehension: /\b(comprehension|close read|main idea|retell|story|infer)\b/.test(joined),
+    slides: /\b(slides|deck|powerpoint|ppt|pptx)\b/.test(joined),
+    worksheet: /\b(worksheet|printable|handout|practice page)\b/.test(joined),
+  };
+}
+
+function buildClarificationNotes(curriculumItems: UploadedTextFile[], exemplarItems: UploadedTextFile[], lessonNotes: string) {
+  const notes: string[] = [];
+  const curriculumSignals = collectSignals(curriculumItems);
+  const exemplarSignals = collectSignals(exemplarItems);
+  const teacherNotes = normalizeText(lessonNotes);
+
+  if (curriculumItems.length > 0 && exemplarItems.length === 0) {
+    notes.push("You added curriculum sources but no exemplars. The lesson can still generate, but pacing and structure will rely more heavily on the default framework.");
+  }
+
+  if (exemplarItems.length > 0 && curriculumItems.length === 0) {
+    notes.push("You added exemplars but no curriculum sources. The generator may mirror structure well, but the actual content may stay generic unless curriculum materials are added.");
+  }
+
+  if (curriculumSignals.intervention && exemplarSignals.enrichment) {
+    notes.push("Your curriculum looks intervention-oriented while your exemplars look enrichment-oriented. That may pull the lesson in two different directions.");
+  }
+
+  if (curriculumSignals.enrichment && exemplarSignals.intervention) {
+    notes.push("Your curriculum looks enrichment-oriented while your exemplars look intervention-oriented. That may create a mismatch in level and pacing.");
+  }
+
+  if (curriculumSignals.phonics && exemplarSignals.comprehension) {
+    notes.push("Your curriculum appears phonics-focused while your exemplars appear comprehension-focused. Clarify which should drive the main lesson goal.");
+  }
+
+  if (curriculumSignals.comprehension && exemplarSignals.phonics) {
+    notes.push("Your curriculum appears comprehension-focused while your exemplars appear phonics-focused. Clarify whether the generator should prioritize meaning work or skill/decoding work.");
+  }
+
+  if (curriculumSignals.worksheet && exemplarSignals.slides) {
+    notes.push("Your curriculum looks worksheet/handout-heavy while your exemplars look slide/deck-heavy. That could affect how interactive the final lesson feels.");
+  }
+
+  if (teacherNotes.includes("keep it simple") && exemplarSignals.enrichment) {
+    notes.push("Your lesson notes ask for a simpler lesson, but the exemplars may be pushing toward a more advanced structure.");
+  }
+
+  if ((teacherNotes.includes("intervention") || teacherNotes.includes("reteach")) && exemplarSignals.enrichment) {
+    notes.push("Your notes suggest intervention or reteach support, but the exemplars may be modeling a more advanced or extension-style lesson.");
+  }
+
+  if ((teacherNotes.includes("extension") || teacherNotes.includes("enrichment")) && curriculumSignals.intervention) {
+    notes.push("Your notes suggest enrichment, but the curriculum materials may be signaling intervention-level support.");
+  }
+
+  return notes;
 }
 
 function UploadDropZone({
@@ -178,6 +245,11 @@ export default function MaterialsPage() {
     [exemplarPack, exemplarLinks]
   );
 
+  const clarificationNotes = useMemo(
+    () => buildClarificationNotes(finalCurriculumItems, finalExemplarItems, lessonNotes),
+    [finalCurriculumItems, finalExemplarItems, lessonNotes]
+  );
+
   async function onBuildAndGenerate() {
     setMsg("");
     setBusy(true);
@@ -294,6 +366,38 @@ export default function MaterialsPage() {
               onLinksChange={setExemplarLinks}
             />
           </div>
+        </div>
+
+        <div
+          style={{
+            ...orchardCardStyle(),
+            background: clarificationNotes.length ? "#FFF8EE" : "#F8FBF7",
+            border: `1px solid ${clarificationNotes.length ? COLORS.warnBorder : COLORS.border}`,
+          }}
+        >
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 8 }}>
+            Clarification Check
+          </div>
+
+          {clarificationNotes.length ? (
+            <>
+              <div style={{ ...orchardHelpTextStyle(), marginBottom: 10, color: COLORS.heading }}>
+                The generator can still continue, but these signals may be pulling the lesson in different directions:
+              </div>
+              <ul style={{ margin: "0 0 12px 18px", padding: 0, lineHeight: 1.7, color: COLORS.text }}>
+                {clarificationNotes.map((note, index) => (
+                  <li key={index}>{note}</li>
+                ))}
+              </ul>
+              <div style={{ ...orchardHelpTextStyle(), fontSize: 13 }}>
+                Add a note below if you want to explicitly tell the generator which source should lead.
+              </div>
+            </>
+          ) : (
+            <div style={orchardHelpTextStyle()}>
+              No obvious conflicts detected yet. Curriculum and exemplar signals look reasonably aligned based on the current filenames, extracted text, and notes.
+            </div>
+          )}
         </div>
 
         <div style={orchardCardStyle()}>
