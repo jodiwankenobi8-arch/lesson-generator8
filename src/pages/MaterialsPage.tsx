@@ -124,6 +124,34 @@ function hasFallbackOnlyText(item: UploadedTextFile) {
   return /uploaded:/i.test(text) || /extraction is not available yet/i.test(text);
 }
 
+function describeInfluence(items: UploadedTextFile[]) {
+  if (!items.length) return "none";
+  const realTextCount = items.filter((item) => item.text && !hasFallbackOnlyText(item)).length;
+  if (realTextCount >= 3) return "strong";
+  if (realTextCount >= 1 || items.length >= 2) return "moderate";
+  return "light";
+}
+
+function buildInfluenceSummary(curriculumItems: UploadedTextFile[], exemplarItems: UploadedTextFile[]) {
+  const curriculumReal = curriculumItems.filter((item) => item.text && !hasFallbackOnlyText(item)).length;
+  const exemplarReal = exemplarItems.filter((item) => item.text && !hasFallbackOnlyText(item)).length;
+  const curriculumFallback = curriculumItems.filter((item) => !item.text || hasFallbackOnlyText(item)).length;
+  const exemplarFallback = exemplarItems.filter((item) => !item.text || hasFallbackOnlyText(item)).length;
+
+  return {
+    curriculumInfluence: describeInfluence(curriculumItems),
+    exemplarInfluence: describeInfluence(exemplarItems),
+    curriculumReal,
+    exemplarReal,
+    curriculumFallback,
+    exemplarFallback,
+    overallMessage:
+      curriculumReal + exemplarReal > 0
+        ? "The generator has some real source text to work from, so the lesson should be more grounded than a default-only run."
+        : "Most current sources are filename/type signals only, so generation may still lean on the default framework unless more text-rich sources are added.",
+  };
+}
+
 function UploadItemCard({
   item,
   onRemove,
@@ -385,6 +413,11 @@ export default function MaterialsPage() {
     [finalCurriculumItems, finalExemplarItems, lessonNotes]
   );
 
+  const influenceSummary = useMemo(
+    () => buildInfluenceSummary(finalCurriculumItems, finalExemplarItems),
+    [finalCurriculumItems, finalExemplarItems]
+  );
+
   async function onBuildAndGenerate() {
     setMsg("");
     setBusy(true);
@@ -502,6 +535,51 @@ export default function MaterialsPage() {
               linksValue={exemplarLinks}
               onLinksChange={setExemplarLinks}
             />
+          </div>
+        </div>
+
+        <div
+          style={{
+            ...orchardCardStyle(),
+            background: "#F8FBF7",
+            border: `1px solid ${COLORS.border}`,
+          }}
+        >
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 8 }}>
+            Source Influence Preview
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 12,
+              marginBottom: 12,
+            }}
+          >
+            <div style={orchardSoftCardStyle("#FFFDF9")}>
+              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Curriculum influence</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
+                {influenceSummary.curriculumInfluence}
+              </div>
+              <div style={orchardHelpTextStyle()}>
+                {influenceSummary.curriculumReal} text-rich item(s), {influenceSummary.curriculumFallback} fallback-only item(s)
+              </div>
+            </div>
+
+            <div style={orchardSoftCardStyle("#FFFDF9")}>
+              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Exemplar influence</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
+                {influenceSummary.exemplarInfluence}
+              </div>
+              <div style={orchardHelpTextStyle()}>
+                {influenceSummary.exemplarReal} text-rich item(s), {influenceSummary.exemplarFallback} fallback-only item(s)
+              </div>
+            </div>
+          </div>
+
+          <div style={orchardHelpTextStyle()}>
+            {influenceSummary.overallMessage}
           </div>
         </div>
 
