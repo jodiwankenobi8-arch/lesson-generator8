@@ -13,7 +13,7 @@ import { makeId } from "../utils/makeId";
 import { detectKelaBest } from "./standards/detectKelaBest";
 import { buildLessonSpec } from "./spec/buildLessonSpec";
 
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.3.0";
 
 function computeDetectedStandards(input: LessonInput): DetectedStandard[] {
   if (Array.isArray(input.manualStandardOverride) && input.manualStandardOverride.length > 0) {
@@ -68,12 +68,104 @@ function adjustStandardsByIntent(standards: DetectedStandard[], input: LessonInp
   return adjusted;
 }
 
-const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput) => Slide> = {
-  title: (input) => ({
+function getFramework(blueprint?: LessonBlueprint | null) {
+  return blueprint?.synthesis?.frameworkApplied || "linear";
+}
+
+function getCurriculumTitles(blueprint?: LessonBlueprint | null): string[] {
+  return (blueprint?.curriculum?.coverageChecklist || [])
+    .map((item) => item.title)
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+function getCueText(blueprint?: LessonBlueprint | null): string[] {
+  return (blueprint?.exemplar?.presenterCues || [])
+    .map((cue) => cue.rawText)
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
+function makeMiniLessonBullets(input: LessonInput, blueprint?: LessonBlueprint | null): string[] {
+  const curriculumTitles = getCurriculumTitles(blueprint);
+  const framework = getFramework(blueprint);
+
+  if (framework === "clickableHub") {
+    return [
+      `Focus skill: ${input.objective}`,
+      `Lesson text/topic: ${input.textOrTopic}`,
+      curriculumTitles[0] ? `Anchor task: ${curriculumTitles[0]}` : "Anchor task: teacher-led modeled example",
+    ];
+  }
+
+  if (curriculumTitles.length) {
+    return [
+      `Focus skill: ${input.objective}`,
+      `Lesson text/topic: ${input.textOrTopic}`,
+      `Curriculum connection: ${curriculumTitles.join(" | ")}`,
+    ];
+  }
+
+  return [
+    `Text/Topic: ${input.textOrTopic}`,
+    "Teach the new skill clearly and briefly.",
+  ];
+}
+
+function makePracticeBullets(input: LessonInput, blueprint?: LessonBlueprint | null): string[] {
+  const framework = getFramework(blueprint);
+  const curriculumTitles = getCurriculumTitles(blueprint);
+
+  if (framework === "clickableHub") {
+    return [
+      "Rotate through the practice path you were assigned.",
+      curriculumTitles[0] ? `Use this task during practice: ${curriculumTitles[0]}` : "Use center materials to practice the target skill.",
+    ];
+  }
+
+  if (curriculumTitles.length) {
+    return [
+      "You do: Try it on your own.",
+      `Apply the skill with: ${curriculumTitles[0]}`,
+    ];
+  }
+
+  return [
+    "You do: Try it on your own.",
+    "Explain or show your thinking.",
+  ];
+}
+
+function makeExitBullets(input: LessonInput, blueprint?: LessonBlueprint | null): string[] {
+  const framework = getFramework(blueprint);
+  if (framework === "guidepost") {
+    return [
+      "Reflect on what helped you today.",
+      `Show how you met this goal: ${input.objective}`,
+    ];
+  }
+  if (framework === "clickableHub") {
+    return [
+      "Complete the final quick check before leaving the hub.",
+      `Show evidence of this goal: ${input.objective}`,
+    ];
+  }
+  return [
+    "1 quick check",
+    "Show you met the objective",
+  ];
+}
+
+const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBlueprint | null) => Slide> = {
+  title: (input, blueprint) => ({
     id: makeId("s"),
     type: "title",
     title: input.lessonTitle,
-    bullets: [`${input.subject} | Grade ${input.grade}`, `Date: ${input.date}`],
+    bullets: [
+      `${input.subject} | Grade ${input.grade}`,
+      `Date: ${input.date}`,
+      ...(getFramework(blueprint) !== "linear" ? [`Framework: ${getFramework(blueprint)}`] : []),
+    ],
   }),
   objective: (input) => ({
     id: makeId("s"),
@@ -82,54 +174,69 @@ const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput) => Slide> = {
     bullets: [input.objective],
     teacherNotes: "State objective. Students echo. Preview lesson steps.",
   }),
-  discussion: (input) => ({
+  discussion: (input, blueprint) => ({
     id: makeId("s"),
     type: "discussion",
     title: "Essential Question",
-    bullets: [input.essentialQuestion || "What are we learning today?"],
-    teacherNotes: "Turn-and-talk; share 2-3 ideas; connect to objective.",
+    bullets: [
+      input.essentialQuestion || "What are we learning today?",
+      ...(getCueText(blueprint).slice(0, 1).length ? [`Cue: ${getCueText(blueprint)[0]}`] : []),
+    ],
+    teacherNotes: getFramework(blueprint) === "clickableHub"
+      ? "Use the hub opening to preview choices, then turn-and-talk."
+      : "Turn-and-talk; share 2-3 ideas; connect to objective.",
   }),
-  "mini-lesson": (input) => ({
+  "mini-lesson": (input, blueprint) => ({
     id: makeId("s"),
     type: "mini-lesson",
-    title: "Mini Lesson",
-    bullets: [`Text/Topic: ${input.textOrTopic}`, "Teach the new skill clearly and briefly."],
-    teacherNotes: "Teach in short chunks. Name the strategy and model the thinking.",
+    title: getFramework(blueprint) === "clickableHub" ? "Mini Lesson" : "Teach",
+    bullets: makeMiniLessonBullets(input, blueprint),
+    teacherNotes: getFramework(blueprint) === "clickableHub"
+      ? "Teach briefly, then launch students into the next hub path."
+      : "Teach in short chunks. Name the strategy and model the thinking.",
   }),
-  modeling: () => ({
+  modeling: (_input, blueprint) => ({
     id: makeId("s"),
     type: "modeling",
     title: "Modeling",
-    bullets: ["I do: Watch me think aloud.", "Notice the steps and language I use."],
+    bullets: getFramework(blueprint) === "clickableHub"
+      ? ["Model one path clearly before rotations begin.", "Show what success looks like in the hub."]
+      : ["I do: Watch me think aloud.", "Notice the steps and language I use."],
     teacherNotes: "Think aloud. Show one complete example before release.",
   }),
-  guided: () => ({
+  guided: (_input, blueprint) => ({
     id: makeId("s"),
     type: "guided",
     title: "Guided Practice",
-    bullets: ["We do: Solve one together.", "Students respond with support."],
+    bullets: getFramework(blueprint) === "clickableHub"
+      ? ["We do: Practice one round together before students rotate.", "Name the transition expectations."]
+      : ["We do: Solve one together.", "Students respond with support."],
     teacherNotes: "Prompt and scaffold. Correct misconceptions immediately.",
   }),
-  practice: () => ({
+  practice: (input, blueprint) => ({
     id: makeId("s"),
     type: "practice",
-    title: "Independent Practice",
-    bullets: ["You do: Try it on your own.", "Explain or show your thinking."],
-    teacherNotes: "Circulate. Pull Tier 3 first. Provide fast feedback.",
+    title: getFramework(blueprint) === "clickableHub" ? "Center Rotation" : "Independent Practice",
+    bullets: makePracticeBullets(input, blueprint),
+    teacherNotes: getFramework(blueprint) === "clickableHub"
+      ? "Circulate between stations. Reinforce routines and accountability."
+      : "Circulate. Pull Tier 3 first. Provide fast feedback.",
   }),
-  "exit-ticket": () => ({
+  "exit-ticket": (input, blueprint) => ({
     id: makeId("s"),
     type: "exit-ticket",
-    title: "Exit Ticket",
-    bullets: ["1 quick check", "Show you met the objective"],
-    teacherNotes: "Collect evidence to decide reteach or enrich next lesson.",
+    title: getFramework(blueprint) === "guidepost" ? "Reflection" : "Exit Ticket",
+    bullets: makeExitBullets(input, blueprint),
+    teacherNotes: getFramework(blueprint) === "clickableHub"
+      ? "Bring students back together and close the hub path with one final check."
+      : "Collect evidence to decide reteach or enrich next lesson.",
   }),
 };
 
 function buildSlides(input: LessonInput, blueprint?: LessonBlueprint | null): Slide[] {
   const spec = buildLessonSpec(input, blueprint);
   return spec.slideOrder.map((type, index) => {
-    const slide = SLIDE_LIBRARY[type](input);
+    const slide = SLIDE_LIBRARY[type](input, blueprint);
     const extraNotes = spec.teacherNoteAdditions[type] || [];
     if (extraNotes.length) {
       slide.teacherNotes = [slide.teacherNotes, ...extraNotes].filter(Boolean).join("\n");
@@ -195,25 +302,33 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
   const tier2 = input.groupNotes?.tier2 || diff.tier2;
   const enrichment = input.groupNotes?.enrichment || diff.enrichment;
   const framework = blueprint?.synthesis?.frameworkApplied || "linear";
+  const curriculumTitles = getCurriculumTitles(blueprint);
+  const cueText = getCueText(blueprint);
 
   if (framework === "clickableHub") {
     return [
       {
         heading: "Launch and Navigation",
         slides: [idx("title"), idx("discussion"), idx("objective")].filter((n) => n > 0),
-        description: "Open the lesson with a hub-style overview, preview choices, and anchor the objective before instruction begins.",
+        description: cueText[0]
+          ? `Open the lesson with a hub-style overview, preview choices, and use this cue: ${cueText[0]}.`
+          : "Open the lesson with a hub-style overview, preview choices, and anchor the objective before instruction begins.",
         differentiation: { tier3, tier2, enrichment },
       },
       {
         heading: "Mini Lesson and Model",
         slides: [idx("mini-lesson"), idx("modeling")].filter((n) => n > 0),
-        description: `Teach the skill using ${input.textOrTopic}. Model the process clearly, then set students up for station or center work.`,
+        description: curriculumTitles[0]
+          ? `Teach the skill using ${input.textOrTopic} and anchor the model in ${curriculumTitles[0]}.`
+          : `Teach the skill using ${input.textOrTopic}. Model the process clearly, then set students up for station or center work.`,
         differentiation: { tier3, tier2, enrichment },
       },
       {
         heading: "Guided Rotation and Practice",
         slides: [idx("guided"), idx("practice")].filter((n) => n > 0),
-        description: "Move students through guided support and center-based practice with explicit transitions.",
+        description: cueText[1]
+          ? `Move students through guided support and center-based practice with this transition cue: ${cueText[1]}.`
+          : "Move students through guided support and center-based practice with explicit transitions.",
         differentiation: { tier3, tier2, enrichment },
       },
       {
@@ -236,7 +351,9 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
       {
         heading: "Teach and Guided Practice",
         slides: [idx("mini-lesson"), idx("guided")].filter((n) => n > 0),
-        description: `Teach the skill using ${input.textOrTopic}, then move quickly into supported guided practice.`,
+        description: curriculumTitles[0]
+          ? `Teach the skill using ${input.textOrTopic} and practice it through ${curriculumTitles[0]}.`
+          : `Teach the skill using ${input.textOrTopic}, then move quickly into supported guided practice.`,
         differentiation: { tier3, tier2, enrichment },
       },
       {
@@ -258,13 +375,17 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
     {
       heading: "Teach and Model",
       slides: [idx("mini-lesson"), idx("modeling")].filter((n) => n > 0),
-      description: `Teach the skill using ${input.textOrTopic}. Model the thinking and name the steps explicitly.`,
+      description: curriculumTitles[0]
+        ? `Teach the skill using ${input.textOrTopic} and model it with ${curriculumTitles[0]}.`
+        : `Teach the skill using ${input.textOrTopic}. Model the thinking and name the steps explicitly.`,
       differentiation: { tier3, tier2, enrichment },
     },
     {
       heading: "Guided and Independent Practice",
       slides: [idx("guided"), idx("practice")].filter((n) => n > 0),
-      description: "Guide one example together, then release students to apply the skill with support matched to need.",
+      description: curriculumTitles[1]
+        ? `Guide one example together, then release students to apply the skill using ${curriculumTitles[1]}.`
+        : "Guide one example together, then release students to apply the skill with support matched to need.",
       differentiation: { tier3, tier2, enrichment },
     },
     {
@@ -278,20 +399,25 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
 
 function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): Center[] {
   const framework = blueprint?.synthesis?.frameworkApplied || "linear";
+  const curriculumTitles = getCurriculumTitles(blueprint);
 
   if (framework === "clickableHub") {
     return [
       {
         title: "Teacher Table",
         objective: input.objective,
-        direction: "Meet with the teacher for a guided round tied to the mini lesson.",
+        direction: curriculumTitles[0]
+          ? `Meet with the teacher for a guided round using ${curriculumTitles[0]}.`
+          : "Meet with the teacher for a guided round tied to the mini lesson.",
         materials: input.materials || "Teacher-selected lesson materials",
         printables: "Optional guided group sheet",
       },
       {
         title: "Center Rotation",
         objective: "Practice the focus skill in a station format",
-        direction: `Rotate through a short task using ${input.textOrTopic}.`,
+        direction: curriculumTitles[1]
+          ? `Rotate through a short task using ${curriculumTitles[1]}.`
+          : `Rotate through a short task using ${input.textOrTopic}.`,
         materials: input.materials || "Primary lesson text or topic materials",
         printables: "Optional station card",
       },
@@ -316,14 +442,18 @@ function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): C
     {
       title: "Skill Builder Center",
       objective: input.objective,
-      direction: "Repeat the exact skill with a short routine. Complete 2-3 reps.",
+      direction: curriculumTitles[0]
+        ? `Repeat the exact skill with this material: ${curriculumTitles[0]}. Complete 2-3 reps.`
+        : "Repeat the exact skill with a short routine. Complete 2-3 reps.",
       materials: input.materials || "Teacher-selected lesson materials",
       printables: "Optional teacher-created response sheet",
     },
     {
       title: "Apply It Center",
       objective: "Apply the skill in context",
-      direction: `Use ${input.textOrTopic} to apply the skill and explain your thinking.`,
+      direction: curriculumTitles[1]
+        ? `Use ${curriculumTitles[1]} to apply the skill and explain your thinking.`
+        : `Use ${input.textOrTopic} to apply the skill and explain your thinking.`,
       materials: input.materials || "Primary lesson text or topic materials",
       printables: "Optional recording sheet",
     },
@@ -339,6 +469,7 @@ function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): C
 
 function buildRotationPlan(input: LessonInput, blueprint?: LessonBlueprint | null) {
   const framework = blueprint?.synthesis?.frameworkApplied || "linear";
+  const cueText = getCueText(blueprint);
 
   if (framework === "clickableHub") {
     return [
@@ -348,11 +479,15 @@ function buildRotationPlan(input: LessonInput, blueprint?: LessonBlueprint | nul
       },
       {
         title: "Teacher Table Rotation",
-        description: `Start with guided support for about ${Math.max(8, Math.round(input.durationMinutes / 5))} minutes while others work in stations.`,
+        description: cueText[0]
+          ? `Start guided support and use this launch cue: ${cueText[0]}`
+          : `Start with guided support for about ${Math.max(8, Math.round(input.durationMinutes / 5))} minutes while others work in stations.`,
       },
       {
         title: "Center Rotation",
-        description: "Rotate students through independent or partner tasks with explicit transitions.",
+        description: cueText[1]
+          ? `Rotate students through tasks using this transition cue: ${cueText[1]}`
+          : "Rotate students through independent or partner tasks with explicit transitions.",
       },
       {
         title: "Whole Group Close",
