@@ -2,11 +2,12 @@ import React from "react";
 
 export const ORCHARD_COLORS = {
   page: "#FFF6E9",
+  pageTint: "#FDF1E3",
   panel: "#FFFFFF",
-  panelAlt: "#FBF6EF",
+  panelAlt: "#FCF6EE",
   border: "#E7E2DA",
-  borderSoft: "#EFE8DE",
-  borderStrong: "#D8CEC0",
+  borderSoft: "#EFE7DC",
+  borderStrong: "#DCCFBE",
   text: "#2F2F2F",
   muted: "#6C6258",
   heading: "#3F5A40",
@@ -22,18 +23,22 @@ export const ORCHARD_COLORS = {
   successBorder: "#C9DBC8",
   warn: "#FFF6E8",
   warnBorder: "#E7D2A6",
-  shadow: "rgba(63, 90, 64, 0.10)",
-  shadowSoft: "rgba(47, 47, 47, 0.06)",
+  stitch: "#F7FBF4",
+  shadow: "rgba(63, 90, 64, 0.12)",
+  shadowSoft: "rgba(47, 47, 47, 0.07)",
 };
 
 export function orchardShellStyle(): React.CSSProperties {
   return {
     minHeight: "100vh",
-    background: `
-      radial-gradient(circle at top left, rgba(247, 214, 208, 0.20), transparent 20%),
-      radial-gradient(circle at top right, rgba(242, 192, 120, 0.14), transparent 18%),
-      ${ORCHARD_COLORS.page}
-    `,
+    backgroundColor: ORCHARD_COLORS.page,
+    backgroundImage: [
+      "radial-gradient(circle at 12% 10%, rgba(247, 214, 208, 0.32), transparent 0 18%)",
+      "radial-gradient(circle at 86% 14%, rgba(242, 192, 120, 0.18), transparent 0 16%)",
+      "radial-gradient(circle at 18% 82%, rgba(110, 139, 107, 0.08), transparent 0 20%)",
+      "linear-gradient(rgba(255,255,255,0.18), rgba(255,255,255,0.18))",
+      "repeating-linear-gradient(0deg, rgba(255,255,255,0.00) 0px, rgba(255,255,255,0.00) 27px, rgba(63,90,64,0.018) 28px)"
+    ].join(", "),
     color: ORCHARD_COLORS.text,
   };
 }
@@ -48,21 +53,25 @@ export function orchardWrapStyle(): React.CSSProperties {
 
 export function orchardCardStyle(): React.CSSProperties {
   return {
-    background: ORCHARD_COLORS.panel,
+    background: "linear-gradient(180deg, #FFFDFC 0%, #FFF9F3 100%)",
     border: `1px solid ${ORCHARD_COLORS.border}`,
-    borderRadius: 24,
-    padding: 18,
-    boxShadow: `0 10px 28px ${ORCHARD_COLORS.shadowSoft}`,
+    borderRadius: 26,
+    padding: 20,
+    boxShadow: `0 12px 30px ${ORCHARD_COLORS.shadowSoft}`,
     marginBottom: 18,
+    position: "relative",
   };
 }
 
 export function orchardHeroCardStyle(): React.CSSProperties {
   return {
     ...orchardCardStyle(),
-    background: "linear-gradient(135deg, #FFF9F1 0%, #FFF6E9 58%, #FBF3E6 100%)",
+    background: [
+      "linear-gradient(180deg, rgba(255,255,255,0.70), rgba(255,255,255,0.40))",
+      "linear-gradient(135deg, #FFF9F0 0%, #FFF6E9 52%, #FCEEDB 100%)"
+    ].join(", "),
     border: `1px solid ${ORCHARD_COLORS.borderStrong}`,
-    boxShadow: `0 14px 32px ${ORCHARD_COLORS.shadow}`,
+    boxShadow: `0 18px 38px ${ORCHARD_COLORS.shadow}`,
   };
 }
 
@@ -72,6 +81,7 @@ export function orchardSoftCardStyle(background = ORCHARD_COLORS.panelAlt): Reac
     border: `1px solid ${ORCHARD_COLORS.borderSoft}`,
     borderRadius: 20,
     padding: 14,
+    boxShadow: `0 6px 14px rgba(47,47,47,0.03)`,
   };
 }
 
@@ -81,6 +91,8 @@ export function orchardSectionTitleStyle(): React.CSSProperties {
     fontSize: 20,
     color: ORCHARD_COLORS.heading,
     marginBottom: 14,
+    fontFamily: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+    letterSpacing: "0.01em",
   };
 }
 
@@ -105,10 +117,11 @@ export function orchardInputStyle(): React.CSSProperties {
     padding: 12,
     borderRadius: 16,
     border: `1px solid ${ORCHARD_COLORS.border}`,
-    background: "#FFFDFC",
+    background: "#FFFDFB",
     color: ORCHARD_COLORS.text,
     outline: "none",
     boxSizing: "border-box",
+    boxShadow: "inset 0 1px 2px rgba(47,47,47,0.03)",
   };
 }
 
@@ -123,25 +136,30 @@ export function orchardTextareaStyle(minHeight = 90): React.CSSProperties {
 export function orchardPrimaryButtonStyle(disabled = false): React.CSSProperties {
   return {
     padding: "12px 16px",
-    borderRadius: 16,
-    border: `1px solid ${disabled ? ORCHARD_COLORS.border : ORCHARD_COLORS.accent}`,
-    background: disabled ? "#F2EEE8" : ORCHARD_COLORS.accent,
+    borderRadius: 18,
+    border: `1px solid ${disabled ? ORCHARD_COLORS.border : ORCHARD_COLORS.accentDark}`,
+    background: disabled
+      ? "#F1ECE5"
+      : "linear-gradient(180deg, #6E8B6B 0%, #587053 100%)",
     color: disabled ? ORCHARD_COLORS.muted : "#FFFFFF",
     fontWeight: 800,
     cursor: disabled ? "not-allowed" : "pointer",
-    boxShadow: disabled ? "none" : `0 6px 14px ${ORCHARD_COLORS.shadowSoft}`,
+    boxShadow: disabled ? "none" : `0 8px 18px ${ORCHARD_COLORS.shadow}`,
   };
 }
 
 export function orchardSecondaryButtonStyle(disabled = false): React.CSSProperties {
   return {
     padding: "12px 16px",
-    borderRadius: 16,
+    borderRadius: 18,
     border: `1px solid ${ORCHARD_COLORS.border}`,
-    background: disabled ? "#F5F1EA" : ORCHARD_COLORS.panelAlt,
+    background: disabled
+      ? "#F6F1EA"
+      : "linear-gradient(180deg, #FFF8EE 0%, #F9F1E6 100%)",
     color: ORCHARD_COLORS.text,
     fontWeight: 800,
     cursor: disabled ? "not-allowed" : "pointer",
+    boxShadow: disabled ? "none" : "0 4px 10px rgba(47,47,47,0.03)",
   };
 }
 
@@ -165,5 +183,42 @@ export function orchardPillStyle(background: string, border: string): React.CSSP
     color: ORCHARD_COLORS.text,
     marginRight: 8,
     marginBottom: 8,
+    boxShadow: "0 2px 6px rgba(47,47,47,0.03)",
+  };
+}
+
+export function orchardRibbonHeaderStyle(): React.CSSProperties {
+  return {
+    display: "inline-block",
+    background: `linear-gradient(180deg, ${ORCHARD_COLORS.accent} 0%, ${ORCHARD_COLORS.accentDark} 100%)`,
+    color: "#FFFFFF",
+    fontWeight: 800,
+    fontSize: 12,
+    letterSpacing: "0.03em",
+    padding: "7px 14px 7px 14px",
+    borderRadius: "14px 18px 18px 14px",
+    boxShadow: `0 6px 14px ${ORCHARD_COLORS.shadow}`,
+    border: `1px solid ${ORCHARD_COLORS.accentDark}`,
+  };
+}
+
+export function orchardHeroTitleStyle(): React.CSSProperties {
+  return {
+    margin: "0 0 8px 0",
+    color: ORCHARD_COLORS.heading,
+    fontSize: 36,
+    lineHeight: 1.08,
+    fontFamily: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+    letterSpacing: "-0.01em",
+  };
+}
+
+export function orchardStitchDividerStyle(): React.CSSProperties {
+  return {
+    height: 0,
+    borderTop: `2px dashed ${ORCHARD_COLORS.stitch}`,
+    opacity: 0.95,
+    marginTop: 8,
+    marginBottom: 2,
   };
 }
