@@ -37,11 +37,6 @@ function makeUrlItems(raw: string, label: "curriculum" | "exemplar"): UploadedTe
     }));
 }
 
-function fileListSummary(items: UploadedTextFile[]) {
-  if (!items.length) return "none";
-  return items.map((f) => f.name).join(", ");
-}
-
 function normalizeText(value: string) {
   return String(value || "").toLowerCase();
 }
@@ -111,11 +106,103 @@ function buildClarificationNotes(curriculumItems: UploadedTextFile[], exemplarIt
   return notes;
 }
 
+function itemTypeLabel(item: UploadedTextFile) {
+  const kind = String(item.kind || "").toLowerCase();
+  const name = String(item.name || "").toLowerCase();
+
+  if (kind === "url" || name.includes("http://") || name.includes("https://")) return "Link";
+  if (name.endsWith(".pdf") || kind.includes("pdf")) return "PDF";
+  if (name.endsWith(".ppt") || name.endsWith(".pptx") || kind.includes("presentation")) return "Slides";
+  if (name.endsWith(".docx") || name.endsWith(".doc")) return "Document";
+  if (name.endsWith(".txt") || name.endsWith(".md") || kind.startsWith("text/")) return "Text";
+  if (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".webp") || kind.startsWith("image/")) return "Image";
+  return "File";
+}
+
+function hasFallbackOnlyText(item: UploadedTextFile) {
+  const text = String(item.text || "");
+  return /uploaded:/i.test(text) || /extraction is not available yet/i.test(text);
+}
+
+function UploadItemCard({
+  item,
+  onRemove,
+}: {
+  item: UploadedTextFile;
+  onRemove: () => void;
+}) {
+  const fallbackOnly = hasFallbackOnlyText(item);
+
+  return (
+    <div
+      style={{
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 16,
+        background: "#FFFDF9",
+        padding: 12,
+        boxShadow: "0 3px 8px rgba(47,47,47,0.03)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 10,
+          marginBottom: 8,
+        }}
+      >
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 4, wordBreak: "break-word" }}>
+            {item.name}
+          </div>
+          <div style={{ fontSize: 12, color: COLORS.muted }}>
+            {itemTypeLabel(item)} · {fallbackOnly ? "Fallback note only" : "Text available"}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onRemove}
+          style={{
+            border: `1px solid ${COLORS.border}`,
+            background: "#FFF6F4",
+            color: COLORS.heading,
+            borderRadius: 12,
+            padding: "6px 10px",
+            fontWeight: 700,
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          Remove
+        </button>
+      </div>
+
+      <div
+        style={{
+          fontSize: 12,
+          color: COLORS.muted,
+          lineHeight: 1.5,
+          background: "#FFFCF7",
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 12,
+          padding: 10,
+        }}
+      >
+        {String(item.text || "").slice(0, 180) || "No text extracted."}
+        {String(item.text || "").length > 180 ? "..." : ""}
+      </div>
+    </div>
+  );
+}
+
 function UploadDropZone({
   title,
   subtitle,
   files,
   onFilesChosen,
+  onRemoveItem,
   linksValue,
   onLinksChange,
 }: {
@@ -123,6 +210,7 @@ function UploadDropZone({
   subtitle: string;
   files: UploadedTextFile[];
   onFilesChosen: (files: FileList | null) => Promise<void>;
+  onRemoveItem: (index: number) => void;
   linksValue: string;
   onLinksChange: (value: string) => void;
 }) {
@@ -203,9 +291,23 @@ function UploadDropZone({
         />
       </label>
 
-      <div style={{ fontSize: 12, color: COLORS.muted, lineHeight: 1.55 }}>
-        <b>Attached items:</b> {fileListSummary(files)}
+      <div style={{ fontSize: 12, color: COLORS.muted, lineHeight: 1.55, marginBottom: 10 }}>
+        <b>Attached items:</b> {files.length}
       </div>
+
+      {files.length > 0 ? (
+        <div style={{ display: "grid", gap: 10 }}>
+          {files.map((item, index) => (
+            <UploadItemCard
+              key={`${item.name}-${index}`}
+              item={item}
+              onRemove={() => onRemoveItem(index)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div style={{ fontSize: 12, color: COLORS.muted }}>No files or links added yet.</div>
+      )}
     </div>
   );
 }
@@ -227,12 +329,45 @@ export default function MaterialsPage() {
 
   async function onPickMaterials(files: FileList | null) {
     const uploaded = await filesToUploaded(files);
-    setMaterialsPack(uploaded);
+    setMaterialsPack((current) => [...current, ...uploaded]);
   }
 
   async function onPickExemplar(files: FileList | null) {
     const uploaded = await filesToUploaded(files);
-    setExemplarPack(uploaded);
+    setExemplarPack((current) => [...current, ...uploaded]);
+  }
+
+  function removeCurriculumItem(index: number) {
+    const fileCount = materialsPack.length;
+    if (index < fileCount) {
+      setMaterialsPack((current) => current.filter((_, i) => i !== index));
+      return;
+    }
+
+    const linkIndex = index - fileCount;
+    const links = String(curriculumLinks || "")
+      .split(/\r?\n|,/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .filter((_, i) => i !== linkIndex);
+
+    setCurriculumLinks(links.join("\n"));
+  }
+
+  function removeExemplarItem(index: number) {
+    const fileCount = exemplarPack.length;
+    if (index < fileCount) {
+      setExemplarPack((current) => current.filter((_, i) => i !== index));
+      return;
+    }
+
+    const links = String(exemplarLinks || "")
+      .split(/\r?\n|,/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .filter((_, i) => i !== index - fileCount);
+
+    setExemplarLinks(links.join("\n"));
   }
 
   const finalCurriculumItems = useMemo(
@@ -353,6 +488,7 @@ export default function MaterialsPage() {
               subtitle="Use this for lesson materials, teacher resources, texts, decodables, slides, PDFs, images, or website links."
               files={finalCurriculumItems}
               onFilesChosen={onPickMaterials}
+              onRemoveItem={removeCurriculumItem}
               linksValue={curriculumLinks}
               onLinksChange={setCurriculumLinks}
             />
@@ -362,6 +498,7 @@ export default function MaterialsPage() {
               subtitle="Use this for model lessons, example decks, teaching flow references, pacing cues, and structure examples."
               files={finalExemplarItems}
               onFilesChosen={onPickExemplar}
+              onRemoveItem={removeExemplarItem}
               linksValue={exemplarLinks}
               onLinksChange={setExemplarLinks}
             />
