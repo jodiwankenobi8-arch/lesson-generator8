@@ -2,6 +2,11 @@ import { LessonBlueprint, PlanInput, UploadedTextFile } from "./types";
 import { detectFramework, extractPresenterCues } from "./exemplarAnalysis";
 import { extractCoverageFromCurriculum } from "../curriculum/extractCoverageFromCurriculum";
 
+function isTeacherLedEarlyElementary(plan: PlanInput) {
+  const text = `${plan.lessonTitle || ""} ${plan.objective || ""} ${plan.notes || ""}`.toLowerCase();
+  return /\bkindergarten\b|\bgrade k\b|\bk\b|\bfirst grade\b|\bgrade 1\b|\b1st\b/.test(text);
+}
+
 export function buildBlueprint(args: {
   plan: PlanInput;
   curriculumFiles: UploadedTextFile[];
@@ -32,11 +37,14 @@ export function buildBlueprint(args: {
 
   const hasTrueExemplar = trueExemplarFiles.length > 0;
   const hasCurriculum = curriculumChecklist.length > 0;
+  const teacherLedEarlyElementary = isTeacherLedEarlyElementary(args.plan);
 
   const frameworkApplied =
-    hasTrueExemplar
-      ? (frameworkDetection.framework !== "linear" ? frameworkDetection.framework : "clickableHub")
-      : "linear";
+    teacherLedEarlyElementary
+      ? "linear"
+      : hasTrueExemplar
+        ? (frameworkDetection.framework !== "linear" ? frameworkDetection.framework : "clickableHub")
+        : "linear";
 
   const defaultSlides = [
     { index: 1, title: args.plan.lessonTitle || "Lesson", purpose: "Title", source: "ai" as const, uses: [{ source: "plan" as const, ref: "lessonTitle" }] },
@@ -80,6 +88,12 @@ export function buildBlueprint(args: {
 
   if (curriculumChecklist[0]) curriculumChecklist[0].placed = true;
 
+  const noteParts = [
+    "Blueprint uses framework-aware slide skeletons.",
+    extracted.summary,
+    teacherLedEarlyElementary ? "Teacher-led early elementary override applied: linear framework enforced." : "",
+  ].filter(Boolean);
+
   return {
     createdAtISO,
     plan: { input: args.plan },
@@ -95,7 +109,7 @@ export function buildBlueprint(args: {
     synthesis: {
       frameworkApplied,
       slides,
-      notes: "Blueprint uses framework-aware slide skeletons. " + extracted.summary,
+      notes: noteParts.join(" "),
     },
   };
 }
