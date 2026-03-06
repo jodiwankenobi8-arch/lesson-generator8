@@ -1,4 +1,4 @@
-ï»¿import { saveAs } from "file-saver";
+import { saveAs } from "file-saver";
 import {
   Document,
   Packer,
@@ -11,18 +11,51 @@ import {
   TableCell,
   WidthType,
 } from "docx";
-import type { LessonPackage } from "../types";
+import type { LessonPackage, RotationPlanItem } from "../types";
+
+function getCenterTitle(c: any, idx: number) {
+  return c?.title ?? c?.name ?? `Center ${idx + 1}`;
+}
+
+function getCenterObjective(c: any) {
+  return c?.objective ?? c?.focusSkill ?? "—";
+}
+
+function getCenterDirection(c: any) {
+  return c?.direction ?? c?.instructions ?? "—";
+}
+
+function getCenterDifferentiation(c: any) {
+  return c?.differentiation ?? "—";
+}
+
+function getRotationLines(rotationPlan: LessonPackage["rotationPlan"]): string[] {
+  if (Array.isArray(rotationPlan)) {
+    return rotationPlan.map((item: RotationPlanItem, idx: number) => {
+      if (typeof item === "string") return item;
+      const title = item?.title ?? `Rotation ${idx + 1}`;
+      const description = item?.description ?? item?.text ?? "";
+      return `${title}: ${description}`.trim();
+    });
+  }
+
+  if (typeof rotationPlan === "string" && rotationPlan.trim()) {
+    return [rotationPlan];
+  }
+
+  return ["No rotation plan generated."];
+}
 
 export async function exportLessonPlanDocx(pkg: LessonPackage) {
   const title = pkg.input.lessonTitle || "Lesson Plan";
-  const metaLine = `${pkg.input.date}  â€¢  ${pkg.input.subject}  â€¢  Grade ${pkg.input.grade}  â€¢  ${pkg.input.durationMinutes} min`;
+  const metaLine = `${pkg.input.date}  •  ${pkg.input.subject}  •  Grade ${pkg.input.grade}  •  ${pkg.input.durationMinutes} min`;
 
   const standardsLine =
     ((pkg as any).standardsDetected ?? (pkg as any).standards ?? []).length === 0
-      ? "Standards: (none detected yet â€” dataset not loaded)"
+      ? "Standards: (none detected yet — dataset not loaded)"
       : "Standards: " +
         ((pkg as any).standardsDetected ?? (pkg as any).standards ?? [])
-          .map((s) => `${s.code}${s.overridden ? " (override)" : ""}`)
+          .map((s: any) => `${s.code}${s.overridden ? " (override)" : ""}`)
           .join(", ");
 
   const doc = new Document({
@@ -50,7 +83,7 @@ export async function exportLessonPlanDocx(pkg: LessonPackage) {
           spacer(),
 
           heading("Essential Question"),
-          para(pkg.input.essentialQuestion || "â€”"),
+          para(pkg.input.essentialQuestion || "—"),
           spacer(),
 
           heading("Text / Topic"),
@@ -58,7 +91,7 @@ export async function exportLessonPlanDocx(pkg: LessonPackage) {
           spacer(),
 
           heading("Materials"),
-          para(pkg.input.materials?.trim() ? pkg.input.materials : "â€”"),
+          para(pkg.input.materials?.trim() ? pkg.input.materials : "—"),
           spacer(),
 
           heading("Lesson Plan (Slide-Aligned)"),
@@ -112,7 +145,7 @@ function lessonSection(
   description: string,
   differentiation?: { tier3?: string; tier2?: string; enrichment?: string }
 ) {
-  const slideLine = slides?.length ? `Slides: ${slides.join(", ")}` : "Slides: â€”";
+  const slideLine = slides?.length ? `Slides: ${slides.join(", ")}` : "Slides: —";
 
   const blocks: Paragraph[] = [
     subheading(headingText),
@@ -122,9 +155,9 @@ function lessonSection(
 
   if (differentiation) {
     blocks.push(
-      para(`Tier 3: ${differentiation.tier3 ?? "â€”"}`),
-      para(`Tier 2: ${differentiation.tier2 ?? "â€”"}`),
-      para(`Enrichment: ${differentiation.enrichment ?? "â€”"}`),
+      para(`Tier 3: ${differentiation.tier3 ?? "—"}`),
+      para(`Tier 2: ${differentiation.tier2 ?? "—"}`),
+      para(`Enrichment: ${differentiation.enrichment ?? "—"}`),
     );
   }
 
@@ -134,24 +167,28 @@ function lessonSection(
 
 function centersBlock(pkg: LessonPackage): Paragraph[] {
   const blocks: Paragraph[] = [];
+
   pkg.centers.forEach((c, idx) => {
     blocks.push(
-      subheading(`${idx + 1}. ${c.name}`),
-      para(`Focus Skill: ${c.focusSkill}`),
-      para(`Instructions: ${c.instructions}`),
-      para(`Differentiation: ${c.differentiation ?? "â€”"}`),
+      subheading(`${idx + 1}. ${getCenterTitle(c, idx)}`),
+      para(`Focus Skill: ${getCenterObjective(c)}`),
+      para(`Instructions: ${getCenterDirection(c)}`),
+      para(`Differentiation: ${getCenterDifferentiation(c)}`),
       spacer()
     );
   });
 
-  blocks.push(
-    para(`Rotation Plan: ${pkg.rotationPlan}`),
-  );
+  blocks.push(subheading("Rotation Plan"));
+  getRotationLines(pkg.rotationPlan).forEach((line) => {
+    blocks.push(para(line));
+  });
 
   return blocks;
 }
 
 function interventionsTable(pkg: LessonPackage) {
+  const normalizeItem = (item: any) => String(item?.description ?? item?.text ?? item ?? "");
+
   const cell = (text: string) =>
     new TableCell({
       width: { size: 33.3, type: WidthType.PERCENTAGE },
@@ -180,9 +217,9 @@ function interventionsTable(pkg: LessonPackage) {
     rows.push(
       new TableRow({
         children: [
-          cell(pkg.interventions.tier3[i] ?? ""),
-          cell(pkg.interventions.tier2[i] ?? ""),
-          cell(pkg.interventions.enrichment[i] ?? ""),
+          cell(normalizeItem(pkg.interventions.tier3[i])),
+          cell(normalizeItem(pkg.interventions.tier2[i])),
+          cell(normalizeItem(pkg.interventions.enrichment[i])),
         ],
       })
     );
