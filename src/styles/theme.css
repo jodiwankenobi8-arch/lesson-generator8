@@ -1,0 +1,334 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* 🍎 APPLE ORCHARD STORYBOOK DESIGN SYSTEM */
+  /* Theme: warm • calm • teacher-friendly • elegant • tactile */
+  
+  /* CORE PALETTE */
+  --ao-orchard-cream: #FFF6E9;     /* Canvas background */
+  --ao-apple-blush: #F7D6D0;       /* Soft accent */
+  --ao-honey: #F2C078;             /* Warm highlight */
+  --ao-moss: #6E8B6B;              /* Primary green (ribbons, buttons) */
+  --ao-deep-orchard: #3F5A40;      /* Dark green */
+  
+  /* NEUTRALS */
+  --ao-paper-white: #FFFFFF;       /* Cards, panels */
+  --ao-warm-gray: #E7E2DA;         /* Borders, dividers */
+  --ao-charcoal: #2F2F2F;          /* Text */
+  
+  /* ACCENT (use sparingly) */
+  --ao-cranberry: #B8545A;         /* Alerts, emphasis */
+  
+  /* LEGACY COMPATIBILITY (maps to new palette) */
+  --ao-navy: #3F5A40;              /* Maps to Deep Orchard */
+  --ao-cream: #FFF6E9;             /* Maps to Orchard Cream */
+  --ao-white: #FFFFFF;             /* Maps to Paper White */
+  --ao-red: #B8545A;               /* Maps to Cranberry */
+  --ao-green: #6E8B6B;             /* Maps to Moss */
+  --ao-sky: #CFE3F5;               /* Kept for info tags */
+  --ao-pink: #F7D6D0;              /* Maps to Apple Blush */
+  --ao-text: #2F2F2F;              /* Maps to Charcoal */
+  --ao-muted: #6B7280;             /* Secondary text */
+  --ao-border: #E7E2DA;            /* Maps to Warm Gray */
+  
+  /* DESIGN SYSTEM SPECS */
+  --ao-radius-card: 20px;          /* Card corners (updated) */
+  --ao-radius-btn: 14px;           /* Button corners (updated) */
+  --ao-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); /* Soft shadow (updated) */
+  --ao-ribbon-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Ribbon shadow */
+  
+  /* TYPOGRAPHY */
+  --font-size: 16px;
+  --font-heading: 'Playfair Display', 'Libre Baskerville', Georgia, serif;
+  --font-body: 'Inter', 'Source Sans 3', system-ui, sans-serif;
+  --font-accent: 'Caveat', cursive; /* Optional warmth */
+  
+  /* Semantic Color Tokens (mapped to Storybook palette) */
+  --background: var(--ao-orchard-cream);
+  --foreground: var(--ao-charcoal);
+  --card: var(--ao-paper-white);
+  --card-foreground: var(--ao-charcoal);
+  --popover: var(--ao-paper-white);
+  --popover-foreground: var(--ao-charcoal);
+  --primary: var(--ao-moss);
+  --primary-foreground: var(--ao-paper-white);
+  --secondary: var(--ao-honey);
+  --secondary-foreground: var(--ao-deep-orchard);
+  --muted: #F5F5F5;
+  --muted-foreground: var(--ao-muted);
+  --accent: var(--ao-deep-orchard);
+  --accent-foreground: var(--ao-paper-white);
+  --destructive: var(--ao-cranberry);
+  --destructive-foreground: var(--ao-paper-white);
+  --success: var(--ao-moss);
+  --success-foreground: var(--ao-paper-white);
+  --pink-accent: var(--ao-apple-blush);
+  --pink-accent-foreground: var(--ao-charcoal);
+  
+  /* Border & Input */
+  --border: var(--ao-warm-gray);
+  --input: var(--ao-warm-gray);
+  --ring: var(--ao-moss);
+  
+  /* Processing/Info state helpers */
+  --processing-bg: color-mix(in srgb, var(--ao-moss) 5%, transparent);
+  --processing-border: color-mix(in srgb, var(--ao-moss) 20%, transparent);
+  --processing-text: var(--ao-deep-orchard);
+  --info-bg: var(--ao-sky);
+  --info-text: var(--ao-deep-orchard);
+  
+  /* Chart Colors */
+  --chart-1: var(--ao-cranberry);
+  --chart-2: var(--ao-moss);
+  --chart-3: var(--ao-honey);
+  --chart-4: var(--ao-deep-orchard);
+  --chart-5: var(--ao-apple-blush);
+  
+  /* Border Radius */
+  --radius: var(--ao-radius-btn);
+  --radius-card: var(--ao-radius-card);
+  
+  /* Spacing System: 8px / 16px / 24px / 32px / 40px */
+  --spacing-xs: 0.5rem;  /* 8px */
+  --spacing-sm: 1rem;    /* 16px */
+  --spacing-md: 1.5rem;  /* 24px */
+  --spacing-lg: 2rem;    /* 32px */
+  --spacing-xl: 2.5rem;  /* 40px */
+  
+  /* Sidebar */
+  --sidebar: var(--ao-deep-orchard);
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: var(--ao-moss);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: var(--ao-honey);
+  --sidebar-accent-foreground: var(--ao-deep-orchard);
+  --sidebar-border: var(--ao-warm-gray);
+  --sidebar-ring: var(--ao-moss);
+}
+
+.dark {
+  /* Keep dark mode simple or disable if not needed */
+  --background: #1F2A44;
+  --foreground: #FFFFFF;
+  --card: #2A3A5A;
+  --card-foreground: #FFFFFF;
+  --popover: #2A3A5A;
+  --popover-foreground: #FFFFFF;
+  --primary: #C84C4C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #3A4A6A;
+  --secondary-foreground: #FFFFFF;
+  --muted: #3A4A6A;
+  --muted-foreground: #CCCCCC;
+  --accent: #C84C4C;
+  --accent-foreground: #FFFFFF;
+  --destructive: #E85555;
+  --destructive-foreground: #FFFFFF;
+  --border: #3A4A6A;
+  --input: #3A4A6A;
+  --ring: #C84C4C;
+  --sidebar: #1F2A44;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #C84C4C;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #2A3A5A;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #2A3A5A;
+  --sidebar-ring: #C84C4C;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  /**
+  * Apple Orchard Planner Typography
+  * Headings use Montserrat/Nunito for friendly professionalism
+  * Body uses Inter for clean readability
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-25px);
+  }
+}
+
+@keyframes wave-slow {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-15px);
+  }
+}
+
+.animate-wave {
+  animation: wave 3s ease-in-out infinite;
+}
+
+.animate-wave-slow {
+  animation: wave-slow 4s ease-in-out infinite;
+}
+
+/* Lesson Slide Factory - Phase 1 animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Timer states */
+.timer-widget .timer-display {
+  transition: all 0.3s ease;
+}
+
+.timer-widget .timer-display.running {
+  color: #3B82F6;
+}
+
+.timer-widget .timer-display.complete {
+  color: #10B981;
+  transform: scale(1.1);
+}
+
+/* Slide transitions */
+.slide-transition-enter {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.slide-transition-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.slide-transition-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-transition-exit-active {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 300ms, transform 300ms;
+}

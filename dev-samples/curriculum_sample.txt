@@ -1,0 +1,36 @@
+﻿CURRICULUM SOURCE: District-provided lesson materials (content to teach)
+GRADE: K
+SUBJECT: ELA
+FOCUS: Story Comprehension - Setting (where the story happens)
+
+[LESSON MATERIALS - RAW TEXT]
+- Objective (district): "Students will identify the setting of a story."
+- Vocabulary list: setting, character, beginning, middle, end
+- Teacher script snippets:
+  - "Introduce the word setting. Explain setting means where the story happens."
+  - "Read the story. Pause to ask: Where are they? What clues do we see?"
+  - "Students will draw the setting and label it with a word."
+- Slides mentioned (district):
+  Slide A: Title: "What is Setting?"
+  Slide B: Picture of a park. Text: "This story happens at the park."
+  Slide C: Picture of a school. Text: "This story happens at school."
+  Slide D: Turn and Talk: "Where does this story happen?"
+  Slide E: Practice: "Circle the picture that shows the setting."
+  Slide F: Exit Ticket: "Draw the setting of today's story."
+
+[STORY CONTENT]
+Title: "A Rainy Day"
+Page 1: "Mia looks out the window."
+Page 2: "Puddles splash on the street."
+Page 3: "Mia opens her umbrella."
+Page 4: "Mia walks to the bus stop."
+
+[IMAGES / VISUALS (DESCRIPTIONS)]
+- Image 1: apartment window with rain
+- Image 2: street with puddles
+- Image 3: umbrella
+- Image 4: bus stop
+
+[NOTES]
+- If slides are created, include these image placeholders as student-friendly visuals.
+- Keep vocabulary minimal: setting should not be outranked by vocabulary standards unless lesson is explicitly a word study.
