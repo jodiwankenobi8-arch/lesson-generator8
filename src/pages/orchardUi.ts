@@ -1,38 +1,39 @@
 import React from "react";
 
 export const ORCHARD_COLORS = {
-  page: "#F7F1E8",
-  pageGradientTop: "#FBF7F1",
-  panel: "#FFFDF9",
-  panelAlt: "#F9F4EC",
-  panelWarm: "#FFF8EF",
-  border: "#D8CBB8",
-  borderSoft: "#E8DDD0",
-  borderStrong: "#CBB89D",
-  text: "#2F2A24",
-  muted: "#6F655B",
-  heading: "#314B3A",
-  accent: "#6E8B5E",
-  accentDark: "#4E6542",
-  accentSoft: "#EEF5EA",
-  blush: "#D9A58F",
-  honey: "#E8C47A",
-  info: "#EAF2FB",
-  infoBorder: "#BDD0E6",
-  success: "#EEF5EA",
-  successBorder: "#C9DABD",
+  page: "#FFF6E9",
+  panel: "#FFFFFF",
+  panelAlt: "#FBF6EF",
+  border: "#E7E2DA",
+  borderSoft: "#EFE8DE",
+  borderStrong: "#D8CEC0",
+  text: "#2F2F2F",
+  muted: "#6C6258",
+  heading: "#3F5A40",
+  accent: "#6E8B6B",
+  accentDark: "#3F5A40",
+  accentSoft: "#EEF4EC",
+  blush: "#F7D6D0",
+  honey: "#F2C078",
+  cranberry: "#B8545A",
+  info: "#EEF5FB",
+  infoBorder: "#C9D9E6",
+  success: "#EEF6EE",
+  successBorder: "#C9DBC8",
   warn: "#FFF6E8",
-  warnBorder: "#E9D3A5",
-  danger: "#FFF2F1",
-  dangerBorder: "#E6B8B4",
-  shadow: "rgba(73, 52, 33, 0.08)",
-  shadowSoft: "rgba(73, 52, 33, 0.05)",
+  warnBorder: "#E7D2A6",
+  shadow: "rgba(63, 90, 64, 0.10)",
+  shadowSoft: "rgba(47, 47, 47, 0.06)",
 };
 
 export function orchardShellStyle(): React.CSSProperties {
   return {
     minHeight: "100vh",
-    background: `linear-gradient(180deg, ${ORCHARD_COLORS.pageGradientTop} 0%, ${ORCHARD_COLORS.page} 220px)`,
+    background: `
+      radial-gradient(circle at top left, rgba(247, 214, 208, 0.20), transparent 20%),
+      radial-gradient(circle at top right, rgba(242, 192, 120, 0.14), transparent 18%),
+      ${ORCHARD_COLORS.page}
+    `,
     color: ORCHARD_COLORS.text,
   };
 }
@@ -49,9 +50,9 @@ export function orchardCardStyle(): React.CSSProperties {
   return {
     background: ORCHARD_COLORS.panel,
     border: `1px solid ${ORCHARD_COLORS.border}`,
-    borderRadius: 22,
-    padding: 20,
-    boxShadow: `0 10px 28px ${ORCHARD_COLORS.shadow}`,
+    borderRadius: 24,
+    padding: 18,
+    boxShadow: `0 10px 28px ${ORCHARD_COLORS.shadowSoft}`,
     marginBottom: 18,
   };
 }
@@ -59,8 +60,9 @@ export function orchardCardStyle(): React.CSSProperties {
 export function orchardHeroCardStyle(): React.CSSProperties {
   return {
     ...orchardCardStyle(),
-    background: `linear-gradient(135deg, ${ORCHARD_COLORS.panelWarm} 0%, ${ORCHARD_COLORS.page} 100%)`,
-    overflow: "hidden",
+    background: "linear-gradient(135deg, #FFF9F1 0%, #FFF6E9 58%, #FBF3E6 100%)",
+    border: `1px solid ${ORCHARD_COLORS.borderStrong}`,
+    boxShadow: `0 14px 32px ${ORCHARD_COLORS.shadow}`,
   };
 }
 
@@ -68,9 +70,8 @@ export function orchardSoftCardStyle(background = ORCHARD_COLORS.panelAlt): Reac
   return {
     background,
     border: `1px solid ${ORCHARD_COLORS.borderSoft}`,
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 14,
-    boxShadow: `0 3px 10px ${ORCHARD_COLORS.shadowSoft}`,
   };
 }
 
@@ -102,13 +103,12 @@ export function orchardInputStyle(): React.CSSProperties {
   return {
     width: "100%",
     padding: 12,
-    borderRadius: 14,
+    borderRadius: 16,
     border: `1px solid ${ORCHARD_COLORS.border}`,
     background: "#FFFDFC",
     color: ORCHARD_COLORS.text,
     outline: "none",
     boxSizing: "border-box",
-    transition: "border-color 120ms ease, box-shadow 120ms ease, background 120ms ease",
   };
 }
 
@@ -123,22 +123,22 @@ export function orchardTextareaStyle(minHeight = 90): React.CSSProperties {
 export function orchardPrimaryButtonStyle(disabled = false): React.CSSProperties {
   return {
     padding: "12px 16px",
-    borderRadius: 14,
+    borderRadius: 16,
     border: `1px solid ${disabled ? ORCHARD_COLORS.border : ORCHARD_COLORS.accent}`,
-    background: disabled ? "#E9E1D5" : ORCHARD_COLORS.accent,
-    color: disabled ? ORCHARD_COLORS.muted : "#fff",
+    background: disabled ? "#F2EEE8" : ORCHARD_COLORS.accent,
+    color: disabled ? ORCHARD_COLORS.muted : "#FFFFFF",
     fontWeight: 800,
     cursor: disabled ? "not-allowed" : "pointer",
-    boxShadow: disabled ? "none" : `0 6px 16px ${ORCHARD_COLORS.shadowSoft}`,
+    boxShadow: disabled ? "none" : `0 6px 14px ${ORCHARD_COLORS.shadowSoft}`,
   };
 }
 
 export function orchardSecondaryButtonStyle(disabled = false): React.CSSProperties {
   return {
     padding: "12px 16px",
-    borderRadius: 14,
+    borderRadius: 16,
     border: `1px solid ${ORCHARD_COLORS.border}`,
-    background: disabled ? "#F2ECE4" : ORCHARD_COLORS.panelAlt,
+    background: disabled ? "#F5F1EA" : ORCHARD_COLORS.panelAlt,
     color: ORCHARD_COLORS.text,
     fontWeight: 800,
     cursor: disabled ? "not-allowed" : "pointer",
