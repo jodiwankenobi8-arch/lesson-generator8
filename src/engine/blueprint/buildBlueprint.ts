@@ -21,29 +21,34 @@ export function buildBlueprint(args: {
   const frameworkDetection = detectFramework(exemplarTextAll);
   const presenterCues = args.exemplarFiles.flatMap(f => extractPresenterCues(f.text ?? "", f.name));
 
+  const hasExemplar = (args.exemplarFiles ?? []).length > 0;
+  const hasCurriculum = curriculumChecklist.length > 0;
+
   const frameworkApplied =
-    args.exemplarFiles.length && frameworkDetection.confidence >= 0.55
-      ? frameworkDetection.framework
+    hasExemplar
+      ? (frameworkDetection.framework !== "linear" ? frameworkDetection.framework : "clickableHub")
       : "linear";
 
   const defaultSlides = [
     { index: 1, title: args.plan.lessonTitle || "Lesson", purpose: "Title", source: "ai" as const, uses: [{ source: "plan" as const, ref: "lessonTitle" }] },
     { index: 2, title: "I Can", purpose: "Objective", source: "ai" as const, uses: [{ source: "plan" as const, ref: "objective" }] },
     { index: 3, title: "Essential Question", purpose: "Discussion", source: "ai" as const, uses: [{ source: "plan" as const, ref: "essentialQuestion" }] },
-    { index: 4, title: "Teach", purpose: "Direct instruction", source: "ai" as const, uses: curriculumChecklist[0] ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "First curriculum item" }] : [] },
-    { index: 5, title: "Practice", purpose: "Guided/Independent", source: "ai" as const, presenterCues: presenterCues.slice(0, 2) },
-    { index: 6, title: "Exit Ticket", purpose: "Check for understanding", source: "ai" as const },
+    { index: 4, title: "Teach", purpose: "Direct instruction", source: "ai" as const, uses: curriculumChecklist[0] ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "Primary curriculum item" }] : [] },
+    ...(hasCurriculum ? [{ index: 5, title: "Guided Practice", purpose: "Guided practice", source: "ai" as const }] : []),
+    { index: hasCurriculum ? 6 : 5, title: "Practice", purpose: "Independent practice", source: "ai" as const, presenterCues: presenterCues.slice(0, 2) },
+    { index: hasCurriculum ? 7 : 6, title: "Exit Ticket", purpose: "Check for understanding", source: "ai" as const },
   ];
 
   const clickableHubSlides = [
     { index: 1, title: args.plan.lessonTitle || "Lesson Hub", purpose: "Welcome", source: "ai" as const, uses: [{ source: "plan" as const, ref: "lessonTitle" }] },
     { index: 2, title: "Lesson Hub", purpose: "Navigation menu", source: "ai" as const, presenterCues: presenterCues.slice(0, 3) },
     { index: 3, title: "I Can", purpose: "Objective", source: "ai" as const, uses: [{ source: "plan" as const, ref: "objective" }] },
-    { index: 4, title: "Teach", purpose: "Mini lesson", source: "ai" as const, uses: curriculumChecklist[0] ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "Primary curriculum item" }] : [] },
-    { index: 5, title: "Model", purpose: "Think aloud", source: "ai" as const },
-    { index: 6, title: "Guided Practice", purpose: "We do", source: "ai" as const, presenterCues: presenterCues.slice(3, 5) },
-    { index: 7, title: "Center Rotation", purpose: "Independent practice", source: "ai" as const },
-    { index: 8, title: "Exit Ticket", purpose: "Check for understanding", source: "ai" as const },
+    { index: 4, title: "Hook", purpose: "Discussion", source: "ai" as const, uses: [{ source: "plan" as const, ref: "essentialQuestion" }] },
+    { index: 5, title: "Teach", purpose: "Mini lesson", source: "ai" as const, uses: curriculumChecklist[0] ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "Primary curriculum item" }] : [] },
+    { index: 6, title: "Model", purpose: "Think aloud", source: "ai" as const },
+    { index: 7, title: "Guided Practice", purpose: "We do", source: "ai" as const, presenterCues: presenterCues.slice(3, 5) },
+    { index: 8, title: "Center Rotation", purpose: "Independent practice", source: "ai" as const },
+    { index: 9, title: "Exit Ticket", purpose: "Check for understanding", source: "ai" as const },
   ];
 
   const guidepostSlides = [
