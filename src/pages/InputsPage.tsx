@@ -311,10 +311,11 @@ export default function InputsPage() {
             onClick={() => navigate("/materials")}
             style={orchardPrimaryButtonStyle(false)}
           >
-            Continue to Materials ->
+            Continue to Materials -&gt;
           </button>
         </div>
       </div>
     </div>
   );
 }
+
