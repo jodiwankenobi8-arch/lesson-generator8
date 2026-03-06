@@ -257,12 +257,16 @@ function BlueprintInsights() {
 function SlidePreviewCard({
   slide,
   index,
+  compact,
 }: {
   slide: any;
   index: number;
+  compact: boolean;
 }) {
   const bullets = Array.isArray(slide?.bullets) ? slide.bullets.filter(Boolean) : [];
   const bodyText = slide?.text || slide?.body || "";
+  const visibleBullets = compact ? bullets.slice(0, 3) : bullets;
+  const hasTrimmedBullets = compact && bullets.length > 3;
 
   return (
     <div
@@ -278,33 +282,39 @@ function SlidePreviewCard({
         style={{
           background: "linear-gradient(135deg, #6E8B5E 0%, #4E6542 100%)",
           color: "#fff",
-          padding: "12px 14px",
+          padding: compact ? "10px 12px" : "12px 14px",
         }}
       >
         <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.9, marginBottom: 4 }}>
           Slide {index + 1}
         </div>
-        <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.2 }}>
+        <div style={{ fontSize: compact ? 16 : 18, fontWeight: 800, lineHeight: 1.2 }}>
           {slide?.title ?? slide?.heading ?? `Slide ${index + 1}`}
         </div>
       </div>
 
-      <div style={{ padding: 16 }}>
-        {bullets.length > 0 ? (
-          <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-            {bullets.map((b: any, idx: number) => (
-              <li key={idx} style={{ marginBottom: 6 }}>
+      <div style={{ padding: compact ? 12 : 16 }}>
+        {visibleBullets.length > 0 ? (
+          <ul style={{ margin: 0, paddingLeft: 20, lineHeight: compact ? 1.45 : 1.6 }}>
+            {visibleBullets.map((b: any, idx: number) => (
+              <li key={idx} style={{ marginBottom: compact ? 4 : 6 }}>
                 {String(b)}
               </li>
             ))}
           </ul>
         ) : bodyText ? (
-          <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
-            {String(bodyText)}
+          <div style={{ whiteSpace: "pre-wrap", lineHeight: compact ? 1.45 : 1.6 }}>
+            {compact ? short(bodyText, 180) : String(bodyText)}
           </div>
         ) : (
           <div style={{ color: COLORS.muted, fontStyle: "italic" }}>
             No preview text on this slide yet.
+          </div>
+        )}
+
+        {hasTrimmedBullets && (
+          <div style={{ marginTop: 8, fontSize: 12, color: COLORS.muted }}>
+            + {bullets.length - 3} more bullets
           </div>
         )}
 
@@ -327,7 +337,7 @@ function SlidePreviewCard({
               Teacher note
             </div>
             <div style={{ color: COLORS.muted, lineHeight: 1.5, fontSize: 14 }}>
-              {String(slide.teacherNotes)}
+              {compact ? short(String(slide.teacherNotes), 120) : String(slide.teacherNotes)}
             </div>
           </div>
         )}
@@ -341,6 +351,7 @@ export default function ResultsHubPage() {
 
   const [busy, setBusy] = useState<null | "pptx" | "docx" | "zip">(null);
   const [err, setErr] = useState<string | null>(null);
+  const [previewMode, setPreviewMode] = useState<"teaching" | "compact">("teaching");
 
   if (!pkg) {
     return (
@@ -553,8 +564,34 @@ export default function ResultsHubPage() {
         </Section>
 
         <Section title="Slide Preview Deck" defaultOpen>
-          <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
-            This preview is meant to feel closer to the actual teaching slides, not just a plain text list.
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+              alignItems: "center",
+              marginBottom: 14,
+            }}
+          >
+            <div style={{ ...orchardHelpTextStyle(), maxWidth: 680 }}>
+              This preview is meant to feel closer to the actual teaching slides, not just a plain text list.
+            </div>
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                onClick={() => setPreviewMode("teaching")}
+                style={previewMode === "teaching" ? orchardPrimaryButtonStyle(false) : orchardSecondaryButtonStyle(false)}
+              >
+                Teaching View
+              </button>
+              <button
+                onClick={() => setPreviewMode("compact")}
+                style={previewMode === "compact" ? orchardPrimaryButtonStyle(false) : orchardSecondaryButtonStyle(false)}
+              >
+                Compact View
+              </button>
+            </div>
           </div>
 
           {slides.length === 0 ? (
@@ -563,12 +600,20 @@ export default function ResultsHubPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: 14,
+                gridTemplateColumns:
+                  previewMode === "compact"
+                    ? "repeat(auto-fit, minmax(240px, 1fr))"
+                    : "repeat(auto-fit, minmax(280px, 1fr))",
+                gap: previewMode === "compact" ? 12 : 14,
               }}
             >
               {slides.map((slide: any, index: number) => (
-                <SlidePreviewCard key={slide?.id ?? index} slide={slide} index={index} />
+                <SlidePreviewCard
+                  key={slide?.id ?? index}
+                  slide={slide}
+                  index={index}
+                  compact={previewMode === "compact"}
+                />
               ))}
             </div>
           )}
