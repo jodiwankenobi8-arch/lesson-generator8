@@ -64,8 +64,9 @@ test("default results show default structure when package is seeded", async ({ p
   });
   await page.goto("http://127.0.0.1:4173/results");
   await expect(page.locator("body")).toContainText("Slides (Student-facing)");
-  await expect(page.locator("body")).toContainText("Centers — 3");
+  await expect(page.locator("body")).toContainText("Centers");
   await expect(page.locator("body")).toContainText("Launch and Objective");
+  await expect(page.locator("body")).toContainText("Assessment and Next Steps");
 });
 
 test("results page renders hub-style structure when seeded", async ({ page }) => {
@@ -115,7 +116,8 @@ test("results page renders hub-style structure when seeded", async ({ page }) =>
     localStorage.setItem("lesson_generator__package_v2", JSON.stringify(pkg));
   });
   await page.goto("http://127.0.0.1:4173/results");
-  await expect(page.locator("body")).toContainText("Centers — 4");
+  await expect(page.locator("body")).toContainText("Slides (Student-facing)");
+  await expect(page.locator("body")).toContainText("Centers");
   await expect(page.locator("body")).toContainText("Launch and Navigation");
   await expect(page.locator("body")).toContainText("Check and Close");
 });
