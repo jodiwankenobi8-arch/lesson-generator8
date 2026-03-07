@@ -72,12 +72,13 @@ function getFramework(blueprint?: LessonBlueprint | null) {
   return blueprint?.synthesis?.frameworkApplied || "linear";
 }
 
-function isTeacherLedEarlyElementary(input: LessonInput) {
-  return input.grade === "K" || input.grade === "1";
+function isTeacherLedEarlyElementary(input: LessonInput, blueprint?: LessonBlueprint | null) {
+  const grade = String(input.grade || blueprint?.plan?.grade || "").trim().toLowerCase();
+  return /^(k|kg|kindergarten|grade k|grade kindergarten|1|1st|first|grade 1|grade first)$/.test(grade);
 }
 
 function allowStudentNavigationLanguage(input: LessonInput, blueprint?: LessonBlueprint | null) {
-  return getFramework(blueprint) === "clickableHub" && !isTeacherLedEarlyElementary(input);
+  return getFramework(blueprint) === "clickableHub" && !isTeacherLedEarlyElementary(input, blueprint);
 }
 
 function getCurriculumTitles(blueprint?: LessonBlueprint | null): string[] {
@@ -96,7 +97,7 @@ function getCueText(blueprint?: LessonBlueprint | null): string[] {
 
 function makeMiniLessonBullets(input: LessonInput, blueprint?: LessonBlueprint | null): string[] {
   const curriculumTitles = getCurriculumTitles(blueprint);
-  const teacherLed = isTeacherLedEarlyElementary(input);
+  const teacherLed = isTeacherLedEarlyElementary(input, blueprint);
 
   if (teacherLed) {
     return [
@@ -132,7 +133,7 @@ function makePracticeBullets(input: LessonInput, blueprint?: LessonBlueprint | n
   const framework = getFramework(blueprint);
   const curriculumTitles = getCurriculumTitles(blueprint);
 
-  if (isTeacherLedEarlyElementary(input)) {
+  if (isTeacherLedEarlyElementary(input, blueprint)) {
     return [
       "Let's practice together.",
       curriculumTitles[0] ? `Use this example during guided practice: ${curriculumTitles[0]}` : "Use teacher-led examples to practice the target skill.",
@@ -162,7 +163,7 @@ function makePracticeBullets(input: LessonInput, blueprint?: LessonBlueprint | n
 function makeExitBullets(input: LessonInput, blueprint?: LessonBlueprint | null): string[] {
   const framework = getFramework(blueprint);
 
-  if (isTeacherLedEarlyElementary(input)) {
+  if (isTeacherLedEarlyElementary(input, blueprint)) {
     return [
       "Let's show what we learned.",
       `Show this goal: ${input.objective}`,
@@ -201,14 +202,14 @@ const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBl
   objective: (input) => ({
     id: makeId("s"),
     type: "objective",
-    title: isTeacherLedEarlyElementary(input) ? "I Can" : "Objective",
+    title: isTeacherLedEarlyElementary(input, blueprint) ? "I Can" : "Objective",
     bullets: [input.objective],
     teacherNotes: "State objective. Students echo. Preview lesson steps.",
   }),
   discussion: (input, blueprint) => ({
     id: makeId("s"),
     type: "discussion",
-    title: isTeacherLedEarlyElementary(input) ? "What Are We Learning?" : "Essential Question",
+    title: isTeacherLedEarlyElementary(input, blueprint) ? "What Are We Learning?" : "Essential Question",
     bullets: [
       input.essentialQuestion || "What are we learning today?",
       ...(getCueText(blueprint).slice(0, 1).length && !isTeacherLedEarlyElementary(input) ? [`Cue: ${getCueText(blueprint)[0]}`] : []),
@@ -220,7 +221,7 @@ const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBl
   "mini-lesson": (input, blueprint) => ({
     id: makeId("s"),
     type: "mini-lesson",
-    title: isTeacherLedEarlyElementary(input) ? "Teach" : getFramework(blueprint) === "clickableHub" ? "Mini Lesson" : "Teach",
+    title: isTeacherLedEarlyElementary(input, blueprint) ? "Teach" : getFramework(blueprint) === "clickableHub" ? "Mini Lesson" : "Teach",
     bullets: makeMiniLessonBullets(input, blueprint),
     teacherNotes: allowStudentNavigationLanguage(input, blueprint)
       ? "Teach briefly, then launch students into the next hub path."
@@ -230,7 +231,7 @@ const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBl
     id: makeId("s"),
     type: "modeling",
     title: "Modeling",
-    bullets: isTeacherLedEarlyElementary(input)
+    bullets: isTeacherLedEarlyElementary(input, blueprint)
       ? ["My turn. Watch and listen.", "Notice how we say the sounds and blend the word."]
       : getFramework(blueprint) === "clickableHub"
         ? ["Model one path clearly before rotations begin.", "Show what success looks like in the hub."]
@@ -241,7 +242,7 @@ const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBl
     id: makeId("s"),
     type: "guided",
     title: "Guided Practice",
-    bullets: isTeacherLedEarlyElementary(input)
+    bullets: isTeacherLedEarlyElementary(input, blueprint)
       ? ["Let's do one together.", "Say it with me. Then try one."]
       : getFramework(blueprint) === "clickableHub"
         ? ["We do: Practice one round together before students rotate.", "Name the transition expectations."]
@@ -251,7 +252,7 @@ const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBl
   practice: (input, blueprint) => ({
     id: makeId("s"),
     type: "practice",
-    title: isTeacherLedEarlyElementary(input)
+    title: isTeacherLedEarlyElementary(input, blueprint)
       ? "Let's Practice"
       : getFramework(blueprint) === "clickableHub"
         ? "Center Rotation"
@@ -264,7 +265,7 @@ const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBl
   "exit-ticket": (input, blueprint) => ({
     id: makeId("s"),
     type: "exit-ticket",
-    title: isTeacherLedEarlyElementary(input)
+    title: isTeacherLedEarlyElementary(input, blueprint)
       ? "Show What You Know"
       : getFramework(blueprint) === "guidepost"
         ? "Reflection"
@@ -284,7 +285,7 @@ function buildSlides(input: LessonInput, blueprint?: LessonBlueprint | null): Sl
     if (extraNotes.length) {
       slide.teacherNotes = [slide.teacherNotes, ...extraNotes].filter(Boolean).join("\n");
     }
-    if (spec.frameworkApplied === "clickableHub" && index === 1 && !isTeacherLedEarlyElementary(input)) {
+    if (spec.frameworkApplied === "clickableHub" && index === 1 && !isTeacherLedEarlyElementary(input, blueprint)) {
       slide.title = "Lesson Hub";
       slide.bullets = ["Choose the lesson path together.", "Preview stations, teaching, and exit steps."];
     }
@@ -347,7 +348,7 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
   const framework = blueprint?.synthesis?.frameworkApplied || "linear";
   const curriculumTitles = getCurriculumTitles(blueprint);
   const cueText = getCueText(blueprint);
-  const teacherLed = isTeacherLedEarlyElementary(input);
+  const teacherLed = isTeacherLedEarlyElementary(input, blueprint);
 
   if (framework === "clickableHub" && !teacherLed) {
     return [
@@ -445,7 +446,7 @@ function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): C
   const framework = blueprint?.synthesis?.frameworkApplied || "linear";
   const curriculumTitles = getCurriculumTitles(blueprint);
 
-  if (framework === "clickableHub" && !isTeacherLedEarlyElementary(input)) {
+  if (framework === "clickableHub" && !isTeacherLedEarlyElementary(input, blueprint)) {
     return [
       {
         title: "Teacher Table",
@@ -515,7 +516,7 @@ function buildRotationPlan(input: LessonInput, blueprint?: LessonBlueprint | nul
   const framework = blueprint?.synthesis?.frameworkApplied || "linear";
   const cueText = getCueText(blueprint);
 
-  if (framework === "clickableHub" && !isTeacherLedEarlyElementary(input)) {
+  if (framework === "clickableHub" && !isTeacherLedEarlyElementary(input, blueprint)) {
     return [
       {
         title: "Hub Launch",

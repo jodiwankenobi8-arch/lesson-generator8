@@ -19,8 +19,9 @@ const DEFAULT_ORDER: SlideType[] = [
   "exit-ticket",
 ];
 
-function isTeacherLedEarlyElementary(input: LessonInput) {
-  return input.grade === "K" || input.grade === "1";
+function isTeacherLedEarlyElementary(input: LessonInput, blueprint?: LessonBlueprint | null) {
+  const grade = String(input.grade || blueprint?.plan?.grade || "").trim().toLowerCase();
+  return /^(k|kg|kindergarten|grade k|grade kindergarten|1|1st|first|grade 1|grade first)$/.test(grade);
 }
 
 function inferSlideType(title?: string, purpose?: string): SlideType | null {
@@ -41,7 +42,7 @@ function cleanCueText(raw: string) {
   return String(raw || "")
     .replace(/[?]+/g, "")
     .replace(/\s+/g, " ")
-    .replace(/^[-•\s]+/, "")
+    .replace(/^[-â€¢\s]+/, "")
     .replace(/\b(clicker|timer|script|transition)\s*:\s*/gi, "")
     .trim();
 }
@@ -83,7 +84,7 @@ export function buildLessonSpec(input: LessonInput, blueprint?: LessonBlueprint 
     };
   }
 
-  const teacherLed = isTeacherLedEarlyElementary(input);
+  const teacherLed = isTeacherLedEarlyElementary(input, blueprint);
   const ordered = (blueprint.synthesis?.slides || [])
     .map((slide) => inferSlideType(slide.title, slide.purpose))
     .filter((value): value is SlideType => Boolean(value));
