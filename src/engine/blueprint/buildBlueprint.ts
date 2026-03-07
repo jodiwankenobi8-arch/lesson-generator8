@@ -3,8 +3,11 @@ import { detectFramework, extractPresenterCues } from "./exemplarAnalysis";
 import { extractCoverageFromCurriculum } from "../curriculum/extractCoverageFromCurriculum";
 
 function isTeacherLedEarlyElementary(plan: PlanInput) {
-  const text = `${plan.lessonTitle || ""} ${plan.objective || ""} ${plan.notes || ""}`.toLowerCase();
-  return /\bkindergarten\b|\bgrade k\b|\bk\b|\bfirst grade\b|\bgrade 1\b|\b1st\b/.test(text);
+  const grade = String(plan.grade || "").trim().toUpperCase();
+  if (grade === "K" || grade === "1") return true;
+
+  const text = `${plan.lessonTitle || ""} ${plan.objective || ""} ${plan.notes || ""} ${plan.textOrTopic || ""}`.toLowerCase();
+  return /\bkindergarten\b|\bgrade k\b|\bfirst grade\b|\bgrade 1\b|\b1st\b/.test(text);
 }
 
 export function buildBlueprint(args: {

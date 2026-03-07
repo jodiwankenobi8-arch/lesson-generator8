@@ -23,6 +23,9 @@ export type PlanInput = {
   lessonTitle?: string;
   objective?: string;
   notes?: string;
+  grade?: string;
+  subject?: string;
+  textOrTopic?: string;
 };
 
 export type UploadedTextFile = {

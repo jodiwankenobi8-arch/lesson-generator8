@@ -471,6 +471,9 @@ export default function MaterialsPage() {
           lessonTitle: input.lessonTitle ?? "",
           objective: input.objective ?? "",
           notes: lessonNotes ?? "",
+          grade: input.grade ?? "",
+          subject: input.subject ?? "",
+          textOrTopic: input.textOrTopic ?? "",
         },
         curriculumFiles: finalCurriculumItems,
         exemplarFiles: finalExemplarItems,
@@ -722,3 +725,4 @@ export default function MaterialsPage() {
     </div>
   );
 }
+
