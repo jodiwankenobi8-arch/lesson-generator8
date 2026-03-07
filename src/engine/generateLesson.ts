@@ -356,8 +356,8 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
         heading: "Launch and Navigation",
         slides: [idx("title"), idx("discussion"), idx("objective")].filter((n) => n > 0),
         description: cueText[0]
-          ? `Open the lesson with a hub-style overview, preview choices, and use this cue: ${cueText[0]}.`
-          : "Open the lesson with a hub-style overview, preview choices, and anchor the objective before instruction begins.",
+          ? `Open the lesson with a warm lesson overview, preview choices, and use this cue: ${cueText[0]}.`
+          : "Open the lesson with a warm lesson overview, preview choices, and anchor the objective before instruction begins.",
         differentiation: { tier3, tier2, enrichment },
       },
       {

@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLessonStore } from "../state/useLessonStore";
 import {
@@ -208,7 +208,7 @@ function BlueprintInsights() {
           <li>
             {cueItems.length
               ? "Presenter cues from the exemplar are influencing notes, transitions, and rotation wording."
-              : "No exemplar presenter cues were available, so teacher cueing stays generic."}
+              : "No exemplar presenter cues were available, so teacher cueing stays simple."}
           </li>
         </ul>
       </div>

@@ -81,7 +81,7 @@ test("default results show default structure when package is seeded", async ({ p
   await expect(page.locator("body")).toContainText("Assessment and Next Steps");
 });
 
-test("results page renders hub-style structure when seeded", async ({ page }) => {
+test("results page renders orchard lesson structure when seeded", async ({ page }) => {
   await page.goto("http://127.0.0.1:4173/");
   await page.evaluate(() => {
     const pkg = {

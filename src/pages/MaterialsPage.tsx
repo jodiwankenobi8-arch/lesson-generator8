@@ -104,7 +104,7 @@ function buildClarificationNotes(curriculumItems: UploadedTextFile[], exemplarIt
   }
 
   if (exemplarItems.length > 0 && curriculumItems.length === 0) {
-    notes.push("You added exemplars but no curriculum sources. The generator may mirror structure well, but the actual content may stay generic unless curriculum materials are added.");
+    notes.push("You added exemplars but no curriculum sources. The generator may mirror structure well, but the actual content may stay broad unless curriculum materials are added.");
   }
 
   if (curriculumSignals.intervention && exemplarSignals.enrichment) {
@@ -223,7 +223,7 @@ function UploadItemCard({
             {item.name}
           </div>
           <div style={{ fontSize: 12, color: COLORS.muted }}>
-            {itemTypeLabel(item)} · {roleLabel(item.sourceRole)} · {fallbackOnly ? "Fallback note only" : "Text available"}
+            {itemTypeLabel(item)} ï¿½ {roleLabel(item.sourceRole)} ï¿½ {fallbackOnly ? "Fallback note only" : "Text available"}
           </div>
         </div>
 
@@ -524,10 +524,10 @@ export default function MaterialsPage() {
                 Current lesson
               </div>
               <div style={{ fontSize: 14, lineHeight: 1.6 }}>
-                <div><b>Title:</b> {input.lessonTitle || "—"}</div>
-                <div><b>Objective:</b> {input.objective || "—"}</div>
-                <div><b>Grade:</b> {input.grade || "—"}</div>
-                <div><b>Subject:</b> {input.subject || "—"}</div>
+                <div><b>Title:</b> {input.lessonTitle || "ï¿½"}</div>
+                <div><b>Objective:</b> {input.objective || "ï¿½"}</div>
+                <div><b>Grade:</b> {input.grade || "ï¿½"}</div>
+                <div><b>Subject:</b> {input.subject || "ï¿½"}</div>
               </div>
             </div>
           </div>
