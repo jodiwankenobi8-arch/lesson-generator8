@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+ï»¿import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLessonStore } from "../state/useLessonStore";
 import {
@@ -64,28 +64,46 @@ function readBlueprint() {
 
 function Section({
   title,
+  subtitle,
   defaultOpen,
   children,
 }: {
   title: string;
+  subtitle?: string;
   defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <details open={!!defaultOpen} style={orchardCardStyle()}>
-      <summary
-        style={{
-          cursor: "pointer",
-          fontWeight: 900,
-          fontSize: 20,
-          color: COLORS.heading,
-          listStyle: "none",
-        }}
-      >
-        {title}
+      <summary style={{ cursor: "pointer", listStyle: "none" }}>
+        <div style={orchardRibbonHeaderStyle()}>{title}</div>
+        <div style={orchardStitchDividerStyle()} />
+        {subtitle && (
+          <div style={{ ...orchardHelpTextStyle(), marginTop: 6, marginBottom: 2 }}>
+            {subtitle}
+          </div>
+        )}
       </summary>
       <div style={{ paddingTop: 14 }}>{children}</div>
     </details>
+  );
+}
+
+function SnapshotChip({
+  label,
+  value,
+  background,
+  border,
+}: {
+  label: string;
+  value: string | number;
+  background: string;
+  border: string;
+}) {
+  return (
+    <div style={orchardPillStyle(background, border)}>
+      {label}: {value}
+    </div>
   );
 }
 
@@ -123,10 +141,10 @@ function BlueprintInsights() {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <span style={orchardPillStyle("#EEF5EA", "#BFD6B8")}>Applied framework: {frameworkApplied}</span>
-        <span style={orchardPillStyle("#F2F8FF", "#C9DAEE")}>Curriculum items: {curriculumItems.length}</span>
-        <span style={orchardPillStyle("#FFF6E8", COLORS.warnBorder)}>Presenter cues: {cueItems.length}</span>
-        <span style={orchardPillStyle("#F4EDF8", "#D7C6E4")}>Planned slides: {plannedSlides.length}</span>
+        <SnapshotChip label="Applied framework" value={frameworkApplied} background="#EEF5EA" border="#BFD6B8" />
+        <SnapshotChip label="Curriculum items" value={curriculumItems.length} background="#F2F8FF" border="#C9DAEE" />
+        <SnapshotChip label="Presenter cues" value={cueItems.length} background="#FFF6E8" border={COLORS.warnBorder} />
+        <SnapshotChip label="Planned slides" value={plannedSlides.length} background="#F4EDF8" border="#D7C6E4" />
       </div>
 
       <div
@@ -177,19 +195,19 @@ function BlueprintInsights() {
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.55 }}>
           <li style={{ marginBottom: 6 }}>
             {frameworkApplied === "clickableHub"
-              ? "The Results Hub is using a clickable-hub structure because an exemplar was present and the blueprint applied that framework."
+              ? "The package is using a clickable-hub structure because an exemplar was present and the blueprint applied that framework."
               : frameworkApplied === "guidepost"
-                ? "The Results Hub is using a guidepost-style structure because the blueprint detected and applied that framework."
-                : "The Results Hub is using the default linear structure because no non-linear framework was applied."}
+                ? "The package is using a guidepost-style structure because the blueprint detected and applied that framework."
+                : "The package is using the default linear structure because no non-linear framework was applied."}
           </li>
           <li style={{ marginBottom: 6 }}>
             {curriculumItems.length
-              ? "Curriculum titles are being used to shape teacher plan language, slide bullets, and center directions."
+              ? "Curriculum titles are shaping teacher plan language, slide bullets, and center directions."
               : "No curriculum checklist items were available, so wording falls back to default lesson language."}
           </li>
           <li>
             {cueItems.length
-              ? "Presenter cues from the exemplar are being used to influence notes, transitions, and rotation wording."
+              ? "Presenter cues from the exemplar are influencing notes, transitions, and rotation wording."
               : "No exemplar presenter cues were available, so teacher cueing stays generic."}
           </li>
         </ul>
@@ -375,6 +393,7 @@ export default function ResultsHubPage() {
     );
   }
 
+  const lessonTitle = (pkg as any)?.input?.lessonTitle ?? "Generated Lesson";
   const rawStandards = useMemo(() => getStandards(pkg as any), [pkg]);
   const standards = useMemo(
     () =>
@@ -426,74 +445,87 @@ export default function ResultsHubPage() {
         <div style={orchardHeroCardStyle()}>
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.6fr) minmax(260px, 0.9fr)",
               gap: 18,
-              alignItems: "flex-start",
-              flexWrap: "wrap",
+              alignItems: "start",
             }}
           >
-            <div style={{ maxWidth: 720 }}>
+            <div>
               <div style={orchardRibbonHeaderStyle()}>Results Hub</div>
               <div style={orchardStitchDividerStyle()} />
-              <h1 style={orchardHeroTitleStyle()}>
-                {(pkg as any)?.input?.lessonTitle ?? "Generated Lesson"}
-              </h1>
-              <div style={{ ...orchardHelpTextStyle(), fontSize: 15 }}>
+              <h1 style={orchardHeroTitleStyle()}>{lessonTitle}</h1>
+              <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 760 }}>
                 Review the generated package, scan the standards and blueprint influence, preview the teaching slides,
                 and export the pieces you want to use.
               </div>
-              <div style={{ marginTop: 10, color: COLORS.muted, fontSize: 14, lineHeight: 1.5 }}>
-                {(pkg as any)?.input?.date ?? ""} | Grade {(pkg as any)?.input?.grade ?? ""} | {(pkg as any)?.input?.subject ?? ""}
+
+              <div style={{ marginTop: 12 }}>
+                <SnapshotChip label="Date" value={(pkg as any)?.input?.date ?? "-"} background="#FFF6E8" border={COLORS.warnBorder} />
+                <SnapshotChip label="Grade" value={(pkg as any)?.input?.grade ?? "-"} background="#EEF5EA" border={COLORS.successBorder} />
+                <SnapshotChip label="Subject" value={(pkg as any)?.input?.subject ?? "-"} background="#F4EDF8" border="#D7C6E4" />
+                <SnapshotChip label="Standards" value={standards.length} background="#F2F8FF" border="#C9DAEE" />
               </div>
             </div>
 
             <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 270 }}>
-              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Lesson Snapshot</div>
-              <div style={{ color: COLORS.text, fontSize: 14, lineHeight: 1.65 }}>
+              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 10 }}>Lesson Snapshot</div>
+              <div style={{ display: "grid", gap: 8, fontSize: 14, lineHeight: 1.55 }}>
                 <div><b>Slides:</b> {slides.length}</div>
                 <div><b>Centers:</b> {centers.length}</div>
                 <div><b>Lesson plan sections:</b> {lessonPlan.length}</div>
                 <div><b>Rotation items:</b> {rotationPlan.length}</div>
+                <div><b>Tier 3 / Tier 2 / Enrichment:</b> {tier3.length} / {tier2.length} / {enrichment.length}</div>
               </div>
             </div>
           </div>
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Exports</div>
-          <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
-            Export only what you need, or download the full lesson package at once.
-          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) auto",
+              gap: 16,
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Exports</div>
+              <div style={{ ...orchardHelpTextStyle(), marginBottom: 0 }}>
+                Export only what you need, or download the full lesson package at once.
+              </div>
+            </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <button
-              onClick={() => runExport("pptx")}
-              disabled={busy !== null}
-              style={orchardPrimaryButtonStyle(busy !== null)}
-            >
-              {busy === "pptx" ? "Exporting PPTX..." : "Export PPTX"}
-            </button>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => runExport("pptx")}
+                disabled={busy !== null}
+                style={orchardPrimaryButtonStyle(busy !== null)}
+              >
+                {busy === "pptx" ? "Exporting PPTX..." : "Export PPTX"}
+              </button>
 
-            <button
-              onClick={() => runExport("docx")}
-              disabled={busy !== null}
-              style={orchardSecondaryButtonStyle(busy !== null)}
-            >
-              {busy === "docx" ? "Exporting DOCX..." : "Export DOCX"}
-            </button>
+              <button
+                onClick={() => runExport("docx")}
+                disabled={busy !== null}
+                style={orchardSecondaryButtonStyle(busy !== null)}
+              >
+                {busy === "docx" ? "Exporting DOCX..." : "Export DOCX"}
+              </button>
 
-            <button
-              onClick={() => runExport("zip")}
-              disabled={busy !== null}
-              style={orchardSecondaryButtonStyle(busy !== null)}
-            >
-              {busy === "zip" ? "Exporting ZIP..." : "Full Export (ZIP)"}
-            </button>
+              <button
+                onClick={() => runExport("zip")}
+                disabled={busy !== null}
+                style={orchardSecondaryButtonStyle(busy !== null)}
+              >
+                {busy === "zip" ? "Exporting ZIP..." : "Full Export (ZIP)"}
+              </button>
 
-            <Link to="/" style={{ ...orchardLinkStyle(), marginLeft: 4 }}>
-              Back to Inputs
-            </Link>
+              <Link to="/" style={{ ...orchardLinkStyle(), marginLeft: 4 }}>
+                Back to Inputs
+              </Link>
+            </div>
           </div>
 
           {err && (
@@ -503,7 +535,7 @@ export default function ResultsHubPage() {
                 border: "1px solid #E6B8B4",
                 padding: 10,
                 borderRadius: 12,
-                marginTop: 12,
+                marginTop: 14,
               }}
             >
               <b>Export error:</b> {err}
@@ -511,55 +543,96 @@ export default function ResultsHubPage() {
           )}
         </div>
 
-        <div style={orchardCardStyle()}>
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards Snapshot</div>
-          <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
-            This shows the primary standard detected for the lesson, along with a few supporting standards when available.
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.2fr) minmax(280px, 0.8fr)",
+            gap: 18,
+          }}
+        >
+          <div style={orchardCardStyle()}>
+            <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards Snapshot</div>
+            <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+              This shows the primary standard detected for the lesson, along with a few supporting standards when available.
+            </div>
+
+            {standards.length === 0 ? (
+              <div style={{ fontWeight: 800 }}>Standards: (none detected yet - check inputs or add an override)</div>
+            ) : (
+              <>
+                <div
+                  style={{
+                    ...orchardSoftCardStyle("#F8FBF7"),
+                    border: `1px solid ${COLORS.successBorder}`,
+                    marginBottom: 12,
+                  }}
+                >
+                  <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", color: COLORS.accentDark, marginBottom: 6 }}>
+                    Primary Standard
+                  </div>
+                  <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading, fontSize: 20 }}>
+                    {primary?.code ?? ""}{" "}
+                    <span style={{ opacity: 0.8, color: COLORS.muted }}>
+                      {primary?.confidence != null ? `(${percent(primary.confidence)})` : ""}
+                    </span>
+                  </div>
+                  <div style={{ opacity: 0.95, lineHeight: 1.55 }}>{short(primary?.label)}</div>
+                </div>
+
+                {supporting.length > 0 && (
+                  <div style={{ ...orchardSoftCardStyle(), marginBottom: 10 }}>
+                    <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading }}>Supporting</div>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      {supporting.map((s: any, i: number) => (
+                        <li key={(s.code ?? "") + i} style={{ marginBottom: 10 }}>
+                          <div>
+                            <b>{s.code}</b>{" "}
+                            <span style={{ opacity: 0.8, color: COLORS.muted }}>
+                              {s?.confidence != null ? `(${percent(s.confidence)})` : ""}
+                            </span>
+                          </div>
+                          <div style={{ opacity: 0.92, lineHeight: 1.45 }}>{short(s.label)}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div style={{ opacity: 0.85, color: COLORS.muted }}>
+                  <b>All codes:</b> {standards.map((s: any) => s.code).join(", ")}
+                </div>
+              </>
+            )}
           </div>
 
-          {standards.length === 0 ? (
-            <div style={{ fontWeight: 800 }}>Standards: (none detected yet — check inputs or add an override)</div>
-          ) : (
-            <>
-              <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading, fontSize: 18 }}>
-                Primary: {primary?.code ?? ""}{" "}
-                <span style={{ opacity: 0.8, color: COLORS.muted }}>
-                  {primary?.confidence != null ? `(${percent(primary.confidence)})` : ""}
-                </span>
-              </div>
-              <div style={{ opacity: 0.95, marginBottom: 12, lineHeight: 1.55 }}>{short(primary?.label)}</div>
+          <div style={orchardCardStyle()}>
+            <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Package Overview</div>
+            <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+              A quick scan of the completed lesson pieces.
+            </div>
 
-              {supporting.length > 0 && (
-                <div style={{ ...orchardSoftCardStyle(), marginBottom: 10 }}>
-                  <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading }}>Supporting</div>
-                  <ul style={{ margin: 0, paddingLeft: 18 }}>
-                    {supporting.map((s: any, i: number) => (
-                      <li key={(s.code ?? "") + i} style={{ marginBottom: 10 }}>
-                        <div>
-                          <b>{s.code}</b>{" "}
-                          <span style={{ opacity: 0.8, color: COLORS.muted }}>
-                            {s?.confidence != null ? `(${percent(s.confidence)})` : ""}
-                          </span>
-                        </div>
-                        <div style={{ opacity: 0.92, lineHeight: 1.45 }}>{short(s.label)}</div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <div style={{ opacity: 0.85, color: COLORS.muted }}>
-                <b>All codes:</b> {standards.map((s: any) => s.code).join(", ")}
-              </div>
-            </>
-          )}
+            <div style={{ display: "grid", gap: 10 }}>
+              <div style={orchardSoftCardStyle()}><b>Slides</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{slides.length} ready to preview or export.</div></div>
+              <div style={orchardSoftCardStyle()}><b>Teacher plan</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{lessonPlan.length} sections generated.</div></div>
+              <div style={orchardSoftCardStyle()}><b>Centers + rotation</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{centers.length} centers and {rotationPlan.length} rotation items.</div></div>
+              <div style={orchardSoftCardStyle()}><b>Interventions</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{tier3.length + tier2.length + enrichment.length} support entries across groups.</div></div>
+            </div>
+          </div>
         </div>
 
-        <Section title="Blueprint Influence" defaultOpen>
+        <Section
+          title="Blueprint Influence"
+          subtitle="See how curriculum, exemplar framework, and teacher-facing cues shaped the final package."
+          defaultOpen
+        >
           <BlueprintInsights />
         </Section>
 
-        <Section title="Slide Preview Deck" defaultOpen>
+        <Section
+          title="Slide Preview Deck"
+          subtitle="This preview is designed to feel closer to the actual teaching deck instead of a plain text list."
+          defaultOpen
+        >
           <div
             style={{
               display: "flex",
@@ -571,7 +644,7 @@ export default function ResultsHubPage() {
             }}
           >
             <div style={{ ...orchardHelpTextStyle(), maxWidth: 680 }}>
-              This preview is meant to feel closer to the actual teaching slides, not just a plain text list.
+              Choose the view that feels best for scanning the deck before exporting or teaching.
             </div>
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -615,7 +688,11 @@ export default function ResultsHubPage() {
           )}
         </Section>
 
-        <Section title="Teacher Lesson Plan" defaultOpen>
+        <Section
+          title="Teacher Lesson Plan"
+          subtitle="A readable preview of the generated instructional flow and slide-aligned sections."
+          defaultOpen
+        >
           {lessonPlan.length === 0 ? (
             <div style={{ opacity: 0.8, color: COLORS.muted }}>No lesson plan sections found in package.</div>
           ) : (
@@ -639,57 +716,74 @@ export default function ResultsHubPage() {
           )}
         </Section>
 
-        <Section title={`Centers — ${centers.length}`}>
-          {centers.length === 0 ? (
-            <div style={{ opacity: 0.8, color: COLORS.muted }}>No centers generated.</div>
-          ) : (
-            <div style={{ display: "grid", gap: 12 }}>
-              {centers.map((c: any, i: number) => (
-                <div key={i} style={orchardSoftCardStyle()}>
-                  <div style={{ fontWeight: 900, color: COLORS.heading }}>
-                    {c?.title ?? c?.name ?? `Center ${i + 1}`}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: 18,
+          }}
+        >
+          <Section
+            title={`Centers - ${centers.length}`}
+            subtitle="Center activities grouped into warm paper cards for quick scanning."
+          >
+            {centers.length === 0 ? (
+              <div style={{ opacity: 0.8, color: COLORS.muted }}>No centers generated.</div>
+            ) : (
+              <div style={{ display: "grid", gap: 12 }}>
+                {centers.map((c: any, i: number) => (
+                  <div key={i} style={orchardSoftCardStyle()}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading }}>
+                      {c?.title ?? c?.name ?? `Center ${i + 1}`}
+                    </div>
+                    {c?.objective && (
+                      <div style={{ marginTop: 6, color: COLORS.muted }}>
+                        <b>Objective:</b> {String(c.objective)}
+                      </div>
+                    )}
+                    {c?.focusSkill && (
+                      <div style={{ marginTop: 6, color: COLORS.muted }}>
+                        <b>Focus skill:</b> {String(c.focusSkill)}
+                      </div>
+                    )}
+                    {(c?.direction || c?.instructions) && (
+                      <div style={{ whiteSpace: "pre-wrap", marginTop: 8, lineHeight: 1.55 }}>
+                        {String(c?.direction ?? c?.instructions ?? "")}
+                      </div>
+                    )}
                   </div>
-                  {c?.objective && (
-                    <div style={{ marginTop: 6, color: COLORS.muted }}>
-                      <b>Objective:</b> {String(c.objective)}
-                    </div>
-                  )}
-                  {c?.focusSkill && (
-                    <div style={{ marginTop: 6, color: COLORS.muted }}>
-                      <b>Objective:</b> {String(c.focusSkill)}
-                    </div>
-                  )}
-                  {(c?.direction || c?.instructions) && (
-                    <div style={{ whiteSpace: "pre-wrap", marginTop: 8, lineHeight: 1.55 }}>
-                      {String(c?.direction ?? c?.instructions ?? "")}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </Section>
+                ))}
+              </div>
+            )}
+          </Section>
 
-        <Section title="Rotation Plan">
-          {rotationPlan.length === 0 ? (
-            <div style={{ opacity: 0.8, color: COLORS.muted }}>No rotation plan generated.</div>
-          ) : (
-            <div style={{ display: "grid", gap: 12 }}>
-              {rotationPlan.map((r: any, i: number) => (
-                <div key={i} style={orchardSoftCardStyle()}>
-                  <div style={{ fontWeight: 800, color: COLORS.heading }}>
-                    {r?.title ?? `Rotation ${i + 1}`}
+          <Section
+            title="Rotation Plan"
+            subtitle="A quick view of how students move through support and practice."
+          >
+            {rotationPlan.length === 0 ? (
+              <div style={{ opacity: 0.8, color: COLORS.muted }}>No rotation plan generated.</div>
+            ) : (
+              <div style={{ display: "grid", gap: 12 }}>
+                {rotationPlan.map((r: any, i: number) => (
+                  <div key={i} style={orchardSoftCardStyle()}>
+                    <div style={{ fontWeight: 800, color: COLORS.heading }}>
+                      {r?.title ?? `Rotation ${i + 1}`}
+                    </div>
+                    <div style={{ whiteSpace: "pre-wrap", marginTop: 6, lineHeight: 1.55 }}>
+                      {String(r?.description ?? r?.text ?? r ?? "")}
+                    </div>
                   </div>
-                  <div style={{ whiteSpace: "pre-wrap", marginTop: 6, lineHeight: 1.55 }}>
-                    {String(r?.description ?? r?.text ?? r ?? "")}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Section>
+                ))}
+              </div>
+            )}
+          </Section>
+        </div>
 
-        <Section title="Interventions">
+        <Section
+          title="Interventions"
+          subtitle="Small-group and enrichment supports laid out by learner need."
+        >
           <div
             style={{
               display: "grid",
@@ -697,7 +791,7 @@ export default function ResultsHubPage() {
               gap: 12,
             }}
           >
-            <div style={orchardSoftCardStyle()}>
+            <div style={{ ...orchardSoftCardStyle("#FFF7F6"), border: "1px solid #EBC8C4" }}>
               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Tier 3</h3>
               {tier3.length ? (
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -712,7 +806,7 @@ export default function ResultsHubPage() {
               )}
             </div>
 
-            <div style={orchardSoftCardStyle()}>
+            <div style={{ ...orchardSoftCardStyle("#FFF9ED"), border: `1px solid ${COLORS.warnBorder}` }}>
               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Tier 2</h3>
               {tier2.length ? (
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -727,7 +821,7 @@ export default function ResultsHubPage() {
               )}
             </div>
 
-            <div style={orchardSoftCardStyle()}>
+            <div style={{ ...orchardSoftCardStyle("#F4FAF2"), border: `1px solid ${COLORS.successBorder}` }}>
               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Enrichment</h3>
               {enrichment.length ? (
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
