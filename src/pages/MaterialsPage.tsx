@@ -26,6 +26,41 @@ import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } fr
 
 const ACCEPT_ATTR = ".txt,.md,.doc,.docx,.pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp";
 
+function plannerSheetStyle(background = "#FFFDF9"): React.CSSProperties {
+  return {
+    ...orchardSoftCardStyle(background),
+    border: `1px solid ${COLORS.border}`,
+    padding: 18,
+    boxShadow: "0 10px 22px rgba(47,47,47,0.05)",
+    overflow: "hidden",
+  };
+}
+
+function plannerTabStyle(background: string, color: string, border = COLORS.borderStrong): React.CSSProperties {
+  return {
+    display: "inline-block",
+    padding: "7px 12px",
+    borderRadius: "15px 16px 16px 12px",
+    background,
+    color,
+    fontWeight: 900,
+    fontSize: 11,
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
+    border: `1px solid ${border}`,
+    boxShadow: "0 4px 10px rgba(47,47,47,0.04)",
+  };
+}
+
+function pinnedNoteStyle(): React.CSSProperties {
+  return {
+    ...plannerSheetStyle("#FFF8EE"),
+    border: `1px solid ${COLORS.borderStrong}`,
+    transform: "rotate(-1deg)",
+    alignSelf: "start",
+  };
+}
+
 function inferRoleForSource(item: { name: string; text?: string }, pack: "curriculum" | "exemplar"): SourceRole {
   const joined = `${item.name} ${item.text ?? ""}`.toLowerCase();
 
@@ -204,10 +239,10 @@ function UploadItemCard({
     <div
       style={{
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 16,
+        borderRadius: 18,
         background: "#FFFDF9",
         padding: 12,
-        boxShadow: "0 3px 8px rgba(47,47,47,0.03)",
+        boxShadow: "0 4px 10px rgba(47,47,47,0.03)",
       }}
     >
       <div
@@ -216,15 +251,66 @@ function UploadItemCard({
           justifyContent: "space-between",
           alignItems: "flex-start",
           gap: 10,
-          marginBottom: 8,
+          marginBottom: 10,
         }}
       >
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 4, wordBreak: "break-word" }}>
+          <div
+            style={{
+              fontWeight: 800,
+              color: COLORS.heading,
+              marginBottom: 4,
+              wordBreak: "break-word",
+            }}
+          >
             {item.name}
           </div>
-          <div style={{ fontSize: 12, color: COLORS.muted }}>
-            {itemTypeLabel(item)} � {roleLabel(item.sourceRole)} � {fallbackOnly ? "Fallback note only" : "Text available"}
+
+          <div
+            style={{
+              display: "flex",
+              gap: 6,
+              flexWrap: "wrap",
+              fontSize: 11,
+              fontWeight: 800,
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                padding: "5px 8px",
+                borderRadius: 999,
+                background: "#FFF7F2",
+                border: `1px solid ${COLORS.border}`,
+                color: COLORS.heading,
+              }}
+            >
+              {itemTypeLabel(item)}
+            </span>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "5px 8px",
+                borderRadius: 999,
+                background: "#F3F8F1",
+                border: `1px solid ${COLORS.successBorder}`,
+                color: COLORS.heading,
+              }}
+            >
+              {roleLabel(item.sourceRole)}
+            </span>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "5px 8px",
+                borderRadius: 999,
+                background: fallbackOnly ? "#FFF6E8" : "#FFFDF9",
+                border: `1px solid ${fallbackOnly ? COLORS.warnBorder : COLORS.border}`,
+                color: COLORS.muted,
+              }}
+            >
+              {fallbackOnly ? "Fallback note only" : "Text available"}
+            </span>
           </div>
         </div>
 
@@ -235,8 +321,8 @@ function UploadItemCard({
             border: `1px solid ${COLORS.border}`,
             background: "#FFF6F4",
             color: COLORS.heading,
-            borderRadius: 12,
-            padding: "6px 10px",
+            borderRadius: 14,
+            padding: "7px 10px",
             fontWeight: 700,
             cursor: "pointer",
             flexShrink: 0,
@@ -250,10 +336,10 @@ function UploadItemCard({
         style={{
           fontSize: 12,
           color: COLORS.muted,
-          lineHeight: 1.5,
+          lineHeight: 1.55,
           background: "#FFFCF7",
           border: `1px solid ${COLORS.border}`,
-          borderRadius: 12,
+          borderRadius: 14,
           padding: 10,
         }}
       >
@@ -306,33 +392,91 @@ function UploadDropZone({
       }}
       onDrop={handleDrop}
       style={{
-        ...orchardSoftCardStyle(dragActive ? "#F7FBF5" : "#FFFDF9"),
-        border: `2px dashed ${dragActive ? COLORS.accent : COLORS.borderStrong}`,
-        background: dragActive ? "#F7FBF5" : "#FFFDF9",
+        ...plannerSheetStyle(dragActive ? "#F7FBF5" : "#FFFDF9"),
+        border: `1px solid ${dragActive ? COLORS.successBorder : COLORS.border}`,
+        minHeight: "100%",
       }}
     >
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 16, marginBottom: 6 }}>
-          {title}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 12,
+          flexWrap: "wrap",
+          marginBottom: 14,
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={plannerTabStyle(
+              title.includes("Curriculum")
+                ? "linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)"
+                : "linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)",
+              title.includes("Curriculum") ? "#3F3120" : COLORS.cranberry,
+              title.includes("Curriculum") ? COLORS.warnBorder : COLORS.borderStrong
+            )}
+          >
+            {title}
+          </div>
+          <div
+            style={{
+              fontWeight: 900,
+              color: COLORS.heading,
+              fontSize: 22,
+              marginTop: 10,
+              marginBottom: 6,
+            }}
+          >
+            Add files + links to this stack
+          </div>
+          <div style={orchardHelpTextStyle()}>{subtitle}</div>
         </div>
-        <div style={orchardHelpTextStyle()}>{subtitle}</div>
+
+        <div
+          style={{
+            display: "inline-block",
+            padding: "6px 10px",
+            borderRadius: 999,
+            border: `1px solid ${COLORS.border}`,
+            background: "#FFF7F2",
+            color: COLORS.heading,
+            fontWeight: 800,
+            fontSize: 12,
+          }}
+        >
+          {files.length} {files.length === 1 ? "item" : "items"}
+        </div>
       </div>
 
       <div
         style={{
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 18,
+          position: "relative",
+          border: `2px dashed ${dragActive ? COLORS.accent : COLORS.borderStrong}`,
+          borderRadius: 20,
           padding: 18,
-          background: "linear-gradient(180deg, #FFFDFC 0%, #FBF6EF 100%)",
-          textAlign: "center",
-          marginBottom: 12,
+          background: dragActive ? "#F3F8F1" : "linear-gradient(180deg, #FFFDFC 0%, #FBF6EF 100%)",
+          marginBottom: 14,
         }}
       >
-        <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>
-          Drag and drop files here
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 12,
+            width: 16,
+            height: 16,
+            borderRadius: 999,
+            background: "#D9C7B5",
+            boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+          }}
+        />
+
+        <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, marginBottom: 6 }}>
+          Drop a stack here or browse manually
         </div>
-        <div style={{ fontSize: 14, color: COLORS.muted, marginBottom: 10 }}>
-          or choose files manually
+        <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+          Supported now: DOC, DOCX, PDF, PPT, PPTX, JPG, JPEG, PNG, WEBP, TXT, and MD.
         </div>
 
         <input
@@ -340,30 +484,37 @@ function UploadDropZone({
           multiple
           accept={ACCEPT_ATTR}
           onChange={(e) => onFilesChosen(e.target.files)}
-          style={{ marginBottom: 8 }}
+          style={{ marginBottom: 10 }}
         />
 
-        <div style={{ fontSize: 12, color: COLORS.muted, lineHeight: 1.5 }}>
-          Accepted now: DOC, DOCX, PDF, PPT, PPTX, JPG, JPEG, PNG, WEBP, TXT, MD
+        <div
+          style={{
+            fontSize: 12,
+            color: COLORS.muted,
+            lineHeight: 1.55,
+          }}
+        >
+          Dragging files here should feel like dropping papers into a resource tray, not a generic upload panel.
         </div>
       </div>
 
-      <label style={{ display: "block", marginBottom: 12 }}>
+      <label style={{ display: "block", marginBottom: 14 }}>
         <div style={orchardLabelTitleStyle()}>Website links / online sources (optional)</div>
         <textarea
           value={linksValue}
           onChange={(e) => onLinksChange(e.target.value)}
-          style={orchardTextareaStyle(84)}
+          style={orchardTextareaStyle(88)}
           placeholder="Paste one or more links here, separated by commas or new lines"
         />
       </label>
 
-      <div style={{ fontSize: 12, color: COLORS.muted, lineHeight: 1.55, marginBottom: 10 }}>
-        <b>Attached items:</b> {files.length}
-      </div>
-
       {files.length > 0 ? (
-        <div style={{ display: "grid", gap: 10 }}>
+        <div
+          style={{
+            display: "grid",
+            gap: 10,
+          }}
+        >
           {files.map((item, index) => (
             <UploadItemCard
               key={`${item.name}-${index}`}
@@ -373,7 +524,17 @@ function UploadDropZone({
           ))}
         </div>
       ) : (
-        <div style={{ fontSize: 12, color: COLORS.muted }}>No files or links added yet.</div>
+        <div
+          style={{
+            ...orchardSoftCardStyle("#FFFDF9"),
+            border: `1px solid ${COLORS.border}`,
+            padding: 14,
+            color: COLORS.muted,
+            fontSize: 13,
+          }}
+        >
+          No files or links added yet.
+        </div>
       )}
     </div>
   );
@@ -505,36 +666,128 @@ export default function MaterialsPage() {
             <OrchardBlossomCorner size={116} flip />
           </div>
           <div style={{ position: "absolute", bottom: 8, left: 12, pointerEvents: "none", opacity: 0.8 }}>
-            <OrchardGinghamCorner size={66} flip />
+            <OrchardGinghamCorner size={70} flip />
           </div>
+          <div style={{ position: "absolute", bottom: 18, right: 18, pointerEvents: "none", opacity: 0.84 }}>
+            <OrchardMushroomCluster size={88} />
+          </div>
+
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 16,
-              alignItems: "flex-start",
-              flexWrap: "wrap",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.55fr) minmax(270px, 0.88fr)",
+              gap: 18,
+              alignItems: "start",
             }}
           >
-            <div style={{ maxWidth: 720 }}>
+            <div style={plannerSheetStyle("#FFFDF9")}>
               <div style={orchardRibbonHeaderStyle()}>Materials + Exemplars</div>
               <div style={orchardStitchDividerStyle()} />
               <h1 style={orchardHeroTitleStyle()}>Lay out the lesson sources on the desk</h1>
-              <div style={{ ...orchardHelpTextStyle(), fontSize: 15 }}>
+              <div style={{ ...orchardHelpTextStyle(), fontSize: 15, marginBottom: 18 }}>
                 Upload curriculum files, exemplar files, and links. These materials can change the lesson structure,
-                wording, pacing cues, and output style.
+                wording, pacing cues, and output style before the package is generated.
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                  gap: 12,
+                }}
+              >
+                <div style={plannerSheetStyle("#FFF9F2")}>
+                  <div style={plannerTabStyle("linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)", "#3F3120", COLORS.warnBorder)}>
+                    Content pull
+                  </div>
+                  <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+                    Curriculum drives what gets taught
+                  </div>
+                  <div style={orchardHelpTextStyle()}>
+                    Use this stack for texts, teacher resources, slides, printables, and source content.
+                  </div>
+                </div>
+
+                <div style={plannerSheetStyle("#FFFDF9")}>
+                  <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+                    Structure pull
+                  </div>
+                  <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+                    Exemplars guide pacing and flow
+                  </div>
+                  <div style={orchardHelpTextStyle()}>
+                    Model decks, routines, and lesson patterns should influence the shape of the package.
+                  </div>
+                </div>
+
+                <div style={plannerSheetStyle("#FFF7F4")}>
+                  <div style={plannerTabStyle("linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)", COLORS.cranberry, COLORS.borderStrong)}>
+                    Clarify first
+                  </div>
+                  <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+                    Surface conflicts instead of guessing
+                  </div>
+                  <div style={orchardHelpTextStyle()}>
+                    If sources disagree on level, pacing, or purpose, the page should show the tension before generate.
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 260 }}>
-              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 8 }}>
+            <div style={pinnedNoteStyle()}>
+              <div
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: 999,
+                  background: "#D9C7B5",
+                  boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+                  marginBottom: 10,
+                }}
+              />
+              <div
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  fontWeight: 900,
+                  color: COLORS.cranberry,
+                  marginBottom: 6,
+                }}
+              >
                 Current lesson
               </div>
-              <div style={{ fontSize: 14, lineHeight: 1.6 }}>
-                <div><b>Title:</b> {input.lessonTitle || "�"}</div>
-                <div><b>Objective:</b> {input.objective || "�"}</div>
-                <div><b>Grade:</b> {input.grade || "�"}</div>
-                <div><b>Subject:</b> {input.subject || "�"}</div>
+              <div
+                style={{
+                  color: COLORS.heading,
+                  fontWeight: 900,
+                  fontSize: 22,
+                  marginBottom: 10,
+                }}
+              >
+                Snapshot before build
+              </div>
+
+              <div style={{ fontSize: 14, lineHeight: 1.8, color: COLORS.text, marginBottom: 12 }}>
+                <div><b>Title:</b> {input.lessonTitle || "Not set yet"}</div>
+                <div><b>Objective:</b> {input.objective || "Not set yet"}</div>
+                <div><b>Grade:</b> {input.grade || "Not set yet"}</div>
+                <div><b>Subject:</b> {input.subject || "Not set yet"}</div>
+              </div>
+
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  border: `1px solid ${missingBasics ? COLORS.warnBorder : COLORS.successBorder}`,
+                  background: missingBasics ? "#FFF6E8" : "#F3F8F1",
+                  color: COLORS.heading,
+                  fontWeight: 800,
+                  fontSize: 12,
+                }}
+              >
+                {missingBasics ? "Inputs still need core fields" : "Inputs look ready to build"}
               </div>
             </div>
           </div>
@@ -543,13 +796,33 @@ export default function MaterialsPage() {
         {missingBasics && (
           <div
             style={{
-              ...orchardCardStyle(),
-              background: "#FFF6E8",
+              ...pinnedNoteStyle(),
+              maxWidth: 560,
+              marginLeft: "auto",
+              marginRight: 12,
+              background: "#FFF8EE",
               border: `1px solid ${COLORS.warnBorder}`,
             }}
           >
-            <b>Heads up:</b> the Inputs page is missing required fields: Lesson Title, Objective, and Text / Topic.
-            <div style={{ marginTop: 8 }}>
+            <div
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                fontWeight: 900,
+                color: COLORS.cranberry,
+                marginBottom: 6,
+              }}
+            >
+              Heads up
+            </div>
+            <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 22, marginBottom: 8 }}>
+              Inputs is still missing required fields
+            </div>
+            <div style={orchardHelpTextStyle()}>
+              Lesson Title, Objective, and Text / Topic are still needed for the strongest build.
+            </div>
+            <div style={{ marginTop: 10 }}>
               <Link to="/" style={orchardLinkStyle()}>
                 Go back to Inputs
               </Link>
@@ -557,23 +830,24 @@ export default function MaterialsPage() {
           </div>
         )}
 
-        <div style={orchardCardStyle()}>
-          <div style={{ position: "absolute", top: 10, right: 12, pointerEvents: "none", opacity: 0.75 }}>
-            <OrchardGinghamCorner size={72} />
+        <div style={orchardCardStyle("#FFF8F1")}>
+          <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.8 }}>
+            <OrchardGinghamCorner size={70} />
           </div>
-          <div style={{ position: "absolute", bottom: 10, left: 12, pointerEvents: "none", opacity: 0.92 }}>
+          <div style={{ position: "absolute", bottom: 12, left: 14, pointerEvents: "none", opacity: 0.9 }}>
             <OrchardMushroomCluster size={92} />
           </div>
-          <div style={orchardSectionTitleStyle()}>Sorting Desk</div>
-          <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
-            Curriculum sources shape the lesson content. Exemplars shape pacing, structure, cues, and model style.
+
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Sorting Desk</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+            Arrange the two main stacks like planner materials on a desk: curriculum for content, exemplars for structure and pacing.
           </div>
 
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 14,
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: 16,
             }}
           >
             <UploadDropZone
@@ -598,105 +872,139 @@ export default function MaterialsPage() {
           </div>
         </div>
 
-        <div
-          style={{
-            ...orchardCardStyle(),
-            background: "#F8FBF7",
-            border: `1px solid ${COLORS.border}`,
-          }}
-        >
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 8 }}>
-            Source Influence Preview
+        <div style={orchardCardStyle("#FFFDF9")}>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Generator Readout</div>
+          <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+            This is the pre-build gut check: what the sources seem to influence, whether anything conflicts, and any notes you want the blueprint to keep in view.
           </div>
 
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 12,
-              marginBottom: 12,
+              gridTemplateColumns: "minmax(0, 1.35fr) minmax(260px, 0.82fr)",
+              gap: 16,
+              alignItems: "start",
             }}
           >
-            <div style={orchardSoftCardStyle("#FFFDF9")}>
-              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Content pull</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
-                {influenceSummary.curriculumInfluence}
+            <div
+              style={{
+                display: "grid",
+                gap: 16,
+              }}
+            >
+              <div style={plannerSheetStyle("#F8FBF7")}>
+                <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+                  Source Influence Preview
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                    gap: 12,
+                    marginTop: 14,
+                    marginBottom: 12,
+                  }}
+                >
+                  <div style={plannerSheetStyle("#FFFDF9")}>
+                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Content pull</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
+                      {influenceSummary.curriculumInfluence}
+                    </div>
+                    <div style={orchardHelpTextStyle()}>
+                      {influenceSummary.curriculumReal} text-rich item(s), {influenceSummary.curriculumFallback} fallback-only item(s)
+                    </div>
+                  </div>
+
+                  <div style={plannerSheetStyle("#FFFDF9")}>
+                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Structure pull</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
+                      {influenceSummary.exemplarInfluence}
+                    </div>
+                    <div style={orchardHelpTextStyle()}>
+                      {influenceSummary.exemplarReal} text-rich item(s), {influenceSummary.exemplarFallback} fallback-only item(s)
+                    </div>
+                  </div>
+                </div>
+
+                <div style={orchardHelpTextStyle()}>{influenceSummary.overallMessage}</div>
               </div>
-              <div style={orchardHelpTextStyle()}>
-                {influenceSummary.curriculumReal} text-rich item(s), {influenceSummary.curriculumFallback} fallback-only item(s)
+
+              <div
+                style={{
+                  ...plannerSheetStyle(clarificationNotes.length ? "#FFF8EE" : "#F8FBF7"),
+                  border: `1px solid ${clarificationNotes.length ? COLORS.warnBorder : COLORS.border}`,
+                }}
+              >
+                <div
+                  style={plannerTabStyle(
+                    clarificationNotes.length
+                      ? "linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)"
+                      : "linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)",
+                    clarificationNotes.length ? "#3F3120" : COLORS.heading,
+                    clarificationNotes.length ? COLORS.warnBorder : COLORS.successBorder
+                  )}
+                >
+                  Clarification Check
+                </div>
+
+                {clarificationNotes.length ? (
+                  <>
+                    <div style={{ ...orchardHelpTextStyle(), marginTop: 12, marginBottom: 10, color: COLORS.heading }}>
+                      The generator can still continue, but these signals may be pulling the lesson in different directions:
+                    </div>
+                    <ul style={{ margin: "0 0 12px 18px", padding: 0, lineHeight: 1.7, color: COLORS.text }}>
+                      {clarificationNotes.map((note, index) => (
+                        <li key={index}>{note}</li>
+                      ))}
+                    </ul>
+                    <div style={{ ...orchardHelpTextStyle(), fontSize: 13 }}>
+                      Add a note on the right if you want to explicitly tell the generator which source should lead.
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ ...orchardHelpTextStyle(), marginTop: 12 }}>
+                    No obvious conflicts detected yet. Curriculum and exemplar signals look reasonably aligned based on the current filenames, extracted text, and notes.
+                  </div>
+                )}
               </div>
             </div>
 
-            <div style={orchardSoftCardStyle("#FFFDF9")}>
-              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Structure pull</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
-                {influenceSummary.exemplarInfluence}
+            <div style={pinnedNoteStyle()}>
+              <div
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: 999,
+                  background: "#D9C7B5",
+                  boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+                  marginBottom: 10,
+                }}
+              />
+              <div style={plannerTabStyle("linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)", COLORS.cranberry, COLORS.borderStrong)}>
+                Lesson Notes
               </div>
-              <div style={orchardHelpTextStyle()}>
-                {influenceSummary.exemplarReal} text-rich item(s), {influenceSummary.exemplarFallback} fallback-only item(s)
+              <div style={{ ...orchardHelpTextStyle(), marginTop: 12, marginBottom: 12 }}>
+                Add pacing notes, routines, constraints, or anything the blueprint should remember while generating.
               </div>
+
+              <label style={{ display: "block" }}>
+                <div style={orchardLabelTitleStyle()}>Notes</div>
+                <textarea
+                  value={lessonNotes}
+                  onChange={(e) => setLessonNotes(e.target.value)}
+                  style={orchardTextareaStyle(220)}
+                  placeholder="Pacing, special routines, constraints, or anything the blueprint should remember"
+                />
+              </label>
             </div>
           </div>
-
-          <div style={orchardHelpTextStyle()}>
-            {influenceSummary.overallMessage}
-          </div>
-        </div>
-
-        <div
-          style={{
-            ...orchardCardStyle(),
-            background: clarificationNotes.length ? "#FFF8EE" : "#F8FBF7",
-            border: `1px solid ${clarificationNotes.length ? COLORS.warnBorder : COLORS.border}`,
-          }}
-        >
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 8 }}>
-            Clarification Check
-          </div>
-
-          {clarificationNotes.length ? (
-            <>
-              <div style={{ ...orchardHelpTextStyle(), marginBottom: 10, color: COLORS.heading }}>
-                The generator can still continue, but these signals may be pulling the lesson in different directions:
-              </div>
-              <ul style={{ margin: "0 0 12px 18px", padding: 0, lineHeight: 1.7, color: COLORS.text }}>
-                {clarificationNotes.map((note, index) => (
-                  <li key={index}>{note}</li>
-                ))}
-              </ul>
-              <div style={{ ...orchardHelpTextStyle(), fontSize: 13 }}>
-                Add a note below if you want to explicitly tell the generator which source should lead.
-              </div>
-            </>
-          ) : (
-            <div style={orchardHelpTextStyle()}>
-              No obvious conflicts detected yet. Curriculum and exemplar signals look reasonably aligned based on the current filenames, extracted text, and notes.
-            </div>
-          )}
-        </div>
-
-        <div style={orchardCardStyle()}>
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Lesson Notes (optional)</div>
-          <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
-            Add pacing notes, routines, constraints, or anything the Blueprint should keep in mind while generating.
-          </div>
-
-          <label style={{ display: "block" }}>
-            <div style={orchardLabelTitleStyle()}>Notes</div>
-            <textarea
-              value={lessonNotes}
-              onChange={(e) => setLessonNotes(e.target.value)}
-              style={orchardTextareaStyle(90)}
-              placeholder="Pacing, special routines, constraints, or anything the blueprint should remember"
-            />
-          </label>
         </div>
 
         {(msg || errorMessage) && (
           <div
             style={{
-              ...orchardCardStyle(),
-              background: "#FFF2F1",
+              ...orchardCardStyle("#FFF2F1"),
               border: "1px solid #E6B8B4",
             }}
           >
@@ -704,38 +1012,40 @@ export default function MaterialsPage() {
           </div>
         )}
 
-        <div
-          style={{
-            ...orchardCardStyle(),
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={orchardHelpTextStyle()}>
-            Status: <b>{status}</b> | Curriculum items: <b>{finalCurriculumItems.length}</b> | Exemplar items: <b>{finalExemplarItems.length}</b>
-          </div>
+        <div style={orchardCardStyle("#FFF9F2")}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.25fr) auto",
+              gap: 16,
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div style={orchardSectionTitleStyle()}>Build the package</div>
+              <div style={orchardHelpTextStyle()}>
+                Status: <b>{status}</b> | Curriculum items: <b>{finalCurriculumItems.length}</b> | Exemplar items: <b>{finalExemplarItems.length}</b>
+              </div>
+            </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <button
-              onClick={onBuildAndGenerate}
-              disabled={busy || status === "generating" || missingBasics}
-              style={orchardPrimaryButtonStyle(busy || status === "generating" || missingBasics)}
-            >
-              {busy || status === "generating"
-                ? "Building + Generating..."
-                : "Build Blueprint + Generate Lesson + Open Results ->"}
-            </button>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                onClick={onBuildAndGenerate}
+                disabled={busy || status === "generating" || missingBasics}
+                style={orchardPrimaryButtonStyle(busy || status === "generating" || missingBasics)}
+              >
+                {busy || status === "generating"
+                  ? "Building + Generating..."
+                  : "Build Blueprint + Generate Lesson + Open Results ->"}
+              </button>
 
-            <Link to="/" style={orchardLinkStyle()}>
-              Back to Inputs
-            </Link>
+              <Link to="/" style={orchardLinkStyle()}>
+                Back to Inputs
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
