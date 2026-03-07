@@ -22,6 +22,7 @@ import {
   orchardStitchDividerStyle,
 } from "./orchardUi";
 import { WizardProgress } from "./WizardProgress";
+import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
 
 const ACCEPT_ATTR = ".txt,.md,.doc,.docx,.pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp";
 
@@ -500,6 +501,12 @@ export default function MaterialsPage() {
         <WizardProgress current="materials" />
 
         <div style={orchardHeroCardStyle()}>
+          <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.92 }}>
+            <OrchardBlossomCorner size={116} flip />
+          </div>
+          <div style={{ position: "absolute", bottom: 8, left: 12, pointerEvents: "none", opacity: 0.8 }}>
+            <OrchardGinghamCorner size={66} flip />
+          </div>
           <div
             style={{
               display: "flex",
@@ -551,6 +558,12 @@ export default function MaterialsPage() {
         )}
 
         <div style={orchardCardStyle()}>
+          <div style={{ position: "absolute", top: 10, right: 12, pointerEvents: "none", opacity: 0.75 }}>
+            <OrchardGinghamCorner size={72} />
+          </div>
+          <div style={{ position: "absolute", bottom: 10, left: 12, pointerEvents: "none", opacity: 0.92 }}>
+            <OrchardMushroomCluster size={92} />
+          </div>
           <div style={orchardSectionTitleStyle()}>Sorting Desk</div>
           <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
             Curriculum sources shape the lesson content. Exemplars shape pacing, structure, cues, and model style.

@@ -19,6 +19,7 @@ import {
   orchardStitchDividerStyle,
 } from "./orchardUi";
 import { WizardProgress } from "./WizardProgress";
+import { OrchardBlossomCorner, OrchardGinghamCorner } from "./orchardDecor";
 
 export default function InputsPage() {
   const navigate = useNavigate();
@@ -36,6 +37,12 @@ export default function InputsPage() {
         <WizardProgress current="inputs" />
 
         <div style={orchardHeroCardStyle()}>
+          <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.92 }}>
+            <OrchardBlossomCorner size={118} />
+          </div>
+          <div style={{ position: "absolute", bottom: 10, left: 12, pointerEvents: "none", opacity: 0.72 }}>
+            <OrchardGinghamCorner size={68} />
+          </div>
           <div
             style={{
               display: "flex",
