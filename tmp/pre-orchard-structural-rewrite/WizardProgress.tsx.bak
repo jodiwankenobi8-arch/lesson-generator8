@@ -1,0 +1,239 @@
+﻿import React from "react";
+import {
+  ORCHARD_COLORS,
+  orchardBoardStyle,
+  orchardHelpTextStyle,
+  orchardPaperLayerStyle,
+  orchardPillStyle,
+  orchardRibbonHeaderStyle,
+  orchardStitchDividerStyle,
+} from "./orchardUi";
+import { OrchardBlossomCorner, OrchardGinghamCorner } from "./orchardDecor";
+
+export type WizardStepKey = "inputs" | "materials" | "results";
+
+const STEP_ORDER: WizardStepKey[] = ["inputs", "materials", "results"];
+
+const STEP_META: Record<WizardStepKey, { label: string; helper: string; chapter: string }> = {
+  inputs: {
+    label: "Inputs",
+    helper: "Set the lesson foundation",
+    chapter: "Chapter One",
+  },
+  materials: {
+    label: "Materials",
+    helper: "Lay out curriculum and exemplars",
+    chapter: "Chapter Two",
+  },
+  results: {
+    label: "Results",
+    helper: "Review, export, and teach",
+    chapter: "Final Chapter",
+  },
+};
+
+export function WizardProgress({
+  current,
+}: {
+  current: WizardStepKey;
+}) {
+  const currentIndex = STEP_ORDER.indexOf(current);
+
+  return (
+    <div
+      style={{
+        ...orchardBoardStyle("#FFFCF7"),
+        marginBottom: 18,
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ position: "absolute", top: 10, right: 12, pointerEvents: "none", opacity: 0.88 }}>
+        <OrchardBlossomCorner size={110} />
+      </div>
+      <div style={{ position: "absolute", bottom: 10, left: 12, pointerEvents: "none", opacity: 0.72 }}>
+        <OrchardGinghamCorner size={66} />
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(230px, 280px) minmax(0, 1fr)",
+          gap: 18,
+          alignItems: "stretch",
+        }}
+      >
+        <div
+          style={{
+            ...orchardPaperLayerStyle("#FFFDF9"),
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            minHeight: 170,
+          }}
+        >
+          <div>
+            <div style={orchardRibbonHeaderStyle()}>Lesson Storyboard</div>
+            <div style={orchardStitchDividerStyle()} />
+            <div
+              style={{
+                fontWeight: 900,
+                color: ORCHARD_COLORS.heading,
+                marginBottom: 8,
+                fontSize: 22,
+                lineHeight: 1.2,
+                fontFamily: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+              }}
+            >
+              Follow the chapter rail
+            </div>
+            <div style={orchardHelpTextStyle()}>
+              Move from planning notes, to source materials, to a finished lesson package without losing the teacher's intent.
+            </div>
+          </div>
+
+          <div style={{ marginTop: 14 }}>
+            <span
+              style={{
+                ...orchardPillStyle("#EEF5EA", ORCHARD_COLORS.successBorder),
+                marginRight: 0,
+                marginBottom: 8,
+              }}
+            >
+              Current: {STEP_META[current].chapter}
+            </span>
+            <div style={{ ...orchardHelpTextStyle(), fontSize: 13 }}>
+              Three boards. One teaching flow.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ position: "relative" }}>
+          <div
+            style={{
+              position: "absolute",
+              top: 52,
+              left: "8%",
+              right: "8%",
+              height: 4,
+              borderRadius: 999,
+              background:
+                "linear-gradient(90deg, rgba(110,139,107,0.14) 0%, rgba(110,139,107,0.42) 40%, rgba(110,139,107,0.14) 100%)",
+            }}
+          />
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: 14,
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            {STEP_ORDER.map((step, index) => {
+              const isCurrent = step === current;
+              const isComplete = index < currentIndex;
+              const statusLabel = isComplete ? "Done" : isCurrent ? "You are here" : "Next up";
+              const background = isCurrent ? "#F7FBF5" : isComplete ? "#FFF8EE" : "#FFFDF9";
+              const border = isCurrent
+                ? ORCHARD_COLORS.successBorder
+                : isComplete
+                  ? ORCHARD_COLORS.borderStrong
+                  : ORCHARD_COLORS.border;
+
+              return (
+                <div
+                  key={step}
+                  style={{
+                    ...orchardPaperLayerStyle(background),
+                    minHeight: 170,
+                    border: `1px solid ${border}`,
+                    boxShadow: isCurrent
+                      ? "0 16px 28px rgba(63,90,64,0.10)"
+                      : "0 10px 20px rgba(47,47,47,0.04)",
+                    transform: isCurrent ? "translateY(-4px)" : "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <span
+                      style={{
+                        ...orchardPillStyle(
+                          isCurrent ? "#EEF5EA" : isComplete ? "#FFF8EE" : "#FFF7F1",
+                          isCurrent ? ORCHARD_COLORS.successBorder : ORCHARD_COLORS.borderStrong
+                        ),
+                        marginRight: 0,
+                        marginBottom: 0,
+                      }}
+                    >
+                      {statusLabel}
+                    </span>
+
+                    <div
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 999,
+                        display: "grid",
+                        placeItems: "center",
+                        fontSize: 13,
+                        fontWeight: 900,
+                        color: isCurrent ? "#FFFFFF" : ORCHARD_COLORS.accentDark,
+                        background: isCurrent
+                          ? `linear-gradient(180deg, ${ORCHARD_COLORS.accent} 0%, ${ORCHARD_COLORS.accentDark} 100%)`
+                          : isComplete
+                            ? "#F2EADF"
+                            : "#FBF7F0",
+                        border: `1px solid ${isCurrent ? ORCHARD_COLORS.accentDark : ORCHARD_COLORS.border}`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 900,
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                      color: ORCHARD_COLORS.muted,
+                      marginBottom: 6,
+                    }}
+                  >
+                    {STEP_META[step].chapter}
+                  </div>
+
+                  <div
+                    style={{
+                      fontWeight: 900,
+                      color: ORCHARD_COLORS.heading,
+                      marginBottom: 6,
+                      fontSize: 20,
+                      lineHeight: 1.15,
+                      fontFamily: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+                    }}
+                  >
+                    {STEP_META[step].label}
+                  </div>
+
+                  <div style={{ ...orchardHelpTextStyle(), fontSize: 13 }}>
+                    {STEP_META[step].helper}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,156 @@
+   1: import { useState, useEffect } from 'react';
+   2: import { DeckPlayer } from './DeckPlayer';
+   3: import type { DeckPlan } from '../types/slides';
+   4: 
+   5: interface TeachModeShellProps {
+   6:   deckPlan: DeckPlan;
+   7:   onExit: () => void;
+   8: }
+   9: 
+  10: type EngagementPrompt = 
+  11:   | 'turn-talk'
+  12:   | 'say-with-me'
+  13:   | 'show-fingers'
+  14:   | 'hands-on-head'
+  15:   | 'stand-if-rhymes'
+  16:   | null;
+  17: 
+  18: const ENGAGEMENT_PROMPTS: Record<Exclude<EngagementPrompt, null>, string> = {
+  19:   'turn-talk': '👥 Turn & Talk',
+  20:   'say-with-me': '🗣️ Say it with me!',
+  21:   'show-fingers': '✋ Show me on your fingers',
+  22:   'hands-on-head': '🙌 Hands on head if you hear ___',
+  23:   'stand-if-rhymes': '🎵 Stand if it rhymes',
+  24: };
+  25: 
+  26: export function TeachModeShell({ deckPlan, onExit }: TeachModeShellProps) {
+  27:   const [isFullscreen, setIsFullscreen] = useState(false);
+  28:   const [showEngagement, setShowEngagement] = useState<EngagementPrompt>(null);
+  29: 
+  30:   const toggleFullscreen = () => {
+  31:     if (!document.fullscreenElement) {
+  32:       document.documentElement.requestFullscreen();
+  33:       setIsFullscreen(true);
+  34:     } else {
+  35:       document.exitFullscreen();
+  36:       setIsFullscreen(false);
+  37:     }
+  38:   };
+  39: 
+  40:   const handleExit = () => {
+  41:     if (document.fullscreenElement) {
+  42:       document.exitFullscreen();
+  43:     }
+  44:     onExit();
+  45:   };
+  46: 
+  47:   // Auto-dismiss engagement prompt after 3 seconds
+  48:   useEffect(() => {
+  49:     if (showEngagement) {
+  50:       const timer = setTimeout(() => {
+  51:         setShowEngagement(null);
+  52:       }, 3000);
+  53:       return () => clearTimeout(timer);
+  54:     }
+  55:   }, [showEngagement]);
+  56: 
+  57:   return (
+  58:     <div className="teach-mode-shell h-screen bg-black">
+  59:       {/* Teach mode controls overlay */}
+  60:       <div className="teach-mode-overlay fixed top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity">
+  61:         <div className="flex items-center justify-between">
+  62:           <div className="text-white text-lg font-medium">
+  63:             Teach Mode
+  64:           </div>
+  65:           
+  66:           <div className="flex items-center gap-4">
+  67:             <button
+  68:               onClick={toggleFullscreen}
+  69:               className="px-4 py-2 bg-white/20 text-white rounded hover:bg-white/30 transition-colors"
+  70:             >
+  71:               {isFullscreen ? '🔲 Exit Fullscreen' : '⛶ Fullscreen'}
+  72:             </button>
+  73:             
+  74:             <button
+  75:               onClick={handleExit}
+  76:               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+  77:             >
+  78:               Exit Teach Mode
+  79:             </button>
+  80:           </div>
+  81:         </div>
+  82:       </div>
+  83: 
+  84:       {/* Engagement prompt buttons */}
+  85:       <div className="engagement-panel fixed right-4 top-1/2 -translate-y-1/2 z-50 space-y-2 opacity-0 hover:opacity-100 transition-opacity">
+  86:         <button
+  87:           onClick={() => setShowEngagement('turn-talk')}
+  88:           className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
+  89:           style={{ backgroundColor: 'var(--ao-navy)' }}
+  90:           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-text)'}
+  91:           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-navy)'}
+  92:           title="Turn & Talk"
+  93:         >
+  94:           💬
+  95:         </button>
+  96:         <button
+  97:           onClick={() => setShowEngagement('say-with-me')}
+  98:           className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
+  99:           style={{ backgroundColor: 'var(--ao-sky)' }}
+ 100:           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-navy)'}
+ 101:           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-sky)'}
+ 102:           title="Say it with me!"
+ 103:         >
+ 104:           🗣️
+ 105:         </button>
+ 106:         <button
+ 107:           onClick={() => setShowEngagement('show-fingers')}
+ 108:           className="w-14 h-14 rounded-full bg-green-500 text-white text-2xl hover:bg-green-600 transition-colors shadow-lg flex items-center justify-center"
+ 109:           title="Show me on your fingers"
+ 110:         >
+ 111:           ✋
+ 112:         </button>
+ 113:         <button
+ 114:           onClick={() => setShowEngagement('hands-on-head')}
+ 115:           className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
+ 116:           style={{ backgroundColor: 'var(--ao-tan)' }}
+ 117:           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-text)'}
+ 118:           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-tan)'}
+ 119:           title="Hands on head if you hear ___"
+ 120:         >
+ 121:           🙌
+ 122:         </button>
+ 123:         <button
+ 124:           onClick={() => setShowEngagement('stand-if-rhymes')}
+ 125:           className="w-14 h-14 rounded-full bg-pink-500 text-white text-2xl hover:bg-pink-600 transition-colors shadow-lg flex items-center justify-center"
+ 126:           title="Stand if it rhymes"
+ 127:         >
+ 128:           🎵
+ 129:         </button>
+ 130:       </div>
+ 131: 
+ 132:       {/* Engagement prompt overlay */}
+ 133:       {showEngagement && (
+ 134:         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[60] pointer-events-none">
+ 135:           <div className="bg-white px-12 py-8 rounded-3xl text-5xl font-bold animate-bounce shadow-2xl">
+ 136:             {ENGAGEMENT_PROMPTS[showEngagement]}
+ 137:           </div>
+ 138:         </div>
+ 139:       )}
+ 140: 
+ 141:       {/* Deck player */}
+ 142:       <DeckPlayer deckPlan={deckPlan} teachMode={true} />
+ 143:       
+ 144:       {/* Keyboard shortcuts help (show on hover) */}
+ 145:       <div className="keyboard-help fixed bottom-4 left-4 bg-black/70 text-white p-4 rounded-lg text-sm opacity-0 hover:opacity-100 transition-opacity z-50">
+ 146:         <div className="font-semibold mb-2">Keyboard Shortcuts</div>
+ 147:         <div className="space-y-1">
+ 148:           <div>→ or Space: Next slide</div>
+ 149:           <div>← : Previous slide</div>
+ 150:           <div>Home: First slide</div>
+ 151:           <div>End: Last slide</div>
+ 152:         </div>
+ 153:       </div>
+ 154:     </div>
+ 155:   );
+ 156: }

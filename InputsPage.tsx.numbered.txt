@@ -1,0 +1,559 @@
+   1: import React from "react";
+   2: import { useNavigate } from "react-router-dom";
+   3: import { useLessonStore } from "../state/useLessonStore";
+   4: import {
+   5:   ORCHARD_COLORS as COLORS,
+   6:   orchardShellStyle,
+   7:   orchardWrapStyle,
+   8:   orchardCardStyle,
+   9:   orchardHeroCardStyle,
+  10:   orchardSoftCardStyle,
+  11:   orchardSectionTitleStyle,
+  12:   orchardLabelTitleStyle,
+  13:   orchardHelpTextStyle,
+  14:   orchardInputStyle,
+  15:   orchardTextareaStyle,
+  16:   orchardPrimaryButtonStyle,
+  17:   orchardRibbonHeaderStyle,
+  18:   orchardHeroTitleStyle,
+  19:   orchardStitchDividerStyle,
+  20: } from "./orchardUi";
+  21: import { WizardProgress } from "./WizardProgress";
+  22: import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+  23: 
+  24: function plannerSheetStyle(background = "#FFFDF9"): React.CSSProperties {
+  25:   return {
+  26:     ...orchardSoftCardStyle(background),
+  27:     border: `1px solid ${COLORS.border}`,
+  28:     padding: 18,
+  29:     boxShadow: "0 10px 22px rgba(47,47,47,0.05)",
+  30:     overflow: "hidden",
+  31:   };
+  32: }
+  33: 
+  34: function plannerTabStyle(background: string, color: string, border = COLORS.borderStrong): React.CSSProperties {
+  35:   return {
+  36:     display: "inline-block",
+  37:     padding: "7px 12px",
+  38:     borderRadius: "15px 16px 16px 12px",
+  39:     background,
+  40:     color,
+  41:     fontWeight: 900,
+  42:     fontSize: 11,
+  43:     letterSpacing: "0.06em",
+  44:     textTransform: "uppercase",
+  45:     border: `1px solid ${border}`,
+  46:     boxShadow: "0 4px 10px rgba(47,47,47,0.04)",
+  47:   };
+  48: }
+  49: 
+  50: function pinnedNoteStyle(): React.CSSProperties {
+  51:   return {
+  52:     ...plannerSheetStyle("#FFF8EE"),
+  53:     border: `1px solid ${COLORS.borderStrong}`,
+  54:     transform: "rotate(-1.2deg)",
+  55:     alignSelf: "start",
+  56:   };
+  57: }
+  58: 
+  59: function miniPaperStyle(background = "#FFFDF9"): React.CSSProperties {
+  60:   return {
+  61:     ...orchardSoftCardStyle(background),
+  62:     border: `1px solid ${COLORS.border}`,
+  63:     padding: 14,
+  64:     minHeight: 110,
+  65:   };
+  66: }
+  67: 
+  68: export default function InputsPage() {
+  69:   const navigate = useNavigate();
+  70:   const input = useLessonStore((s) => s.input);
+  71:   const patch = useLessonStore((s) => s.setInput);
+  72: 
+  73:   const missingCore =
+  74:     !(input.lessonTitle ?? "").trim() ||
+  75:     !(input.objective ?? "").trim() ||
+  76:     !(input.textOrTopic ?? "").trim();
+  77: 
+  78:   return (
+  79:     <div style={orchardShellStyle()}>
+  80:       <div style={orchardWrapStyle()}>
+  81:         <WizardProgress current="inputs" />
+  82: 
+  83:         <div style={orchardHeroCardStyle()}>
+  84:           <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.92 }}>
+  85:             <OrchardBlossomCorner size={118} />
+  86:           </div>
+  87:           <div style={{ position: "absolute", bottom: 10, left: 12, pointerEvents: "none", opacity: 0.74 }}>
+  88:             <OrchardGinghamCorner size={72} />
+  89:           </div>
+  90:           <div style={{ position: "absolute", bottom: 18, right: 22, pointerEvents: "none", opacity: 0.82 }}>
+  91:             <OrchardMushroomCluster size={84} flip />
+  92:           </div>
+  93: 
+  94:           <div
+  95:             style={{
+  96:               display: "grid",
+  97:               gridTemplateColumns: "minmax(0, 1.55fr) minmax(270px, 0.88fr)",
+  98:               gap: 18,
+  99:               alignItems: "start",
+ 100:             }}
+ 101:           >
+ 102:             <div style={plannerSheetStyle("#FFFDF9")}>
+ 103:               <div style={orchardRibbonHeaderStyle()}>Inputs</div>
+ 104:               <div style={orchardStitchDividerStyle()} />
+ 105:               <h1 style={orchardHeroTitleStyle()}>Open the planner for the day</h1>
+ 106:               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 760, marginBottom: 18 }}>
+ 107:                 Start with the lesson basics, the teaching goal, and the group or standards notes you already know.
+ 108:                 The next step brings in curriculum materials and exemplars that can reshape wording, structure, pacing,
+ 109:                 and output style.
+ 110:               </div>
+ 111: 
+ 112:               <div
+ 113:                 style={{
+ 114:                   display: "grid",
+ 115:                   gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+ 116:                   gap: 12,
+ 117:                 }}
+ 118:               >
+ 119:                 <div style={miniPaperStyle("#FFF9F2")}>
+ 120:                   <div style={plannerTabStyle("linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)", "#3F3120", COLORS.warnBorder)}>
+ 121:                     Core fields
+ 122:                   </div>
+ 123:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 124:                     Title + objective + topic
+ 125:                   </div>
+ 126:                   <div style={orchardHelpTextStyle()}>
+ 127:                     These are the anchors the generator trusts before it reads uploaded sources.
+ 128:                   </div>
+ 129:                 </div>
+ 130: 
+ 131:                 <div style={miniPaperStyle("#FFFDF9")}>
+ 132:                   <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+ 133:                     Standards
+ 134:                   </div>
+ 135:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 136:                     Auto-detect first
+ 137:                   </div>
+ 138:                   <div style={orchardHelpTextStyle()}>
+ 139:                     Florida B.E.S.T. should come from the known dataset, with override only when you want it.
+ 140:                   </div>
+ 141:                 </div>
+ 142: 
+ 143:                 <div style={miniPaperStyle("#FFF7F4")}>
+ 144:                   <div style={plannerTabStyle("linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)", COLORS.cranberry, COLORS.borderStrong)}>
+ 145:                     Teacher trust
+ 146:                   </div>
+ 147:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 148:                     Ask when signals conflict
+ 149:                   </div>
+ 150:                   <div style={orchardHelpTextStyle()}>
+ 151:                     If later materials pull in different directions, the app should surface that instead of guessing.
+ 152:                   </div>
+ 153:                 </div>
+ 154:               </div>
+ 155:             </div>
+ 156: 
+ 157:             <div style={pinnedNoteStyle()}>
+ 158:               <div
+ 159:                 style={{
+ 160:                   width: 16,
+ 161:                   height: 16,
+ 162:                   borderRadius: 999,
+ 163:                   background: "#D9C7B5",
+ 164:                   boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+ 165:                   marginBottom: 10,
+ 166:                 }}
+ 167:               />
+ 168:               <div
+ 169:                 style={{
+ 170:                   fontSize: 11,
+ 171:                   letterSpacing: "0.08em",
+ 172:                   textTransform: "uppercase",
+ 173:                   fontWeight: 900,
+ 174:                   color: COLORS.cranberry,
+ 175:                   marginBottom: 6,
+ 176:                 }}
+ 177:               >
+ 178:                 What happens next
+ 179:               </div>
+ 180:               <div
+ 181:                 style={{
+ 182:                   color: COLORS.heading,
+ 183:                   fontWeight: 900,
+ 184:                   fontSize: 22,
+ 185:                   marginBottom: 10,
+ 186:                 }}
+ 187:               >
+ 188:                 Gather the lesson thread first
+ 189:               </div>
+ 190: 
+ 191:               <ol
+ 192:                 style={{
+ 193:                   margin: "0 0 14px 18px",
+ 194:                   padding: 0,
+ 195:                   lineHeight: 1.8,
+ 196:                   color: COLORS.text,
+ 197:                 }}
+ 198:               >
+ 199:                 <li>Set the lesson details and teaching focus.</li>
+ 200:                 <li>Add group notes and optional standards override.</li>
+ 201:                 <li>Move to Materials to sort curriculum and exemplars.</li>
+ 202:                 <li>Generate the package after the source desk looks right.</li>
+ 203:               </ol>
+ 204: 
+ 205:               <div
+ 206:                 style={{
+ 207:                   display: "inline-block",
+ 208:                   padding: "6px 10px",
+ 209:                   borderRadius: 999,
+ 210:                   border: `1px solid ${missingCore ? COLORS.warnBorder : COLORS.successBorder}`,
+ 211:                   background: missingCore ? "#FFF6E8" : "#F3F8F1",
+ 212:                   color: COLORS.heading,
+ 213:                   fontWeight: 800,
+ 214:                   fontSize: 12,
+ 215:                 }}
+ 216:               >
+ 217:                 {missingCore ? "Some core fields still need attention" : "Core fields look ready for Materials"}
+ 218:               </div>
+ 219:             </div>
+ 220:           </div>
+ 221:         </div>
+ 222: 
+ 223:         <div style={orchardCardStyle("#FFF8F1")}>
+ 224:           <div style={{ position: "absolute", top: 14, right: 18, pointerEvents: "none", opacity: 0.8 }}>
+ 225:             <OrchardGinghamCorner size={66} flip />
+ 226:           </div>
+ 227: 
+ 228:           <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Planner Pages</div>
+ 229:           <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+ 230:             Instead of isolated software cards, these are the main pages the lesson builder uses before it sees your uploaded materials.
+ 231:           </div>
+ 232: 
+ 233:           <div
+ 234:             style={{
+ 235:               display: "grid",
+ 236:               gridTemplateColumns: "minmax(250px, 0.9fr) minmax(0, 1.3fr)",
+ 237:               gap: 16,
+ 238:               alignItems: "start",
+ 239:             }}
+ 240:           >
+ 241:             <div style={plannerSheetStyle("#FFFDF9")}>
+ 242:               <div style={plannerTabStyle("linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)", COLORS.cranberry)}>
+ 243:                 Day-at-a-Glance
+ 244:               </div>
+ 245:               <div style={{ ...orchardHelpTextStyle(), marginTop: 12, marginBottom: 14 }}>
+ 246:                 These are the practical lesson settings that shape the frame around the content.
+ 247:               </div>
+ 248: 
+ 249:               <div
+ 250:                 style={{
+ 251:                   display: "grid",
+ 252:                   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+ 253:                   gap: 14,
+ 254:                 }}
+ 255:               >
+ 256:                 <label style={{ display: "block" }}>
+ 257:                   <div style={orchardLabelTitleStyle()}>Grade</div>
+ 258:                   <select
+ 259:                     value={input.grade ?? "K"}
+ 260:                     onChange={(e) => patch({ grade: e.target.value as any })}
+ 261:                     style={orchardInputStyle()}
+ 262:                   >
+ 263:                     <option value="K">K</option>
+ 264:                     <option value="1">1</option>
+ 265:                     <option value="2">2</option>
+ 266:                     <option value="3">3</option>
+ 267:                     <option value="4">4</option>
+ 268:                     <option value="5">5</option>
+ 269:                   </select>
+ 270:                 </label>
+ 271: 
+ 272:                 <label style={{ display: "block" }}>
+ 273:                   <div style={orchardLabelTitleStyle()}>Subject</div>
+ 274:                   <select
+ 275:                     value={input.subject ?? "ELA"}
+ 276:                     onChange={(e) => patch({ subject: e.target.value as any })}
+ 277:                     style={orchardInputStyle()}
+ 278:                   >
+ 279:                     <option value="ELA">ELA</option>
+ 280:                     <option value="Math">Math</option>
+ 281:                     <option value="Science">Science</option>
+ 282:                     <option value="SS">SS</option>
+ 283:                   </select>
+ 284:                 </label>
+ 285: 
+ 286:                 <label style={{ display: "block" }}>
+ 287:                   <div style={orchardLabelTitleStyle()}>Date</div>
+ 288:                   <input
+ 289:                     type="date"
+ 290:                     value={input.date ?? ""}
+ 291:                     onChange={(e) => patch({ date: e.target.value })}
+ 292:                     style={orchardInputStyle()}
+ 293:                   />
+ 294:                 </label>
+ 295: 
+ 296:                 <label style={{ display: "block" }}>
+ 297:                   <div style={orchardLabelTitleStyle()}>Duration (minutes)</div>
+ 298:                   <input
+ 299:                     type="number"
+ 300:                     min={1}
+ 301:                     value={input.durationMinutes ?? 60}
+ 302:                     onChange={(e) => patch({ durationMinutes: Number(e.target.value || 60) })}
+ 303:                     style={orchardInputStyle()}
+ 304:                   />
+ 305:                 </label>
+ 306:               </div>
+ 307:             </div>
+ 308: 
+ 309:             <div style={plannerSheetStyle("#FFFDF9")}>
+ 310:               <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+ 311:                 Teaching Focus
+ 312:               </div>
+ 313:               <div style={{ ...orchardHelpTextStyle(), marginTop: 12, marginBottom: 14 }}>
+ 314:                 This is the heart of the lesson. Title, objective, and text or topic are the strongest inputs to complete first.
+ 315:               </div>
+ 316: 
+ 317:               <div
+ 318:                 style={{
+ 319:                   display: "grid",
+ 320:                   gridTemplateColumns: "1fr",
+ 321:                   gap: 14,
+ 322:                 }}
+ 323:               >
+ 324:                 <label style={{ display: "block" }}>
+ 325:                   <div style={orchardLabelTitleStyle()}>Lesson Title</div>
+ 326:                   <input
+ 327:                     value={input.lessonTitle ?? ""}
+ 328:                     onChange={(e) => patch({ lessonTitle: e.target.value })}
+ 329:                     style={orchardInputStyle()}
+ 330:                     placeholder="e.g., CVC Words"
+ 331:                   />
+ 332:                 </label>
+ 333: 
+ 334:                 <label style={{ display: "block" }}>
+ 335:                   <div style={orchardLabelTitleStyle()}>Objective</div>
+ 336:                   <input
+ 337:                     value={input.objective ?? ""}
+ 338:                     onChange={(e) => patch({ objective: e.target.value })}
+ 339:                     style={orchardInputStyle()}
+ 340:                     placeholder="Students will..."
+ 341:                   />
+ 342:                 </label>
+ 343: 
+ 344:                 <label style={{ display: "block" }}>
+ 345:                   <div style={orchardLabelTitleStyle()}>Essential Question (optional)</div>
+ 346:                   <input
+ 347:                     value={input.essentialQuestion ?? ""}
+ 348:                     onChange={(e) => patch({ essentialQuestion: e.target.value })}
+ 349:                     style={orchardInputStyle()}
+ 350:                     placeholder="e.g., How can we tell where a story takes place?"
+ 351:                   />
+ 352:                 </label>
+ 353: 
+ 354:                 <label style={{ display: "block" }}>
+ 355:                   <div style={orchardLabelTitleStyle()}>Text / Topic</div>
+ 356:                   <textarea
+ 357:                     value={input.textOrTopic ?? ""}
+ 358:                     onChange={(e) => patch({ textOrTopic: e.target.value })}
+ 359:                     style={orchardTextareaStyle(118)}
+ 360:                     placeholder="What is the lesson about? (decodable, skill, topic, etc.)"
+ 361:                   />
+ 362:                 </label>
+ 363: 
+ 364:                 <label style={{ display: "block" }}>
+ 365:                   <div style={orchardLabelTitleStyle()}>Materials (optional)</div>
+ 366:                   <textarea
+ 367:                     value={input.materials ?? ""}
+ 368:                     onChange={(e) => patch({ materials: e.target.value })}
+ 369:                     style={orchardTextareaStyle(92)}
+ 370:                     placeholder="Books, decodables, whiteboards, counters, etc."
+ 371:                   />
+ 372:                 </label>
+ 373:               </div>
+ 374:             </div>
+ 375:           </div>
+ 376:         </div>
+ 377: 
+ 378:         <div style={orchardCardStyle("#FFFDF9")}>
+ 379:           <div style={{ position: "absolute", bottom: 12, left: 14, pointerEvents: "none", opacity: 0.84 }}>
+ 380:             <OrchardMushroomCluster size={90} />
+ 381:           </div>
+ 382: 
+ 383:           <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Differentiation + Standards</div>
+ 384:           <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+ 385:             Capture group thinking and any explicit standard override as part of the same planning spread.
+ 386:           </div>
+ 387: 
+ 388:           <div
+ 389:             style={{
+ 390:               display: "grid",
+ 391:               gridTemplateColumns: "minmax(0, 1.45fr) minmax(250px, 0.8fr)",
+ 392:               gap: 16,
+ 393:               alignItems: "start",
+ 394:             }}
+ 395:           >
+ 396:             <div style={plannerSheetStyle("#FFFDF9")}>
+ 397:               <div style={plannerTabStyle("linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)", "#3F3120", COLORS.warnBorder)}>
+ 398:                 Small-Group Notes
+ 399:               </div>
+ 400:               <div style={{ ...orchardHelpTextStyle(), marginTop: 12, marginBottom: 14 }}>
+ 401:                 Capture what each group can do now, where support is needed, or how you want the lesson differentiated.
+ 402:               </div>
+ 403: 
+ 404:               <div
+ 405:                 style={{
+ 406:                   display: "grid",
+ 407:                   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+ 408:                   gap: 14,
+ 409:                 }}
+ 410:               >
+ 411:                 <label style={{ display: "block" }}>
+ 412:                   <div style={orchardLabelTitleStyle()}>Tier 3</div>
+ 413:                   <textarea
+ 414:                     value={input.groupNotes?.tier3 ?? ""}
+ 415:                     onChange={(e) => patch({ groupNotes: { ...(input.groupNotes ?? {}), tier3: e.target.value } })}
+ 416:                     style={orchardTextareaStyle(96)}
+ 417:                   />
+ 418:                 </label>
+ 419: 
+ 420:                 <label style={{ display: "block" }}>
+ 421:                   <div style={orchardLabelTitleStyle()}>Tier 2</div>
+ 422:                   <textarea
+ 423:                     value={input.groupNotes?.tier2 ?? ""}
+ 424:                     onChange={(e) => patch({ groupNotes: { ...(input.groupNotes ?? {}), tier2: e.target.value } })}
+ 425:                     style={orchardTextareaStyle(96)}
+ 426:                   />
+ 427:                 </label>
+ 428: 
+ 429:                 <label style={{ display: "block" }}>
+ 430:                   <div style={orchardLabelTitleStyle()}>On Level</div>
+ 431:                   <textarea
+ 432:                     value={input.groupNotes?.onLevel ?? ""}
+ 433:                     onChange={(e) => patch({ groupNotes: { ...(input.groupNotes ?? {}), onLevel: e.target.value } })}
+ 434:                     style={orchardTextareaStyle(96)}
+ 435:                   />
+ 436:                 </label>
+ 437: 
+ 438:                 <label style={{ display: "block" }}>
+ 439:                   <div style={orchardLabelTitleStyle()}>Enrichment</div>
+ 440:                   <textarea
+ 441:                     value={input.groupNotes?.enrichment ?? ""}
+ 442:                     onChange={(e) => patch({ groupNotes: { ...(input.groupNotes ?? {}), enrichment: e.target.value } })}
+ 443:                     style={orchardTextareaStyle(96)}
+ 444:                   />
+ 445:                 </label>
+ 446:               </div>
+ 447:             </div>
+ 448: 
+ 449:             <div style={pinnedNoteStyle()}>
+ 450:               <div
+ 451:                 style={{
+ 452:                   width: 16,
+ 453:                   height: 16,
+ 454:                   borderRadius: 999,
+ 455:                   background: "#D9C7B5",
+ 456:                   boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+ 457:                   marginBottom: 10,
+ 458:                 }}
+ 459:               />
+ 460:               <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+ 461:                 Standards + Override
+ 462:               </div>
+ 463:               <div style={{ ...orchardHelpTextStyle(), marginTop: 12, marginBottom: 12 }}>
+ 464:                 Leave this blank to let the app auto-detect Florida B.E.S.T. standards from the lesson details.
+ 465:               </div>
+ 466: 
+ 467:               <label style={{ display: "block" }}>
+ 468:                 <div style={orchardLabelTitleStyle()}>Manual Standard Override (optional)</div>
+ 469:                 <input
+ 470:                   value={(input.manualStandardOverride ?? []).join(", ")}
+ 471:                   onChange={(e) =>
+ 472:                     patch({
+ 473:                       manualStandardOverride: String(e.target.value || "")
+ 474:                         .split(",")
+ 475:                         .map((s) => s.trim())
+ 476:                         .filter(Boolean),
+ 477:                     })
+ 478:                   }
+ 479:                   style={orchardInputStyle()}
+ 480:                   placeholder="ELA.K.R.1.1, ELA.K.F.2.1 ..."
+ 481:                 />
+ 482:               </label>
+ 483: 
+ 484:               <div
+ 485:                 style={{
+ 486:                   marginTop: 12,
+ 487:                   padding: 12,
+ 488:                   borderRadius: 16,
+ 489:                   border: `1px solid ${COLORS.border}`,
+ 490:                   background: "#FFFDF9",
+ 491:                   color: COLORS.muted,
+ 492:                   lineHeight: 1.6,
+ 493:                   fontSize: 13,
+ 494:                 }}
+ 495:               >
+ 496:                 The goal is confidence-ranked detection first, with a manual path only when you want to override.
+ 497:               </div>
+ 498:             </div>
+ 499:           </div>
+ 500:         </div>
+ 501: 
+ 502:         {missingCore && (
+ 503:           <div
+ 504:             style={{
+ 505:               ...pinnedNoteStyle(),
+ 506:               maxWidth: 560,
+ 507:               marginLeft: "auto",
+ 508:               marginRight: 12,
+ 509:               background: "#FFF8EE",
+ 510:               border: `1px solid ${COLORS.warnBorder}`,
+ 511:             }}
+ 512:           >
+ 513:             <div
+ 514:               style={{
+ 515:                 fontSize: 11,
+ 516:                 letterSpacing: "0.08em",
+ 517:                 textTransform: "uppercase",
+ 518:                 fontWeight: 900,
+ 519:                 color: COLORS.cranberry,
+ 520:                 marginBottom: 6,
+ 521:               }}
+ 522:             >
+ 523:               Before you continue
+ 524:             </div>
+ 525:             <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 22, marginBottom: 8 }}>
+ 526:               The strongest runs still need three anchors
+ 527:             </div>
+ 528:             <div style={orchardHelpTextStyle()}>
+ 529:               Add a lesson title, objective, and text or topic for the clearest foundation. You can still fill in the rest later.
+ 530:             </div>
+ 531:           </div>
+ 532:         )}
+ 533: 
+ 534:         <div style={orchardCardStyle("#FFF9F2")}>
+ 535:           <div
+ 536:             style={{
+ 537:               display: "grid",
+ 538:               gridTemplateColumns: "minmax(0, 1.25fr) auto",
+ 539:               gap: 16,
+ 540:               alignItems: "center",
+ 541:             }}
+ 542:           >
+ 543:             <div>
+ 544:               <div style={orchardSectionTitleStyle()}>Next stop: the sorting desk</div>
+ 545:               <div style={orchardHelpTextStyle()}>
+ 546:                 When you continue, you'll upload curriculum materials and exemplars that can change the lesson structure,
+ 547:                 pacing, and wording before the package is built.
+ 548:               </div>
+ 549:             </div>
+ 550: 
+ 551:             <button onClick={() => navigate("/materials")} style={orchardPrimaryButtonStyle(false)}>
+ 552:               Continue to Materials -&gt;
+ 553:             </button>
+ 554:           </div>
+ 555:         </div>
+ 556:       </div>
+ 557:     </div>
+ 558:   );
+ 559: }

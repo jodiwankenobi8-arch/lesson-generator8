@@ -1,0 +1,331 @@
+   1: import React from "react";
+   2: import {
+   3:   ORCHARD_COLORS,
+   4:   orchardCardStyle,
+   5:   orchardHelpTextStyle,
+   6:   orchardRibbonHeaderStyle,
+   7:   orchardSoftCardStyle,
+   8:   orchardStitchDividerStyle,
+   9: } from "./orchardUi";
+  10: 
+  11: export type WizardStepKey = "inputs" | "materials" | "results";
+  12: 
+  13: const STEP_ORDER: WizardStepKey[] = ["inputs", "materials", "results"];
+  14: 
+  15: const STEP_META: Record<
+  16:   WizardStepKey,
+  17:   {
+  18:     label: string;
+  19:     helper: string;
+  20:     chapter: string;
+  21:     summary: string;
+  22:   }
+  23: > = {
+  24:   inputs: {
+  25:     label: "Inputs",
+  26:     helper: "Set the lesson foundation",
+  27:     chapter: "Chapter One",
+  28:     summary: "Lesson details, teaching goal, standards, and group notes",
+  29:   },
+  30:   materials: {
+  31:     label: "Materials",
+  32:     helper: "Lay out curriculum and exemplars",
+  33:     chapter: "Chapter Two",
+  34:     summary: "Source files, model lessons, links, and influence checks",
+  35:   },
+  36:   results: {
+  37:     label: "Results",
+  38:     helper: "Review, export, and teach",
+  39:     chapter: "Final Chapter",
+  40:     summary: "Slides, teacher plan, centers, interventions, and exports",
+  41:   },
+  42: };
+  43: 
+  44: function chapterTone(step: WizardStepKey, isCurrent: boolean, isComplete: boolean) {
+  45:   if (isCurrent) {
+  46:     return {
+  47:       mat: "#EEF5EA",
+  48:       inner: "#F9FCF7",
+  49:       border: ORCHARD_COLORS.successBorder,
+  50:       tabBg: "linear-gradient(180deg, #6E8B6B 0%, #3F5A40 100%)",
+  51:       tabColor: "#FFFFFF",
+  52:       chipBg: "#F3F8F1",
+  53:       chipBorder: ORCHARD_COLORS.successBorder,
+  54:       chipText: ORCHARD_COLORS.heading,
+  55:     };
+  56:   }
+  57: 
+  58:   if (isComplete) {
+  59:     return {
+  60:       mat: "#FFF7EF",
+  61:       inner: "#FFFDF9",
+  62:       border: ORCHARD_COLORS.borderStrong,
+  63:       tabBg: "linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)",
+  64:       tabColor: "#3F3120",
+  65:       chipBg: "#FFF6E8",
+  66:       chipBorder: ORCHARD_COLORS.warnBorder,
+  67:       chipText: ORCHARD_COLORS.heading,
+  68:     };
+  69:   }
+  70: 
+  71:   return {
+  72:     mat: "#FFFDFC",
+  73:     inner: "#FFFDF9",
+  74:     border: ORCHARD_COLORS.borderSoft,
+  75:     tabBg: "linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)",
+  76:     tabColor: ORCHARD_COLORS.cranberry,
+  77:     chipBg: "#FFF7F4",
+  78:     chipBorder: ORCHARD_COLORS.border,
+  79:     chipText: ORCHARD_COLORS.muted,
+  80:   };
+  81: }
+  82: 
+  83: function statusLabel(isCurrent: boolean, isComplete: boolean) {
+  84:   if (isCurrent) return "Open now";
+  85:   if (isComplete) return "Pressed + ready";
+  86:   return "Waiting in the stack";
+  87: }
+  88: 
+  89: export function WizardProgress({
+  90:   current,
+  91: }: {
+  92:   current: WizardStepKey;
+  93: }) {
+  94:   const currentIndex = STEP_ORDER.indexOf(current);
+  95: 
+  96:   return (
+  97:     <div
+  98:       style={{
+  99:         ...orchardCardStyle("#FFF8F1"),
+ 100:         padding: 24,
+ 101:         overflow: "hidden",
+ 102:       }}
+ 103:     >
+ 104:       <div
+ 105:         style={{
+ 106:           display: "grid",
+ 107:           gridTemplateColumns: "minmax(0, 1.6fr) minmax(250px, 0.84fr)",
+ 108:           gap: 16,
+ 109:           alignItems: "start",
+ 110:           marginBottom: 18,
+ 111:         }}
+ 112:       >
+ 113:         <div style={{ minWidth: 0 }}>
+ 114:           <div style={orchardRibbonHeaderStyle()}>Lesson Storyboard</div>
+ 115:           <div style={orchardStitchDividerStyle()} />
+ 116:           <div
+ 117:             style={{
+ 118:               fontFamily: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+ 119:               color: ORCHARD_COLORS.heading,
+ 120:               fontWeight: 700,
+ 121:               fontSize: 30,
+ 122:               lineHeight: 1.08,
+ 123:               marginBottom: 10,
+ 124:             }}
+ 125:           >
+ 126:             Move from planner pages to a teach-ready lesson package
+ 127:           </div>
+ 128:           <div style={{ ...orchardHelpTextStyle(), fontSize: 14 }}>
+ 129:             Keep the full lesson arc visible: first set the foundation, then sort the materials, then open the finished
+ 130:             package for review and export.
+ 131:           </div>
+ 132:         </div>
+ 133: 
+ 134:         <div
+ 135:           style={{
+ 136:             ...orchardSoftCardStyle("#FFFDF9"),
+ 137:             border: `1px solid ${ORCHARD_COLORS.borderStrong}`,
+ 138:             padding: 18,
+ 139:             boxShadow: "0 10px 22px rgba(47,47,47,0.05)",
+ 140:             transform: "rotate(-1deg)",
+ 141:           }}
+ 142:         >
+ 143:           <div
+ 144:             style={{
+ 145:               fontSize: 11,
+ 146:               letterSpacing: "0.08em",
+ 147:               textTransform: "uppercase",
+ 148:               fontWeight: 900,
+ 149:               color: ORCHARD_COLORS.cranberry,
+ 150:               marginBottom: 6,
+ 151:             }}
+ 152:           >
+ 153:             Now open
+ 154:           </div>
+ 155:           <div
+ 156:             style={{
+ 157:               color: ORCHARD_COLORS.heading,
+ 158:               fontWeight: 900,
+ 159:               fontSize: 22,
+ 160:               marginBottom: 6,
+ 161:             }}
+ 162:           >
+ 163:             {STEP_META[current].chapter}
+ 164:           </div>
+ 165:           <div style={{ ...orchardHelpTextStyle(), fontSize: 13, marginBottom: 10 }}>
+ 166:             {STEP_META[current].summary}
+ 167:           </div>
+ 168:           <div
+ 169:             style={{
+ 170:               display: "inline-block",
+ 171:               padding: "6px 10px",
+ 172:               borderRadius: 999,
+ 173:               border: `1px solid ${ORCHARD_COLORS.border}`,
+ 174:               background: "#FFF7F2",
+ 175:               color: ORCHARD_COLORS.heading,
+ 176:               fontWeight: 800,
+ 177:               fontSize: 12,
+ 178:             }}
+ 179:           >
+ 180:             {currentIndex + 1} of {STEP_ORDER.length}
+ 181:           </div>
+ 182:         </div>
+ 183:       </div>
+ 184: 
+ 185:       <div
+ 186:         style={{
+ 187:           display: "grid",
+ 188:           gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+ 189:           gap: 16,
+ 190:         }}
+ 191:       >
+ 192:         {STEP_ORDER.map((step, index) => {
+ 193:           const isCurrent = step === current;
+ 194:           const isComplete = index < currentIndex;
+ 195:           const tone = chapterTone(step, isCurrent, isComplete);
+ 196: 
+ 197:           return (
+ 198:             <div
+ 199:               key={step}
+ 200:               style={{
+ 201:                 background: tone.mat,
+ 202:                 border: `1px solid ${tone.border}`,
+ 203:                 borderRadius: 28,
+ 204:                 padding: 8,
+ 205:                 boxShadow: isCurrent ? "0 12px 24px rgba(63,90,64,0.08)" : "0 6px 14px rgba(47,47,47,0.03)",
+ 206:               }}
+ 207:             >
+ 208:               <div
+ 209:                 style={{
+ 210:                   background: tone.inner,
+ 211:                   border: `1px solid ${tone.border}`,
+ 212:                   borderRadius: 22,
+ 213:                   padding: 16,
+ 214:                   minHeight: 200,
+ 215:                   display: "flex",
+ 216:                   flexDirection: "column",
+ 217:                   gap: 12,
+ 218:                 }}
+ 219:               >
+ 220:                 <div
+ 221:                   style={{
+ 222:                     display: "flex",
+ 223:                     justifyContent: "space-between",
+ 224:                     alignItems: "flex-start",
+ 225:                     gap: 10,
+ 226:                   }}
+ 227:                 >
+ 228:                   <div
+ 229:                     style={{
+ 230:                       display: "inline-block",
+ 231:                       padding: "7px 12px",
+ 232:                       borderRadius: "15px 16px 16px 12px",
+ 233:                       background: tone.tabBg,
+ 234:                       color: tone.tabColor,
+ 235:                       fontWeight: 900,
+ 236:                       fontSize: 11,
+ 237:                       letterSpacing: "0.07em",
+ 238:                       textTransform: "uppercase",
+ 239:                       border: `1px solid ${isCurrent ? ORCHARD_COLORS.accentDark : tone.border}`,
+ 240:                       boxShadow: "0 5px 12px rgba(47,47,47,0.05)",
+ 241:                     }}
+ 242:                   >
+ 243:                     {STEP_META[step].chapter}
+ 244:                   </div>
+ 245: 
+ 246:                   <div
+ 247:                     style={{
+ 248:                       width: 38,
+ 249:                       height: 38,
+ 250:                       borderRadius: 999,
+ 251:                       display: "grid",
+ 252:                       placeItems: "center",
+ 253:                       background: isCurrent ? ORCHARD_COLORS.accentDark : "#FFF8EE",
+ 254:                       color: isCurrent ? "#FFFFFF" : ORCHARD_COLORS.heading,
+ 255:                       fontWeight: 900,
+ 256:                       border: `1px solid ${isCurrent ? ORCHARD_COLORS.accentDark : ORCHARD_COLORS.borderStrong}`,
+ 257:                       flexShrink: 0,
+ 258:                     }}
+ 259:                   >
+ 260:                     {index + 1}
+ 261:                   </div>
+ 262:                 </div>
+ 263: 
+ 264:                 <div>
+ 265:                   <div
+ 266:                     style={{
+ 267:                       color: ORCHARD_COLORS.heading,
+ 268:                       fontWeight: 900,
+ 269:                       fontSize: 22,
+ 270:                       marginBottom: 6,
+ 271:                     }}
+ 272:                   >
+ 273:                     {STEP_META[step].label}
+ 274:                   </div>
+ 275:                   <div style={{ ...orchardHelpTextStyle(), fontSize: 14, marginBottom: 8 }}>{STEP_META[step].helper}</div>
+ 276:                   <div
+ 277:                     style={{
+ 278:                       fontSize: 13,
+ 279:                       lineHeight: 1.55,
+ 280:                       color: ORCHARD_COLORS.muted,
+ 281:                     }}
+ 282:                   >
+ 283:                     {STEP_META[step].summary}
+ 284:                   </div>
+ 285:                 </div>
+ 286: 
+ 287:                 <div
+ 288:                   style={{
+ 289:                     marginTop: "auto",
+ 290:                     display: "flex",
+ 291:                     justifyContent: "space-between",
+ 292:                     alignItems: "center",
+ 293:                     gap: 10,
+ 294:                     flexWrap: "wrap",
+ 295:                   }}
+ 296:                 >
+ 297:                   <div
+ 298:                     style={{
+ 299:                       display: "inline-block",
+ 300:                       padding: "6px 10px",
+ 301:                       borderRadius: 999,
+ 302:                       background: tone.chipBg,
+ 303:                       border: `1px solid ${tone.chipBorder}`,
+ 304:                       color: tone.chipText,
+ 305:                       fontWeight: 800,
+ 306:                       fontSize: 12,
+ 307:                     }}
+ 308:                   >
+ 309:                     {statusLabel(isCurrent, isComplete)}
+ 310:                   </div>
+ 311: 
+ 312:                   <div
+ 313:                     style={{
+ 314:                       fontSize: 12,
+ 315:                       fontWeight: 800,
+ 316:                       letterSpacing: "0.04em",
+ 317:                       textTransform: "uppercase",
+ 318:                       color: ORCHARD_COLORS.muted,
+ 319:                     }}
+ 320:                   >
+ 321:                     {isComplete ? "Storyboard pressed" : isCurrent ? "Open chapter" : "Next stack"}
+ 322:                   </div>
+ 323:                 </div>
+ 324:               </div>
+ 325:             </div>
+ 326:           );
+ 327:         })}
+ 328:       </div>
+ 329:     </div>
+ 330:   );
+ 331: }

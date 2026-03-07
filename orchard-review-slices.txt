@@ -1,0 +1,1309 @@
+
+================================================================================
+FILE: src/pages/InputsPage.tsx | LINES: 80-230 of 559
+================================================================================
+  80:       <div style={orchardWrapStyle()}>
+  81:         <WizardProgress current="inputs" />
+  82: 
+  83:         <div style={orchardHeroCardStyle()}>
+  84:           <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.92 }}>
+  85:             <OrchardBlossomCorner size={118} />
+  86:           </div>
+  87:           <div style={{ position: "absolute", bottom: 10, left: 12, pointerEvents: "none", opacity: 0.74 }}>
+  88:             <OrchardGinghamCorner size={72} />
+  89:           </div>
+  90:           <div style={{ position: "absolute", bottom: 18, right: 22, pointerEvents: "none", opacity: 0.82 }}>
+  91:             <OrchardMushroomCluster size={84} flip />
+  92:           </div>
+  93: 
+  94:           <div
+  95:             style={{
+  96:               display: "grid",
+  97:               gridTemplateColumns: "minmax(0, 1.55fr) minmax(270px, 0.88fr)",
+  98:               gap: 18,
+  99:               alignItems: "start",
+ 100:             }}
+ 101:           >
+ 102:             <div style={plannerSheetStyle("#FFFDF9")}>
+ 103:               <div style={orchardRibbonHeaderStyle()}>Inputs</div>
+ 104:               <div style={orchardStitchDividerStyle()} />
+ 105:               <h1 style={orchardHeroTitleStyle()}>Open the planner for the day</h1>
+ 106:               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 760, marginBottom: 18 }}>
+ 107:                 Start with the lesson basics, the teaching goal, and the group or standards notes you already know.
+ 108:                 The next step brings in curriculum materials and exemplars that can reshape wording, structure, pacing,
+ 109:                 and output style.
+ 110:               </div>
+ 111: 
+ 112:               <div
+ 113:                 style={{
+ 114:                   display: "grid",
+ 115:                   gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+ 116:                   gap: 12,
+ 117:                 }}
+ 118:               >
+ 119:                 <div style={miniPaperStyle("#FFF9F2")}>
+ 120:                   <div style={plannerTabStyle("linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)", "#3F3120", COLORS.warnBorder)}>
+ 121:                     Core fields
+ 122:                   </div>
+ 123:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 124:                     Title + objective + topic
+ 125:                   </div>
+ 126:                   <div style={orchardHelpTextStyle()}>
+ 127:                     These are the anchors the generator trusts before it reads uploaded sources.
+ 128:                   </div>
+ 129:                 </div>
+ 130: 
+ 131:                 <div style={miniPaperStyle("#FFFDF9")}>
+ 132:                   <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+ 133:                     Standards
+ 134:                   </div>
+ 135:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 136:                     Auto-detect first
+ 137:                   </div>
+ 138:                   <div style={orchardHelpTextStyle()}>
+ 139:                     Florida B.E.S.T. should come from the known dataset, with override only when you want it.
+ 140:                   </div>
+ 141:                 </div>
+ 142: 
+ 143:                 <div style={miniPaperStyle("#FFF7F4")}>
+ 144:                   <div style={plannerTabStyle("linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)", COLORS.cranberry, COLORS.borderStrong)}>
+ 145:                     Teacher trust
+ 146:                   </div>
+ 147:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 148:                     Ask when signals conflict
+ 149:                   </div>
+ 150:                   <div style={orchardHelpTextStyle()}>
+ 151:                     If later materials pull in different directions, the app should surface that instead of guessing.
+ 152:                   </div>
+ 153:                 </div>
+ 154:               </div>
+ 155:             </div>
+ 156: 
+ 157:             <div style={pinnedNoteStyle()}>
+ 158:               <div
+ 159:                 style={{
+ 160:                   width: 16,
+ 161:                   height: 16,
+ 162:                   borderRadius: 999,
+ 163:                   background: "#D9C7B5",
+ 164:                   boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+ 165:                   marginBottom: 10,
+ 166:                 }}
+ 167:               />
+ 168:               <div
+ 169:                 style={{
+ 170:                   fontSize: 11,
+ 171:                   letterSpacing: "0.08em",
+ 172:                   textTransform: "uppercase",
+ 173:                   fontWeight: 900,
+ 174:                   color: COLORS.cranberry,
+ 175:                   marginBottom: 6,
+ 176:                 }}
+ 177:               >
+ 178:                 What happens next
+ 179:               </div>
+ 180:               <div
+ 181:                 style={{
+ 182:                   color: COLORS.heading,
+ 183:                   fontWeight: 900,
+ 184:                   fontSize: 22,
+ 185:                   marginBottom: 10,
+ 186:                 }}
+ 187:               >
+ 188:                 Gather the lesson thread first
+ 189:               </div>
+ 190: 
+ 191:               <ol
+ 192:                 style={{
+ 193:                   margin: "0 0 14px 18px",
+ 194:                   padding: 0,
+ 195:                   lineHeight: 1.8,
+ 196:                   color: COLORS.text,
+ 197:                 }}
+ 198:               >
+ 199:                 <li>Set the lesson details and teaching focus.</li>
+ 200:                 <li>Add group notes and optional standards override.</li>
+ 201:                 <li>Move to Materials to sort curriculum and exemplars.</li>
+ 202:                 <li>Generate the package after the source desk looks right.</li>
+ 203:               </ol>
+ 204: 
+ 205:               <div
+ 206:                 style={{
+ 207:                   display: "inline-block",
+ 208:                   padding: "6px 10px",
+ 209:                   borderRadius: 999,
+ 210:                   border: `1px solid ${missingCore ? COLORS.warnBorder : COLORS.successBorder}`,
+ 211:                   background: missingCore ? "#FFF6E8" : "#F3F8F1",
+ 212:                   color: COLORS.heading,
+ 213:                   fontWeight: 800,
+ 214:                   fontSize: 12,
+ 215:                 }}
+ 216:               >
+ 217:                 {missingCore ? "Some core fields still need attention" : "Core fields look ready for Materials"}
+ 218:               </div>
+ 219:             </div>
+ 220:           </div>
+ 221:         </div>
+ 222: 
+ 223:         <div style={orchardCardStyle("#FFF8F1")}>
+ 224:           <div style={{ position: "absolute", top: 14, right: 18, pointerEvents: "none", opacity: 0.8 }}>
+ 225:             <OrchardGinghamCorner size={66} flip />
+ 226:           </div>
+ 227: 
+ 228:           <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Planner Pages</div>
+ 229:           <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+ 230:             Instead of isolated software cards, these are the main pages the lesson builder uses before it sees your uploaded materials.
+
+================================================================================
+FILE: src/pages/InputsPage.tsx | LINES: 520-559 of 559
+================================================================================
+ 520:                 marginBottom: 6,
+ 521:               }}
+ 522:             >
+ 523:               Before you continue
+ 524:             </div>
+ 525:             <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 22, marginBottom: 8 }}>
+ 526:               The strongest runs still need three anchors
+ 527:             </div>
+ 528:             <div style={orchardHelpTextStyle()}>
+ 529:               Add a lesson title, objective, and text or topic for the clearest foundation. You can still fill in the rest later.
+ 530:             </div>
+ 531:           </div>
+ 532:         )}
+ 533: 
+ 534:         <div style={orchardCardStyle("#FFF9F2")}>
+ 535:           <div
+ 536:             style={{
+ 537:               display: "grid",
+ 538:               gridTemplateColumns: "minmax(0, 1.25fr) auto",
+ 539:               gap: 16,
+ 540:               alignItems: "center",
+ 541:             }}
+ 542:           >
+ 543:             <div>
+ 544:               <div style={orchardSectionTitleStyle()}>Next stop: the sorting desk</div>
+ 545:               <div style={orchardHelpTextStyle()}>
+ 546:                 When you continue, you'll upload curriculum materials and exemplars that can change the lesson structure,
+ 547:                 pacing, and wording before the package is built.
+ 548:               </div>
+ 549:             </div>
+ 550: 
+ 551:             <button onClick={() => navigate("/materials")} style={orchardPrimaryButtonStyle(false)}>
+ 552:               Continue to Materials -&gt;
+ 553:             </button>
+ 554:           </div>
+ 555:         </div>
+ 556:       </div>
+ 557:     </div>
+ 558:   );
+ 559: }
+
+================================================================================
+FILE: src/pages/MaterialsPage.tsx | LINES: 660-930 of 1051
+================================================================================
+ 660:     <div style={orchardShellStyle()}>
+ 661:       <div style={orchardWrapStyle()}>
+ 662:         <WizardProgress current="materials" />
+ 663: 
+ 664:         <div style={orchardHeroCardStyle()}>
+ 665:           <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.92 }}>
+ 666:             <OrchardBlossomCorner size={116} flip />
+ 667:           </div>
+ 668:           <div style={{ position: "absolute", bottom: 8, left: 12, pointerEvents: "none", opacity: 0.8 }}>
+ 669:             <OrchardGinghamCorner size={70} flip />
+ 670:           </div>
+ 671:           <div style={{ position: "absolute", bottom: 18, right: 18, pointerEvents: "none", opacity: 0.84 }}>
+ 672:             <OrchardMushroomCluster size={88} />
+ 673:           </div>
+ 674: 
+ 675:           <div
+ 676:             style={{
+ 677:               display: "grid",
+ 678:               gridTemplateColumns: "minmax(0, 1.55fr) minmax(270px, 0.88fr)",
+ 679:               gap: 18,
+ 680:               alignItems: "start",
+ 681:             }}
+ 682:           >
+ 683:             <div style={plannerSheetStyle("#FFFDF9")}>
+ 684:               <div style={orchardRibbonHeaderStyle()}>Materials + Exemplars</div>
+ 685:               <div style={orchardStitchDividerStyle()} />
+ 686:               <h1 style={orchardHeroTitleStyle()}>Lay out the lesson sources on the desk</h1>
+ 687:               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, marginBottom: 18 }}>
+ 688:                 Upload curriculum files, exemplar files, and links. These materials can change the lesson structure,
+ 689:                 wording, pacing cues, and output style before the package is generated.
+ 690:               </div>
+ 691: 
+ 692:               <div
+ 693:                 style={{
+ 694:                   display: "grid",
+ 695:                   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+ 696:                   gap: 12,
+ 697:                 }}
+ 698:               >
+ 699:                 <div style={plannerSheetStyle("#FFF9F2")}>
+ 700:                   <div style={plannerTabStyle("linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)", "#3F3120", COLORS.warnBorder)}>
+ 701:                     Content pull
+ 702:                   </div>
+ 703:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 704:                     Curriculum drives what gets taught
+ 705:                   </div>
+ 706:                   <div style={orchardHelpTextStyle()}>
+ 707:                     Use this stack for texts, teacher resources, slides, printables, and source content.
+ 708:                   </div>
+ 709:                 </div>
+ 710: 
+ 711:                 <div style={plannerSheetStyle("#FFFDF9")}>
+ 712:                   <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+ 713:                     Structure pull
+ 714:                   </div>
+ 715:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 716:                     Exemplars guide pacing and flow
+ 717:                   </div>
+ 718:                   <div style={orchardHelpTextStyle()}>
+ 719:                     Model decks, routines, and lesson patterns should influence the shape of the package.
+ 720:                   </div>
+ 721:                 </div>
+ 722: 
+ 723:                 <div style={plannerSheetStyle("#FFF7F4")}>
+ 724:                   <div style={plannerTabStyle("linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)", COLORS.cranberry, COLORS.borderStrong)}>
+ 725:                     Clarify first
+ 726:                   </div>
+ 727:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 728:                     Surface conflicts instead of guessing
+ 729:                   </div>
+ 730:                   <div style={orchardHelpTextStyle()}>
+ 731:                     If sources disagree on level, pacing, or purpose, the page should show the tension before generate.
+ 732:                   </div>
+ 733:                 </div>
+ 734:               </div>
+ 735:             </div>
+ 736: 
+ 737:             <div style={pinnedNoteStyle()}>
+ 738:               <div
+ 739:                 style={{
+ 740:                   width: 16,
+ 741:                   height: 16,
+ 742:                   borderRadius: 999,
+ 743:                   background: "#D9C7B5",
+ 744:                   boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+ 745:                   marginBottom: 10,
+ 746:                 }}
+ 747:               />
+ 748:               <div
+ 749:                 style={{
+ 750:                   fontSize: 11,
+ 751:                   letterSpacing: "0.08em",
+ 752:                   textTransform: "uppercase",
+ 753:                   fontWeight: 900,
+ 754:                   color: COLORS.cranberry,
+ 755:                   marginBottom: 6,
+ 756:                 }}
+ 757:               >
+ 758:                 Current lesson
+ 759:               </div>
+ 760:               <div
+ 761:                 style={{
+ 762:                   color: COLORS.heading,
+ 763:                   fontWeight: 900,
+ 764:                   fontSize: 22,
+ 765:                   marginBottom: 10,
+ 766:                 }}
+ 767:               >
+ 768:                 Snapshot before build
+ 769:               </div>
+ 770: 
+ 771:               <div style={{ fontSize: 14, lineHeight: 1.8, color: COLORS.text, marginBottom: 12 }}>
+ 772:                 <div><b>Title:</b> {input.lessonTitle || "Not set yet"}</div>
+ 773:                 <div><b>Objective:</b> {input.objective || "Not set yet"}</div>
+ 774:                 <div><b>Grade:</b> {input.grade || "Not set yet"}</div>
+ 775:                 <div><b>Subject:</b> {input.subject || "Not set yet"}</div>
+ 776:               </div>
+ 777: 
+ 778:               <div
+ 779:                 style={{
+ 780:                   display: "inline-block",
+ 781:                   padding: "6px 10px",
+ 782:                   borderRadius: 999,
+ 783:                   border: `1px solid ${missingBasics ? COLORS.warnBorder : COLORS.successBorder}`,
+ 784:                   background: missingBasics ? "#FFF6E8" : "#F3F8F1",
+ 785:                   color: COLORS.heading,
+ 786:                   fontWeight: 800,
+ 787:                   fontSize: 12,
+ 788:                 }}
+ 789:               >
+ 790:                 {missingBasics ? "Inputs still need core fields" : "Inputs look ready to build"}
+ 791:               </div>
+ 792:             </div>
+ 793:           </div>
+ 794:         </div>
+ 795: 
+ 796:         {missingBasics && (
+ 797:           <div
+ 798:             style={{
+ 799:               ...pinnedNoteStyle(),
+ 800:               maxWidth: 560,
+ 801:               marginLeft: "auto",
+ 802:               marginRight: 12,
+ 803:               background: "#FFF8EE",
+ 804:               border: `1px solid ${COLORS.warnBorder}`,
+ 805:             }}
+ 806:           >
+ 807:             <div
+ 808:               style={{
+ 809:                 fontSize: 11,
+ 810:                 letterSpacing: "0.08em",
+ 811:                 textTransform: "uppercase",
+ 812:                 fontWeight: 900,
+ 813:                 color: COLORS.cranberry,
+ 814:                 marginBottom: 6,
+ 815:               }}
+ 816:             >
+ 817:               Heads up
+ 818:             </div>
+ 819:             <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 22, marginBottom: 8 }}>
+ 820:               Inputs is still missing required fields
+ 821:             </div>
+ 822:             <div style={orchardHelpTextStyle()}>
+ 823:               Lesson Title, Objective, and Text / Topic are still needed for the strongest build.
+ 824:             </div>
+ 825:             <div style={{ marginTop: 10 }}>
+ 826:               <Link to="/" style={orchardLinkStyle()}>
+ 827:                 Go back to Inputs
+ 828:               </Link>
+ 829:             </div>
+ 830:           </div>
+ 831:         )}
+ 832: 
+ 833:         <div style={orchardCardStyle("#FFF8F1")}>
+ 834:           <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.8 }}>
+ 835:             <OrchardGinghamCorner size={70} />
+ 836:           </div>
+ 837:           <div style={{ position: "absolute", bottom: 12, left: 14, pointerEvents: "none", opacity: 0.9 }}>
+ 838:             <OrchardMushroomCluster size={92} />
+ 839:           </div>
+ 840: 
+ 841:           <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Sorting Desk</div>
+ 842:           <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+ 843:             Arrange the two main stacks like planner materials on a desk: curriculum for content, exemplars for structure and pacing.
+ 844:           </div>
+ 845: 
+ 846:           <div
+ 847:             style={{
+ 848:               display: "grid",
+ 849:               gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+ 850:               gap: 16,
+ 851:             }}
+ 852:           >
+ 853:             <UploadDropZone
+ 854:               title="Curriculum Stack"
+ 855:               subtitle="Use this for lesson materials, teacher resources, texts, decodables, slides, PDFs, images, or website links."
+ 856:               files={finalCurriculumItems}
+ 857:               onFilesChosen={onPickMaterials}
+ 858:               onRemoveItem={removeCurriculumItem}
+ 859:               linksValue={curriculumLinks}
+ 860:               onLinksChange={setCurriculumLinks}
+ 861:             />
+ 862: 
+ 863:             <UploadDropZone
+ 864:               title="Exemplar Stack"
+ 865:               subtitle="Use this for model lessons, example decks, teaching flow references, pacing cues, and structure examples."
+ 866:               files={finalExemplarItems}
+ 867:               onFilesChosen={onPickExemplar}
+ 868:               onRemoveItem={removeExemplarItem}
+ 869:               linksValue={exemplarLinks}
+ 870:               onLinksChange={setExemplarLinks}
+ 871:             />
+ 872:           </div>
+ 873:         </div>
+ 874: 
+ 875:         <div style={orchardCardStyle("#FFFDF9")}>
+ 876:           <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Generator Readout</div>
+ 877:           <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+ 878:             This is the pre-build gut check: what the sources seem to influence, whether anything conflicts, and any notes you want the blueprint to keep in view.
+ 879:           </div>
+ 880: 
+ 881:           <div
+ 882:             style={{
+ 883:               display: "grid",
+ 884:               gridTemplateColumns: "minmax(0, 1.35fr) minmax(260px, 0.82fr)",
+ 885:               gap: 16,
+ 886:               alignItems: "start",
+ 887:             }}
+ 888:           >
+ 889:             <div
+ 890:               style={{
+ 891:                 display: "grid",
+ 892:                 gap: 16,
+ 893:               }}
+ 894:             >
+ 895:               <div style={plannerSheetStyle("#F8FBF7")}>
+ 896:                 <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+ 897:                   Source Influence Preview
+ 898:                 </div>
+ 899: 
+ 900:                 <div
+ 901:                   style={{
+ 902:                     display: "grid",
+ 903:                     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+ 904:                     gap: 12,
+ 905:                     marginTop: 14,
+ 906:                     marginBottom: 12,
+ 907:                   }}
+ 908:                 >
+ 909:                   <div style={plannerSheetStyle("#FFFDF9")}>
+ 910:                     <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Content pull</div>
+ 911:                     <div style={{ fontSize: 26, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
+ 912:                       {influenceSummary.curriculumInfluence}
+ 913:                     </div>
+ 914:                     <div style={orchardHelpTextStyle()}>
+ 915:                       {influenceSummary.curriculumReal} text-rich item(s), {influenceSummary.curriculumFallback} fallback-only item(s)
+ 916:                     </div>
+ 917:                   </div>
+ 918: 
+ 919:                   <div style={plannerSheetStyle("#FFFDF9")}>
+ 920:                     <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Structure pull</div>
+ 921:                     <div style={{ fontSize: 26, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
+ 922:                       {influenceSummary.exemplarInfluence}
+ 923:                     </div>
+ 924:                     <div style={orchardHelpTextStyle()}>
+ 925:                       {influenceSummary.exemplarReal} text-rich item(s), {influenceSummary.exemplarFallback} fallback-only item(s)
+ 926:                     </div>
+ 927:                   </div>
+ 928:                 </div>
+ 929: 
+ 930:                 <div style={orchardHelpTextStyle()}>{influenceSummary.overallMessage}</div>
+
+================================================================================
+FILE: src/pages/MaterialsPage.tsx | LINES: 1000-1051 of 1051
+================================================================================
+1000:             </div>
+1001:           </div>
+1002:         </div>
+1003: 
+1004:         {(msg || errorMessage) && (
+1005:           <div
+1006:             style={{
+1007:               ...orchardCardStyle("#FFF2F1"),
+1008:               border: "1px solid #E6B8B4",
+1009:             }}
+1010:           >
+1011:             <b>{msg ? "Message:" : "Error:"}</b> {String(msg || errorMessage)}
+1012:           </div>
+1013:         )}
+1014: 
+1015:         <div style={orchardCardStyle("#FFF9F2")}>
+1016:           <div
+1017:             style={{
+1018:               display: "grid",
+1019:               gridTemplateColumns: "minmax(0, 1.25fr) auto",
+1020:               gap: 16,
+1021:               alignItems: "center",
+1022:             }}
+1023:           >
+1024:             <div>
+1025:               <div style={orchardSectionTitleStyle()}>Build the package</div>
+1026:               <div style={orchardHelpTextStyle()}>
+1027:                 Status: <b>{status}</b> | Curriculum items: <b>{finalCurriculumItems.length}</b> | Exemplar items: <b>{finalExemplarItems.length}</b>
+1028:               </div>
+1029:             </div>
+1030: 
+1031:             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+1032:               <button
+1033:                 onClick={onBuildAndGenerate}
+1034:                 disabled={busy || status === "generating" || missingBasics}
+1035:                 style={orchardPrimaryButtonStyle(busy || status === "generating" || missingBasics)}
+1036:               >
+1037:                 {busy || status === "generating"
+1038:                   ? "Building + Generating..."
+1039:                   : "Build Blueprint + Generate Lesson + Open Results ->"}
+1040:               </button>
+1041: 
+1042:               <Link to="/" style={orchardLinkStyle()}>
+1043:                 Back to Inputs
+1044:               </Link>
+1045:             </div>
+1046:           </div>
+1047:         </div>
+1048:       </div>
+1049:     </div>
+1050:   );
+1051: }
+
+================================================================================
+FILE: src/pages/ResultsHubPage.tsx | LINES: 440-720 of 843
+================================================================================
+ 440:   return (
+ 441:     <div style={orchardShellStyle()}>
+ 442:       <div style={orchardWrapStyle()}>
+ 443:         <WizardProgress current="results" />
+ 444: 
+ 445:         <div style={orchardHeroCardStyle()}>
+ 446:           <div
+ 447:             style={{
+ 448:               display: "grid",
+ 449:               gridTemplateColumns: "minmax(0, 1.6fr) minmax(260px, 0.9fr)",
+ 450:               gap: 18,
+ 451:               alignItems: "start",
+ 452:             }}
+ 453:           >
+ 454:             <div>
+ 455:               <div style={orchardRibbonHeaderStyle()}>Results Hub</div>
+ 456:               <div style={orchardStitchDividerStyle()} />
+ 457:               <h1 style={orchardHeroTitleStyle()}>{lessonTitle}</h1>
+ 458:               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 760 }}>
+ 459:                 Review the generated package, scan the standards and blueprint influence, preview the teaching slides,
+ 460:                 and export the pieces you want to use.
+ 461:               </div>
+ 462: 
+ 463:               <div style={{ marginTop: 12 }}>
+ 464:                 <SnapshotChip label="Date" value={(pkg as any)?.input?.date ?? "-"} background="#FFF6E8" border={COLORS.warnBorder} />
+ 465:                 <SnapshotChip label="Grade" value={(pkg as any)?.input?.grade ?? "-"} background="#EEF5EA" border={COLORS.successBorder} />
+ 466:                 <SnapshotChip label="Subject" value={(pkg as any)?.input?.subject ?? "-"} background="#F4EDF8" border="#D7C6E4" />
+ 467:                 <SnapshotChip label="Standards" value={standards.length} background="#F2F8FF" border="#C9DAEE" />
+ 468:               </div>
+ 469:             </div>
+ 470: 
+ 471:             <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 270 }}>
+ 472:               <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 10 }}>Lesson Snapshot</div>
+ 473:               <div style={{ display: "grid", gap: 8, fontSize: 14, lineHeight: 1.55 }}>
+ 474:                 <div><b>Slides:</b> {slides.length}</div>
+ 475:                 <div><b>Centers:</b> {centers.length}</div>
+ 476:                 <div><b>Lesson plan sections:</b> {lessonPlan.length}</div>
+ 477:                 <div><b>Rotation items:</b> {rotationPlan.length}</div>
+ 478:                 <div><b>Tier 3 / Tier 2 / Enrichment:</b> {tier3.length} / {tier2.length} / {enrichment.length}</div>
+ 479:               </div>
+ 480:             </div>
+ 481:           </div>
+ 482:         </div>
+ 483: 
+ 484:         <div style={orchardCardStyle()}>
+ 485:           <div
+ 486:             style={{
+ 487:               display: "grid",
+ 488:               gridTemplateColumns: "minmax(0, 1fr) auto",
+ 489:               gap: 16,
+ 490:               alignItems: "center",
+ 491:             }}
+ 492:           >
+ 493:             <div>
+ 494:               <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Exports</div>
+ 495:               <div style={{ ...orchardHelpTextStyle(), marginBottom: 0 }}>
+ 496:                 Export only what you need, or download the full lesson package at once.
+ 497:               </div>
+ 498:             </div>
+ 499: 
+ 500:             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end" }}>
+ 501:               <button
+ 502:                 onClick={() => runExport("pptx")}
+ 503:                 disabled={busy !== null}
+ 504:                 style={orchardPrimaryButtonStyle(busy !== null)}
+ 505:               >
+ 506:                 {busy === "pptx" ? "Exporting PPTX..." : "Export PPTX"}
+ 507:               </button>
+ 508: 
+ 509:               <button
+ 510:                 onClick={() => runExport("docx")}
+ 511:                 disabled={busy !== null}
+ 512:                 style={orchardSecondaryButtonStyle(busy !== null)}
+ 513:               >
+ 514:                 {busy === "docx" ? "Exporting DOCX..." : "Export DOCX"}
+ 515:               </button>
+ 516: 
+ 517:               <button
+ 518:                 onClick={() => runExport("zip")}
+ 519:                 disabled={busy !== null}
+ 520:                 style={orchardSecondaryButtonStyle(busy !== null)}
+ 521:               >
+ 522:                 {busy === "zip" ? "Exporting ZIP..." : "Full Export (ZIP)"}
+ 523:               </button>
+ 524: 
+ 525:               <Link to="/" style={{ ...orchardLinkStyle(), marginLeft: 4 }}>
+ 526:                 Back to Inputs
+ 527:               </Link>
+ 528:             </div>
+ 529:           </div>
+ 530: 
+ 531:           {err && (
+ 532:             <div
+ 533:               style={{
+ 534:                 background: "#FFF2F1",
+ 535:                 border: "1px solid #E6B8B4",
+ 536:                 padding: 10,
+ 537:                 borderRadius: 12,
+ 538:                 marginTop: 14,
+ 539:               }}
+ 540:             >
+ 541:               <b>Export error:</b> {err}
+ 542:             </div>
+ 543:           )}
+ 544:         </div>
+ 545: 
+ 546:         <div
+ 547:           style={{
+ 548:             display: "grid",
+ 549:             gridTemplateColumns: "minmax(0, 1.2fr) minmax(280px, 0.8fr)",
+ 550:             gap: 18,
+ 551:           }}
+ 552:         >
+ 553:           <div style={orchardCardStyle()}>
+ 554:             <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards Snapshot</div>
+ 555:             <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+ 556:               This shows the primary standard detected for the lesson, along with a few supporting standards when available.
+ 557:             </div>
+ 558: 
+ 559:             {standards.length === 0 ? (
+ 560:               <div style={{ fontWeight: 800 }}>Standards: (none detected yet - check inputs or add an override)</div>
+ 561:             ) : (
+ 562:               <>
+ 563:                 <div
+ 564:                   style={{
+ 565:                     ...orchardSoftCardStyle("#F8FBF7"),
+ 566:                     border: `1px solid ${COLORS.successBorder}`,
+ 567:                     marginBottom: 12,
+ 568:                   }}
+ 569:                 >
+ 570:                   <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", color: COLORS.accentDark, marginBottom: 6 }}>
+ 571:                     Primary Standard
+ 572:                   </div>
+ 573:                   <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading, fontSize: 20 }}>
+ 574:                     {primary?.code ?? ""}{" "}
+ 575:                     <span style={{ opacity: 0.8, color: COLORS.muted }}>
+ 576:                       {primary?.confidence != null ? `(${percent(primary.confidence)})` : ""}
+ 577:                     </span>
+ 578:                   </div>
+ 579:                   <div style={{ opacity: 0.95, lineHeight: 1.55 }}>{short(primary?.label)}</div>
+ 580:                 </div>
+ 581: 
+ 582:                 {supporting.length > 0 && (
+ 583:                   <div style={{ ...orchardSoftCardStyle(), marginBottom: 10 }}>
+ 584:                     <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading }}>Supporting</div>
+ 585:                     <ul style={{ margin: 0, paddingLeft: 18 }}>
+ 586:                       {supporting.map((s: any, i: number) => (
+ 587:                         <li key={(s.code ?? "") + i} style={{ marginBottom: 10 }}>
+ 588:                           <div>
+ 589:                             <b>{s.code}</b>{" "}
+ 590:                             <span style={{ opacity: 0.8, color: COLORS.muted }}>
+ 591:                               {s?.confidence != null ? `(${percent(s.confidence)})` : ""}
+ 592:                             </span>
+ 593:                           </div>
+ 594:                           <div style={{ opacity: 0.92, lineHeight: 1.45 }}>{short(s.label)}</div>
+ 595:                         </li>
+ 596:                       ))}
+ 597:                     </ul>
+ 598:                   </div>
+ 599:                 )}
+ 600: 
+ 601:                 <div style={{ opacity: 0.85, color: COLORS.muted }}>
+ 602:                   <b>All codes:</b> {standards.map((s: any) => s.code).join(", ")}
+ 603:                 </div>
+ 604:               </>
+ 605:             )}
+ 606:           </div>
+ 607: 
+ 608:           <div style={orchardCardStyle()}>
+ 609:             <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Package Overview</div>
+ 610:             <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+ 611:               A quick scan of the completed lesson pieces.
+ 612:             </div>
+ 613: 
+ 614:             <div style={{ display: "grid", gap: 10 }}>
+ 615:               <div style={orchardSoftCardStyle()}><b>Slides</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{slides.length} ready to preview or export.</div></div>
+ 616:               <div style={orchardSoftCardStyle()}><b>Teacher plan</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{lessonPlan.length} sections generated.</div></div>
+ 617:               <div style={orchardSoftCardStyle()}><b>Centers + rotation</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{centers.length} centers and {rotationPlan.length} rotation items.</div></div>
+ 618:               <div style={orchardSoftCardStyle()}><b>Interventions</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{tier3.length + tier2.length + enrichment.length} support entries across groups.</div></div>
+ 619:             </div>
+ 620:           </div>
+ 621:         </div>
+ 622: 
+ 623:         <Section
+ 624:           title="Blueprint Influence"
+ 625:           subtitle="See how curriculum, exemplar framework, and teacher-facing cues shaped the final package."
+ 626:           defaultOpen
+ 627:         >
+ 628:           <BlueprintInsights />
+ 629:         </Section>
+ 630: 
+ 631:         <Section
+ 632:           title="Slide Preview Deck"
+ 633:           subtitle="This preview is designed to feel closer to the actual teaching deck instead of a plain text list."
+ 634:           defaultOpen
+ 635:         >
+ 636:           <div
+ 637:             style={{
+ 638:               display: "flex",
+ 639:               justifyContent: "space-between",
+ 640:               gap: 12,
+ 641:               flexWrap: "wrap",
+ 642:               alignItems: "center",
+ 643:               marginBottom: 14,
+ 644:             }}
+ 645:           >
+ 646:             <div style={{ ...orchardHelpTextStyle(), maxWidth: 680 }}>
+ 647:               Choose the view that feels best for scanning the deck before exporting or teaching.
+ 648:             </div>
+ 649: 
+ 650:             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+ 651:               <button
+ 652:                 onClick={() => setPreviewMode("teaching")}
+ 653:                 style={previewMode === "teaching" ? orchardPrimaryButtonStyle(false) : orchardSecondaryButtonStyle(false)}
+ 654:               >
+ 655:                 Teaching View
+ 656:               </button>
+ 657:               <button
+ 658:                 onClick={() => setPreviewMode("compact")}
+ 659:                 style={previewMode === "compact" ? orchardPrimaryButtonStyle(false) : orchardSecondaryButtonStyle(false)}
+ 660:               >
+ 661:                 Compact View
+ 662:               </button>
+ 663:             </div>
+ 664:           </div>
+ 665: 
+ 666:           {slides.length === 0 ? (
+ 667:             <div style={{ opacity: 0.8, color: COLORS.muted }}>No slides found in package.</div>
+ 668:           ) : (
+ 669:             <div
+ 670:               style={{
+ 671:                 display: "grid",
+ 672:                 gridTemplateColumns:
+ 673:                   previewMode === "compact"
+ 674:                     ? "repeat(auto-fit, minmax(240px, 1fr))"
+ 675:                     : "repeat(auto-fit, minmax(280px, 1fr))",
+ 676:                 gap: previewMode === "compact" ? 12 : 14,
+ 677:               }}
+ 678:             >
+ 679:               {slides.map((slide: any, index: number) => (
+ 680:                 <SlidePreviewCard
+ 681:                   key={slide?.id ?? index}
+ 682:                   slide={slide}
+ 683:                   index={index}
+ 684:                   compact={previewMode === "compact"}
+ 685:                 />
+ 686:               ))}
+ 687:             </div>
+ 688:           )}
+ 689:         </Section>
+ 690: 
+ 691:         <Section
+ 692:           title="Teacher Lesson Plan"
+ 693:           subtitle="A readable preview of the generated instructional flow and slide-aligned sections."
+ 694:           defaultOpen
+ 695:         >
+ 696:           {lessonPlan.length === 0 ? (
+ 697:             <div style={{ opacity: 0.8, color: COLORS.muted }}>No lesson plan sections found in package.</div>
+ 698:           ) : (
+ 699:             <div style={{ display: "grid", gap: 12 }}>
+ 700:               {lessonPlan.map((sec: any, i: number) => (
+ 701:                 <div key={i} style={orchardSoftCardStyle()}>
+ 702:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 17 }}>
+ 703:                     {sec?.heading ?? `Section ${i + 1}`}
+ 704:                   </div>
+ 705:                   {Array.isArray(sec?.slides) && (
+ 706:                     <div style={{ opacity: 0.8, marginTop: 4, color: COLORS.muted }}>
+ 707:                       Slides: {sec.slides.length ? sec.slides.join(", ") : "-"}
+ 708:                     </div>
+ 709:                   )}
+ 710:                   <div style={{ whiteSpace: "pre-wrap", marginTop: 8, lineHeight: 1.55 }}>
+ 711:                     {String(sec?.description ?? "")}
+ 712:                   </div>
+ 713:                 </div>
+ 714:               ))}
+ 715:             </div>
+ 716:           )}
+ 717:         </Section>
+ 718: 
+ 719:         <div
+ 720:           style={{
+
+================================================================================
+FILE: src/pages/WizardProgress.tsx | LINES: 1-330 of 331
+================================================================================
+   1: import React from "react";
+   2: import {
+   3:   ORCHARD_COLORS,
+   4:   orchardCardStyle,
+   5:   orchardHelpTextStyle,
+   6:   orchardRibbonHeaderStyle,
+   7:   orchardSoftCardStyle,
+   8:   orchardStitchDividerStyle,
+   9: } from "./orchardUi";
+  10: 
+  11: export type WizardStepKey = "inputs" | "materials" | "results";
+  12: 
+  13: const STEP_ORDER: WizardStepKey[] = ["inputs", "materials", "results"];
+  14: 
+  15: const STEP_META: Record<
+  16:   WizardStepKey,
+  17:   {
+  18:     label: string;
+  19:     helper: string;
+  20:     chapter: string;
+  21:     summary: string;
+  22:   }
+  23: > = {
+  24:   inputs: {
+  25:     label: "Inputs",
+  26:     helper: "Set the lesson foundation",
+  27:     chapter: "Chapter One",
+  28:     summary: "Lesson details, teaching goal, standards, and group notes",
+  29:   },
+  30:   materials: {
+  31:     label: "Materials",
+  32:     helper: "Lay out curriculum and exemplars",
+  33:     chapter: "Chapter Two",
+  34:     summary: "Source files, model lessons, links, and influence checks",
+  35:   },
+  36:   results: {
+  37:     label: "Results",
+  38:     helper: "Review, export, and teach",
+  39:     chapter: "Final Chapter",
+  40:     summary: "Slides, teacher plan, centers, interventions, and exports",
+  41:   },
+  42: };
+  43: 
+  44: function chapterTone(step: WizardStepKey, isCurrent: boolean, isComplete: boolean) {
+  45:   if (isCurrent) {
+  46:     return {
+  47:       mat: "#EEF5EA",
+  48:       inner: "#F9FCF7",
+  49:       border: ORCHARD_COLORS.successBorder,
+  50:       tabBg: "linear-gradient(180deg, #6E8B6B 0%, #3F5A40 100%)",
+  51:       tabColor: "#FFFFFF",
+  52:       chipBg: "#F3F8F1",
+  53:       chipBorder: ORCHARD_COLORS.successBorder,
+  54:       chipText: ORCHARD_COLORS.heading,
+  55:     };
+  56:   }
+  57: 
+  58:   if (isComplete) {
+  59:     return {
+  60:       mat: "#FFF7EF",
+  61:       inner: "#FFFDF9",
+  62:       border: ORCHARD_COLORS.borderStrong,
+  63:       tabBg: "linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)",
+  64:       tabColor: "#3F3120",
+  65:       chipBg: "#FFF6E8",
+  66:       chipBorder: ORCHARD_COLORS.warnBorder,
+  67:       chipText: ORCHARD_COLORS.heading,
+  68:     };
+  69:   }
+  70: 
+  71:   return {
+  72:     mat: "#FFFDFC",
+  73:     inner: "#FFFDF9",
+  74:     border: ORCHARD_COLORS.borderSoft,
+  75:     tabBg: "linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)",
+  76:     tabColor: ORCHARD_COLORS.cranberry,
+  77:     chipBg: "#FFF7F4",
+  78:     chipBorder: ORCHARD_COLORS.border,
+  79:     chipText: ORCHARD_COLORS.muted,
+  80:   };
+  81: }
+  82: 
+  83: function statusLabel(isCurrent: boolean, isComplete: boolean) {
+  84:   if (isCurrent) return "Open now";
+  85:   if (isComplete) return "Pressed + ready";
+  86:   return "Waiting in the stack";
+  87: }
+  88: 
+  89: export function WizardProgress({
+  90:   current,
+  91: }: {
+  92:   current: WizardStepKey;
+  93: }) {
+  94:   const currentIndex = STEP_ORDER.indexOf(current);
+  95: 
+  96:   return (
+  97:     <div
+  98:       style={{
+  99:         ...orchardCardStyle("#FFF8F1"),
+ 100:         padding: 24,
+ 101:         overflow: "hidden",
+ 102:       }}
+ 103:     >
+ 104:       <div
+ 105:         style={{
+ 106:           display: "grid",
+ 107:           gridTemplateColumns: "minmax(0, 1.6fr) minmax(250px, 0.84fr)",
+ 108:           gap: 16,
+ 109:           alignItems: "start",
+ 110:           marginBottom: 18,
+ 111:         }}
+ 112:       >
+ 113:         <div style={{ minWidth: 0 }}>
+ 114:           <div style={orchardRibbonHeaderStyle()}>Lesson Storyboard</div>
+ 115:           <div style={orchardStitchDividerStyle()} />
+ 116:           <div
+ 117:             style={{
+ 118:               fontFamily: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+ 119:               color: ORCHARD_COLORS.heading,
+ 120:               fontWeight: 700,
+ 121:               fontSize: 30,
+ 122:               lineHeight: 1.08,
+ 123:               marginBottom: 10,
+ 124:             }}
+ 125:           >
+ 126:             Move from planner pages to a teach-ready lesson package
+ 127:           </div>
+ 128:           <div style={{ ...orchardHelpTextStyle(), fontSize: 14 }}>
+ 129:             Keep the full lesson arc visible: first set the foundation, then sort the materials, then open the finished
+ 130:             package for review and export.
+ 131:           </div>
+ 132:         </div>
+ 133: 
+ 134:         <div
+ 135:           style={{
+ 136:             ...orchardSoftCardStyle("#FFFDF9"),
+ 137:             border: `1px solid ${ORCHARD_COLORS.borderStrong}`,
+ 138:             padding: 18,
+ 139:             boxShadow: "0 10px 22px rgba(47,47,47,0.05)",
+ 140:             transform: "rotate(-1deg)",
+ 141:           }}
+ 142:         >
+ 143:           <div
+ 144:             style={{
+ 145:               fontSize: 11,
+ 146:               letterSpacing: "0.08em",
+ 147:               textTransform: "uppercase",
+ 148:               fontWeight: 900,
+ 149:               color: ORCHARD_COLORS.cranberry,
+ 150:               marginBottom: 6,
+ 151:             }}
+ 152:           >
+ 153:             Now open
+ 154:           </div>
+ 155:           <div
+ 156:             style={{
+ 157:               color: ORCHARD_COLORS.heading,
+ 158:               fontWeight: 900,
+ 159:               fontSize: 22,
+ 160:               marginBottom: 6,
+ 161:             }}
+ 162:           >
+ 163:             {STEP_META[current].chapter}
+ 164:           </div>
+ 165:           <div style={{ ...orchardHelpTextStyle(), fontSize: 13, marginBottom: 10 }}>
+ 166:             {STEP_META[current].summary}
+ 167:           </div>
+ 168:           <div
+ 169:             style={{
+ 170:               display: "inline-block",
+ 171:               padding: "6px 10px",
+ 172:               borderRadius: 999,
+ 173:               border: `1px solid ${ORCHARD_COLORS.border}`,
+ 174:               background: "#FFF7F2",
+ 175:               color: ORCHARD_COLORS.heading,
+ 176:               fontWeight: 800,
+ 177:               fontSize: 12,
+ 178:             }}
+ 179:           >
+ 180:             {currentIndex + 1} of {STEP_ORDER.length}
+ 181:           </div>
+ 182:         </div>
+ 183:       </div>
+ 184: 
+ 185:       <div
+ 186:         style={{
+ 187:           display: "grid",
+ 188:           gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+ 189:           gap: 16,
+ 190:         }}
+ 191:       >
+ 192:         {STEP_ORDER.map((step, index) => {
+ 193:           const isCurrent = step === current;
+ 194:           const isComplete = index < currentIndex;
+ 195:           const tone = chapterTone(step, isCurrent, isComplete);
+ 196: 
+ 197:           return (
+ 198:             <div
+ 199:               key={step}
+ 200:               style={{
+ 201:                 background: tone.mat,
+ 202:                 border: `1px solid ${tone.border}`,
+ 203:                 borderRadius: 28,
+ 204:                 padding: 8,
+ 205:                 boxShadow: isCurrent ? "0 12px 24px rgba(63,90,64,0.08)" : "0 6px 14px rgba(47,47,47,0.03)",
+ 206:               }}
+ 207:             >
+ 208:               <div
+ 209:                 style={{
+ 210:                   background: tone.inner,
+ 211:                   border: `1px solid ${tone.border}`,
+ 212:                   borderRadius: 22,
+ 213:                   padding: 16,
+ 214:                   minHeight: 200,
+ 215:                   display: "flex",
+ 216:                   flexDirection: "column",
+ 217:                   gap: 12,
+ 218:                 }}
+ 219:               >
+ 220:                 <div
+ 221:                   style={{
+ 222:                     display: "flex",
+ 223:                     justifyContent: "space-between",
+ 224:                     alignItems: "flex-start",
+ 225:                     gap: 10,
+ 226:                   }}
+ 227:                 >
+ 228:                   <div
+ 229:                     style={{
+ 230:                       display: "inline-block",
+ 231:                       padding: "7px 12px",
+ 232:                       borderRadius: "15px 16px 16px 12px",
+ 233:                       background: tone.tabBg,
+ 234:                       color: tone.tabColor,
+ 235:                       fontWeight: 900,
+ 236:                       fontSize: 11,
+ 237:                       letterSpacing: "0.07em",
+ 238:                       textTransform: "uppercase",
+ 239:                       border: `1px solid ${isCurrent ? ORCHARD_COLORS.accentDark : tone.border}`,
+ 240:                       boxShadow: "0 5px 12px rgba(47,47,47,0.05)",
+ 241:                     }}
+ 242:                   >
+ 243:                     {STEP_META[step].chapter}
+ 244:                   </div>
+ 245: 
+ 246:                   <div
+ 247:                     style={{
+ 248:                       width: 38,
+ 249:                       height: 38,
+ 250:                       borderRadius: 999,
+ 251:                       display: "grid",
+ 252:                       placeItems: "center",
+ 253:                       background: isCurrent ? ORCHARD_COLORS.accentDark : "#FFF8EE",
+ 254:                       color: isCurrent ? "#FFFFFF" : ORCHARD_COLORS.heading,
+ 255:                       fontWeight: 900,
+ 256:                       border: `1px solid ${isCurrent ? ORCHARD_COLORS.accentDark : ORCHARD_COLORS.borderStrong}`,
+ 257:                       flexShrink: 0,
+ 258:                     }}
+ 259:                   >
+ 260:                     {index + 1}
+ 261:                   </div>
+ 262:                 </div>
+ 263: 
+ 264:                 <div>
+ 265:                   <div
+ 266:                     style={{
+ 267:                       color: ORCHARD_COLORS.heading,
+ 268:                       fontWeight: 900,
+ 269:                       fontSize: 22,
+ 270:                       marginBottom: 6,
+ 271:                     }}
+ 272:                   >
+ 273:                     {STEP_META[step].label}
+ 274:                   </div>
+ 275:                   <div style={{ ...orchardHelpTextStyle(), fontSize: 14, marginBottom: 8 }}>{STEP_META[step].helper}</div>
+ 276:                   <div
+ 277:                     style={{
+ 278:                       fontSize: 13,
+ 279:                       lineHeight: 1.55,
+ 280:                       color: ORCHARD_COLORS.muted,
+ 281:                     }}
+ 282:                   >
+ 283:                     {STEP_META[step].summary}
+ 284:                   </div>
+ 285:                 </div>
+ 286: 
+ 287:                 <div
+ 288:                   style={{
+ 289:                     marginTop: "auto",
+ 290:                     display: "flex",
+ 291:                     justifyContent: "space-between",
+ 292:                     alignItems: "center",
+ 293:                     gap: 10,
+ 294:                     flexWrap: "wrap",
+ 295:                   }}
+ 296:                 >
+ 297:                   <div
+ 298:                     style={{
+ 299:                       display: "inline-block",
+ 300:                       padding: "6px 10px",
+ 301:                       borderRadius: 999,
+ 302:                       background: tone.chipBg,
+ 303:                       border: `1px solid ${tone.chipBorder}`,
+ 304:                       color: tone.chipText,
+ 305:                       fontWeight: 800,
+ 306:                       fontSize: 12,
+ 307:                     }}
+ 308:                   >
+ 309:                     {statusLabel(isCurrent, isComplete)}
+ 310:                   </div>
+ 311: 
+ 312:                   <div
+ 313:                     style={{
+ 314:                       fontSize: 12,
+ 315:                       fontWeight: 800,
+ 316:                       letterSpacing: "0.04em",
+ 317:                       textTransform: "uppercase",
+ 318:                       color: ORCHARD_COLORS.muted,
+ 319:                     }}
+ 320:                   >
+ 321:                     {isComplete ? "Storyboard pressed" : isCurrent ? "Open chapter" : "Next stack"}
+ 322:                   </div>
+ 323:                 </div>
+ 324:               </div>
+ 325:             </div>
+ 326:           );
+ 327:         })}
+ 328:       </div>
+ 329:     </div>
+ 330:   );
+
+================================================================================
+FILE: src/deck/TeachModeShell.tsx | LINES: 1-156 of 156
+================================================================================
+   1: import { useState, useEffect } from 'react';
+   2: import { DeckPlayer } from './DeckPlayer';
+   3: import type { DeckPlan } from '../types/slides';
+   4: 
+   5: interface TeachModeShellProps {
+   6:   deckPlan: DeckPlan;
+   7:   onExit: () => void;
+   8: }
+   9: 
+  10: type EngagementPrompt = 
+  11:   | 'turn-talk'
+  12:   | 'say-with-me'
+  13:   | 'show-fingers'
+  14:   | 'hands-on-head'
+  15:   | 'stand-if-rhymes'
+  16:   | null;
+  17: 
+  18: const ENGAGEMENT_PROMPTS: Record<Exclude<EngagementPrompt, null>, string> = {
+  19:   'turn-talk': '👥 Turn & Talk',
+  20:   'say-with-me': '🗣️ Say it with me!',
+  21:   'show-fingers': '✋ Show me on your fingers',
+  22:   'hands-on-head': '🙌 Hands on head if you hear ___',
+  23:   'stand-if-rhymes': '🎵 Stand if it rhymes',
+  24: };
+  25: 
+  26: export function TeachModeShell({ deckPlan, onExit }: TeachModeShellProps) {
+  27:   const [isFullscreen, setIsFullscreen] = useState(false);
+  28:   const [showEngagement, setShowEngagement] = useState<EngagementPrompt>(null);
+  29: 
+  30:   const toggleFullscreen = () => {
+  31:     if (!document.fullscreenElement) {
+  32:       document.documentElement.requestFullscreen();
+  33:       setIsFullscreen(true);
+  34:     } else {
+  35:       document.exitFullscreen();
+  36:       setIsFullscreen(false);
+  37:     }
+  38:   };
+  39: 
+  40:   const handleExit = () => {
+  41:     if (document.fullscreenElement) {
+  42:       document.exitFullscreen();
+  43:     }
+  44:     onExit();
+  45:   };
+  46: 
+  47:   // Auto-dismiss engagement prompt after 3 seconds
+  48:   useEffect(() => {
+  49:     if (showEngagement) {
+  50:       const timer = setTimeout(() => {
+  51:         setShowEngagement(null);
+  52:       }, 3000);
+  53:       return () => clearTimeout(timer);
+  54:     }
+  55:   }, [showEngagement]);
+  56: 
+  57:   return (
+  58:     <div className="teach-mode-shell h-screen bg-black">
+  59:       {/* Teach mode controls overlay */}
+  60:       <div className="teach-mode-overlay fixed top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity">
+  61:         <div className="flex items-center justify-between">
+  62:           <div className="text-white text-lg font-medium">
+  63:             Teach Mode
+  64:           </div>
+  65:           
+  66:           <div className="flex items-center gap-4">
+  67:             <button
+  68:               onClick={toggleFullscreen}
+  69:               className="px-4 py-2 bg-white/20 text-white rounded hover:bg-white/30 transition-colors"
+  70:             >
+  71:               {isFullscreen ? '🔲 Exit Fullscreen' : '⛶ Fullscreen'}
+  72:             </button>
+  73:             
+  74:             <button
+  75:               onClick={handleExit}
+  76:               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+  77:             >
+  78:               Exit Teach Mode
+  79:             </button>
+  80:           </div>
+  81:         </div>
+  82:       </div>
+  83: 
+  84:       {/* Engagement prompt buttons */}
+  85:       <div className="engagement-panel fixed right-4 top-1/2 -translate-y-1/2 z-50 space-y-2 opacity-0 hover:opacity-100 transition-opacity">
+  86:         <button
+  87:           onClick={() => setShowEngagement('turn-talk')}
+  88:           className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
+  89:           style={{ backgroundColor: 'var(--ao-navy)' }}
+  90:           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-text)'}
+  91:           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-navy)'}
+  92:           title="Turn & Talk"
+  93:         >
+  94:           💬
+  95:         </button>
+  96:         <button
+  97:           onClick={() => setShowEngagement('say-with-me')}
+  98:           className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
+  99:           style={{ backgroundColor: 'var(--ao-sky)' }}
+ 100:           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-navy)'}
+ 101:           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-sky)'}
+ 102:           title="Say it with me!"
+ 103:         >
+ 104:           🗣️
+ 105:         </button>
+ 106:         <button
+ 107:           onClick={() => setShowEngagement('show-fingers')}
+ 108:           className="w-14 h-14 rounded-full bg-green-500 text-white text-2xl hover:bg-green-600 transition-colors shadow-lg flex items-center justify-center"
+ 109:           title="Show me on your fingers"
+ 110:         >
+ 111:           ✋
+ 112:         </button>
+ 113:         <button
+ 114:           onClick={() => setShowEngagement('hands-on-head')}
+ 115:           className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
+ 116:           style={{ backgroundColor: 'var(--ao-tan)' }}
+ 117:           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-text)'}
+ 118:           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-tan)'}
+ 119:           title="Hands on head if you hear ___"
+ 120:         >
+ 121:           🙌
+ 122:         </button>
+ 123:         <button
+ 124:           onClick={() => setShowEngagement('stand-if-rhymes')}
+ 125:           className="w-14 h-14 rounded-full bg-pink-500 text-white text-2xl hover:bg-pink-600 transition-colors shadow-lg flex items-center justify-center"
+ 126:           title="Stand if it rhymes"
+ 127:         >
+ 128:           🎵
+ 129:         </button>
+ 130:       </div>
+ 131: 
+ 132:       {/* Engagement prompt overlay */}
+ 133:       {showEngagement && (
+ 134:         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[60] pointer-events-none">
+ 135:           <div className="bg-white px-12 py-8 rounded-3xl text-5xl font-bold animate-bounce shadow-2xl">
+ 136:             {ENGAGEMENT_PROMPTS[showEngagement]}
+ 137:           </div>
+ 138:         </div>
+ 139:       )}
+ 140: 
+ 141:       {/* Deck player */}
+ 142:       <DeckPlayer deckPlan={deckPlan} teachMode={true} />
+ 143:       
+ 144:       {/* Keyboard shortcuts help (show on hover) */}
+ 145:       <div className="keyboard-help fixed bottom-4 left-4 bg-black/70 text-white p-4 rounded-lg text-sm opacity-0 hover:opacity-100 transition-opacity z-50">
+ 146:         <div className="font-semibold mb-2">Keyboard Shortcuts</div>
+ 147:         <div className="space-y-1">
+ 148:           <div>→ or Space: Next slide</div>
+ 149:           <div>← : Previous slide</div>
+ 150:           <div>Home: First slide</div>
+ 151:           <div>End: Last slide</div>
+ 152:         </div>
+ 153:       </div>
+ 154:     </div>
+ 155:   );
+ 156: }

@@ -1,0 +1,843 @@
+   1: import React, { useMemo, useState } from "react";
+   2: import { Link } from "react-router-dom";
+   3: import { useLessonStore } from "../state/useLessonStore";
+   4: import {
+   5:   getStandards,
+   6:   getSlides,
+   7:   getLessonPlan,
+   8:   getCenters,
+   9:   getRotationPlanItems,
+  10:   getInterventions,
+  11: } from "../engine/packageCompat";
+  12: import { K_ELA_BEST_DATASET } from "../engine/standards/data/k_ela_best_dataset";
+  13: import {
+  14:   ORCHARD_COLORS as COLORS,
+  15:   orchardShellStyle,
+  16:   orchardWrapStyle,
+  17:   orchardCardStyle,
+  18:   orchardHeroCardStyle,
+  19:   orchardSoftCardStyle,
+  20:   orchardPillStyle,
+  21:   orchardSectionTitleStyle,
+  22:   orchardHelpTextStyle,
+  23:   orchardPrimaryButtonStyle,
+  24:   orchardSecondaryButtonStyle,
+  25:   orchardLinkStyle,
+  26:   orchardRibbonHeaderStyle,
+  27:   orchardHeroTitleStyle,
+  28:   orchardStitchDividerStyle,
+  29: } from "./orchardUi";
+  30: import { WizardProgress } from "./WizardProgress";
+  31: 
+  32: function percent(conf: any) {
+  33:   const n = Number(conf);
+  34:   if (!Number.isFinite(n)) return "";
+  35:   return `${Math.round(n <= 1 ? n * 100 : n)}%`;
+  36: }
+  37: 
+  38: function short(text: any, max = 220) {
+  39:   const t = String(text ?? "").replace(/\s+/g, " ").trim();
+  40:   if (!t) return "(Summary not available)";
+  41:   return t.length > max ? t.slice(0, max - 3) + "..." : t;
+  42: }
+  43: 
+  44: function normCode(v: any) {
+  45:   return String(v ?? "").trim().toUpperCase();
+  46: }
+  47: 
+  48: function findLabelByCode(codeRaw: any) {
+  49:   const code = normCode(codeRaw);
+  50:   if (!code) return "";
+  51:   const found = (K_ELA_BEST_DATASET as any[]).find((s) => normCode(s?.code) === code);
+  52:   return String(found?.label ?? found?.description ?? "");
+  53: }
+  54: 
+  55: function readBlueprint() {
+  56:   try {
+  57:     const raw = localStorage.getItem("lessonBlueprintV1");
+  58:     if (!raw) return null;
+  59:     return JSON.parse(raw);
+  60:   } catch {
+  61:     return null;
+  62:   }
+  63: }
+  64: 
+  65: function Section({
+  66:   title,
+  67:   subtitle,
+  68:   defaultOpen,
+  69:   children,
+  70: }: {
+  71:   title: string;
+  72:   subtitle?: string;
+  73:   defaultOpen?: boolean;
+  74:   children: React.ReactNode;
+  75: }) {
+  76:   return (
+  77:     <details open={!!defaultOpen} style={orchardCardStyle()}>
+  78:       <summary style={{ cursor: "pointer", listStyle: "none" }}>
+  79:         <div style={orchardRibbonHeaderStyle()}>{title}</div>
+  80:         <div style={orchardStitchDividerStyle()} />
+  81:         {subtitle && (
+  82:           <div style={{ ...orchardHelpTextStyle(), marginTop: 6, marginBottom: 2 }}>
+  83:             {subtitle}
+  84:           </div>
+  85:         )}
+  86:       </summary>
+  87:       <div style={{ paddingTop: 14 }}>{children}</div>
+  88:     </details>
+  89:   );
+  90: }
+  91: 
+  92: function SnapshotChip({
+  93:   label,
+  94:   value,
+  95:   background,
+  96:   border,
+  97: }: {
+  98:   label: string;
+  99:   value: string | number;
+ 100:   background: string;
+ 101:   border: string;
+ 102: }) {
+ 103:   return (
+ 104:     <div style={orchardPillStyle(background, border)}>
+ 105:       {label}: {value}
+ 106:     </div>
+ 107:   );
+ 108: }
+ 109: 
+ 110: function BlueprintInsights() {
+ 111:   const bp = useMemo(() => readBlueprint(), []);
+ 112:   if (!bp) {
+ 113:     return <div style={{ opacity: 0.8, color: COLORS.muted }}>No saved Blueprint found for this package yet.</div>;
+ 114:   }
+ 115: 
+ 116:   const frameworkApplied = bp?.synthesis?.frameworkApplied || "linear";
+ 117:   const detectedFramework = bp?.exemplar?.frameworkDetection?.framework || "unknown";
+ 118:   const detectedConfidence = Math.round((bp?.exemplar?.frameworkDetection?.confidence || 0) * 100);
+ 119:   const curriculumFiles = (bp?.curriculum?.files || []).map((f: any) => f?.name).filter(Boolean);
+ 120:   const exemplarFiles = (bp?.exemplar?.files || []).map((f: any) => f?.name).filter(Boolean);
+ 121:   const curriculumItems = (bp?.curriculum?.coverageChecklist || []).map((item: any) => item?.title).filter(Boolean).slice(0, 5);
+ 122:   const cueItems = (bp?.exemplar?.presenterCues || []).map((cue: any) => cue?.rawText).filter(Boolean).slice(0, 5);
+ 123:   const plannedSlides = (bp?.synthesis?.slides || []).map((slide: any) => slide?.title).filter(Boolean).slice(0, 9);
+ 124:   const synthesisNotes = String(bp?.synthesis?.notes || "").trim();
+ 125: 
+ 126:   return (
+ 127:     <div>
+ 128:       <div
+ 129:         style={{
+ 130:           ...orchardSoftCardStyle(),
+ 131:           marginBottom: 14,
+ 132:           background: "linear-gradient(135deg, #FFF8EF 0%, #F8F1E6 100%)",
+ 133:         }}
+ 134:       >
+ 135:         <div style={{ fontWeight: 900, fontSize: 18, color: COLORS.heading, marginBottom: 8 }}>
+ 136:           Blueprint Influence Summary
+ 137:         </div>
+ 138:         <div style={{ ...orchardHelpTextStyle() }}>
+ 139:           This explains what the system used from your lesson plan, uploaded curriculum, and exemplar cues to shape the lesson package.
+ 140:         </div>
+ 141:       </div>
+ 142: 
+ 143:       <div style={{ marginBottom: 12 }}>
+ 144:         <SnapshotChip label="Applied framework" value={frameworkApplied} background="#EEF5EA" border="#BFD6B8" />
+ 145:         <SnapshotChip label="Curriculum items" value={curriculumItems.length} background="#F2F8FF" border="#C9DAEE" />
+ 146:         <SnapshotChip label="Presenter cues" value={cueItems.length} background="#FFF6E8" border={COLORS.warnBorder} />
+ 147:         <SnapshotChip label="Planned slides" value={plannedSlides.length} background="#F4EDF8" border="#D7C6E4" />
+ 148:       </div>
+ 149: 
+ 150:       <div
+ 151:         style={{
+ 152:           display: "grid",
+ 153:           gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+ 154:           gap: 12,
+ 155:           marginBottom: 14,
+ 156:         }}
+ 157:       >
+ 158:         <div style={{ ...orchardSoftCardStyle("#F2F8FF"), border: "1px solid #C9DAEE" }}>
+ 159:           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Framework</div>
+ 160:           <div style={{ fontSize: 14, marginBottom: 4 }}><b>Applied:</b> {frameworkApplied}</div>
+ 161:           <div style={{ fontSize: 14 }}>
+ 162:             <b>Detected exemplar pattern:</b> {detectedFramework} ({detectedConfidence}%)
+ 163:           </div>
+ 164:         </div>
+ 165: 
+ 166:         <div style={{ ...orchardSoftCardStyle("#EEF5EA"), border: "1px solid #BFD6B8" }}>
+ 167:           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Curriculum Used</div>
+ 168:           {curriculumItems.length ? (
+ 169:             <ul style={{ margin: 0, paddingLeft: 18 }}>
+ 170:               {curriculumItems.map((item: string, i: number) => (
+ 171:                 <li key={item + i} style={{ marginBottom: 4 }}>{item}</li>
+ 172:               ))}
+ 173:             </ul>
+ 174:           ) : (
+ 175:             <div style={{ opacity: 0.8, color: COLORS.muted }}>No curriculum checklist items found.</div>
+ 176:           )}
+ 177:         </div>
+ 178: 
+ 179:         <div style={{ ...orchardSoftCardStyle("#FFF6E8"), border: `1px solid ${COLORS.warnBorder}` }}>
+ 180:           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Exemplar Cues Used</div>
+ 181:           {cueItems.length ? (
+ 182:             <ul style={{ margin: 0, paddingLeft: 18 }}>
+ 183:               {cueItems.map((item: string, i: number) => (
+ 184:                 <li key={item + i} style={{ marginBottom: 4 }}>{short(item, 90)}</li>
+ 185:               ))}
+ 186:             </ul>
+ 187:           ) : (
+ 188:             <div style={{ opacity: 0.8, color: COLORS.muted }}>No presenter cues found.</div>
+ 189:           )}
+ 190:         </div>
+ 191:       </div>
+ 192: 
+ 193:       <div style={{ ...orchardSoftCardStyle(), marginBottom: 14 }}>
+ 194:         <div style={{ fontWeight: 800, marginBottom: 8, color: COLORS.heading }}>Why this lesson changed</div>
+ 195:         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.55 }}>
+ 196:           <li style={{ marginBottom: 6 }}>
+ 197:             {frameworkApplied === "clickableHub"
+ 198:               ? "The package is using a clickable-hub structure because an exemplar was present and the blueprint applied that framework."
+ 199:               : frameworkApplied === "guidepost"
+ 200:                 ? "The package is using a guidepost-style structure because the blueprint detected and applied that framework."
+ 201:                 : "The package is using the default linear structure because no non-linear framework was applied."}
+ 202:           </li>
+ 203:           <li style={{ marginBottom: 6 }}>
+ 204:             {curriculumItems.length
+ 205:               ? "Curriculum titles are shaping teacher plan language, slide bullets, and center directions."
+ 206:               : "No curriculum checklist items were available, so wording falls back to default lesson language."}
+ 207:           </li>
+ 208:           <li>
+ 209:             {cueItems.length
+ 210:               ? "Presenter cues from the exemplar are influencing notes, transitions, and rotation wording."
+ 211:               : "No exemplar presenter cues were available, so teacher cueing stays simple."}
+ 212:           </li>
+ 213:         </ul>
+ 214:       </div>
+ 215: 
+ 216:       <div
+ 217:         style={{
+ 218:           display: "grid",
+ 219:           gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+ 220:           gap: 12,
+ 221:           marginBottom: 14,
+ 222:         }}
+ 223:       >
+ 224:         <div style={orchardSoftCardStyle()}>
+ 225:           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Source Files</div>
+ 226:           <div style={{ fontSize: 14, marginBottom: 6 }}>
+ 227:             <b>Curriculum files:</b> {curriculumFiles.join(", ") || "none"}
+ 228:           </div>
+ 229:           <div style={{ fontSize: 14 }}>
+ 230:             <b>Exemplar files:</b> {exemplarFiles.join(", ") || "none"}
+ 231:           </div>
+ 232:         </div>
+ 233: 
+ 234:         <div style={orchardSoftCardStyle()}>
+ 235:           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Planned Slide Skeleton</div>
+ 236:           {plannedSlides.length ? (
+ 237:             <ol style={{ margin: 0, paddingLeft: 18 }}>
+ 238:               {plannedSlides.map((title: string, i: number) => (
+ 239:                 <li key={title + i} style={{ marginBottom: 4 }}>{title}</li>
+ 240:               ))}
+ 241:             </ol>
+ 242:           ) : (
+ 243:             <div style={{ opacity: 0.8, color: COLORS.muted }}>No planned slides found in the blueprint.</div>
+ 244:           )}
+ 245:         </div>
+ 246:       </div>
+ 247: 
+ 248:       {synthesisNotes && (
+ 249:         <div style={orchardSoftCardStyle()}>
+ 250:           <div style={{ fontWeight: 800, marginBottom: 6, color: COLORS.heading }}>Blueprint Notes</div>
+ 251:           <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{synthesisNotes}</div>
+ 252:         </div>
+ 253:       )}
+ 254: 
+ 255:       <details style={{ marginTop: 14 }}>
+ 256:         <summary style={{ cursor: "pointer", color: COLORS.accentDark, fontWeight: 700 }}>
+ 257:           View raw Blueprint JSON
+ 258:         </summary>
+ 259:         <pre
+ 260:           style={{
+ 261:             whiteSpace: "pre-wrap",
+ 262:             fontSize: 12,
+ 263:             background: "#FBF8F2",
+ 264:             border: `1px solid ${COLORS.borderSoft}`,
+ 265:             padding: 12,
+ 266:             borderRadius: 14,
+ 267:             overflow: "auto",
+ 268:             marginTop: 10,
+ 269:           }}
+ 270:         >
+ 271:           {JSON.stringify(bp, null, 2)}
+ 272:         </pre>
+ 273:       </details>
+ 274:     </div>
+ 275:   );
+ 276: }
+ 277: 
+ 278: function SlidePreviewCard({
+ 279:   slide,
+ 280:   index,
+ 281:   compact,
+ 282: }: {
+ 283:   slide: any;
+ 284:   index: number;
+ 285:   compact: boolean;
+ 286: }) {
+ 287:   const bullets = Array.isArray(slide?.bullets) ? slide.bullets.filter(Boolean) : [];
+ 288:   const bodyText = slide?.text || slide?.body || "";
+ 289:   const visibleBullets = compact ? bullets.slice(0, 3) : bullets;
+ 290:   const hasTrimmedBullets = compact && bullets.length > 3;
+ 291: 
+ 292:   return (
+ 293:     <div
+ 294:       style={{
+ 295:         background: "#FFFDF9",
+ 296:         border: `1px solid ${COLORS.border}`,
+ 297:         borderRadius: 20,
+ 298:         overflow: "hidden",
+ 299:         boxShadow: "0 8px 18px rgba(73, 52, 33, 0.06)",
+ 300:       }}
+ 301:     >
+ 302:       <div
+ 303:         style={{
+ 304:           background: "linear-gradient(135deg, #6E8B5E 0%, #4E6542 100%)",
+ 305:           color: "#fff",
+ 306:           padding: compact ? "10px 12px" : "12px 14px",
+ 307:         }}
+ 308:       >
+ 309:         <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.9, marginBottom: 4 }}>
+ 310:           Slide {index + 1}
+ 311:         </div>
+ 312:         <div style={{ fontSize: compact ? 16 : 18, fontWeight: 800, lineHeight: 1.2 }}>
+ 313:           {slide?.title ?? slide?.heading ?? `Slide ${index + 1}`}
+ 314:         </div>
+ 315:       </div>
+ 316: 
+ 317:       <div style={{ padding: compact ? 12 : 16 }}>
+ 318:         {visibleBullets.length > 0 ? (
+ 319:           <ul style={{ margin: 0, paddingLeft: 20, lineHeight: compact ? 1.45 : 1.6 }}>
+ 320:             {visibleBullets.map((b: any, idx: number) => (
+ 321:               <li key={idx} style={{ marginBottom: compact ? 4 : 6 }}>
+ 322:                 {String(b)}
+ 323:               </li>
+ 324:             ))}
+ 325:           </ul>
+ 326:         ) : bodyText ? (
+ 327:           <div style={{ whiteSpace: "pre-wrap", lineHeight: compact ? 1.45 : 1.6 }}>
+ 328:             {compact ? short(bodyText, 180) : String(bodyText)}
+ 329:           </div>
+ 330:         ) : (
+ 331:           <div style={{ color: COLORS.muted, fontStyle: "italic" }}>
+ 332:             No preview text on this slide yet.
+ 333:           </div>
+ 334:         )}
+ 335: 
+ 336:         {hasTrimmedBullets && (
+ 337:           <div style={{ marginTop: 8, fontSize: 12, color: COLORS.muted }}>
+ 338:             + {bullets.length - 3} more bullets
+ 339:           </div>
+ 340:         )}
+ 341: 
+ 342:         {slide?.teacherNotes && (
+ 343:           <div
+ 344:             style={{
+ 345:               marginTop: 14,
+ 346:               paddingTop: 12,
+ 347:               borderTop: `1px solid ${COLORS.borderSoft}`,
+ 348:             }}
+ 349:           >
+ 350:             <div
+ 351:               style={{
+ 352:                 fontSize: 12,
+ 353:                 fontWeight: 800,
+ 354:                 color: COLORS.accentDark,
+ 355:                 marginBottom: 4,
+ 356:               }}
+ 357:             >
+ 358:               Teacher note
+ 359:             </div>
+ 360:             <div style={{ color: COLORS.muted, lineHeight: 1.5, fontSize: 14 }}>
+ 361:               {compact ? short(String(slide.teacherNotes), 120) : String(slide.teacherNotes)}
+ 362:             </div>
+ 363:           </div>
+ 364:         )}
+ 365:       </div>
+ 366:     </div>
+ 367:   );
+ 368: }
+ 369: 
+ 370: export default function ResultsHubPage() {
+ 371:   const pkg = useLessonStore((s) => s.package);
+ 372: 
+ 373:   const [busy, setBusy] = useState<null | "pptx" | "docx" | "zip">(null);
+ 374:   const [err, setErr] = useState<string | null>(null);
+ 375:   const [previewMode, setPreviewMode] = useState<"teaching" | "compact">("teaching");
+ 376: 
+ 377:   if (!pkg) {
+ 378:     return (
+ 379:       <div style={orchardShellStyle()}>
+ 380:         <div style={orchardWrapStyle()}>
+ 381:           <WizardProgress current="results" />
+ 382:           <div style={orchardCardStyle()}>
+ 383:             <h1 style={{ marginTop: 0, marginBottom: 10, color: COLORS.heading }}>Results Hub</h1>
+ 384:             <p style={{ opacity: 0.9, color: COLORS.muted }}>
+ 385:               No generated lesson found yet. Go back and run the flow again.
+ 386:             </p>
+ 387:             <Link to="/" style={orchardLinkStyle()}>
+ 388:               Back to Inputs
+ 389:             </Link>
+ 390:           </div>
+ 391:         </div>
+ 392:       </div>
+ 393:     );
+ 394:   }
+ 395: 
+ 396:   const lessonTitle = (pkg as any)?.input?.lessonTitle ?? "Generated Lesson";
+ 397:   const rawStandards = useMemo(() => getStandards(pkg as any), [pkg]);
+ 398:   const standards = useMemo(
+ 399:     () =>
+ 400:       (rawStandards || []).map((s: any) => ({
+ 401:         ...s,
+ 402:         label: findLabelByCode(s?.code),
+ 403:       })),
+ 404:     [rawStandards]
+ 405:   );
+ 406: 
+ 407:   const primary = standards[0];
+ 408:   const supporting = standards.slice(1, 4);
+ 409: 
+ 410:   const slides = useMemo(() => getSlides(pkg as any), [pkg]);
+ 411:   const lessonPlan = useMemo(() => getLessonPlan(pkg as any), [pkg]);
+ 412:   const centers = useMemo(() => getCenters(pkg as any), [pkg]);
+ 413:   const rotationPlan = useMemo(() => getRotationPlanItems(pkg as any), [pkg]);
+ 414:   const { tier3, tier2, enrichment } = useMemo(() => getInterventions(pkg as any), [pkg]);
+ 415: 
+ 416:   async function runExport(which: "pptx" | "docx" | "zip") {
+ 417:     try {
+ 418:       setErr(null);
+ 419:       setBusy(which);
+ 420: 
+ 421:       if (which === "pptx") {
+ 422:         const mod = await import("../engine/exports/exportSlidesPptx");
+ 423:         await mod.exportSlidesPptx(pkg as any);
+ 424:       } else if (which === "docx") {
+ 425:         const mod = await import("../engine/exports/exportLessonPlanDocx");
+ 426:         await mod.exportLessonPlanDocx(pkg as any);
+ 427:       } else {
+ 428:         const mod = await import("../engine/exports/exportFullZip");
+ 429:         await mod.exportFullZip(pkg as any);
+ 430:       }
+ 431:     } catch (e: any) {
+ 432:       console.error(e);
+ 433:       setErr(e?.message ?? String(e));
+ 434:       alert("EXPORT ERROR: " + (e?.message ?? String(e)));
+ 435:     } finally {
+ 436:       setBusy(null);
+ 437:     }
+ 438:   }
+ 439: 
+ 440:   return (
+ 441:     <div style={orchardShellStyle()}>
+ 442:       <div style={orchardWrapStyle()}>
+ 443:         <WizardProgress current="results" />
+ 444: 
+ 445:         <div style={orchardHeroCardStyle()}>
+ 446:           <div
+ 447:             style={{
+ 448:               display: "grid",
+ 449:               gridTemplateColumns: "minmax(0, 1.6fr) minmax(260px, 0.9fr)",
+ 450:               gap: 18,
+ 451:               alignItems: "start",
+ 452:             }}
+ 453:           >
+ 454:             <div>
+ 455:               <div style={orchardRibbonHeaderStyle()}>Results Hub</div>
+ 456:               <div style={orchardStitchDividerStyle()} />
+ 457:               <h1 style={orchardHeroTitleStyle()}>{lessonTitle}</h1>
+ 458:               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 760 }}>
+ 459:                 Review the generated package, scan the standards and blueprint influence, preview the teaching slides,
+ 460:                 and export the pieces you want to use.
+ 461:               </div>
+ 462: 
+ 463:               <div style={{ marginTop: 12 }}>
+ 464:                 <SnapshotChip label="Date" value={(pkg as any)?.input?.date ?? "-"} background="#FFF6E8" border={COLORS.warnBorder} />
+ 465:                 <SnapshotChip label="Grade" value={(pkg as any)?.input?.grade ?? "-"} background="#EEF5EA" border={COLORS.successBorder} />
+ 466:                 <SnapshotChip label="Subject" value={(pkg as any)?.input?.subject ?? "-"} background="#F4EDF8" border="#D7C6E4" />
+ 467:                 <SnapshotChip label="Standards" value={standards.length} background="#F2F8FF" border="#C9DAEE" />
+ 468:               </div>
+ 469:             </div>
+ 470: 
+ 471:             <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 270 }}>
+ 472:               <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 10 }}>Lesson Snapshot</div>
+ 473:               <div style={{ display: "grid", gap: 8, fontSize: 14, lineHeight: 1.55 }}>
+ 474:                 <div><b>Slides:</b> {slides.length}</div>
+ 475:                 <div><b>Centers:</b> {centers.length}</div>
+ 476:                 <div><b>Lesson plan sections:</b> {lessonPlan.length}</div>
+ 477:                 <div><b>Rotation items:</b> {rotationPlan.length}</div>
+ 478:                 <div><b>Tier 3 / Tier 2 / Enrichment:</b> {tier3.length} / {tier2.length} / {enrichment.length}</div>
+ 479:               </div>
+ 480:             </div>
+ 481:           </div>
+ 482:         </div>
+ 483: 
+ 484:         <div style={orchardCardStyle()}>
+ 485:           <div
+ 486:             style={{
+ 487:               display: "grid",
+ 488:               gridTemplateColumns: "minmax(0, 1fr) auto",
+ 489:               gap: 16,
+ 490:               alignItems: "center",
+ 491:             }}
+ 492:           >
+ 493:             <div>
+ 494:               <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Exports</div>
+ 495:               <div style={{ ...orchardHelpTextStyle(), marginBottom: 0 }}>
+ 496:                 Export only what you need, or download the full lesson package at once.
+ 497:               </div>
+ 498:             </div>
+ 499: 
+ 500:             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end" }}>
+ 501:               <button
+ 502:                 onClick={() => runExport("pptx")}
+ 503:                 disabled={busy !== null}
+ 504:                 style={orchardPrimaryButtonStyle(busy !== null)}
+ 505:               >
+ 506:                 {busy === "pptx" ? "Exporting PPTX..." : "Export PPTX"}
+ 507:               </button>
+ 508: 
+ 509:               <button
+ 510:                 onClick={() => runExport("docx")}
+ 511:                 disabled={busy !== null}
+ 512:                 style={orchardSecondaryButtonStyle(busy !== null)}
+ 513:               >
+ 514:                 {busy === "docx" ? "Exporting DOCX..." : "Export DOCX"}
+ 515:               </button>
+ 516: 
+ 517:               <button
+ 518:                 onClick={() => runExport("zip")}
+ 519:                 disabled={busy !== null}
+ 520:                 style={orchardSecondaryButtonStyle(busy !== null)}
+ 521:               >
+ 522:                 {busy === "zip" ? "Exporting ZIP..." : "Full Export (ZIP)"}
+ 523:               </button>
+ 524: 
+ 525:               <Link to="/" style={{ ...orchardLinkStyle(), marginLeft: 4 }}>
+ 526:                 Back to Inputs
+ 527:               </Link>
+ 528:             </div>
+ 529:           </div>
+ 530: 
+ 531:           {err && (
+ 532:             <div
+ 533:               style={{
+ 534:                 background: "#FFF2F1",
+ 535:                 border: "1px solid #E6B8B4",
+ 536:                 padding: 10,
+ 537:                 borderRadius: 12,
+ 538:                 marginTop: 14,
+ 539:               }}
+ 540:             >
+ 541:               <b>Export error:</b> {err}
+ 542:             </div>
+ 543:           )}
+ 544:         </div>
+ 545: 
+ 546:         <div
+ 547:           style={{
+ 548:             display: "grid",
+ 549:             gridTemplateColumns: "minmax(0, 1.2fr) minmax(280px, 0.8fr)",
+ 550:             gap: 18,
+ 551:           }}
+ 552:         >
+ 553:           <div style={orchardCardStyle()}>
+ 554:             <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards Snapshot</div>
+ 555:             <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+ 556:               This shows the primary standard detected for the lesson, along with a few supporting standards when available.
+ 557:             </div>
+ 558: 
+ 559:             {standards.length === 0 ? (
+ 560:               <div style={{ fontWeight: 800 }}>Standards: (none detected yet - check inputs or add an override)</div>
+ 561:             ) : (
+ 562:               <>
+ 563:                 <div
+ 564:                   style={{
+ 565:                     ...orchardSoftCardStyle("#F8FBF7"),
+ 566:                     border: `1px solid ${COLORS.successBorder}`,
+ 567:                     marginBottom: 12,
+ 568:                   }}
+ 569:                 >
+ 570:                   <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", color: COLORS.accentDark, marginBottom: 6 }}>
+ 571:                     Primary Standard
+ 572:                   </div>
+ 573:                   <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading, fontSize: 20 }}>
+ 574:                     {primary?.code ?? ""}{" "}
+ 575:                     <span style={{ opacity: 0.8, color: COLORS.muted }}>
+ 576:                       {primary?.confidence != null ? `(${percent(primary.confidence)})` : ""}
+ 577:                     </span>
+ 578:                   </div>
+ 579:                   <div style={{ opacity: 0.95, lineHeight: 1.55 }}>{short(primary?.label)}</div>
+ 580:                 </div>
+ 581: 
+ 582:                 {supporting.length > 0 && (
+ 583:                   <div style={{ ...orchardSoftCardStyle(), marginBottom: 10 }}>
+ 584:                     <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading }}>Supporting</div>
+ 585:                     <ul style={{ margin: 0, paddingLeft: 18 }}>
+ 586:                       {supporting.map((s: any, i: number) => (
+ 587:                         <li key={(s.code ?? "") + i} style={{ marginBottom: 10 }}>
+ 588:                           <div>
+ 589:                             <b>{s.code}</b>{" "}
+ 590:                             <span style={{ opacity: 0.8, color: COLORS.muted }}>
+ 591:                               {s?.confidence != null ? `(${percent(s.confidence)})` : ""}
+ 592:                             </span>
+ 593:                           </div>
+ 594:                           <div style={{ opacity: 0.92, lineHeight: 1.45 }}>{short(s.label)}</div>
+ 595:                         </li>
+ 596:                       ))}
+ 597:                     </ul>
+ 598:                   </div>
+ 599:                 )}
+ 600: 
+ 601:                 <div style={{ opacity: 0.85, color: COLORS.muted }}>
+ 602:                   <b>All codes:</b> {standards.map((s: any) => s.code).join(", ")}
+ 603:                 </div>
+ 604:               </>
+ 605:             )}
+ 606:           </div>
+ 607: 
+ 608:           <div style={orchardCardStyle()}>
+ 609:             <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Package Overview</div>
+ 610:             <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+ 611:               A quick scan of the completed lesson pieces.
+ 612:             </div>
+ 613: 
+ 614:             <div style={{ display: "grid", gap: 10 }}>
+ 615:               <div style={orchardSoftCardStyle()}><b>Slides</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{slides.length} ready to preview or export.</div></div>
+ 616:               <div style={orchardSoftCardStyle()}><b>Teacher plan</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{lessonPlan.length} sections generated.</div></div>
+ 617:               <div style={orchardSoftCardStyle()}><b>Centers + rotation</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{centers.length} centers and {rotationPlan.length} rotation items.</div></div>
+ 618:               <div style={orchardSoftCardStyle()}><b>Interventions</b><div style={{ color: COLORS.muted, marginTop: 4 }}>{tier3.length + tier2.length + enrichment.length} support entries across groups.</div></div>
+ 619:             </div>
+ 620:           </div>
+ 621:         </div>
+ 622: 
+ 623:         <Section
+ 624:           title="Blueprint Influence"
+ 625:           subtitle="See how curriculum, exemplar framework, and teacher-facing cues shaped the final package."
+ 626:           defaultOpen
+ 627:         >
+ 628:           <BlueprintInsights />
+ 629:         </Section>
+ 630: 
+ 631:         <Section
+ 632:           title="Slide Preview Deck"
+ 633:           subtitle="This preview is designed to feel closer to the actual teaching deck instead of a plain text list."
+ 634:           defaultOpen
+ 635:         >
+ 636:           <div
+ 637:             style={{
+ 638:               display: "flex",
+ 639:               justifyContent: "space-between",
+ 640:               gap: 12,
+ 641:               flexWrap: "wrap",
+ 642:               alignItems: "center",
+ 643:               marginBottom: 14,
+ 644:             }}
+ 645:           >
+ 646:             <div style={{ ...orchardHelpTextStyle(), maxWidth: 680 }}>
+ 647:               Choose the view that feels best for scanning the deck before exporting or teaching.
+ 648:             </div>
+ 649: 
+ 650:             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+ 651:               <button
+ 652:                 onClick={() => setPreviewMode("teaching")}
+ 653:                 style={previewMode === "teaching" ? orchardPrimaryButtonStyle(false) : orchardSecondaryButtonStyle(false)}
+ 654:               >
+ 655:                 Teaching View
+ 656:               </button>
+ 657:               <button
+ 658:                 onClick={() => setPreviewMode("compact")}
+ 659:                 style={previewMode === "compact" ? orchardPrimaryButtonStyle(false) : orchardSecondaryButtonStyle(false)}
+ 660:               >
+ 661:                 Compact View
+ 662:               </button>
+ 663:             </div>
+ 664:           </div>
+ 665: 
+ 666:           {slides.length === 0 ? (
+ 667:             <div style={{ opacity: 0.8, color: COLORS.muted }}>No slides found in package.</div>
+ 668:           ) : (
+ 669:             <div
+ 670:               style={{
+ 671:                 display: "grid",
+ 672:                 gridTemplateColumns:
+ 673:                   previewMode === "compact"
+ 674:                     ? "repeat(auto-fit, minmax(240px, 1fr))"
+ 675:                     : "repeat(auto-fit, minmax(280px, 1fr))",
+ 676:                 gap: previewMode === "compact" ? 12 : 14,
+ 677:               }}
+ 678:             >
+ 679:               {slides.map((slide: any, index: number) => (
+ 680:                 <SlidePreviewCard
+ 681:                   key={slide?.id ?? index}
+ 682:                   slide={slide}
+ 683:                   index={index}
+ 684:                   compact={previewMode === "compact"}
+ 685:                 />
+ 686:               ))}
+ 687:             </div>
+ 688:           )}
+ 689:         </Section>
+ 690: 
+ 691:         <Section
+ 692:           title="Teacher Lesson Plan"
+ 693:           subtitle="A readable preview of the generated instructional flow and slide-aligned sections."
+ 694:           defaultOpen
+ 695:         >
+ 696:           {lessonPlan.length === 0 ? (
+ 697:             <div style={{ opacity: 0.8, color: COLORS.muted }}>No lesson plan sections found in package.</div>
+ 698:           ) : (
+ 699:             <div style={{ display: "grid", gap: 12 }}>
+ 700:               {lessonPlan.map((sec: any, i: number) => (
+ 701:                 <div key={i} style={orchardSoftCardStyle()}>
+ 702:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 17 }}>
+ 703:                     {sec?.heading ?? `Section ${i + 1}`}
+ 704:                   </div>
+ 705:                   {Array.isArray(sec?.slides) && (
+ 706:                     <div style={{ opacity: 0.8, marginTop: 4, color: COLORS.muted }}>
+ 707:                       Slides: {sec.slides.length ? sec.slides.join(", ") : "-"}
+ 708:                     </div>
+ 709:                   )}
+ 710:                   <div style={{ whiteSpace: "pre-wrap", marginTop: 8, lineHeight: 1.55 }}>
+ 711:                     {String(sec?.description ?? "")}
+ 712:                   </div>
+ 713:                 </div>
+ 714:               ))}
+ 715:             </div>
+ 716:           )}
+ 717:         </Section>
+ 718: 
+ 719:         <div
+ 720:           style={{
+ 721:             display: "grid",
+ 722:             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+ 723:             gap: 18,
+ 724:           }}
+ 725:         >
+ 726:           <Section
+ 727:             title={`Centers - ${centers.length}`}
+ 728:             subtitle="Center activities grouped into warm paper cards for quick scanning."
+ 729:           >
+ 730:             {centers.length === 0 ? (
+ 731:               <div style={{ opacity: 0.8, color: COLORS.muted }}>No centers generated.</div>
+ 732:             ) : (
+ 733:               <div style={{ display: "grid", gap: 12 }}>
+ 734:                 {centers.map((c: any, i: number) => (
+ 735:                   <div key={i} style={orchardSoftCardStyle()}>
+ 736:                     <div style={{ fontWeight: 900, color: COLORS.heading }}>
+ 737:                       {c?.title ?? c?.name ?? `Center ${i + 1}`}
+ 738:                     </div>
+ 739:                     {c?.objective && (
+ 740:                       <div style={{ marginTop: 6, color: COLORS.muted }}>
+ 741:                         <b>Objective:</b> {String(c.objective)}
+ 742:                       </div>
+ 743:                     )}
+ 744:                     {c?.focusSkill && (
+ 745:                       <div style={{ marginTop: 6, color: COLORS.muted }}>
+ 746:                         <b>Focus skill:</b> {String(c.focusSkill)}
+ 747:                       </div>
+ 748:                     )}
+ 749:                     {(c?.direction || c?.instructions) && (
+ 750:                       <div style={{ whiteSpace: "pre-wrap", marginTop: 8, lineHeight: 1.55 }}>
+ 751:                         {String(c?.direction ?? c?.instructions ?? "")}
+ 752:                       </div>
+ 753:                     )}
+ 754:                   </div>
+ 755:                 ))}
+ 756:               </div>
+ 757:             )}
+ 758:           </Section>
+ 759: 
+ 760:           <Section
+ 761:             title="Rotation Plan"
+ 762:             subtitle="A quick view of how students move through support and practice."
+ 763:           >
+ 764:             {rotationPlan.length === 0 ? (
+ 765:               <div style={{ opacity: 0.8, color: COLORS.muted }}>No rotation plan generated.</div>
+ 766:             ) : (
+ 767:               <div style={{ display: "grid", gap: 12 }}>
+ 768:                 {rotationPlan.map((r: any, i: number) => (
+ 769:                   <div key={i} style={orchardSoftCardStyle()}>
+ 770:                     <div style={{ fontWeight: 800, color: COLORS.heading }}>
+ 771:                       {r?.title ?? `Rotation ${i + 1}`}
+ 772:                     </div>
+ 773:                     <div style={{ whiteSpace: "pre-wrap", marginTop: 6, lineHeight: 1.55 }}>
+ 774:                       {String(r?.description ?? r?.text ?? r ?? "")}
+ 775:                     </div>
+ 776:                   </div>
+ 777:                 ))}
+ 778:               </div>
+ 779:             )}
+ 780:           </Section>
+ 781:         </div>
+ 782: 
+ 783:         <Section
+ 784:           title="Interventions"
+ 785:           subtitle="Small-group and enrichment supports laid out by learner need."
+ 786:         >
+ 787:           <div
+ 788:             style={{
+ 789:               display: "grid",
+ 790:               gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+ 791:               gap: 12,
+ 792:             }}
+ 793:           >
+ 794:             <div style={{ ...orchardSoftCardStyle("#FFF7F6"), border: "1px solid #EBC8C4" }}>
+ 795:               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Tier 3</h3>
+ 796:               {tier3.length ? (
+ 797:                 <ul style={{ margin: 0, paddingLeft: 18 }}>
+ 798:                   {tier3.map((x: any, i: number) => (
+ 799:                     <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6, lineHeight: 1.5 }}>
+ 800:                       {String(x?.description ?? x?.text ?? x ?? "")}
+ 801:                     </li>
+ 802:                   ))}
+ 803:                 </ul>
+ 804:               ) : (
+ 805:                 <div style={{ opacity: 0.8, color: COLORS.muted }}>None</div>
+ 806:               )}
+ 807:             </div>
+ 808: 
+ 809:             <div style={{ ...orchardSoftCardStyle("#FFF9ED"), border: `1px solid ${COLORS.warnBorder}` }}>
+ 810:               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Tier 2</h3>
+ 811:               {tier2.length ? (
+ 812:                 <ul style={{ margin: 0, paddingLeft: 18 }}>
+ 813:                   {tier2.map((x: any, i: number) => (
+ 814:                     <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6, lineHeight: 1.5 }}>
+ 815:                       {String(x?.description ?? x?.text ?? x ?? "")}
+ 816:                     </li>
+ 817:                   ))}
+ 818:                 </ul>
+ 819:               ) : (
+ 820:                 <div style={{ opacity: 0.8, color: COLORS.muted }}>None</div>
+ 821:               )}
+ 822:             </div>
+ 823: 
+ 824:             <div style={{ ...orchardSoftCardStyle("#F4FAF2"), border: `1px solid ${COLORS.successBorder}` }}>
+ 825:               <h3 style={{ marginTop: 0, color: COLORS.heading }}>Enrichment</h3>
+ 826:               {enrichment.length ? (
+ 827:                 <ul style={{ margin: 0, paddingLeft: 18 }}>
+ 828:                   {enrichment.map((x: any, i: number) => (
+ 829:                     <li key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 6, lineHeight: 1.5 }}>
+ 830:                       {String(x?.description ?? x?.text ?? x ?? "")}
+ 831:                     </li>
+ 832:                   ))}
+ 833:                 </ul>
+ 834:               ) : (
+ 835:                 <div style={{ opacity: 0.8, color: COLORS.muted }}>None</div>
+ 836:               )}
+ 837:             </div>
+ 838:           </div>
+ 839:         </Section>
+ 840:       </div>
+ 841:     </div>
+ 842:   );
+ 843: }

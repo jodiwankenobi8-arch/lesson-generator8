@@ -1,0 +1,1051 @@
+   1: import React, { useMemo, useState } from "react";
+   2: import { useNavigate, Link } from "react-router-dom";
+   3: import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
+   4: import type { UploadedTextFile, SourceRole } from "../engine/blueprint/types";
+   5: import { useLessonStore } from "../state/useLessonStore";
+   6: import { filesToUploaded } from "../utils/readUploadedText";
+   7: import {
+   8:   ORCHARD_COLORS as COLORS,
+   9:   orchardShellStyle,
+  10:   orchardWrapStyle,
+  11:   orchardCardStyle,
+  12:   orchardHeroCardStyle,
+  13:   orchardSoftCardStyle,
+  14:   orchardLabelTitleStyle,
+  15:   orchardSectionTitleStyle,
+  16:   orchardHelpTextStyle,
+  17:   orchardTextareaStyle,
+  18:   orchardPrimaryButtonStyle,
+  19:   orchardLinkStyle,
+  20:   orchardRibbonHeaderStyle,
+  21:   orchardHeroTitleStyle,
+  22:   orchardStitchDividerStyle,
+  23: } from "./orchardUi";
+  24: import { WizardProgress } from "./WizardProgress";
+  25: import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+  26: 
+  27: const ACCEPT_ATTR = ".txt,.md,.doc,.docx,.pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp";
+  28: 
+  29: function plannerSheetStyle(background = "#FFFDF9"): React.CSSProperties {
+  30:   return {
+  31:     ...orchardSoftCardStyle(background),
+  32:     border: `1px solid ${COLORS.border}`,
+  33:     padding: 18,
+  34:     boxShadow: "0 10px 22px rgba(47,47,47,0.05)",
+  35:     overflow: "hidden",
+  36:   };
+  37: }
+  38: 
+  39: function plannerTabStyle(background: string, color: string, border = COLORS.borderStrong): React.CSSProperties {
+  40:   return {
+  41:     display: "inline-block",
+  42:     padding: "7px 12px",
+  43:     borderRadius: "15px 16px 16px 12px",
+  44:     background,
+  45:     color,
+  46:     fontWeight: 900,
+  47:     fontSize: 11,
+  48:     letterSpacing: "0.06em",
+  49:     textTransform: "uppercase",
+  50:     border: `1px solid ${border}`,
+  51:     boxShadow: "0 4px 10px rgba(47,47,47,0.04)",
+  52:   };
+  53: }
+  54: 
+  55: function pinnedNoteStyle(): React.CSSProperties {
+  56:   return {
+  57:     ...plannerSheetStyle("#FFF8EE"),
+  58:     border: `1px solid ${COLORS.borderStrong}`,
+  59:     transform: "rotate(-1deg)",
+  60:     alignSelf: "start",
+  61:   };
+  62: }
+  63: 
+  64: function inferRoleForSource(item: { name: string; text?: string }, pack: "curriculum" | "exemplar"): SourceRole {
+  65:   const joined = `${item.name} ${item.text ?? ""}`.toLowerCase();
+  66: 
+  67:   if (pack === "curriculum") {
+  68:     if (/\b(tool|game|interactive|practice site|resource)\b/.test(joined)) return "teachingTool";
+  69:     return "curriculum";
+  70:   }
+  71: 
+  72:   if (/\b(starfall|pbs kids|abcya|boom cards|youtube|video|game|interactive)\b/.test(joined)) {
+  73:     return "teachingTool";
+  74:   }
+  75: 
+  76:   if (/\b(model|exemplar|template|lesson flow|teacher guide|routine|slide deck|presentation|framework)\b/.test(joined)) {
+  77:     return "exemplar";
+  78:   }
+  79: 
+  80:   if (/\b(decodable|phonics|cvc|story|text|passage|student practice|worksheet|resource)\b/.test(joined)) {
+  81:     return "mixed";
+  82:   }
+  83: 
+  84:   return pack === "exemplar" ? "mixed" : "curriculum";
+  85: }
+  86: 
+  87: function roleLabel(role?: SourceRole) {
+  88:   if (role === "curriculum") return "Curriculum";
+  89:   if (role === "teachingTool") return "Teaching Tool";
+  90:   if (role === "mixed") return "Mixed / Unsure";
+  91:   return "Exemplar";
+  92: }
+  93: 
+  94: function makeUrlItems(raw: string, label: "curriculum" | "exemplar"): UploadedTextFile[] {
+  95:   return String(raw || "")
+  96:     .split(/\r?\n|,/)
+  97:     .map((s) => s.trim())
+  98:     .filter(Boolean)
+  99:     .map((url, index) => {
+ 100:       const base = {
+ 101:         name: `${label}-link-${index + 1}: ${url}`,
+ 102:         kind: "url" as any,
+ 103:         text: `SOURCE URL: ${url}`,
+ 104:       };
+ 105:       return {
+ 106:         ...base,
+ 107:         sourceRole: inferRoleForSource(base, label),
+ 108:       };
+ 109:     });
+ 110: }
+ 111: 
+ 112: function normalizeText(value: string) {
+ 113:   return String(value || "").toLowerCase();
+ 114: }
+ 115: 
+ 116: function collectSignals(items: UploadedTextFile[]) {
+ 117:   const joined = items
+ 118:     .map((item) => `${item.name} ${item.text || ""}`)
+ 119:     .join(" | ")
+ 120:     .toLowerCase();
+ 121: 
+ 122:   return {
+ 123:     intervention: /\b(intervention|tier 2|tier 3|remediation|reteach|below level|support)\b/.test(joined),
+ 124:     enrichment: /\b(enrichment|extension|above level|challenge|advanced)\b/.test(joined),
+ 125:     phonics: /\b(phonics|cvc|decodable|letter sound|segment|blend)\b/.test(joined),
+ 126:     comprehension: /\b(comprehension|close read|main idea|retell|story|infer)\b/.test(joined),
+ 127:     slides: /\b(slides|deck|powerpoint|ppt|pptx)\b/.test(joined),
+ 128:     worksheet: /\b(worksheet|printable|handout|practice page)\b/.test(joined),
+ 129:   };
+ 130: }
+ 131: 
+ 132: function buildClarificationNotes(curriculumItems: UploadedTextFile[], exemplarItems: UploadedTextFile[], lessonNotes: string) {
+ 133:   const notes: string[] = [];
+ 134:   const curriculumSignals = collectSignals(curriculumItems);
+ 135:   const exemplarSignals = collectSignals(exemplarItems);
+ 136:   const teacherNotes = normalizeText(lessonNotes);
+ 137: 
+ 138:   if (curriculumItems.length > 0 && exemplarItems.length === 0) {
+ 139:     notes.push("You added curriculum sources but no exemplars. The lesson can still generate, but pacing and structure will rely more heavily on the default framework.");
+ 140:   }
+ 141: 
+ 142:   if (exemplarItems.length > 0 && curriculumItems.length === 0) {
+ 143:     notes.push("You added exemplars but no curriculum sources. The generator may mirror structure well, but the actual content may stay broad unless curriculum materials are added.");
+ 144:   }
+ 145: 
+ 146:   if (curriculumSignals.intervention && exemplarSignals.enrichment) {
+ 147:     notes.push("Your curriculum looks intervention-oriented while your exemplars look enrichment-oriented. That may pull the lesson in two different directions.");
+ 148:   }
+ 149: 
+ 150:   if (curriculumSignals.enrichment && exemplarSignals.intervention) {
+ 151:     notes.push("Your curriculum looks enrichment-oriented while your exemplars look intervention-oriented. That may create a mismatch in level and pacing.");
+ 152:   }
+ 153: 
+ 154:   if (curriculumSignals.phonics && exemplarSignals.comprehension) {
+ 155:     notes.push("Your curriculum appears phonics-focused while your exemplars appear comprehension-focused. Clarify which should drive the main lesson goal.");
+ 156:   }
+ 157: 
+ 158:   if (curriculumSignals.comprehension && exemplarSignals.phonics) {
+ 159:     notes.push("Your curriculum appears comprehension-focused while your exemplars appear phonics-focused. Clarify whether the generator should prioritize meaning work or skill/decoding work.");
+ 160:   }
+ 161: 
+ 162:   if (curriculumSignals.worksheet && exemplarSignals.slides) {
+ 163:     notes.push("Your curriculum looks worksheet/handout-heavy while your exemplars look slide/deck-heavy. That could affect how interactive the final lesson feels.");
+ 164:   }
+ 165: 
+ 166:   if (teacherNotes.includes("keep it simple") && exemplarSignals.enrichment) {
+ 167:     notes.push("Your lesson notes ask for a simpler lesson, but the exemplars may be pushing toward a more advanced structure.");
+ 168:   }
+ 169: 
+ 170:   if ((teacherNotes.includes("intervention") || teacherNotes.includes("reteach")) && exemplarSignals.enrichment) {
+ 171:     notes.push("Your notes suggest intervention or reteach support, but the exemplars may be modeling a more advanced or extension-style lesson.");
+ 172:   }
+ 173: 
+ 174:   if ((teacherNotes.includes("extension") || teacherNotes.includes("enrichment")) && curriculumSignals.intervention) {
+ 175:     notes.push("Your notes suggest enrichment, but the curriculum materials may be signaling intervention-level support.");
+ 176:   }
+ 177: 
+ 178:   return notes;
+ 179: }
+ 180: 
+ 181: function itemTypeLabel(item: UploadedTextFile) {
+ 182:   const kind = String(item.kind || "").toLowerCase();
+ 183:   const name = String(item.name || "").toLowerCase();
+ 184: 
+ 185:   if (kind === "url" || name.includes("http://") || name.includes("https://")) return "Link";
+ 186:   if (name.endsWith(".pdf") || kind.includes("pdf")) return "PDF";
+ 187:   if (name.endsWith(".ppt") || name.endsWith(".pptx") || kind.includes("presentation")) return "Slides";
+ 188:   if (name.endsWith(".docx") || name.endsWith(".doc")) return "Document";
+ 189:   if (name.endsWith(".txt") || name.endsWith(".md") || kind.startsWith("text/")) return "Text";
+ 190:   if (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".webp") || kind.startsWith("image/")) return "Image";
+ 191:   return "File";
+ 192: }
+ 193: 
+ 194: function hasFallbackOnlyText(item: UploadedTextFile) {
+ 195:   const text = String(item.text || "");
+ 196:   return /uploaded:/i.test(text) || /extraction is not available yet/i.test(text);
+ 197: }
+ 198: 
+ 199: function describeInfluence(items: UploadedTextFile[]) {
+ 200:   if (!items.length) return "none";
+ 201:   const realTextCount = items.filter((item) => item.text && !hasFallbackOnlyText(item)).length;
+ 202:   if (realTextCount >= 3) return "strong";
+ 203:   if (realTextCount >= 1 || items.length >= 2) return "moderate";
+ 204:   return "light";
+ 205: }
+ 206: 
+ 207: function buildInfluenceSummary(curriculumItems: UploadedTextFile[], exemplarItems: UploadedTextFile[]) {
+ 208:   const curriculumReal = curriculumItems.filter((item) => item.text && !hasFallbackOnlyText(item)).length;
+ 209:   const exemplarReal = exemplarItems.filter((item) => item.text && !hasFallbackOnlyText(item)).length;
+ 210:   const curriculumFallback = curriculumItems.filter((item) => !item.text || hasFallbackOnlyText(item)).length;
+ 211:   const exemplarFallback = exemplarItems.filter((item) => !item.text || hasFallbackOnlyText(item)).length;
+ 212:   const trueExemplarCount = exemplarItems.filter((item) => item.sourceRole === "exemplar").length;
+ 213: 
+ 214:   return {
+ 215:     curriculumInfluence: describeInfluence(curriculumItems),
+ 216:     exemplarInfluence: describeInfluence(exemplarItems),
+ 217:     curriculumReal,
+ 218:     exemplarReal,
+ 219:     curriculumFallback,
+ 220:     exemplarFallback,
+ 221:     trueExemplarCount,
+ 222:     overallMessage:
+ 223:       trueExemplarCount > 0
+ 224:         ? "A true exemplar is present, so the generator may use some structural inspiration from it."
+ 225:         : "No strong exemplar was detected, so the generator should lean more on curriculum and the default teacher-led framework.",
+ 226:   };
+ 227: }
+ 228: 
+ 229: function UploadItemCard({
+ 230:   item,
+ 231:   onRemove,
+ 232: }: {
+ 233:   item: UploadedTextFile;
+ 234:   onRemove: () => void;
+ 235: }) {
+ 236:   const fallbackOnly = hasFallbackOnlyText(item);
+ 237: 
+ 238:   return (
+ 239:     <div
+ 240:       style={{
+ 241:         border: `1px solid ${COLORS.border}`,
+ 242:         borderRadius: 18,
+ 243:         background: "#FFFDF9",
+ 244:         padding: 12,
+ 245:         boxShadow: "0 4px 10px rgba(47,47,47,0.03)",
+ 246:       }}
+ 247:     >
+ 248:       <div
+ 249:         style={{
+ 250:           display: "flex",
+ 251:           justifyContent: "space-between",
+ 252:           alignItems: "flex-start",
+ 253:           gap: 10,
+ 254:           marginBottom: 10,
+ 255:         }}
+ 256:       >
+ 257:         <div style={{ minWidth: 0, flex: 1 }}>
+ 258:           <div
+ 259:             style={{
+ 260:               fontWeight: 800,
+ 261:               color: COLORS.heading,
+ 262:               marginBottom: 4,
+ 263:               wordBreak: "break-word",
+ 264:             }}
+ 265:           >
+ 266:             {item.name}
+ 267:           </div>
+ 268: 
+ 269:           <div
+ 270:             style={{
+ 271:               display: "flex",
+ 272:               gap: 6,
+ 273:               flexWrap: "wrap",
+ 274:               fontSize: 11,
+ 275:               fontWeight: 800,
+ 276:             }}
+ 277:           >
+ 278:             <span
+ 279:               style={{
+ 280:                 display: "inline-block",
+ 281:                 padding: "5px 8px",
+ 282:                 borderRadius: 999,
+ 283:                 background: "#FFF7F2",
+ 284:                 border: `1px solid ${COLORS.border}`,
+ 285:                 color: COLORS.heading,
+ 286:               }}
+ 287:             >
+ 288:               {itemTypeLabel(item)}
+ 289:             </span>
+ 290:             <span
+ 291:               style={{
+ 292:                 display: "inline-block",
+ 293:                 padding: "5px 8px",
+ 294:                 borderRadius: 999,
+ 295:                 background: "#F3F8F1",
+ 296:                 border: `1px solid ${COLORS.successBorder}`,
+ 297:                 color: COLORS.heading,
+ 298:               }}
+ 299:             >
+ 300:               {roleLabel(item.sourceRole)}
+ 301:             </span>
+ 302:             <span
+ 303:               style={{
+ 304:                 display: "inline-block",
+ 305:                 padding: "5px 8px",
+ 306:                 borderRadius: 999,
+ 307:                 background: fallbackOnly ? "#FFF6E8" : "#FFFDF9",
+ 308:                 border: `1px solid ${fallbackOnly ? COLORS.warnBorder : COLORS.border}`,
+ 309:                 color: COLORS.muted,
+ 310:               }}
+ 311:             >
+ 312:               {fallbackOnly ? "Fallback note only" : "Text available"}
+ 313:             </span>
+ 314:           </div>
+ 315:         </div>
+ 316: 
+ 317:         <button
+ 318:           type="button"
+ 319:           onClick={onRemove}
+ 320:           style={{
+ 321:             border: `1px solid ${COLORS.border}`,
+ 322:             background: "#FFF6F4",
+ 323:             color: COLORS.heading,
+ 324:             borderRadius: 14,
+ 325:             padding: "7px 10px",
+ 326:             fontWeight: 700,
+ 327:             cursor: "pointer",
+ 328:             flexShrink: 0,
+ 329:           }}
+ 330:         >
+ 331:           Remove
+ 332:         </button>
+ 333:       </div>
+ 334: 
+ 335:       <div
+ 336:         style={{
+ 337:           fontSize: 12,
+ 338:           color: COLORS.muted,
+ 339:           lineHeight: 1.55,
+ 340:           background: "#FFFCF7",
+ 341:           border: `1px solid ${COLORS.border}`,
+ 342:           borderRadius: 14,
+ 343:           padding: 10,
+ 344:         }}
+ 345:       >
+ 346:         {String(item.text || "").slice(0, 180) || "No text extracted."}
+ 347:         {String(item.text || "").length > 180 ? "..." : ""}
+ 348:       </div>
+ 349:     </div>
+ 350:   );
+ 351: }
+ 352: 
+ 353: function UploadDropZone({
+ 354:   title,
+ 355:   subtitle,
+ 356:   files,
+ 357:   onFilesChosen,
+ 358:   onRemoveItem,
+ 359:   linksValue,
+ 360:   onLinksChange,
+ 361: }: {
+ 362:   title: string;
+ 363:   subtitle: string;
+ 364:   files: UploadedTextFile[];
+ 365:   onFilesChosen: (files: FileList | null) => Promise<void>;
+ 366:   onRemoveItem: (index: number) => void;
+ 367:   linksValue: string;
+ 368:   onLinksChange: (value: string) => void;
+ 369: }) {
+ 370:   const [dragActive, setDragActive] = useState(false);
+ 371: 
+ 372:   async function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+ 373:     e.preventDefault();
+ 374:     e.stopPropagation();
+ 375:     setDragActive(false);
+ 376:     await onFilesChosen(e.dataTransfer.files);
+ 377:   }
+ 378: 
+ 379:   return (
+ 380:     <div
+ 381:       onDragOver={(e) => {
+ 382:         e.preventDefault();
+ 383:         setDragActive(true);
+ 384:       }}
+ 385:       onDragEnter={(e) => {
+ 386:         e.preventDefault();
+ 387:         setDragActive(true);
+ 388:       }}
+ 389:       onDragLeave={(e) => {
+ 390:         e.preventDefault();
+ 391:         setDragActive(false);
+ 392:       }}
+ 393:       onDrop={handleDrop}
+ 394:       style={{
+ 395:         ...plannerSheetStyle(dragActive ? "#F7FBF5" : "#FFFDF9"),
+ 396:         border: `1px solid ${dragActive ? COLORS.successBorder : COLORS.border}`,
+ 397:         minHeight: "100%",
+ 398:       }}
+ 399:     >
+ 400:       <div
+ 401:         style={{
+ 402:           display: "flex",
+ 403:           justifyContent: "space-between",
+ 404:           alignItems: "flex-start",
+ 405:           gap: 12,
+ 406:           flexWrap: "wrap",
+ 407:           marginBottom: 14,
+ 408:         }}
+ 409:       >
+ 410:         <div style={{ minWidth: 0 }}>
+ 411:           <div
+ 412:             style={plannerTabStyle(
+ 413:               title.includes("Curriculum")
+ 414:                 ? "linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)"
+ 415:                 : "linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)",
+ 416:               title.includes("Curriculum") ? "#3F3120" : COLORS.cranberry,
+ 417:               title.includes("Curriculum") ? COLORS.warnBorder : COLORS.borderStrong
+ 418:             )}
+ 419:           >
+ 420:             {title}
+ 421:           </div>
+ 422:           <div
+ 423:             style={{
+ 424:               fontWeight: 900,
+ 425:               color: COLORS.heading,
+ 426:               fontSize: 22,
+ 427:               marginTop: 10,
+ 428:               marginBottom: 6,
+ 429:             }}
+ 430:           >
+ 431:             Add files + links to this stack
+ 432:           </div>
+ 433:           <div style={orchardHelpTextStyle()}>{subtitle}</div>
+ 434:         </div>
+ 435: 
+ 436:         <div
+ 437:           style={{
+ 438:             display: "inline-block",
+ 439:             padding: "6px 10px",
+ 440:             borderRadius: 999,
+ 441:             border: `1px solid ${COLORS.border}`,
+ 442:             background: "#FFF7F2",
+ 443:             color: COLORS.heading,
+ 444:             fontWeight: 800,
+ 445:             fontSize: 12,
+ 446:           }}
+ 447:         >
+ 448:           {files.length} {files.length === 1 ? "item" : "items"}
+ 449:         </div>
+ 450:       </div>
+ 451: 
+ 452:       <div
+ 453:         style={{
+ 454:           position: "relative",
+ 455:           border: `2px dashed ${dragActive ? COLORS.accent : COLORS.borderStrong}`,
+ 456:           borderRadius: 20,
+ 457:           padding: 18,
+ 458:           background: dragActive ? "#F3F8F1" : "linear-gradient(180deg, #FFFDFC 0%, #FBF6EF 100%)",
+ 459:           marginBottom: 14,
+ 460:         }}
+ 461:       >
+ 462:         <div
+ 463:           style={{
+ 464:             position: "absolute",
+ 465:             top: 10,
+ 466:             right: 12,
+ 467:             width: 16,
+ 468:             height: 16,
+ 469:             borderRadius: 999,
+ 470:             background: "#D9C7B5",
+ 471:             boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+ 472:           }}
+ 473:         />
+ 474: 
+ 475:         <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, marginBottom: 6 }}>
+ 476:           Drop a stack here or browse manually
+ 477:         </div>
+ 478:         <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
+ 479:           Supported now: DOC, DOCX, PDF, PPT, PPTX, JPG, JPEG, PNG, WEBP, TXT, and MD.
+ 480:         </div>
+ 481: 
+ 482:         <input
+ 483:           type="file"
+ 484:           multiple
+ 485:           accept={ACCEPT_ATTR}
+ 486:           onChange={(e) => onFilesChosen(e.target.files)}
+ 487:           style={{ marginBottom: 10 }}
+ 488:         />
+ 489: 
+ 490:         <div
+ 491:           style={{
+ 492:             fontSize: 12,
+ 493:             color: COLORS.muted,
+ 494:             lineHeight: 1.55,
+ 495:           }}
+ 496:         >
+ 497:           Dragging files here should feel like dropping papers into a resource tray, not a generic upload panel.
+ 498:         </div>
+ 499:       </div>
+ 500: 
+ 501:       <label style={{ display: "block", marginBottom: 14 }}>
+ 502:         <div style={orchardLabelTitleStyle()}>Website links / online sources (optional)</div>
+ 503:         <textarea
+ 504:           value={linksValue}
+ 505:           onChange={(e) => onLinksChange(e.target.value)}
+ 506:           style={orchardTextareaStyle(88)}
+ 507:           placeholder="Paste one or more links here, separated by commas or new lines"
+ 508:         />
+ 509:       </label>
+ 510: 
+ 511:       {files.length > 0 ? (
+ 512:         <div
+ 513:           style={{
+ 514:             display: "grid",
+ 515:             gap: 10,
+ 516:           }}
+ 517:         >
+ 518:           {files.map((item, index) => (
+ 519:             <UploadItemCard
+ 520:               key={`${item.name}-${index}`}
+ 521:               item={item}
+ 522:               onRemove={() => onRemoveItem(index)}
+ 523:             />
+ 524:           ))}
+ 525:         </div>
+ 526:       ) : (
+ 527:         <div
+ 528:           style={{
+ 529:             ...orchardSoftCardStyle("#FFFDF9"),
+ 530:             border: `1px solid ${COLORS.border}`,
+ 531:             padding: 14,
+ 532:             color: COLORS.muted,
+ 533:             fontSize: 13,
+ 534:           }}
+ 535:         >
+ 536:           No files or links added yet.
+ 537:         </div>
+ 538:       )}
+ 539:     </div>
+ 540:   );
+ 541: }
+ 542: 
+ 543: export default function MaterialsPage() {
+ 544:   const navigate = useNavigate();
+ 545:   const input = useLessonStore((s) => s.input);
+ 546:   const status = useLessonStore((s) => s.status);
+ 547:   const errorMessage = useLessonStore((s) => s.errorMessage);
+ 548:   const generate = useLessonStore((s) => s.generate);
+ 549: 
+ 550:   const [lessonNotes, setLessonNotes] = useState("");
+ 551:   const [materialsPack, setMaterialsPack] = useState<UploadedTextFile[]>([]);
+ 552:   const [exemplarPack, setExemplarPack] = useState<UploadedTextFile[]>([]);
+ 553:   const [curriculumLinks, setCurriculumLinks] = useState("");
+ 554:   const [exemplarLinks, setExemplarLinks] = useState("");
+ 555:   const [msg, setMsg] = useState("");
+ 556:   const [busy, setBusy] = useState(false);
+ 557: 
+ 558:   async function onPickMaterials(files: FileList | null) {
+ 559:     const uploaded = await filesToUploaded(files);
+ 560:     setMaterialsPack((current) => [
+ 561:       ...current,
+ 562:       ...uploaded.map((item) => ({ ...item, sourceRole: inferRoleForSource(item, "curriculum") })),
+ 563:     ]);
+ 564:   }
+ 565: 
+ 566:   async function onPickExemplar(files: FileList | null) {
+ 567:     const uploaded = await filesToUploaded(files);
+ 568:     setExemplarPack((current) => [
+ 569:       ...current,
+ 570:       ...uploaded.map((item) => ({ ...item, sourceRole: inferRoleForSource(item, "exemplar") })),
+ 571:     ]);
+ 572:   }
+ 573: 
+ 574:   function removeCurriculumItem(index: number) {
+ 575:     const fileCount = materialsPack.length;
+ 576:     if (index < fileCount) {
+ 577:       setMaterialsPack((current) => current.filter((_, i) => i !== index));
+ 578:       return;
+ 579:     }
+ 580: 
+ 581:     const linkIndex = index - fileCount;
+ 582:     const links = String(curriculumLinks || "")
+ 583:       .split(/\r?\n|,/)
+ 584:       .map((s) => s.trim())
+ 585:       .filter(Boolean)
+ 586:       .filter((_, i) => i !== linkIndex);
+ 587: 
+ 588:     setCurriculumLinks(links.join("\n"));
+ 589:   }
+ 590: 
+ 591:   function removeExemplarItem(index: number) {
+ 592:     const fileCount = exemplarPack.length;
+ 593:     if (index < fileCount) {
+ 594:       setExemplarPack((current) => current.filter((_, i) => i !== index));
+ 595:       return;
+ 596:     }
+ 597: 
+ 598:     const links = String(exemplarLinks || "")
+ 599:       .split(/\r?\n|,/)
+ 600:       .map((s) => s.trim())
+ 601:       .filter(Boolean)
+ 602:       .filter((_, i) => i !== index - fileCount);
+ 603: 
+ 604:     setExemplarLinks(links.join("\n"));
+ 605:   }
+ 606: 
+ 607:   const finalCurriculumItems = useMemo(
+ 608:     () => [...materialsPack, ...makeUrlItems(curriculumLinks, "curriculum")],
+ 609:     [materialsPack, curriculumLinks]
+ 610:   );
+ 611: 
+ 612:   const finalExemplarItems = useMemo(
+ 613:     () => [...exemplarPack, ...makeUrlItems(exemplarLinks, "exemplar")],
+ 614:     [exemplarPack, exemplarLinks]
+ 615:   );
+ 616: 
+ 617:   const clarificationNotes = useMemo(
+ 618:     () => buildClarificationNotes(finalCurriculumItems, finalExemplarItems, lessonNotes),
+ 619:     [finalCurriculumItems, finalExemplarItems, lessonNotes]
+ 620:   );
+ 621: 
+ 622:   const influenceSummary = useMemo(
+ 623:     () => buildInfluenceSummary(finalCurriculumItems, finalExemplarItems),
+ 624:     [finalCurriculumItems, finalExemplarItems]
+ 625:   );
+ 626: 
+ 627:   async function onBuildAndGenerate() {
+ 628:     setMsg("");
+ 629:     setBusy(true);
+ 630:     try {
+ 631:       const blueprint = buildBlueprint({
+ 632:         plan: {
+ 633:           lessonTitle: input.lessonTitle ?? "",
+ 634:           objective: input.objective ?? "",
+ 635:           notes: lessonNotes ?? "",
+ 636:           grade: input.grade ?? "",
+ 637:           subject: input.subject ?? "",
+ 638:           textOrTopic: input.textOrTopic ?? "",
+ 639:         },
+ 640:         curriculumFiles: finalCurriculumItems,
+ 641:         exemplarFiles: finalExemplarItems,
+ 642:       });
+ 643: 
+ 644:       localStorage.setItem("lessonBlueprintV1", JSON.stringify(blueprint, null, 2));
+ 645:       await generate(blueprint);
+ 646:       navigate("/results");
+ 647:     } catch (e: any) {
+ 648:       setMsg("Build/Generate failed: " + (e?.message ?? String(e)));
+ 649:     } finally {
+ 650:       setBusy(false);
+ 651:     }
+ 652:   }
+ 653: 
+ 654:   const missingBasics =
+ 655:     !(input.lessonTitle ?? "").trim() ||
+ 656:     !(input.objective ?? "").trim() ||
+ 657:     !(input.textOrTopic ?? "").trim();
+ 658: 
+ 659:   return (
+ 660:     <div style={orchardShellStyle()}>
+ 661:       <div style={orchardWrapStyle()}>
+ 662:         <WizardProgress current="materials" />
+ 663: 
+ 664:         <div style={orchardHeroCardStyle()}>
+ 665:           <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.92 }}>
+ 666:             <OrchardBlossomCorner size={116} flip />
+ 667:           </div>
+ 668:           <div style={{ position: "absolute", bottom: 8, left: 12, pointerEvents: "none", opacity: 0.8 }}>
+ 669:             <OrchardGinghamCorner size={70} flip />
+ 670:           </div>
+ 671:           <div style={{ position: "absolute", bottom: 18, right: 18, pointerEvents: "none", opacity: 0.84 }}>
+ 672:             <OrchardMushroomCluster size={88} />
+ 673:           </div>
+ 674: 
+ 675:           <div
+ 676:             style={{
+ 677:               display: "grid",
+ 678:               gridTemplateColumns: "minmax(0, 1.55fr) minmax(270px, 0.88fr)",
+ 679:               gap: 18,
+ 680:               alignItems: "start",
+ 681:             }}
+ 682:           >
+ 683:             <div style={plannerSheetStyle("#FFFDF9")}>
+ 684:               <div style={orchardRibbonHeaderStyle()}>Materials + Exemplars</div>
+ 685:               <div style={orchardStitchDividerStyle()} />
+ 686:               <h1 style={orchardHeroTitleStyle()}>Lay out the lesson sources on the desk</h1>
+ 687:               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, marginBottom: 18 }}>
+ 688:                 Upload curriculum files, exemplar files, and links. These materials can change the lesson structure,
+ 689:                 wording, pacing cues, and output style before the package is generated.
+ 690:               </div>
+ 691: 
+ 692:               <div
+ 693:                 style={{
+ 694:                   display: "grid",
+ 695:                   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+ 696:                   gap: 12,
+ 697:                 }}
+ 698:               >
+ 699:                 <div style={plannerSheetStyle("#FFF9F2")}>
+ 700:                   <div style={plannerTabStyle("linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)", "#3F3120", COLORS.warnBorder)}>
+ 701:                     Content pull
+ 702:                   </div>
+ 703:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 704:                     Curriculum drives what gets taught
+ 705:                   </div>
+ 706:                   <div style={orchardHelpTextStyle()}>
+ 707:                     Use this stack for texts, teacher resources, slides, printables, and source content.
+ 708:                   </div>
+ 709:                 </div>
+ 710: 
+ 711:                 <div style={plannerSheetStyle("#FFFDF9")}>
+ 712:                   <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+ 713:                     Structure pull
+ 714:                   </div>
+ 715:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 716:                     Exemplars guide pacing and flow
+ 717:                   </div>
+ 718:                   <div style={orchardHelpTextStyle()}>
+ 719:                     Model decks, routines, and lesson patterns should influence the shape of the package.
+ 720:                   </div>
+ 721:                 </div>
+ 722: 
+ 723:                 <div style={plannerSheetStyle("#FFF7F4")}>
+ 724:                   <div style={plannerTabStyle("linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)", COLORS.cranberry, COLORS.borderStrong)}>
+ 725:                     Clarify first
+ 726:                   </div>
+ 727:                   <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 18, margin: "10px 0 6px" }}>
+ 728:                     Surface conflicts instead of guessing
+ 729:                   </div>
+ 730:                   <div style={orchardHelpTextStyle()}>
+ 731:                     If sources disagree on level, pacing, or purpose, the page should show the tension before generate.
+ 732:                   </div>
+ 733:                 </div>
+ 734:               </div>
+ 735:             </div>
+ 736: 
+ 737:             <div style={pinnedNoteStyle()}>
+ 738:               <div
+ 739:                 style={{
+ 740:                   width: 16,
+ 741:                   height: 16,
+ 742:                   borderRadius: 999,
+ 743:                   background: "#D9C7B5",
+ 744:                   boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+ 745:                   marginBottom: 10,
+ 746:                 }}
+ 747:               />
+ 748:               <div
+ 749:                 style={{
+ 750:                   fontSize: 11,
+ 751:                   letterSpacing: "0.08em",
+ 752:                   textTransform: "uppercase",
+ 753:                   fontWeight: 900,
+ 754:                   color: COLORS.cranberry,
+ 755:                   marginBottom: 6,
+ 756:                 }}
+ 757:               >
+ 758:                 Current lesson
+ 759:               </div>
+ 760:               <div
+ 761:                 style={{
+ 762:                   color: COLORS.heading,
+ 763:                   fontWeight: 900,
+ 764:                   fontSize: 22,
+ 765:                   marginBottom: 10,
+ 766:                 }}
+ 767:               >
+ 768:                 Snapshot before build
+ 769:               </div>
+ 770: 
+ 771:               <div style={{ fontSize: 14, lineHeight: 1.8, color: COLORS.text, marginBottom: 12 }}>
+ 772:                 <div><b>Title:</b> {input.lessonTitle || "Not set yet"}</div>
+ 773:                 <div><b>Objective:</b> {input.objective || "Not set yet"}</div>
+ 774:                 <div><b>Grade:</b> {input.grade || "Not set yet"}</div>
+ 775:                 <div><b>Subject:</b> {input.subject || "Not set yet"}</div>
+ 776:               </div>
+ 777: 
+ 778:               <div
+ 779:                 style={{
+ 780:                   display: "inline-block",
+ 781:                   padding: "6px 10px",
+ 782:                   borderRadius: 999,
+ 783:                   border: `1px solid ${missingBasics ? COLORS.warnBorder : COLORS.successBorder}`,
+ 784:                   background: missingBasics ? "#FFF6E8" : "#F3F8F1",
+ 785:                   color: COLORS.heading,
+ 786:                   fontWeight: 800,
+ 787:                   fontSize: 12,
+ 788:                 }}
+ 789:               >
+ 790:                 {missingBasics ? "Inputs still need core fields" : "Inputs look ready to build"}
+ 791:               </div>
+ 792:             </div>
+ 793:           </div>
+ 794:         </div>
+ 795: 
+ 796:         {missingBasics && (
+ 797:           <div
+ 798:             style={{
+ 799:               ...pinnedNoteStyle(),
+ 800:               maxWidth: 560,
+ 801:               marginLeft: "auto",
+ 802:               marginRight: 12,
+ 803:               background: "#FFF8EE",
+ 804:               border: `1px solid ${COLORS.warnBorder}`,
+ 805:             }}
+ 806:           >
+ 807:             <div
+ 808:               style={{
+ 809:                 fontSize: 11,
+ 810:                 letterSpacing: "0.08em",
+ 811:                 textTransform: "uppercase",
+ 812:                 fontWeight: 900,
+ 813:                 color: COLORS.cranberry,
+ 814:                 marginBottom: 6,
+ 815:               }}
+ 816:             >
+ 817:               Heads up
+ 818:             </div>
+ 819:             <div style={{ fontWeight: 900, color: COLORS.heading, fontSize: 22, marginBottom: 8 }}>
+ 820:               Inputs is still missing required fields
+ 821:             </div>
+ 822:             <div style={orchardHelpTextStyle()}>
+ 823:               Lesson Title, Objective, and Text / Topic are still needed for the strongest build.
+ 824:             </div>
+ 825:             <div style={{ marginTop: 10 }}>
+ 826:               <Link to="/" style={orchardLinkStyle()}>
+ 827:                 Go back to Inputs
+ 828:               </Link>
+ 829:             </div>
+ 830:           </div>
+ 831:         )}
+ 832: 
+ 833:         <div style={orchardCardStyle("#FFF8F1")}>
+ 834:           <div style={{ position: "absolute", top: 12, right: 14, pointerEvents: "none", opacity: 0.8 }}>
+ 835:             <OrchardGinghamCorner size={70} />
+ 836:           </div>
+ 837:           <div style={{ position: "absolute", bottom: 12, left: 14, pointerEvents: "none", opacity: 0.9 }}>
+ 838:             <OrchardMushroomCluster size={92} />
+ 839:           </div>
+ 840: 
+ 841:           <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Sorting Desk</div>
+ 842:           <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+ 843:             Arrange the two main stacks like planner materials on a desk: curriculum for content, exemplars for structure and pacing.
+ 844:           </div>
+ 845: 
+ 846:           <div
+ 847:             style={{
+ 848:               display: "grid",
+ 849:               gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+ 850:               gap: 16,
+ 851:             }}
+ 852:           >
+ 853:             <UploadDropZone
+ 854:               title="Curriculum Stack"
+ 855:               subtitle="Use this for lesson materials, teacher resources, texts, decodables, slides, PDFs, images, or website links."
+ 856:               files={finalCurriculumItems}
+ 857:               onFilesChosen={onPickMaterials}
+ 858:               onRemoveItem={removeCurriculumItem}
+ 859:               linksValue={curriculumLinks}
+ 860:               onLinksChange={setCurriculumLinks}
+ 861:             />
+ 862: 
+ 863:             <UploadDropZone
+ 864:               title="Exemplar Stack"
+ 865:               subtitle="Use this for model lessons, example decks, teaching flow references, pacing cues, and structure examples."
+ 866:               files={finalExemplarItems}
+ 867:               onFilesChosen={onPickExemplar}
+ 868:               onRemoveItem={removeExemplarItem}
+ 869:               linksValue={exemplarLinks}
+ 870:               onLinksChange={setExemplarLinks}
+ 871:             />
+ 872:           </div>
+ 873:         </div>
+ 874: 
+ 875:         <div style={orchardCardStyle("#FFFDF9")}>
+ 876:           <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Generator Readout</div>
+ 877:           <div style={{ ...orchardHelpTextStyle(), marginBottom: 16 }}>
+ 878:             This is the pre-build gut check: what the sources seem to influence, whether anything conflicts, and any notes you want the blueprint to keep in view.
+ 879:           </div>
+ 880: 
+ 881:           <div
+ 882:             style={{
+ 883:               display: "grid",
+ 884:               gridTemplateColumns: "minmax(0, 1.35fr) minmax(260px, 0.82fr)",
+ 885:               gap: 16,
+ 886:               alignItems: "start",
+ 887:             }}
+ 888:           >
+ 889:             <div
+ 890:               style={{
+ 891:                 display: "grid",
+ 892:                 gap: 16,
+ 893:               }}
+ 894:             >
+ 895:               <div style={plannerSheetStyle("#F8FBF7")}>
+ 896:                 <div style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
+ 897:                   Source Influence Preview
+ 898:                 </div>
+ 899: 
+ 900:                 <div
+ 901:                   style={{
+ 902:                     display: "grid",
+ 903:                     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+ 904:                     gap: 12,
+ 905:                     marginTop: 14,
+ 906:                     marginBottom: 12,
+ 907:                   }}
+ 908:                 >
+ 909:                   <div style={plannerSheetStyle("#FFFDF9")}>
+ 910:                     <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Content pull</div>
+ 911:                     <div style={{ fontSize: 26, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
+ 912:                       {influenceSummary.curriculumInfluence}
+ 913:                     </div>
+ 914:                     <div style={orchardHelpTextStyle()}>
+ 915:                       {influenceSummary.curriculumReal} text-rich item(s), {influenceSummary.curriculumFallback} fallback-only item(s)
+ 916:                     </div>
+ 917:                   </div>
+ 918: 
+ 919:                   <div style={plannerSheetStyle("#FFFDF9")}>
+ 920:                     <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Structure pull</div>
+ 921:                     <div style={{ fontSize: 26, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
+ 922:                       {influenceSummary.exemplarInfluence}
+ 923:                     </div>
+ 924:                     <div style={orchardHelpTextStyle()}>
+ 925:                       {influenceSummary.exemplarReal} text-rich item(s), {influenceSummary.exemplarFallback} fallback-only item(s)
+ 926:                     </div>
+ 927:                   </div>
+ 928:                 </div>
+ 929: 
+ 930:                 <div style={orchardHelpTextStyle()}>{influenceSummary.overallMessage}</div>
+ 931:               </div>
+ 932: 
+ 933:               <div
+ 934:                 style={{
+ 935:                   ...plannerSheetStyle(clarificationNotes.length ? "#FFF8EE" : "#F8FBF7"),
+ 936:                   border: `1px solid ${clarificationNotes.length ? COLORS.warnBorder : COLORS.border}`,
+ 937:                 }}
+ 938:               >
+ 939:                 <div
+ 940:                   style={plannerTabStyle(
+ 941:                     clarificationNotes.length
+ 942:                       ? "linear-gradient(180deg, #F2C078 0%, #D9A85F 100%)"
+ 943:                       : "linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)",
+ 944:                     clarificationNotes.length ? "#3F3120" : COLORS.heading,
+ 945:                     clarificationNotes.length ? COLORS.warnBorder : COLORS.successBorder
+ 946:                   )}
+ 947:                 >
+ 948:                   Clarification Check
+ 949:                 </div>
+ 950: 
+ 951:                 {clarificationNotes.length ? (
+ 952:                   <>
+ 953:                     <div style={{ ...orchardHelpTextStyle(), marginTop: 12, marginBottom: 10, color: COLORS.heading }}>
+ 954:                       The generator can still continue, but these signals may be pulling the lesson in different directions:
+ 955:                     </div>
+ 956:                     <ul style={{ margin: "0 0 12px 18px", padding: 0, lineHeight: 1.7, color: COLORS.text }}>
+ 957:                       {clarificationNotes.map((note, index) => (
+ 958:                         <li key={index}>{note}</li>
+ 959:                       ))}
+ 960:                     </ul>
+ 961:                     <div style={{ ...orchardHelpTextStyle(), fontSize: 13 }}>
+ 962:                       Add a note on the right if you want to explicitly tell the generator which source should lead.
+ 963:                     </div>
+ 964:                   </>
+ 965:                 ) : (
+ 966:                   <div style={{ ...orchardHelpTextStyle(), marginTop: 12 }}>
+ 967:                     No obvious conflicts detected yet. Curriculum and exemplar signals look reasonably aligned based on the current filenames, extracted text, and notes.
+ 968:                   </div>
+ 969:                 )}
+ 970:               </div>
+ 971:             </div>
+ 972: 
+ 973:             <div style={pinnedNoteStyle()}>
+ 974:               <div
+ 975:                 style={{
+ 976:                   width: 16,
+ 977:                   height: 16,
+ 978:                   borderRadius: 999,
+ 979:                   background: "#D9C7B5",
+ 980:                   boxShadow: "inset 0 2px 3px rgba(47,47,47,0.15)",
+ 981:                   marginBottom: 10,
+ 982:                 }}
+ 983:               />
+ 984:               <div style={plannerTabStyle("linear-gradient(180deg, #F7D6D0 0%, #EFC5BE 100%)", COLORS.cranberry, COLORS.borderStrong)}>
+ 985:                 Lesson Notes
+ 986:               </div>
+ 987:               <div style={{ ...orchardHelpTextStyle(), marginTop: 12, marginBottom: 12 }}>
+ 988:                 Add pacing notes, routines, constraints, or anything the blueprint should remember while generating.
+ 989:               </div>
+ 990: 
+ 991:               <label style={{ display: "block" }}>
+ 992:                 <div style={orchardLabelTitleStyle()}>Notes</div>
+ 993:                 <textarea
+ 994:                   value={lessonNotes}
+ 995:                   onChange={(e) => setLessonNotes(e.target.value)}
+ 996:                   style={orchardTextareaStyle(220)}
+ 997:                   placeholder="Pacing, special routines, constraints, or anything the blueprint should remember"
+ 998:                 />
+ 999:               </label>
+1000:             </div>
+1001:           </div>
+1002:         </div>
+1003: 
+1004:         {(msg || errorMessage) && (
+1005:           <div
+1006:             style={{
+1007:               ...orchardCardStyle("#FFF2F1"),
+1008:               border: "1px solid #E6B8B4",
+1009:             }}
+1010:           >
+1011:             <b>{msg ? "Message:" : "Error:"}</b> {String(msg || errorMessage)}
+1012:           </div>
+1013:         )}
+1014: 
+1015:         <div style={orchardCardStyle("#FFF9F2")}>
+1016:           <div
+1017:             style={{
+1018:               display: "grid",
+1019:               gridTemplateColumns: "minmax(0, 1.25fr) auto",
+1020:               gap: 16,
+1021:               alignItems: "center",
+1022:             }}
+1023:           >
+1024:             <div>
+1025:               <div style={orchardSectionTitleStyle()}>Build the package</div>
+1026:               <div style={orchardHelpTextStyle()}>
+1027:                 Status: <b>{status}</b> | Curriculum items: <b>{finalCurriculumItems.length}</b> | Exemplar items: <b>{finalExemplarItems.length}</b>
+1028:               </div>
+1029:             </div>
+1030: 
+1031:             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+1032:               <button
+1033:                 onClick={onBuildAndGenerate}
+1034:                 disabled={busy || status === "generating" || missingBasics}
+1035:                 style={orchardPrimaryButtonStyle(busy || status === "generating" || missingBasics)}
+1036:               >
+1037:                 {busy || status === "generating"
+1038:                   ? "Building + Generating..."
+1039:                   : "Build Blueprint + Generate Lesson + Open Results ->"}
+1040:               </button>
+1041: 
+1042:               <Link to="/" style={orchardLinkStyle()}>
+1043:                 Back to Inputs
+1044:               </Link>
+1045:             </div>
+1046:           </div>
+1047:         </div>
+1048:       </div>
+1049:     </div>
+1050:   );
+1051: }

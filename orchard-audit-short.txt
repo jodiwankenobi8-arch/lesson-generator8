@@ -1,0 +1,399 @@
+
+==============================================================================
+REPO / BRANCH
+==============================================================================
+PWD: C:\dev\lesson-generator8
+BRANCH: feat/orchard-inputs-materials-preview-polish
+
+==============================================================================
+TARGET FILES PRESENT
+==============================================================================
+OK  src/pages/orchardUi.ts  [8116 bytes]
+OK  src/pages/InputsPage.tsx  [21993 bytes]
+OK  src/pages/MaterialsPage.tsx  [38118 bytes]
+OK  src/pages/ResultsHubPage.tsx  [32707 bytes]
+OK  src/pages/WizardProgress.tsx  [10151 bytes]
+OK  src/deck/TeachModeShell.tsx  [5929 bytes]
+OK  src/styles/theme.css  [2957 bytes]
+
+==============================================================================
+KEY DRIFT / RISK SIGNALS
+==============================================================================
+
+-- src/pages/orchardUi.ts
+L111 | pinnedNoteStyle | export function orchardPinnedNoteStyle(
+L111 | orchardPinnedNoteStyle | export function orchardPinnedNoteStyle(
+L124 | rotate\( | transform: `rotate(${rotateDeg}deg)`,
+
+-- src/pages/InputsPage.tsx
+L50 | pinnedNoteStyle | function pinnedNoteStyle(): React.CSSProperties {
+L157 | pinnedNoteStyle | <div style={pinnedNoteStyle()}>
+L449 | pinnedNoteStyle | <div style={pinnedNoteStyle()}>
+L505 | pinnedNoteStyle | ...pinnedNoteStyle(),
+L54 | transform:\s*"rotate | transform: "rotate(-1.2deg)",
+L54 | rotate\( | transform: "rotate(-1.2deg)",
+L21 | WizardProgress | import { WizardProgress } from "./WizardProgress";
+L81 | WizardProgress | <WizardProgress current="inputs" />
+L22 | OrchardMushroomCluster | import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+L91 | OrchardMushroomCluster | <OrchardMushroomCluster size={84} flip />
+L380 | OrchardMushroomCluster | <OrchardMushroomCluster size={90} />
+L22 | OrchardGinghamCorner | import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+L88 | OrchardGinghamCorner | <OrchardGinghamCorner size={72} />
+L225 | OrchardGinghamCorner | <OrchardGinghamCorner size={66} flip />
+L22 | OrchardBlossomCorner | import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+L85 | OrchardBlossomCorner | <OrchardBlossomCorner size={118} />
+L97 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.55fr) minmax(270px, 0.88fr)",
+L115 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+L236 | gridTemplateColumns | gridTemplateColumns: "minmax(250px, 0.9fr) minmax(0, 1.3fr)",
+L252 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+L320 | gridTemplateColumns | gridTemplateColumns: "1fr",
+L391 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.45fr) minmax(250px, 0.8fr)",
+L407 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+L538 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.25fr) auto",
+L228 | Planner Pages | <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Planner Pages</div>
+L544 | Sorting Desk | <div style={orchardSectionTitleStyle()}>Next stop: the sorting desk</div>
+
+-- src/pages/MaterialsPage.tsx
+L55 | pinnedNoteStyle | function pinnedNoteStyle(): React.CSSProperties {
+L737 | pinnedNoteStyle | <div style={pinnedNoteStyle()}>
+L799 | pinnedNoteStyle | ...pinnedNoteStyle(),
+L973 | pinnedNoteStyle | <div style={pinnedNoteStyle()}>
+L59 | transform:\s*"rotate | transform: "rotate(-1deg)",
+L59 | rotate\( | transform: "rotate(-1deg)",
+L24 | WizardProgress | import { WizardProgress } from "./WizardProgress";
+L662 | WizardProgress | <WizardProgress current="materials" />
+L25 | OrchardMushroomCluster | import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+L672 | OrchardMushroomCluster | <OrchardMushroomCluster size={88} />
+L838 | OrchardMushroomCluster | <OrchardMushroomCluster size={92} />
+L25 | OrchardGinghamCorner | import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+L669 | OrchardGinghamCorner | <OrchardGinghamCorner size={70} flip />
+L835 | OrchardGinghamCorner | <OrchardGinghamCorner size={70} />
+L25 | OrchardBlossomCorner | import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+L666 | OrchardBlossomCorner | <OrchardBlossomCorner size={116} flip />
+L678 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.55fr) minmax(270px, 0.88fr)",
+L695 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+L849 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+L884 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.35fr) minmax(260px, 0.82fr)",
+L903 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+L1019 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.25fr) auto",
+L841 | Sorting Desk | <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Sorting Desk</div>
+L876 | Generator Readout | <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Generator Readout</div>
+
+-- src/pages/ResultsHubPage.tsx
+L30 | WizardProgress | import { WizardProgress } from "./WizardProgress";
+L381 | WizardProgress | <WizardProgress current="results" />
+L443 | WizardProgress | <WizardProgress current="results" />
+L77 | details open= | <details open={!!defaultOpen} style={orchardCardStyle()}>
+L78 | summary style= | <summary style={{ cursor: "pointer", listStyle: "none" }}>
+L256 | summary style= | <summary style={{ cursor: "pointer", color: COLORS.accentDark, fontWeight: 700 }}>
+L153 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+L219 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+L449 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.6fr) minmax(260px, 0.9fr)",
+L488 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1fr) auto",
+L549 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.2fr) minmax(280px, 0.8fr)",
+L672 | gridTemplateColumns | gridTemplateColumns:
+L722 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+L790 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+L609 | Package Overview | <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Package Overview</div>
+L632 | Slide Preview Deck | title="Slide Preview Deck"
+
+-- src/pages/WizardProgress.tsx
+L140 | transform:\s*"rotate | transform: "rotate(-1deg)",
+L140 | rotate\( | transform: "rotate(-1deg)",
+L153 | Now open | Now open
+L114 | Lesson Storyboard | <div style={orchardRibbonHeaderStyle()}>Lesson Storyboard</div>
+L89 | WizardProgress | export function WizardProgress({
+L107 | gridTemplateColumns | gridTemplateColumns: "minmax(0, 1.6fr) minmax(250px, 0.84fr)",
+L188 | gridTemplateColumns | gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+L126 | Planner Pages | Move from planner pages to a teach-ready lesson package
+
+-- src/deck/TeachModeShell.tsx
+L89 | --ao- | style={{ backgroundColor: 'var(--ao-navy)' }}
+L90 | --ao- | onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-text)'}
+L91 | --ao- | onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-navy)'}
+L99 | --ao- | style={{ backgroundColor: 'var(--ao-sky)' }}
+L100 | --ao- | onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-navy)'}
+L101 | --ao- | onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-sky)'}
+L116 | --ao- | style={{ backgroundColor: 'var(--ao-tan)' }}
+L117 | --ao- | onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-text)'}
+L118 | --ao- | onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-tan)'}
+L58 | bg-black | <div className="teach-mode-shell h-screen bg-black">
+L134 | bg-black | <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[60] pointer-events-none">
+L145 | bg-black | <div className="keyboard-help fixed bottom-4 left-4 bg-black/70 text-white p-4 rounded-lg text-sm opacity-0 hover:opacity-100 transition-opacity z-50">
+L59 | Teach Mode | {/* Teach mode controls overlay */}
+L63 | Teach Mode | Teach Mode
+L78 | Teach Mode | Exit Teach Mode
+
+-- src/styles/theme.css
+
+==============================================================================
+TOP OF EACH FILE (FIRST 35 LINES)
+==============================================================================
+
+-- src/pages/orchardUi.ts
+import React from "react";
+
+export const ORCHARD_COLORS = {
+  page: "#FFF6E9",
+  panel: "#FFFFFF",
+  panelAlt: "#FFFDF9",
+  panelWarm: "#FFF9F2",
+  panelBlush: "#FFF6F4",
+  text: "#2F2F2F",
+  heading: "#3F5A40",
+  muted: "#6F6A63",
+  border: "#E7E2DA",
+  borderSoft: "#EEE7DE",
+  borderStrong: "#D8CEC0",
+  accent: "#6E8B6B",
+  accentDark: "#3F5A40",
+  accentSoft: "#EEF5EA",
+  blush: "#F7D6D0",
+  honey: "#F2C078",
+  cranberry: "#B8545A",
+  stitch: "#D8CFC4",
+  shadow: "rgba(63,90,64,0.10)",
+  shadowSoft: "rgba(47,47,47,0.05)",
+  warnBorder: "#D7B27A",
+  success: "#EEF5EA",
+  successBorder: "#B8CDAF",
+};
+
+export function orchardShellStyle(): React.CSSProperties {
+  return {
+    minHeight: "100vh",
+    background: "transparent",
+    color: ORCHARD_COLORS.text,
+    padding: "34px 18px 72px",
+    fontFamily: '"Inter", "Source Sans 3", system-ui, sans-serif',
+
+-- src/pages/InputsPage.tsx
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useLessonStore } from "../state/useLessonStore";
+import {
+  ORCHARD_COLORS as COLORS,
+  orchardShellStyle,
+  orchardWrapStyle,
+  orchardCardStyle,
+  orchardHeroCardStyle,
+  orchardSoftCardStyle,
+  orchardSectionTitleStyle,
+  orchardLabelTitleStyle,
+  orchardHelpTextStyle,
+  orchardInputStyle,
+  orchardTextareaStyle,
+  orchardPrimaryButtonStyle,
+  orchardRibbonHeaderStyle,
+  orchardHeroTitleStyle,
+  orchardStitchDividerStyle,
+} from "./orchardUi";
+import { WizardProgress } from "./WizardProgress";
+import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+
+function plannerSheetStyle(background = "#FFFDF9"): React.CSSProperties {
+  return {
+    ...orchardSoftCardStyle(background),
+    border: `1px solid ${COLORS.border}`,
+    padding: 18,
+    boxShadow: "0 10px 22px rgba(47,47,47,0.05)",
+    overflow: "hidden",
+  };
+}
+
+function plannerTabStyle(background: string, color: string, border = COLORS.borderStrong): React.CSSProperties {
+  return {
+
+-- src/pages/MaterialsPage.tsx
+import React, { useMemo, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
+import type { UploadedTextFile, SourceRole } from "../engine/blueprint/types";
+import { useLessonStore } from "../state/useLessonStore";
+import { filesToUploaded } from "../utils/readUploadedText";
+import {
+  ORCHARD_COLORS as COLORS,
+  orchardShellStyle,
+  orchardWrapStyle,
+  orchardCardStyle,
+  orchardHeroCardStyle,
+  orchardSoftCardStyle,
+  orchardLabelTitleStyle,
+  orchardSectionTitleStyle,
+  orchardHelpTextStyle,
+  orchardTextareaStyle,
+  orchardPrimaryButtonStyle,
+  orchardLinkStyle,
+  orchardRibbonHeaderStyle,
+  orchardHeroTitleStyle,
+  orchardStitchDividerStyle,
+} from "./orchardUi";
+import { WizardProgress } from "./WizardProgress";
+import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
+
+const ACCEPT_ATTR = ".txt,.md,.doc,.docx,.pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp";
+
+function plannerSheetStyle(background = "#FFFDF9"): React.CSSProperties {
+  return {
+    ...orchardSoftCardStyle(background),
+    border: `1px solid ${COLORS.border}`,
+    padding: 18,
+    boxShadow: "0 10px 22px rgba(47,47,47,0.05)",
+    overflow: "hidden",
+
+-- src/pages/ResultsHubPage.tsx
+import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useLessonStore } from "../state/useLessonStore";
+import {
+  getStandards,
+  getSlides,
+  getLessonPlan,
+  getCenters,
+  getRotationPlanItems,
+  getInterventions,
+} from "../engine/packageCompat";
+import { K_ELA_BEST_DATASET } from "../engine/standards/data/k_ela_best_dataset";
+import {
+  ORCHARD_COLORS as COLORS,
+  orchardShellStyle,
+  orchardWrapStyle,
+  orchardCardStyle,
+  orchardHeroCardStyle,
+  orchardSoftCardStyle,
+  orchardPillStyle,
+  orchardSectionTitleStyle,
+  orchardHelpTextStyle,
+  orchardPrimaryButtonStyle,
+  orchardSecondaryButtonStyle,
+  orchardLinkStyle,
+  orchardRibbonHeaderStyle,
+  orchardHeroTitleStyle,
+  orchardStitchDividerStyle,
+} from "./orchardUi";
+import { WizardProgress } from "./WizardProgress";
+
+function percent(conf: any) {
+  const n = Number(conf);
+  if (!Number.isFinite(n)) return "";
+  return `${Math.round(n <= 1 ? n * 100 : n)}%`;
+
+-- src/pages/WizardProgress.tsx
+import React from "react";
+import {
+  ORCHARD_COLORS,
+  orchardCardStyle,
+  orchardHelpTextStyle,
+  orchardRibbonHeaderStyle,
+  orchardSoftCardStyle,
+  orchardStitchDividerStyle,
+} from "./orchardUi";
+
+export type WizardStepKey = "inputs" | "materials" | "results";
+
+const STEP_ORDER: WizardStepKey[] = ["inputs", "materials", "results"];
+
+const STEP_META: Record<
+  WizardStepKey,
+  {
+    label: string;
+    helper: string;
+    chapter: string;
+    summary: string;
+  }
+> = {
+  inputs: {
+    label: "Inputs",
+    helper: "Set the lesson foundation",
+    chapter: "Chapter One",
+    summary: "Lesson details, teaching goal, standards, and group notes",
+  },
+  materials: {
+    label: "Materials",
+    helper: "Lay out curriculum and exemplars",
+    chapter: "Chapter Two",
+    summary: "Source files, model lessons, links, and influence checks",
+  },
+
+-- src/deck/TeachModeShell.tsx
+import { useState, useEffect } from 'react';
+import { DeckPlayer } from './DeckPlayer';
+import type { DeckPlan } from '../types/slides';
+
+interface TeachModeShellProps {
+  deckPlan: DeckPlan;
+  onExit: () => void;
+}
+
+type EngagementPrompt = 
+  | 'turn-talk'
+  | 'say-with-me'
+  | 'show-fingers'
+  | 'hands-on-head'
+  | 'stand-if-rhymes'
+  | null;
+
+const ENGAGEMENT_PROMPTS: Record<Exclude<EngagementPrompt, null>, string> = {
+  'turn-talk': '👥 Turn & Talk',
+  'say-with-me': '🗣️ Say it with me!',
+  'show-fingers': '✋ Show me on your fingers',
+  'hands-on-head': '🙌 Hands on head if you hear ___',
+  'stand-if-rhymes': '🎵 Stand if it rhymes',
+};
+
+export function TeachModeShell({ deckPlan, onExit }: TeachModeShellProps) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showEngagement, setShowEngagement] = useState<EngagementPrompt>(null);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+
+-- src/styles/theme.css
+:root {
+  --orchard-cream: #FFF6E9;
+  --paper-white: #FFFFFF;
+  --paper-warm: #FFFDF8;
+  --paper-soft: #FFF9F2;
+  --warm-gray: #E7E2DA;
+  --warm-gray-soft: #EEE7DE;
+  --warm-gray-strong: #D8CEC0;
+  --text-charcoal: #2F2F2F;
+  --text-muted: #6F6A63;
+  --moss: #6E8B6B;
+  --deep-orchard: #3F5A40;
+  --apple-blush: #F7D6D0;
+  --muted-cranberry: #B8545A;
+  --warm-honey: #F2C078;
+}
+
+html, body, #root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text-charcoal);
+  background-color: var(--orchard-cream);
+  background-image:
+    radial-gradient(circle at 12% 14%, rgba(255,255,255,0.72) 0, rgba(255,255,255,0) 22%),
+    radial-gradient(circle at 84% 12%, rgba(247,214,208,0.22) 0, rgba(247,214,208,0) 18%),
+    radial-gradient(circle at 18% 82%, rgba(242,192,120,0.14) 0, rgba(242,192,120,0) 16%),
+    radial-gradient(circle at 76% 78%, rgba(110,139,107,0.08) 0, rgba(110,139,107,0) 16%),
+    linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%);
+  background-attachment: fixed;
+  font-family: "Inter", "Source Sans 3", system-ui, sans-serif;
+}
+
+
+==============================================================================
+QUICK COUNTS
+==============================================================================
+rotate count: 4
+pinned note count: 9
+details/summary count: 3
+legacy ao var count: 9
+black bg count: 3
