@@ -1,0 +1,31 @@
+NEXT PHASE STATUS
+
+Branch:
+feat/content-variation-from-blueprint
+
+Current milestone completed:
+- generator now changes structure based on curriculum/exemplar presence
+
+Confirmed current behavior:
+- neither -> 6 slides, 3 centers, default structure
+- curriculum only -> 7 slides, 3 centers
+- exemplar only -> 8 slides, 4 centers, hub-style headings
+- both -> 8 slides, 4 centers, hub-style headings
+
+Next engineering goal:
+Make curriculum and exemplar change content quality, not just structure.
+
+That means improving:
+- teacher lesson plan wording
+- slide text
+- center directions
+- rotation descriptions
+- exit ticket wording
+- exemplar cue influence
+- curriculum item influence
+
+Main files for this phase:
+- src/engine/generateLesson.ts
+- src/engine/spec/buildLessonSpec.ts
+- src/engine/blueprint/buildBlueprint.ts
+- src/pages/ResultsHubPage.tsx

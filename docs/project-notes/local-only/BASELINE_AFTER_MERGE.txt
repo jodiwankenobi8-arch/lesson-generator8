@@ -1,0 +1,14 @@
+﻿LESSON GENERATOR - BASELINE AFTER MERGE
+Date: 2026-03-06 20:33:54
+
+State:
+- main is merged and current
+- build passes
+- playwright smoke tests pass
+- export verification previously passed with NO_BANNED_HUB_LANGUAGE_FOUND
+
+Commits:
+28f006a (HEAD -> main, origin/main, origin/HEAD) Merge pull request #1 from jodiwankenobi8-arch/feat/content-variation-from-blueprint 1f91d8a Honor teacher-led early elementary exports from blueprint grade 37b088a Pass grade into blueprint and enforce teacher-led early elementary override
+
+Status:
+

@@ -1,0 +1,12 @@
+PROJECT STATUS SAVE
+
+- Repo is working from: C:\dev\lesson-generator8
+- GitHub repo: jodiwankenobi8-arch/lesson-generator8
+- Active branch: fix/exemplar-actually-drives-output
+- App builds and runs locally
+- Results Hub works
+- Exports work
+- Confirmed issue: output remains generic
+- Exemplar does not yet materially change lesson structure
+- Curriculum does not yet materially change lesson structure
+- Next focus: Blueprint -> LessonSpec -> Generate must visibly control section order, cues, and lesson shape

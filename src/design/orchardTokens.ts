@@ -1,0 +1,45 @@
+export const orchardTokens = {
+  colors: {
+    page: "#FFF6E9",
+    panel: "#FFFFFF",
+    panelAlt: "#FFFDF9",
+    panelWarm: "#FFF9F2",
+    panelBlush: "#FFF6F4",
+    text: "#2F2F2F",
+    heading: "#3F5A40",
+    muted: "#6F6A63",
+    border: "#E7E2DA",
+    borderSoft: "#EEE7DE",
+    borderStrong: "#D8CEC0",
+    accent: "#6E8B6B",
+    accentDark: "#3F5A40",
+    accentSoft: "#EEF5EA",
+    blush: "#F7D6D0",
+    honey: "#F2C078",
+    cranberry: "#B8545A",
+    stitch: "#D8CFC4",
+    shadow: "rgba(63,90,64,0.10)",
+    shadowSoft: "rgba(47,47,47,0.05)",
+    warnBorder: "#D7B27A",
+    success: "#EEF5EA",
+    successBorder: "#B8CDAF",
+  },
+  typography: {
+    bodyStack: '"Inter", "Source Sans 3", system-ui, sans-serif',
+    headingStack: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+  },
+  radius: {
+    soft: 16,
+    card: 22,
+    board: 28,
+    hero: 30,
+    full: 999,
+  },
+  shadows: {
+    soft: "0 8px 16px rgba(47,47,47,0.03)",
+    card: "0 14px 30px rgba(47,47,47,0.05)",
+    board: "0 18px 38px rgba(47,47,47,0.06)",
+  },
+} as const;
+
+export const ORCHARD_COLORS = orchardTokens.colors;

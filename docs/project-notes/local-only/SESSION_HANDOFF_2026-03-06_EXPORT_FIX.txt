@@ -1,0 +1,36 @@
+﻿LESSON GENERATOR - SESSION HANDOFF
+Saved: 2026-03-06 19:51:14
+
+Branch:
+feat/content-variation-from-blueprint
+
+Repo state:
+- Working tree clean
+- Branch is ahead of origin by 20 commits
+- FULL_DESIGN_AND_STYLE_SPEC.md is locally excluded from git status via .git\info\exclude
+
+Latest relevant commits:
+- 1f91d8a Honor teacher-led early elementary exports from blueprint grade
+- 37b088a Pass grade into blueprint and enforce teacher-led early elementary override
+- 570a15e Force teacher-led linear blueprint for early elementary lessons
+
+What was verified:
+- Fresh export scan after the latest patch returned: NO_BANNED_HUB_LANGUAGE_FOUND
+- Kindergarten / early elementary export content no longer showed hub-style banned phrases in the newly generated export set
+- Repo build completed successfully after patching
+
+Root cause fixed:
+- Early-elementary teacher-led checks in spec/generation were still relying on input.grade in places
+- Those checks were updated to also honor blueprint.plan.grade
+- This allowed exports to correctly respect the teacher-led early-elementary override during generation/export
+
+Files changed in the final fix:
+- src\engine\spec\buildLessonSpec.ts
+- src\engine\generateLesson.ts
+
+Current blocker:
+- Push may still fail if github.com:443 remains unreachable from the local network
+- Content/export issue is resolved; remaining risk is network only
+
+Best next step when ready:
+- Retry git push once network connectivity to GitHub is available

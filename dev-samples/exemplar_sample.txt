@@ -1,0 +1,63 @@
+﻿EXEMPLAR TYPE: GUIDEPOST / CLICKABLE TOC / SECTION NAV
+SOURCE: Teacher-built model lesson (structure only)
+
+[STYLE TOKENS]
+- Theme: Calm blues + white background
+- Layout: Title top-left, agenda icons in circles, consistent footer buttons
+- Buttons: Home | TOC | Next | Back
+- Navigation: Clickable circles TOC; selected section in color, others gray
+- Timers: appear on practice slides as "Timer: 60s" etc.
+- Presenter: uses clicker; "Clicker: next" prompts exist
+
+[GLOBAL SLIDE RULES]
+- Every section starts with a SECTION MENU slide:
+  - shows all circles (Songs, Phonics/UFLI, Read Aloud, Turn & Talk, Practice, Exit)
+  - current section is COLOR; others are GRAY
+  - has Home + TOC buttons
+- Sections must be skippable via TOC at any time
+- Keep student-facing text short; teacher notes in speaker notes only (if present)
+
+[TOC CIRCLES]
+1) SONGS
+2) UFLI / PHONICS
+3) READ ALOUD
+4) TURN & TALK
+5) PRACTICE
+6) EXIT
+
+[SECTION: SONGS]
+- Slide: "Welcome + Objective (Kid-friendly)"
+- Slide: Song Lyrics (1 verse at a time)
+- Note: Clicker instruction: "Clicker: next after verse 1"
+
+[SECTION: UFLI / PHONICS]
+- Slide: Sound/Spelling Focus
+- Slide: Word Practice (blend/build)
+- Slide: Quick Check (2–3 items)
+- Timer: 45s on independent try
+- Note: "Teacher: circulate during timer"
+
+[SECTION: READ ALOUD]
+- Slide: Book cover / title / author
+- Slide: Purpose question: "Listen for ___"
+- Slide: Story pages (1 image + 1 sentence caption)
+- Note: "Stop point: ask 1 question"
+
+[SECTION: TURN & TALK]
+- Slide: Prompt + sentence stem
+- Slide: Share-out call
+- Timer: 30s talk, 30s share
+
+[SECTION: PRACTICE]
+- Slide: Guided practice example (1)
+- Slide: Partner practice (timer 60s)
+- Slide: Independent practice (timer 90s)
+
+[SECTION: EXIT]
+- Slide: Exit question (1)
+- Slide: Celebration / goodbye
+
+[DETECTION HINTS]
+- If curriculum includes "circle menu", "TOC", "home button", "selected section in color", treat as navigation model.
+- If curriculum includes "timer:", treat as pacing/section marker.
+- If curriculum includes "clicker:", treat as presenter workflow hint.

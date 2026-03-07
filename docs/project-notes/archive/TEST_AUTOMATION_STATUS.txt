@@ -1,0 +1,11 @@
+TEST AUTOMATION STATUS
+
+- Playwright browsers installed successfully
+- Smoke tests now pass locally
+- Current passing tests:
+  - inputs page loads
+  - materials page loads
+  - results page loads without crashing
+
+Next test goal:
+- verify structure changes when exemplar/curriculum presence changes

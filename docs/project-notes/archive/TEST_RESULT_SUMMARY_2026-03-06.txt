@@ -1,0 +1,25 @@
+TEST RESULT SUMMARY
+
+Date: 2026-03-06
+
+Confirmed by manual testing:
+- with curriculum + exemplar -> same output
+- with curriculum only -> same output
+- with exemplar only -> same output
+- with neither -> same output
+
+Current conclusion:
+The active generator is using a mostly default template path.
+Curriculum and exemplar are not yet materially influencing:
+- standards output
+- teacher lesson plan structure
+- slide count/shape
+- centers count/shape
+- intervention shape
+
+Next required engineering task:
+Make Blueprint -> LessonSpec -> Generate actually drive:
+- section ordering
+- teacher cues
+- slide plan
+- lesson structure differences between default vs exemplar-led output

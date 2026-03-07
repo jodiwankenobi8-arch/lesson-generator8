@@ -1,0 +1,185 @@
+﻿[
+  {
+    "code": "ELA.K.F.1.1",
+    "description": "Demonstrate knowledge of the basic concepts of print.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["print concepts","print","book parts","front cover","back cover","title page","letters","words","match print to speech","one-to-one","top to bottom","left to right","uppercase","lowercase","alphabet","pictures support meaning"]
+  },
+  {
+    "code": "ELA.K.F.1.2",
+    "description": "Demonstrate phonological awareness.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["phonological awareness","oral","syllables","blend","segment","alliteration","rhyme","onset","rime","initial sound","medial sound","final sound","add phoneme","delete phoneme","segment phonemes","blend phonemes"]
+  },
+  {
+    "code": "ELA.K.F.1.3",
+    "description": "Use knowledge of grade-appropriate phonics and word-analysis skills to decode words accurately.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["phonics","graphemes","phonemes","consonant sounds","short vowels","long vowels","CVC","decode","encode","decodable","high frequency words"]
+  },
+  {
+    "code": "ELA.K.F.1.4",
+    "description": "Recognize and read with automaticity grade-level high frequency words.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["fluency","automaticity","high frequency words","sight words","Dolch","Fry","irregular words","temporarily irregular","decodable high frequency"]
+  },
+
+  {
+    "code": "ELA.K.R.1.1",
+    "description": "Describe the main character(s), setting, and important events in a story.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["literary elements","main character","characters","setting","events","story","appearance","actions","feelings","thoughts","where","oral discussion","text evidence"]
+  },
+  {
+    "code": "ELA.K.R.1.3",
+    "description": "Explain the roles of author and illustrator of a story.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["author","illustrator","roles","writes words","creates pictures","meaning","contribute to meaning"]
+  },
+  {
+    "code": "ELA.K.R.1.4",
+    "description": "Identify rhyme in a poem.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["poetry","rhyme","rhyming words","end of line","identify rhyme","read aloud"]
+  },
+
+  {
+    "code": "ELA.K.R.2.1",
+    "description": "Use titles, headings, and illustrations to predict and confirm the topic of texts.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["informational text","titles","headings","illustrations","predict topic","confirm prediction","topic"]
+  },
+  {
+    "code": "ELA.K.R.2.2",
+    "description": "Identify the topic of and multiple details in a text.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["topic","details","informational text","main topic","multiple details"]
+  },
+  {
+    "code": "ELA.K.R.2.4",
+    "description": "Explain the difference between opinions and facts about a topic.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["argument","opinion","fact","true","false","prove","beliefs","feelings","statements","identify fact vs opinion"]
+  },
+
+  {
+    "code": "ELA.K.R.3.1",
+    "description": "Identify and explain descriptive words in text(s).",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["descriptive words","describe","meaning","adjective","how words add meaning"]
+  },
+  {
+    "code": "ELA.K.R.3.2",
+    "description": "Retell a text orally to enhance comprehension: use main character(s), setting, and important events for a story; use topic and details for an informational text.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["retell","oral retell","comprehension","character","setting","events","topic","details","story","informational text"]
+  },
+  {
+    "code": "ELA.K.R.3.3",
+    "description": "Compare and contrast characters’ experiences in stories.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["compare","contrast","characters","experiences","events","feelings","behaviors"]
+  },
+
+  {
+    "code": "ELA.K.C.1.1",
+    "description": "Print many upper- and lowercase letters.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["handwriting","print letters","uppercase","lowercase","spacing","vowels"]
+  },
+  {
+    "code": "ELA.K.C.1.2",
+    "description": "Using a combination of drawing, dictating, and/or writing, create narratives with the events in chronological order.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["narrative","drawing","dictating","writing","events","chronological order","story"]
+  },
+  {
+    "code": "ELA.K.C.1.3",
+    "description": "Using a combination of drawing, dictating, and/or writing, express opinions about a topic or text with at least one supporting reason.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["opinion writing","argumentative","supporting reason","topic","text"]
+  },
+  {
+    "code": "ELA.K.C.1.4",
+    "description": "Using a combination of drawing, dictating, and/or writing, provide factual information about a topic.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["expository","informational writing","factual information","topic","explain"]
+  },
+  {
+    "code": "ELA.K.C.1.5",
+    "description": "With guidance and support from adults, improve drawing and writing, as needed, by planning, revising, and editing.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["improve writing","planning","revising","editing","with guidance","process"]
+  },
+
+  {
+    "code": "ELA.K.C.2.1",
+    "description": "Present information orally using complete sentences.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["oral presentation","speaking","complete sentences","present information"]
+  },
+
+  {
+    "code": "ELA.K.C.3.1",
+    "description": "Follow the rules of standard English grammar, punctuation, capitalization, and spelling appropriate to grade level.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["conventions","grammar","punctuation","capitalization","spelling","capital letter","ending punctuation","days of week","months","pronoun I","plural nouns","questions"]
+  },
+
+  {
+    "code": "ELA.K.C.4.1",
+    "description": "Recall information to answer a question about a single topic.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["research","recall information","answer question","single topic"]
+  },
+  {
+    "code": "ELA.K.C.5.1",
+    "description": "Use a multimedia element to enhance oral or written tasks.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["multimedia","drawing","picture","artifact","audio","digital","enhance","oral task","written task"]
+  },
+
+  {
+    "code": "ELA.K.V.1.1",
+    "description": "Use grade-level academic vocabulary appropriately in speaking and writing.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["academic vocabulary","use vocabulary","speaking","writing","explicit instruction","comprehension"]
+  },
+  {
+    "code": "ELA.K.V.1.2",
+    "description": "Ask and answer questions about unfamiliar words in grade-level content.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["unfamiliar words","ask questions","answer questions","word meaning"]
+  },
+  {
+    "code": "ELA.K.V.1.3",
+    "description": "Identify and sort common words into basic categories, relating vocabulary to background knowledge.",
+    "grade": "K",
+    "subject": "ELA",
+    "keywords": ["sort words","categories","vocabulary","background knowledge","read-aloud","think-aloud","context clues","word relationships"]
+  }
+]
