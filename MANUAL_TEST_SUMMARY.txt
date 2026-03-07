@@ -1,0 +1,117 @@
+MANUAL TEST SUMMARY — LESSON GENERATOR
+
+Current branch/local state:
+- Local app preview and manual walkthrough completed.
+- Build/tests have been passing locally.
+- GitHub push is still blocked by network/port 443, so commits are only local for now.
+
+Key findings from manual test:
+
+1. SOURCE ROLE PROBLEM
+The current Materials step treats website links in the Exemplar area too strongly as structural exemplars.
+That is not always correct.
+A website link may be:
+- curriculum/content to teach
+- a teaching tool/resource
+- an exemplar/model
+- mixed/unclear
+
+Important example:
+A Starfall link may be a teaching tool or curriculum support, not a true exemplar.
+The system should not automatically treat “website in exemplar bucket” as “strong structural framework trigger.”
+
+Recommended product change:
+Add source role classification/override for each uploaded source, especially links:
+- Curriculum
+- Teaching Tool
+- Exemplar
+- Mixed / Unsure
+
+Expected generator behavior by role:
+- Curriculum -> content, vocabulary, skill targets, examples, practice
+- Teaching Tool -> optional lesson support/activity reference
+- Exemplar -> pacing, structure, teacher-move inspiration
+- Mixed / Unsure -> lower-confidence influence until clarified
+
+2. RESULTS PAGE / BLUEPRINT INFLUENCE ISSUE
+The Results page showed too much structural influence from exemplar/tool cues.
+Observed problems:
+- clickableHub applied too aggressively
+- presenter cues/timers/clicker notes heavily shaped lesson structure
+- exemplar presence seems to be over-triggering framework changes
+
+Needed change:
+Do not let “an exemplar exists” automatically cause strong framework shifts.
+Exemplar influence should be lighter by default unless the teacher explicitly wants a hub/station/navigation lesson structure.
+
+3. KINDERGARTEN SLIDE DESIGN ISSUE
+For kindergarten, the slides should support teacher-led explicit instruction.
+They should NOT read like independent student navigation slides or command-driven self-guided slides.
+
+Problem examples:
+- “Choose the lesson path together.”
+- “Rotate through the practice path you were assigned.”
+- “Complete the final quick check before leaving the hub.”
+
+Desired rule:
+Student-facing slides in this app are really teacher-led instructional support slides.
+For K explicit instruction lessons, default to teacher-led direct instruction decks.
+
+Slide language should emphasize:
+- skill focus
+- visual prompts
+- teacher modeling
+- choral response
+- guided practice
+- quick checks
+
+Teacher notes can contain:
+- timer cues
+- clicker reminders
+- transition reminders
+- circulation prompts
+
+Main slide text should NOT sound like students are independently navigating a lesson app.
+
+4. DOCX EXPORT QUALITY ISSUES
+DOCX export worked technically, but content quality still needs cleanup.
+Observed issues:
+- wrong source fragments leaking into lesson content
+- mismatched curriculum content
+- exemplar cues over-influencing lesson wording
+- raw cue/source text showing up too literally
+- placeholder/encoding artifacts still visible in some places
+
+Needed fixes:
+- better source-role handling
+- stronger content guardrails
+- cleaner normalization of empty/missing fields
+- more polished teacher-friendly export language
+
+5. ZIP EXPORT ISSUE
+When clicking Export ZIP, the app threw:
+“Failed to fetch dynamically imported module... exportFullZip...js”
+
+Likely cause:
+- stale chunk / rebuild-refresh mismatch in preview
+But if it persists after clean rebuild/restart, inspect ZIP export module and dynamic import flow.
+
+6. TEXT / ENCODING CLEANUP
+Still saw bad characters/artifacts in some UI/export text.
+Need cleanup pass for:
+- apostrophes
+- arrows
+- placeholder symbols
+- section labels like “Centers ...”
+
+Priority next implementation order:
+1. Add source role classification + override for uploaded files/links
+2. Reduce automatic exemplar/framework dominance
+3. Add kindergarten explicit-instruction slide mode as default behavior for K lessons
+4. Clean DOCX/export phrasing and guardrails
+5. Inspect ZIP export module if fresh rebuild does not solve it
+6. Do a final text/encoding cleanup pass
+
+Core product rule to preserve:
+This app is teacher-first.
+For kindergarten explicit instruction, slides should help the teacher teach — not function like a student self-guided navigation deck.

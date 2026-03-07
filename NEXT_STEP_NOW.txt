@@ -1,0 +1,19 @@
+NEXT STEP
+
+Current status:
+- default vs curriculum vs exemplar vs both now change structure
+- Playwright smoke tests pass
+
+Next goal:
+- make lesson content wording change based on curriculum/exemplar
+- improve Results Hub so Blueprint influence is more visible
+
+Main files:
+- src/engine/generateLesson.ts
+- src/pages/ResultsHubPage.tsx
+
+Success looks like:
+- curriculum changes teacher lesson plan descriptions
+- curriculum changes center directions
+- exemplar changes teacher notes/cues
+- Results Hub shows clearer blueprint/framework info

@@ -1,0 +1,279 @@
+LESSON GENERATOR — OFFICIAL DESIGN SOURCE OF TRUTH
+Updated: 2026-03-06
+
+PURPOSE
+This file defines the official visual/design authority for the current Lesson Generator app.
+It separates the true Apple Orchard design brief from older leftover implementation/theme files found in the uploaded design zip.
+
+==================================================
+1. WHAT TO TRUST
+==================================================
+
+The uploaded zip contains both:
+- real design-direction files
+- older implementation leftovers
+
+For design decisions, trust these FIRST:
+
+- src/imports/lesson-builder-figma-design.md
+- DESIGN_COMPLETE.md
+- DESIGN_SYSTEM.md
+- DESIGN_UPDATE_SUMMARY.md
+
+Also use orchard-specific decorative/component ideas from files like:
+- src/app/components/ribbon-header.tsx
+- src/app/components/decorative-patterns.tsx
+- src/app/components/patterns/gingham-pattern.tsx
+- src/app/components/patterns/polka-dot-pattern.tsx
+- src/app/components/empty-state.tsx
+
+These are reference sources for style, mood, patterns, and visual language.
+
+==================================================
+2. WHAT NOT TO TRUST AS FINAL DESIGN AUTHORITY
+==================================================
+
+Do NOT treat older token/theme files as the final truth when they conflict with the orchard brief.
+
+Examples of likely legacy implementation leftovers:
+- src/theme/tokens.ts
+- parts of src/styles/theme.css
+- older blue/purple/navy theme remnants
+- generic dashboard/SaaS styling leftovers
+
+The zip is a vision/reference library, NOT a wholesale merge source.
+
+==================================================
+3. APPROVED VISUAL DIRECTION
+==================================================
+
+Official design direction:
+APPLE ORCHARD STORYBOOK
+
+Meaning:
+- warm
+- calm
+- teacher-first
+- tactile
+- trustworthy
+- organized
+- polished
+- not sterile
+- not corporate
+- not childish
+- not chaotic
+
+The app should feel like a beautiful teacher desk + structured instructional engine.
+
+==================================================
+4. APPROVED PALETTE
+==================================================
+
+Primary approved colors:
+
+- Orchard Cream: #FFF6E9
+- Apple Blush: #F7D6D0
+- Warm Honey: #F2C078
+- Moss Green: #6E8B6B
+- Deep Orchard: #3F5A40
+- Paper White: #FFFFFF
+- Warm Gray: #E7E2DA
+- Text Charcoal: #2F2F2F
+- Muted Cranberry: #B8545A
+
+Usage intent:
+- Orchard Cream = page/canvas/background foundation
+- Deep Orchard / Moss = structure, headers, primary actions
+- Honey / Blush / Cranberry = accents only
+- Warm Gray = borders, dividers, quiet structure
+- Charcoal = primary readable text
+- Paper White = cards/content surfaces
+
+==================================================
+5. APPROVED TYPOGRAPHY
+==================================================
+
+Preferred heading fonts:
+- Playfair Display
+- Libre Baskerville
+
+Preferred body fonts:
+- Inter
+- Source Sans 3
+
+Optional warmth/accent font:
+- Caveat
+Use sparingly only for subtle teacher-note warmth or tiny accent moments.
+
+Typography intent:
+- elegant but readable
+- teacher-friendly
+- not formal in a cold way
+- not playful in a childish way
+
+==================================================
+6. APPROVED VISUAL PATTERNS
+==================================================
+
+Approved recurring patterns:
+- orchard-cream canvas
+- subtle paper texture / tactile surface feel
+- rounded white cards
+- warm gray borders
+- soft shadows
+- moss ribbon headers
+- stitched divider treatment
+- restrained apple / leaf / seed motifs
+- gingham and polka-dot accents used sparingly
+
+Pattern usage rule:
+These should support the interface, not overwhelm it.
+
+Good uses:
+- section headers
+- empty states
+- supportive accents
+- dividers
+- subtle card/hero treatments
+
+Bad uses:
+- every panel
+- dense decorative clutter
+- random decorative overload
+
+==================================================
+7. SIGNATURE UI ELEMENTS
+==================================================
+
+Signature approved motifs:
+- moss ribbon headers with white text
+- stitched/dashed decorative lines
+- V-cut ribbon tails
+- soft rounded buttons
+- warm paper-like panel surfaces
+- subtle orchard motifs in small doses
+
+These are part of the brand feel and can be reused carefully.
+
+==================================================
+8. EXPLICIT AVOID RULES
+==================================================
+
+Avoid:
+- sterile SaaS dashboard look
+- bright primary/neon colors
+- harsh shadows
+- square corners
+- emoji clutter
+- cold admin-panel feel
+- random multicolor drift
+- over-decoration
+- visual noise
+- generic corporate blue as the main identity
+
+If a choice feels corporate, harsh, or generic, it is probably wrong.
+
+==================================================
+9. HOW TO USE THIS IN THE CURRENT APP
+==================================================
+
+The CURRENT app is the streamlined wizard flow:
+- Inputs
+- Materials
+- Results
+
+This design brief should be applied to:
+- shared UI tokens/helpers
+- page shells
+- cards
+- buttons
+- helper text
+- previews
+- empty states
+- future teach-mode work
+
+Do NOT import the old larger dashboard/Supabase app structure into the cleaner current app just because it exists in the zip.
+
+==================================================
+10. IMPLEMENTATION PRIORITY
+==================================================
+
+When styling or polishing:
+1. preserve workflow clarity
+2. preserve test stability
+3. use orchard brief as visual authority
+4. use decorative patterns sparingly
+5. prefer calm hierarchy over flashy design
+
+==================================================
+11. DECISION RULE
+==================================================
+
+When design sources conflict:
+
+PRIORITY ORDER:
+1. orchard design docs and orchard-specific component references
+2. current streamlined product vision
+3. current shared UI system in the repo
+4. older token/theme leftovers LAST
+
+If older blue/purple/navy token files conflict with orchard docs, the orchard docs win.
+
+==================================================
+12. PRACTICAL SUMMARY
+==================================================
+
+The uploaded zip is:
+- a valid design vision source
+- a valid reference library
+- a valid pattern source
+
+The uploaded zip is NOT:
+- a clean single source of implementation truth
+- a safe full merge target
+- the current app architecture
+
+Final rule:
+Use the zip to guide style and visual language.
+Do not let legacy theme leftovers override the Apple Orchard brief.
+==================================================
+6A. TEXTURE + SCRAPBOOK DIRECTION
+==================================================
+
+Additional style rule:
+The app should feel like a classy scrapbook with layered textures.
+
+Meaning:
+- tactile
+- curated
+- warm
+- elegant
+- slightly handmade in a refined way
+- varied in surface feel, but still cohesive
+
+This does NOT mean:
+- crafty-chaotic
+- junky collage
+- messy patchwork
+- childish scrapbook stickers everywhere
+- visual clutter
+- cheap decorative overload
+
+Approved texture direction:
+- subtle paper/canvas grain
+- lightly painted or soft printed feel
+- layered surfaces that feel collected and intentional
+- quiet variation between page background, cards, ribbons, and accent panels
+- gentle contrast in texture rather than loud contrast in color
+
+Implementation guidance:
+- texture should stay subtle and low-contrast
+- texture should support the teacher-first calm mood
+- texture should make the interface feel human and tactile, not noisy
+- different surfaces can feel slightly different, but all must remain polished and coordinated
+- if a texture feels kitschy, busy, crafty, or “riffraff,” it is wrong
+
+Decision rule:
+Prefer “curated elegant scrapbook” over both:
+1. sterile SaaS flatness
+2. overly decorated crafty clutter
