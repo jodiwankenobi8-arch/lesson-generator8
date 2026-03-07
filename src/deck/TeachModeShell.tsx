@@ -1,154 +1,282 @@
-import { useState, useEffect } from 'react';
-import { DeckPlayer } from './DeckPlayer';
-import type { DeckPlan } from '../types/slides';
+﻿import { useEffect, useState } from "react";
+import { DeckPlayer } from "./DeckPlayer";
+import type { DeckPlan } from "../types/slides";
+import { ORCHARD_COLORS } from "../pages/orchardUi";
 
 interface TeachModeShellProps {
   deckPlan: DeckPlan;
   onExit: () => void;
 }
 
-type EngagementPrompt = 
-  | 'turn-talk'
-  | 'say-with-me'
-  | 'show-fingers'
-  | 'hands-on-head'
-  | 'stand-if-rhymes'
+type EngagementPrompt =
+  | "turn-talk"
+  | "say-with-me"
+  | "show-fingers"
+  | "hands-on-head"
+  | "stand-if-rhymes"
   | null;
 
 const ENGAGEMENT_PROMPTS: Record<Exclude<EngagementPrompt, null>, string> = {
-  'turn-talk': '👥 Turn & Talk',
-  'say-with-me': '🗣️ Say it with me!',
-  'show-fingers': '✋ Show me on your fingers',
-  'hands-on-head': '🙌 Hands on head if you hear ___',
-  'stand-if-rhymes': '🎵 Stand if it rhymes',
+  "turn-talk": "Turn and talk with a partner.",
+  "say-with-me": "Say it with me.",
+  "show-fingers": "Show me on your fingers.",
+  "hands-on-head": "Hands on head if you hear it.",
+  "stand-if-rhymes": "Stand if it rhymes.",
 };
+
+const ENGAGEMENT_BUTTONS: Array<{
+  key: Exclude<EngagementPrompt, null>;
+  short: string;
+  title: string;
+}> = [
+  { key: "turn-talk", short: "Talk", title: "Turn and Talk" },
+  { key: "say-with-me", short: "Echo", title: "Say it with me" },
+  { key: "show-fingers", short: "Fingers", title: "Show me on your fingers" },
+  { key: "hands-on-head", short: "Listen", title: "Hands on head if you hear it" },
+  { key: "stand-if-rhymes", short: "Rhyme", title: "Stand if it rhymes" },
+];
 
 export function TeachModeShell({ deckPlan, onExit }: TeachModeShellProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showEngagement, setShowEngagement] = useState<EngagementPrompt>(null);
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch {
+      setIsFullscreen(!!document.fullscreenElement);
     }
   };
 
-  const handleExit = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
+  const handleExit = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } finally {
+      onExit();
     }
-    onExit();
   };
 
-  // Auto-dismiss engagement prompt after 3 seconds
   useEffect(() => {
-    if (showEngagement) {
-      const timer = setTimeout(() => {
-        setShowEngagement(null);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
+    const sync = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
+  useEffect(() => {
+    if (!showEngagement) return;
+    const timer = setTimeout(() => setShowEngagement(null), 2800);
+    return () => clearTimeout(timer);
   }, [showEngagement]);
 
+  const ghostButton = (primary = false): React.CSSProperties => ({
+    padding: "10px 14px",
+    borderRadius: 16,
+    border: primary
+      ? `1px solid ${ORCHARD_COLORS.accentDark}`
+      : "1px solid rgba(255,255,255,0.18)",
+    background: primary
+      ? "linear-gradient(180deg, #6E8B6B 0%, #587053 100%)"
+      : "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.10) 100%)",
+    color: "#FFFFFF",
+    fontWeight: 800,
+    letterSpacing: "0.01em",
+    boxShadow: primary ? "0 10px 20px rgba(0,0,0,0.18)" : "none",
+    cursor: "pointer",
+  });
+
   return (
-    <div className="teach-mode-shell h-screen bg-black">
-      {/* Teach mode controls overlay */}
-      <div className="teach-mode-overlay fixed top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity">
-        <div className="flex items-center justify-between">
-          <div className="text-white text-lg font-medium">
-            Teach Mode
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <button
-              onClick={toggleFullscreen}
-              className="px-4 py-2 bg-white/20 text-white rounded hover:bg-white/30 transition-colors"
-            >
-              {isFullscreen ? '🔲 Exit Fullscreen' : '⛶ Fullscreen'}
-            </button>
-            
-            <button
-              onClick={handleExit}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-            >
-              Exit Teach Mode
-            </button>
+    <div
+      className="teach-mode-shell h-screen"
+      style={{
+        background: "linear-gradient(180deg, #1F2A20 0%, #182119 100%)",
+      }}
+    >
+      <div className="fixed top-0 left-0 right-0 z-50 p-4">
+        <div
+          style={{
+            maxWidth: 1440,
+            margin: "0 auto",
+            background: "linear-gradient(180deg, rgba(255,250,244,0.18) 0%, rgba(255,250,244,0.10) 100%)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            borderRadius: 24,
+            padding: "14px 16px",
+            backdropFilter: "blur(14px)",
+            boxShadow: "0 12px 24px rgba(0,0,0,0.18)",
+          }}
+        >
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div style={{ color: "#FFFFFF" }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  fontWeight: 900,
+                  opacity: 0.82,
+                  marginBottom: 4,
+                }}
+              >
+                Teach Mode
+              </div>
+              <div
+                style={{
+                  fontSize: 24,
+                  fontWeight: 800,
+                  lineHeight: 1.1,
+                  fontFamily: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+                }}
+              >
+                Present the lesson clearly
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              <button onClick={toggleFullscreen} style={ghostButton(false)}>
+                {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+              </button>
+              <button onClick={handleExit} style={ghostButton(true)}>
+                Exit Teach Mode
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Engagement prompt buttons */}
-      <div className="engagement-panel fixed right-4 top-1/2 -translate-y-1/2 z-50 space-y-2 opacity-0 hover:opacity-100 transition-opacity">
-        <button
-          onClick={() => setShowEngagement('turn-talk')}
-          className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
-          style={{ backgroundColor: 'var(--ao-navy)' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-text)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-navy)'}
-          title="Turn & Talk"
+      <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50">
+        <div
+          style={{
+            background: "linear-gradient(180deg, rgba(255,250,244,0.16) 0%, rgba(255,250,244,0.10) 100%)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            borderRadius: 24,
+            padding: 12,
+            backdropFilter: "blur(14px)",
+            boxShadow: "0 12px 24px rgba(0,0,0,0.18)",
+            display: "grid",
+            gap: 8,
+            minWidth: 112,
+          }}
         >
-          💬
-        </button>
-        <button
-          onClick={() => setShowEngagement('say-with-me')}
-          className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
-          style={{ backgroundColor: 'var(--ao-sky)' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-navy)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-sky)'}
-          title="Say it with me!"
-        >
-          🗣️
-        </button>
-        <button
-          onClick={() => setShowEngagement('show-fingers')}
-          className="w-14 h-14 rounded-full bg-green-500 text-white text-2xl hover:bg-green-600 transition-colors shadow-lg flex items-center justify-center"
-          title="Show me on your fingers"
-        >
-          ✋
-        </button>
-        <button
-          onClick={() => setShowEngagement('hands-on-head')}
-          className="w-14 h-14 rounded-full text-white text-2xl transition-colors shadow-lg flex items-center justify-center"
-          style={{ backgroundColor: 'var(--ao-tan)' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-text)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--ao-tan)'}
-          title="Hands on head if you hear ___"
-        >
-          🙌
-        </button>
-        <button
-          onClick={() => setShowEngagement('stand-if-rhymes')}
-          className="w-14 h-14 rounded-full bg-pink-500 text-white text-2xl hover:bg-pink-600 transition-colors shadow-lg flex items-center justify-center"
-          title="Stand if it rhymes"
-        >
-          🎵
-        </button>
+          <div
+            style={{
+              color: "#FFFFFF",
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              fontWeight: 900,
+              opacity: 0.82,
+              marginBottom: 2,
+            }}
+          >
+            Engagement
+          </div>
+
+          {ENGAGEMENT_BUTTONS.map((button) => (
+            <button
+              key={button.key}
+              onClick={() => setShowEngagement(button.key)}
+              title={button.title}
+              style={{
+                padding: "10px 12px",
+                borderRadius: 16,
+                border: "1px solid rgba(255,255,255,0.14)",
+                background:
+                  showEngagement === button.key
+                    ? "linear-gradient(180deg, #6E8B6B 0%, #587053 100%)"
+                    : "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.10) 100%)",
+                color: "#FFFFFF",
+                fontWeight: 800,
+                cursor: "pointer",
+                boxShadow: showEngagement === button.key ? "0 10px 20px rgba(0,0,0,0.18)" : "none",
+              }}
+            >
+              {button.short}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Engagement prompt overlay */}
       {showEngagement && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[60] pointer-events-none">
-          <div className="bg-white px-12 py-8 rounded-3xl text-5xl font-bold animate-bounce shadow-2xl">
-            {ENGAGEMENT_PROMPTS[showEngagement]}
+        <div
+          className="fixed inset-0 flex items-center justify-center z-[60] pointer-events-none"
+          style={{ background: "rgba(24,33,25,0.30)" }}
+        >
+          <div
+            style={{
+              background: "#FFFDF9",
+              color: ORCHARD_COLORS.heading,
+              border: `1px solid ${ORCHARD_COLORS.borderStrong}`,
+              borderRadius: 32,
+              padding: "26px 34px",
+              minWidth: 360,
+              textAlign: "center",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.22)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                fontWeight: 900,
+                color: ORCHARD_COLORS.cranberry,
+                marginBottom: 8,
+              }}
+            >
+              Cue
+            </div>
+            <div
+              style={{
+                fontSize: 36,
+                lineHeight: 1.15,
+                fontWeight: 800,
+                fontFamily: '"Libre Baskerville", "Playfair Display", Georgia, serif',
+              }}
+            >
+              {ENGAGEMENT_PROMPTS[showEngagement]}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Deck player */}
       <DeckPlayer deckPlan={deckPlan} teachMode={true} />
-      
-      {/* Keyboard shortcuts help (show on hover) */}
-      <div className="keyboard-help fixed bottom-4 left-4 bg-black/70 text-white p-4 rounded-lg text-sm opacity-0 hover:opacity-100 transition-opacity z-50">
-        <div className="font-semibold mb-2">Keyboard Shortcuts</div>
-        <div className="space-y-1">
-          <div>→ or Space: Next slide</div>
-          <div>← : Previous slide</div>
-          <div>Home: First slide</div>
-          <div>End: Last slide</div>
+
+      <div className="fixed bottom-4 left-4 z-50">
+        <div
+          style={{
+            background: "linear-gradient(180deg, rgba(255,250,244,0.16) 0%, rgba(255,250,244,0.10) 100%)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            borderRadius: 20,
+            padding: "12px 14px",
+            backdropFilter: "blur(14px)",
+            boxShadow: "0 12px 24px rgba(0,0,0,0.18)",
+            color: "#FFFFFF",
+            fontSize: 13,
+            lineHeight: 1.5,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              fontWeight: 900,
+              opacity: 0.82,
+              marginBottom: 4,
+            }}
+          >
+            Keyboard
+          </div>
+          <div>Space / →: Next slide</div>
+          <div>←: Previous slide</div>
+          <div>Home / End: Jump to start or finish</div>
         </div>
       </div>
     </div>

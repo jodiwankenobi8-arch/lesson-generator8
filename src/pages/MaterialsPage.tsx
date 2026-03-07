@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
 import type { UploadedTextFile, SourceRole } from "../engine/blueprint/types";
@@ -52,12 +52,13 @@ function plannerTabStyle(background: string, color: string, border = COLORS.bord
   };
 }
 
-function pinnedNoteStyle(): React.CSSProperties {
+function plannerRailCardStyle(background = "#FFFDF9"): React.CSSProperties {
   return {
-    ...plannerSheetStyle("#FFF8EE"),
+    ...orchardSoftCardStyle(background),
     border: `1px solid ${COLORS.borderStrong}`,
-    transform: "rotate(-1deg)",
-    alignSelf: "start",
+    padding: 18,
+    boxShadow: "0 12px 24px rgba(47,47,47,0.045)",
+    alignSelf: "stretch",
   };
 }
 
@@ -734,7 +735,7 @@ export default function MaterialsPage() {
               </div>
             </div>
 
-            <div style={pinnedNoteStyle()}>
+            <div style={plannerRailCardStyle("#FFF8EE")}>
               <div
                 style={{
                   width: 16,
@@ -796,7 +797,7 @@ export default function MaterialsPage() {
         {missingBasics && (
           <div
             style={{
-              ...pinnedNoteStyle(),
+              ...plannerRailCardStyle("#FFF8EE"),
               maxWidth: 560,
               marginLeft: "auto",
               marginRight: 12,
@@ -970,7 +971,7 @@ export default function MaterialsPage() {
               </div>
             </div>
 
-            <div style={pinnedNoteStyle()}>
+            <div style={plannerRailCardStyle("#FFF8EE")}>
               <div
                 style={{
                   width: 16,
@@ -1049,3 +1050,5 @@ export default function MaterialsPage() {
     </div>
   );
 }
+
+
