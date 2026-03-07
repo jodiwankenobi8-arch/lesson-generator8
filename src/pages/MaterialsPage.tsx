@@ -512,7 +512,7 @@ export default function MaterialsPage() {
             <div style={{ maxWidth: 720 }}>
               <div style={orchardRibbonHeaderStyle()}>Materials + Exemplars</div>
               <div style={orchardStitchDividerStyle()} />
-              <h1 style={orchardHeroTitleStyle()}>Add the lesson sources the generator should use</h1>
+              <h1 style={orchardHeroTitleStyle()}>Lay out the lesson sources on the desk</h1>
               <div style={{ ...orchardHelpTextStyle(), fontSize: 15 }}>
                 Upload curriculum files, exemplar files, and links. These materials can change the lesson structure,
                 wording, pacing cues, and output style.
@@ -551,7 +551,7 @@ export default function MaterialsPage() {
         )}
 
         <div style={orchardCardStyle()}>
-          <div style={orchardSectionTitleStyle()}>Upload Workspace</div>
+          <div style={orchardSectionTitleStyle()}>Sorting Desk</div>
           <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
             Curriculum sources shape the lesson content. Exemplars shape pacing, structure, cues, and model style.
           </div>
@@ -564,7 +564,7 @@ export default function MaterialsPage() {
             }}
           >
             <UploadDropZone
-              title="Curriculum Sources"
+              title="Curriculum Stack"
               subtitle="Use this for lesson materials, teacher resources, texts, decodables, slides, PDFs, images, or website links."
               files={finalCurriculumItems}
               onFilesChosen={onPickMaterials}
@@ -574,7 +574,7 @@ export default function MaterialsPage() {
             />
 
             <UploadDropZone
-              title="Exemplar Sources"
+              title="Exemplar Stack"
               subtitle="Use this for model lessons, example decks, teaching flow references, pacing cues, and structure examples."
               files={finalExemplarItems}
               onFilesChosen={onPickExemplar}
@@ -605,7 +605,7 @@ export default function MaterialsPage() {
             }}
           >
             <div style={orchardSoftCardStyle("#FFFDF9")}>
-              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Curriculum influence</div>
+              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Content pull</div>
               <div style={{ fontSize: 24, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
                 {influenceSummary.curriculumInfluence}
               </div>
@@ -615,7 +615,7 @@ export default function MaterialsPage() {
             </div>
 
             <div style={orchardSoftCardStyle("#FFFDF9")}>
-              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Exemplar influence</div>
+              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 6 }}>Structure pull</div>
               <div style={{ fontSize: 24, fontWeight: 900, color: COLORS.heading, marginBottom: 4 }}>
                 {influenceSummary.exemplarInfluence}
               </div>

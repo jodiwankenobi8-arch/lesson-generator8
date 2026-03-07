@@ -48,10 +48,10 @@ export default function InputsPage() {
             <div style={{ maxWidth: 720 }}>
               <div style={orchardRibbonHeaderStyle()}>Inputs</div>
               <div style={orchardStitchDividerStyle()} />
-              <h1 style={orchardHeroTitleStyle()}>Set the lesson foundation</h1>
+              <h1 style={orchardHeroTitleStyle()}>Open the planner for the day</h1>
               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 680 }}>
                 Start with the lesson basics, the teaching goal, and any group or standards notes you already know.
-                On the next step, you’ll add curriculum materials and exemplars that can shape structure, wording,
+                On the next step, youï¿½ll add curriculum materials and exemplars that can shape structure, wording,
                 pacing, and output style.
               </div>
             </div>
@@ -71,7 +71,7 @@ export default function InputsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Lesson Basics</div>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Day-at-a-Glance</div>
           <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
             These are the core inputs the generator uses to anchor the lesson before it sees uploaded materials.
           </div>
@@ -137,7 +137,7 @@ export default function InputsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Instructional Core</div>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Teaching Focus</div>
           <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
             This is the heart of the lesson. Title, objective, and text or topic are the most important fields to complete.
           </div>
@@ -202,7 +202,7 @@ export default function InputsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Group Notes (optional)</div>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Small-Group Notes (optional)</div>
           <div style={{ ...orchardHelpTextStyle(), marginBottom: 14 }}>
             Capture what each group can do now, where they need support, or how you want to differentiate.
           </div>
@@ -253,7 +253,7 @@ export default function InputsPage() {
         </div>
 
         <div style={orchardCardStyle()}>
-          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards</div>
+          <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards + Override</div>
           <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
             Leave this blank to let the app auto-detect Florida B.E.S.T. standards from the lesson details.
           </div>
@@ -304,7 +304,7 @@ export default function InputsPage() {
           }}
         >
           <div style={orchardHelpTextStyle()}>
-            When you continue, you’ll upload lesson materials and exemplars that can change the lesson structure and wording.
+            When you continue, youï¿½ll upload lesson materials and exemplars that can change the lesson structure and wording.
           </div>
 
           <button
