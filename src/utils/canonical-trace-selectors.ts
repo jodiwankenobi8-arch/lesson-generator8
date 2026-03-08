@@ -1,3 +1,4 @@
+import { K_ELA_BEST_DATASET } from "../engine/standards/data/k_ela_best_dataset";
 import type { LessonMaterial, LessonPackage, StandardRecord } from "../types/lesson-package";
 
 export type CanonicalMaterialInfluenceRow = {
@@ -16,6 +17,19 @@ export type CanonicalStandardVisibilityRow = {
   source: StandardRecord["source"];
   confidence: StandardRecord["confidence"];
 };
+
+function normalizeStandardCode(value: unknown): string {
+  return typeof value === "string" ? value.trim().toUpperCase() : "";
+}
+
+function findDatasetStandardDescription(codeRaw: unknown): string {
+  const code = normalizeStandardCode(codeRaw);
+  if (!code) return "";
+  const found = (K_ELA_BEST_DATASET as Array<Record<string, unknown>>).find(
+    (standard) => normalizeStandardCode(standard?.code) === code,
+  );
+  return String(found?.label ?? found?.description ?? "");
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -136,6 +150,21 @@ export function getCanonicalStandardVisibilityRows(
   }));
 }
 
+export function getCompatibilityStandardVisibilityRows(
+  rawStandards: Array<{
+    code?: unknown;
+    source?: unknown;
+    confidence?: unknown;
+  }>,
+): CanonicalStandardVisibilityRow[] {
+  return rawStandards.map((standard) => ({
+    code: typeof standard?.code === "string" ? standard.code : "",
+    description: findDatasetStandardDescription(standard?.code),
+    source: String(standard?.source ?? "detected") as StandardRecord["source"],
+    confidence: standard?.confidence as StandardRecord["confidence"],
+  }));
+}
+
 export function getCanonicalTraceSummaryLines(pkg: LessonPackage): string[] {
   const materials = Array.isArray(pkg.materials) ? pkg.materials : [];
   const standards = Array.isArray(pkg.standards) ? pkg.standards : [];
@@ -171,3 +200,4 @@ export function getCanonicalTraceSummaryLines(pkg: LessonPackage): string[] {
       : "No extraction warnings were preserved on source materials.",
   ].filter(Boolean);
 }
+

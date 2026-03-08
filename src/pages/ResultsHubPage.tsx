@@ -9,7 +9,7 @@ import {
   getRotationPlanItems,
   getInterventions,
 } from "../engine/packageCompat";
-import { K_ELA_BEST_DATASET } from "../engine/standards/data/k_ela_best_dataset";
+
 import {
   ORCHARD_COLORS as COLORS,
   orchardShellStyle,
@@ -33,6 +33,7 @@ import type { LessonPackage as CanonicalLessonPackage } from "../types/lesson-pa
 import {
   getCanonicalMaterialInfluenceRows,
   getCanonicalStandardVisibilityRows,
+  getCompatibilityStandardVisibilityRows,
   summarizeStandardsSource,
 } from "../utils/canonical-trace-selectors";
 
@@ -48,16 +49,6 @@ function short(text: any, max = 220) {
   return t.length > max ? t.slice(0, max - 3) + "..." : t;
 }
 
-function normCode(v: any) {
-  return String(v ?? "").trim().toUpperCase();
-}
-
-function findLabelByCode(codeRaw: any) {
-  const code = normCode(codeRaw);
-  if (!code) return "";
-  const found = (K_ELA_BEST_DATASET as any[]).find((s) => normCode(s?.code) === code);
-  return String(found?.label ?? found?.description ?? "");
-}
 
 function readBlueprint() {
   try {
@@ -503,13 +494,7 @@ export default function ResultsHubPage() {
     [canonicalPackage]
   );
   const fallbackStandards = useMemo(
-    () =>
-      (rawStandards || []).map((s: any) => ({
-        code: s?.code ?? "",
-        description: findLabelByCode(s?.code),
-        source: String(s?.source ?? "detected"),
-        confidence: s?.confidence,
-      })),
+    () => getCompatibilityStandardVisibilityRows(rawStandards || []),
     [rawStandards]
   );
   const visibleStandards = canonicalStandardRows.length > 0 ? canonicalStandardRows : fallbackStandards;
@@ -993,6 +978,7 @@ export default function ResultsHubPage() {
     </div>
   );
 }
+
 
 
 
