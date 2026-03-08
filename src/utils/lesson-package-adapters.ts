@@ -26,6 +26,40 @@ function inferConfidence(value: unknown): ExtractionConfidence {
   return 'unknown'
 }
 
+function normalizeSourceKind(value: unknown): LessonMaterial['sourceKind'] {
+  if (
+    value === 'curriculum' ||
+    value === 'exemplar' ||
+    value === 'reference' ||
+    value === 'student-material' ||
+    value === 'teacher-note'
+  ) {
+    return value
+  }
+  return 'unknown'
+}
+
+function normalizeExtractionKind(value: unknown): LessonMaterial['extractionKind'] {
+  if (
+    value === 'txt' ||
+    value === 'md' ||
+    value === 'docx' ||
+    value === 'pdf' ||
+    value === 'pptx' ||
+    value === 'image'
+  ) {
+    return value
+  }
+  return 'unknown'
+}
+
+function normalizeStandardSource(value: unknown): StandardRecord['source'] {
+  if (value === 'detected' || value === 'manual' || value === 'curriculum-derived') {
+    return value
+  }
+  return 'unknown'
+}
+
 function normalizeMaterials(raw: unknown): LessonMaterial[] {
   if (!Array.isArray(raw)) return []
 
@@ -35,32 +69,17 @@ function normalizeMaterials(raw: unknown): LessonMaterial[] {
       ? rec.warnings.map((w, wIndex) => {
           const warningRec = asRecord(w)
           return makeExtractionWarning(
-            asString(warningRec.code, warning__),
+            asString(warningRec.code, `warning_${index}_${wIndex}`),
             asString(warningRec.message, 'Unknown extraction warning'),
           )
         })
       : []
 
     return {
-      id: asString(rec.id, material_),
-      name: asString(rec.name, asString(rec.fileName, Material )),
-      sourceKind:
-        rec.sourceKind === 'curriculum' ||
-        rec.sourceKind === 'exemplar' ||
-        rec.sourceKind === 'reference' ||
-        rec.sourceKind === 'student-material' ||
-        rec.sourceKind === 'teacher-note'
-          ? rec.sourceKind
-          : 'unknown',
-      extractionKind:
-        rec.extractionKind === 'txt' ||
-        rec.extractionKind === 'md' ||
-        rec.extractionKind === 'docx' ||
-        rec.extractionKind === 'pdf' ||
-        rec.extractionKind === 'pptx' ||
-        rec.extractionKind === 'image'
-          ? rec.extractionKind
-          : 'unknown',
+      id: asString(rec.id, `material_${index + 1}`),
+      name: asString(rec.name, asString(rec.fileName, `Material ${index + 1}`)),
+      sourceKind: normalizeSourceKind(rec.sourceKind),
+      extractionKind: normalizeExtractionKind(rec.extractionKind),
       extractedText: asString(rec.extractedText, asString(rec.text)),
       confidence: inferConfidence(rec.confidence),
       warnings,
@@ -74,18 +93,17 @@ function normalizeMaterials(raw: unknown): LessonMaterial[] {
 function normalizeStandards(raw: unknown): StandardRecord[] {
   if (!Array.isArray(raw)) return []
 
-  return raw.map((item) => {
-    const rec = asRecord(item)
-    return {
-      code: asString(rec.code),
-      description: asString(rec.description),
-      source:
-        rec.source === 'detected' || rec.source === 'manual' || rec.source === 'curriculum-derived'
-          ? rec.source
-          : 'unknown',
-      confidence: inferConfidence(rec.confidence),
-    }
-  }).filter((s) => s.code.length > 0)
+  return raw
+    .map((item) => {
+      const rec = asRecord(item)
+      return {
+        code: asString(rec.code),
+        description: asString(rec.description),
+        source: normalizeStandardSource(rec.source),
+        confidence: inferConfidence(rec.confidence),
+      }
+    })
+    .filter((s) => s.code.length > 0)
 }
 
 function normalizeSlides(raw: unknown): LessonPackage['slides'] {
@@ -94,8 +112,8 @@ function normalizeSlides(raw: unknown): LessonPackage['slides'] {
   return raw.map((item, index) => {
     const rec = asRecord(item)
     return {
-      id: asString(rec.id, slide_),
-      title: asString(rec.title, Slide ),
+      id: asString(rec.id, `slide_${index + 1}`),
+      title: asString(rec.title, `Slide ${index + 1}`),
       content: asString(rec.content, asString(rec.body)),
       notes: asString(rec.notes),
     }
@@ -110,7 +128,7 @@ function normalizeLessonPlan(raw: unknown): LessonPackage['lessonPlan'] {
     blocks: blocksRaw.map((item, index) => {
       const block = asRecord(item)
       return {
-        title: asString(block.title, Block ),
+        title: asString(block.title, `Block ${index + 1}`),
         text: asString(block.text, asString(block.content)),
         durationMinutes:
           typeof block.durationMinutes === 'number' && Number.isFinite(block.durationMinutes)

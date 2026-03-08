@@ -1,14 +1,16 @@
 import { create } from "zustand";
-import type { LessonInput, LessonPackage } from "../engine/types";
+import type { LessonInput, LessonPackage as EngineLessonPackage } from "../engine/types";
 import type { LessonBlueprint } from "../engine/blueprint/types";
+import type { LessonPackage as CanonicalLessonPackage } from "../types/lesson-package";
 import { generateLesson } from "../engine/generateLesson";
+import { toCanonicalLessonPackage } from "../utils/lesson-package-adapters";
 
 type Status = "idle" | "generating" | "ready" | "error";
 
 type StoredWorkspace = {
   version: number;
   input: LessonInput;
-  package: LessonPackage | null;
+  package: EngineLessonPackage | null;
 };
 
 const STORAGE_VERSION = 3;
@@ -49,7 +51,7 @@ function isLessonInputLike(value: unknown): value is LessonInput {
   );
 }
 
-function isLessonPackageLike(value: unknown): value is LessonPackage {
+function isLessonPackageLike(value: unknown): value is EngineLessonPackage {
   if (!isRecord(value)) return false;
   if (!isRecord(value.meta) || !isLessonInputLike(value.input)) return false;
 
@@ -115,7 +117,8 @@ function safeSaveWorkspace(workspace: StoredWorkspace | null) {
 
 interface LessonStore {
   input: LessonInput;
-  package: LessonPackage | null;
+  package: EngineLessonPackage | null;
+  canonicalPackage: CanonicalLessonPackage | null;
   status: Status;
   errorMessage?: string;
   setInput: (patch: Partial<LessonInput>) => void;
@@ -126,16 +129,19 @@ interface LessonStore {
 
 export const useLessonStore = create<LessonStore>((set, get) => {
   const hydrated = typeof window !== "undefined" ? safeLoadWorkspace() : null;
+  const hydratedCanonical = hydrated?.package ? toCanonicalLessonPackage(hydrated.package) : null;
 
   return {
     input: hydrated?.input ?? createDefaultInput(),
     package: hydrated?.package ?? null,
+    canonicalPackage: hydratedCanonical,
     status: hydrated?.package ? "ready" : "idle",
     errorMessage: undefined,
 
     setInput: (patch) => {
       const nextInput = { ...get().input, ...patch };
       const nextPackage = get().package;
+      const nextCanonicalPackage = get().canonicalPackage;
 
       set({ input: nextInput });
       safeSaveWorkspace({
@@ -143,14 +149,26 @@ export const useLessonStore = create<LessonStore>((set, get) => {
         input: nextInput,
         package: nextPackage,
       });
+
+      if (nextCanonicalPackage) {
+        set({ canonicalPackage: nextCanonicalPackage });
+      }
     },
 
     generate: async (blueprint) => {
       const input = get().input;
       set({ status: "generating", errorMessage: undefined });
+
       try {
         const pkg = generateLesson(input, blueprint);
-        set({ package: pkg, status: "ready" });
+        const canonicalPkg = toCanonicalLessonPackage(pkg);
+
+        set({
+          package: pkg,
+          canonicalPackage: canonicalPkg,
+          status: "ready",
+        });
+
         safeSaveWorkspace({
           version: STORAGE_VERSION,
           input,
@@ -168,6 +186,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
       set({
         input: createDefaultInput(),
         package: null,
+        canonicalPackage: null,
         status: "idle",
         errorMessage: undefined,
       });
@@ -176,7 +195,11 @@ export const useLessonStore = create<LessonStore>((set, get) => {
 
     clearSaved: () => {
       const currentInput = get().input;
-      set({ package: null, status: "idle" });
+      set({
+        package: null,
+        canonicalPackage: null,
+        status: "idle",
+      });
       safeSaveWorkspace({
         version: STORAGE_VERSION,
         input: currentInput,
