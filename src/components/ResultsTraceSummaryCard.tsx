@@ -78,6 +78,16 @@ export function ResultsTraceSummaryCard({
     return summarizeStandardsSource(canonicalPackage.trace?.standardsSource);
   }, [canonicalPackage]);
 
+  const unresolvedConflictLines = useMemo(() => {
+    if (!canonicalPackage) return [];
+    return coerceSummaryLines(canonicalPackage.trace?.unresolvedConflicts, 6);
+  }, [canonicalPackage]);
+
+  const manualOverrideLines = useMemo(() => {
+    if (!canonicalPackage) return [];
+    return coerceSummaryLines(canonicalPackage.trace?.manualOverrides, 6);
+  }, [canonicalPackage]);
+
   if (!canonicalPackage) return null;
 
   return (
@@ -229,6 +239,46 @@ export function ResultsTraceSummaryCard({
           )}
         </div>
       </div>
+
+      {unresolvedConflictLines.length > 0 ? (
+        <div
+          style={{
+            border: "1px solid #E7E2DA",
+            borderRadius: 14,
+            background: "#FFF7F6",
+            padding: "12px 14px",
+            display: "grid",
+            gap: 8,
+          }}
+        >
+          <div style={{ fontWeight: 700, color: "#3F5A40" }}>Unresolved trace conflicts</div>
+          <ul style={{ margin: 0, paddingLeft: 18, color: "#2F2F2F", lineHeight: 1.5 }}>
+            {unresolvedConflictLines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {manualOverrideLines.length > 0 ? (
+        <div
+          style={{
+            border: "1px solid #E7E2DA",
+            borderRadius: 14,
+            background: "#FFFDF6",
+            padding: "12px 14px",
+            display: "grid",
+            gap: 8,
+          }}
+        >
+          <div style={{ fontWeight: 700, color: "#3F5A40" }}>Manual overrides</div>
+          <ul style={{ margin: 0, paddingLeft: 18, color: "#2F2F2F", lineHeight: 1.5 }}>
+            {manualOverrideLines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {warningMessages.length > 0 ? (
         <div
