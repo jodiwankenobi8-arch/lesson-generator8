@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+﻿import { defineConfig } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -24,9 +24,10 @@ function suppressFigmaWarnings() {
 }
 
 export default defineConfig({
+  cacheDir: path.join(process.env.LOCALAPPDATA || __dirname, 'lesson-generator-vite-cache'),
   plugins: [
     // The React and Tailwind plugins are both required for Make, even if
-    // Tailwind is not being actively used – do not remove them
+    // Tailwind is not being actively used â€“ do not remove them
     react(),
     tailwindcss(),
     // Suppress Figma entrypoint warnings

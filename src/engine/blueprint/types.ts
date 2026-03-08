@@ -28,11 +28,30 @@ export type PlanInput = {
   textOrTopic?: string;
 };
 
+export type UploadedFileTraceMetadata = {
+  extension?: string;
+  mimeType?: string;
+  extractionMethod?: "text" | "docx" | "fallback";
+};
+
 export type UploadedTextFile = {
   name: string;
   kind: string; // mime or extension
   text?: string;
   sourceRole?: SourceRole;
+  confidence?: number;
+  warnings?: string[];
+  metadata?: UploadedFileTraceMetadata;
+};
+
+export type BlueprintSourceFile = {
+  name: string;
+  kind: string;
+  text?: string;
+  sourceRole?: SourceRole;
+  confidence?: number;
+  warnings?: string[];
+  metadata?: UploadedFileTraceMetadata;
 };
 
 export type SlidePlan = {
@@ -52,12 +71,12 @@ export type LessonBlueprint = {
   };
 
   curriculum: {
-    files: { name: string; kind: string; sourceRole?: SourceRole }[];
+    files: BlueprintSourceFile[];
     coverageChecklist: { id: string; title: string; required: boolean; placed: boolean }[];
   };
 
   exemplar: {
-    files: { name: string; kind: string; sourceRole?: SourceRole }[];
+    files: BlueprintSourceFile[];
     frameworkDetection: FrameworkDetection;
     presenterCues: PresenterCue[];
   };

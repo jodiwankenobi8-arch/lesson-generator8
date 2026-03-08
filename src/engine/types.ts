@@ -1,4 +1,4 @@
-ï»¿export type Grade = "K" | "1" | "2" | "3" | "4" | "5";
+export type Grade = "K" | "1" | "2" | "3" | "4" | "5";
 export type Subject = "ELA" | "Math" | "Science" | "SS";
 
 export interface LessonInput {
@@ -28,7 +28,7 @@ export interface LessonInput {
 export interface DetectedStandard {
   code: string;
   description: string;
-  confidence: number; // 0â€“1
+  confidence: number; // 0–1
   overridden?: boolean;
 }
 
@@ -67,7 +67,7 @@ export interface LessonPlanSection {
 }
 
 /**
- * Centers evolved over builds â€” support both old + new fields
+ * Centers evolved over builds — support both old + new fields
  * so UI/exporters don't break.
  */
 export interface Center {
@@ -94,10 +94,30 @@ export interface InterventionSet {
 }
 
 /**
- * Rotation plan evolved too â€” sometimes string, sometimes list of blocks.
+ * Rotation plan evolved too — sometimes string, sometimes list of blocks.
  */
 export type RotationPlanItem = string | { title?: string; description?: string; text?: string };
 export type RotationPlan = string | RotationPlanItem[];
+
+export type GeneratedExtractionConfidence = "high" | "medium" | "low" | "unknown";
+
+export interface GeneratedLessonMaterialWarning {
+  code: string;
+  message: string;
+}
+
+export interface GeneratedLessonMaterial {
+  id: string;
+  name: string;
+  sourceKind: "curriculum" | "exemplar" | "reference" | "student-material" | "teacher-note" | "unknown";
+  extractionKind: "txt" | "md" | "docx" | "pdf" | "pptx" | "image" | "unknown";
+  extractedText: string;
+  confidence: GeneratedExtractionConfidence;
+  warnings: GeneratedLessonMaterialWarning[];
+  metadata?: Record<string, unknown>;
+  influencedBlueprint: boolean;
+  influencedGeneration: boolean;
+}
 
 export interface LessonPackage {
   meta: {
@@ -114,6 +134,7 @@ export interface LessonPackage {
    */
   standards: DetectedStandard[];
   standardsDetected?: DetectedStandard[];
+  materials: GeneratedLessonMaterial[];
 
   slides: Slide[];
   lessonPlan: LessonPlanSection[];
@@ -123,3 +144,4 @@ export interface LessonPackage {
 
   interventions: InterventionSet;
 }
+

@@ -10,6 +10,18 @@ function isTeacherLedEarlyElementary(plan: PlanInput) {
   return /\bkindergarten\b|\bgrade k\b|\bfirst grade\b|\bgrade 1\b|\b1st\b/.test(text);
 }
 
+function toBlueprintFile(file: UploadedTextFile) {
+  return {
+    name: file.name,
+    kind: file.kind,
+    text: file.text,
+    sourceRole: file.sourceRole,
+    confidence: file.confidence,
+    warnings: file.warnings ?? [],
+    metadata: file.metadata,
+  };
+}
+
 export function buildBlueprint(args: {
   plan: PlanInput;
   curriculumFiles: UploadedTextFile[];
@@ -101,11 +113,11 @@ export function buildBlueprint(args: {
     createdAtISO,
     plan: { input: args.plan },
     curriculum: {
-      files: (args.curriculumFiles ?? []).map(f => ({ name: f.name, kind: f.kind, sourceRole: f.sourceRole })),
+      files: (args.curriculumFiles ?? []).map(toBlueprintFile),
       coverageChecklist: curriculumChecklist,
     },
     exemplar: {
-      files: (args.exemplarFiles ?? []).map(f => ({ name: f.name, kind: f.kind, sourceRole: f.sourceRole })),
+      files: (args.exemplarFiles ?? []).map(toBlueprintFile),
       frameworkDetection,
       presenterCues,
     },
