@@ -556,8 +556,7 @@ export default function ResultsHubPage() {
               <div style={orchardStitchDividerStyle()} />
               <h1 style={orchardHeroTitleStyle()}>{lessonTitle}</h1>
               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 760 }}>
-                Review the generated package, scan the standards and blueprint influence, preview the teaching slides,
-                and export the pieces you want to use.
+                Review the finished lesson package, scan the teaching priorities first, preview the lesson flow, and open trace details only when you want to inspect how the package was shaped.
               </div>
 
               <div style={{ marginTop: 12 }}>
@@ -757,9 +756,9 @@ export default function ResultsHubPage() {
           </div>
 
           <div style={orchardCardStyle()}>
-            <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Package Overview</div>
+            <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Teacher Package at a Glance</div>
             <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
-              A quick scan of the completed lesson pieces.
+              A quick scan of the finished teaching pieces before you move into the detailed sections below.
             </div>
 
             <div style={{ display: "grid", gap: 10 }}>
@@ -772,13 +771,20 @@ export default function ResultsHubPage() {
         </div>
 
         <Section
-          title="Blueprint Influence"
-          subtitle="See how curriculum, exemplar framework, and teacher-facing cues shaped the final package."
+          title="Lesson Story and Blueprint Influence"
+          subtitle="Start with the teacher-facing lesson story, then open trace details only when you need to inspect source influence."
           defaultOpen
         >
           <BlueprintInsights canonicalPackage={canonicalPackage} />
 
-      <ResultsTraceSummaryCard canonicalPackage={canonicalPackage} />
+          <details style={{ marginTop: 14 }}>
+            <summary style={{ cursor: "pointer", color: COLORS.accentDark, fontWeight: 800 }}>
+              Traceable Results
+            </summary>
+            <div style={{ marginTop: 12 }}>
+              <ResultsTraceSummaryCard canonicalPackage={canonicalPackage} />
+            </div>
+          </details>
         </Section>
 
         <Section
@@ -994,3 +1000,4 @@ export default function ResultsHubPage() {
     </div>
   );
 }
+
