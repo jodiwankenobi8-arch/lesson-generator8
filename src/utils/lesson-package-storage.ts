@@ -14,6 +14,11 @@ function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
 }
 
+export function hasStoredLessonPackage(): boolean {
+  if (!isBrowser()) return false
+  return window.localStorage.getItem(LESSON_PACKAGE_STORAGE_KEY) !== null
+}
+
 export function parseLessonPackage(input: unknown): LessonPackageLoadResult {
   const result = lessonPackageSchema.safeParse(input)
 

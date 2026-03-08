@@ -4,6 +4,12 @@ import type { LessonBlueprint } from "../engine/blueprint/types";
 import type { LessonPackage as CanonicalLessonPackage } from "../types/lesson-package";
 import { generateLesson } from "../engine/generateLesson";
 import { toCanonicalLessonPackage } from "../utils/lesson-package-adapters";
+import {
+  clearLessonPackage,
+  hasStoredLessonPackage,
+  loadLessonPackage,
+  saveLessonPackage,
+} from "../utils/lesson-package-storage";
 
 type Status = "idle" | "generating" | "ready" | "error";
 
@@ -129,7 +135,19 @@ interface LessonStore {
 
 export const useLessonStore = create<LessonStore>((set, get) => {
   const hydrated = typeof window !== "undefined" ? safeLoadWorkspace() : null;
-  const hydratedCanonical = hydrated?.package ? toCanonicalLessonPackage(hydrated.package) : null;
+  const hydratedCanonical =
+    hydrated?.package
+      ? (() => {
+          if (hasStoredLessonPackage()) {
+            const loadedCanonical = loadLessonPackage();
+            if (loadedCanonical.ok) return loadedCanonical.value;
+          }
+
+          const fallbackCanonical = toCanonicalLessonPackage(hydrated.package);
+          saveLessonPackage(fallbackCanonical);
+          return fallbackCanonical;
+        })()
+      : null;
 
   return {
     input: hydrated?.input ?? createDefaultInput(),
@@ -174,6 +192,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
           input,
           package: pkg,
         });
+        saveLessonPackage(canonicalPkg);
       } catch (error) {
         set({
           status: "error",
@@ -191,6 +210,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
         errorMessage: undefined,
       });
       safeSaveWorkspace(null);
+      clearLessonPackage();
     },
 
     clearSaved: () => {
@@ -205,6 +225,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
         input: currentInput,
         package: null,
       });
+      clearLessonPackage();
     },
   };
 });
