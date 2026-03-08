@@ -1,0 +1,44 @@
+/* Asset 02: main-cream-paper-panel */
+:root {
+  --asset-02-frame-outer: #9a7963;
+  --asset-02-frame-fill: #efe3d2;
+  --asset-02-panel-border: #d8c0ab;
+  --asset-02-paper-top: #f7efe5;
+  --asset-02-paper-bottom: #efe3d4;
+  --asset-02-stitch: #c9ae97;
+  --asset-02-shadow: rgba(91,61,44,0.22);
+  --asset-02-paper-speckle: rgba(123,90,66,0.04);
+  --asset-02-highlight: rgba(255,255,255,0.38);
+}
+
+.asset-02-main-cream-paper-panel {
+  position: relative;
+  border: 1px solid var(--asset-02-frame-outer);
+  background: var(--asset-02-frame-fill);
+  border-radius: 34px;
+  padding: 10px;
+  box-shadow: 0 14px 28px var(--asset-02-shadow);
+}
+
+.asset-02-main-cream-paper-panel__inner {
+  position: relative;
+  min-height: 480px;
+  border-radius: 28px;
+  border: 1px solid var(--asset-02-panel-border);
+  padding: 32px;
+  background-image:
+    radial-gradient(var(--asset-02-paper-speckle) 0.7px, transparent 0.7px),
+    radial-gradient(circle at 20% 18%, var(--asset-02-highlight), transparent 20%),
+    linear-gradient(180deg, var(--asset-02-paper-top) 0%, var(--asset-02-paper-bottom) 100%);
+  background-size: 10px 10px, auto, auto;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+}
+
+.asset-02-main-cream-paper-panel__stitch {
+  pointer-events: none;
+  position: absolute;
+  inset: 16px;
+  border-radius: 22px;
+  border: 2px dashed var(--asset-02-stitch);
+  opacity: 0.9;
+}

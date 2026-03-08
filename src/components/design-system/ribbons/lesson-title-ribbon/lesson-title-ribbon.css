@@ -1,0 +1,35 @@
+:root {
+  --lesson-title-ribbon-width: 579px;
+  --lesson-title-ribbon-height: 123px;
+}
+
+.lesson-title-ribbon {
+  position: relative;
+  display: inline-block;
+  width: var(--lesson-title-ribbon-width);
+  height: var(--lesson-title-ribbon-height);
+  background: url("./lesson-title-ribbon.png") center / contain no-repeat;
+}
+
+.lesson-title-ribbon__overlayTitle {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 7rem;
+  text-align: center;
+  font-family: "Playfair Display", "Libre Baskerville", Georgia, serif;
+  font-size: 2rem;
+  line-height: 1;
+  color: #f3ead8;
+  text-shadow:
+    0 1px 0 rgba(70, 55, 34, 0.95),
+    0 2px 4px rgba(34, 27, 17, 0.28);
+  pointer-events: none;
+}
+
+.lesson-title-ribbon--responsive {
+  width: min(100%, var(--lesson-title-ribbon-width));
+  aspect-ratio: 579 / 123;
+  height: auto;
+}

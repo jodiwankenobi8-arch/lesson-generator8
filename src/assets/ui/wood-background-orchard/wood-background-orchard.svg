@@ -1,0 +1,44 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="base" x1="800" y1="0" x2="800" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9A7055"/>
+      <stop offset="1" stop-color="#7C5742"/>
+    </linearGradient>
+    <pattern id="grain" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+      <rect width="48" height="48" fill="transparent"/>
+      <rect width="2" height="48" fill="rgba(88,58,42,0.22)"/>
+      <rect x="24" width="1" height="48" fill="rgba(255,255,255,0.03)"/>
+    </pattern>
+    <linearGradient id="topShade" x1="0" y1="0" x2="0" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="rgba(255,255,255,0.03)"/>
+      <stop offset="1" stop-color="rgba(0,0,0,0.12)"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#base)"/>
+
+  <g>
+    <rect y="0" width="1600" height="86" fill="#8B6148"/>
+    <rect y="86" width="1600" height="4" fill="#6C4936"/>
+    <rect y="90" width="1600" height="86" fill="#9A7055"/>
+    <rect y="176" width="1600" height="4" fill="#6C4936"/>
+    <rect y="180" width="1600" height="86" fill="#8B6148"/>
+    <rect y="266" width="1600" height="4" fill="#6C4936"/>
+    <rect y="270" width="1600" height="86" fill="#7C5742"/>
+    <rect y="356" width="1600" height="86" fill="#8B6148"/>
+    <rect y="442" width="1600" height="4" fill="#6C4936"/>
+    <rect y="446" width="1600" height="86" fill="#9A7055"/>
+    <rect y="532" width="1600" height="4" fill="#6C4936"/>
+    <rect y="536" width="1600" height="86" fill="#8B6148"/>
+    <rect y="622" width="1600" height="4" fill="#6C4936"/>
+    <rect y="626" width="1600" height="86" fill="#7C5742"/>
+    <rect y="712" width="1600" height="86" fill="#8B6148"/>
+    <rect y="798" width="1600" height="4" fill="#6C4936"/>
+    <rect y="802" width="1600" height="98" fill="#9A7055"/>
+  </g>
+
+  <rect width="1600" height="900" fill="url(#grain)" opacity="0.75"/>
+  <rect width="1600" height="900" fill="url(#topShade)"/>
+  <rect y="0" width="1600" height="60" fill="white" opacity="0.05"/>
+  <rect y="820" width="1600" height="80" fill="black" opacity="0.08"/>
+</svg>

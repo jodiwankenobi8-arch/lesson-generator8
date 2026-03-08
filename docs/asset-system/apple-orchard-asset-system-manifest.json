@@ -1,0 +1,203 @@
+{
+  "version": 2,
+  "source_image": "ChatGPT Image Mar 8, 2026, 04_43_54 PM.png",
+  "assets": [
+    {
+      "assetNumber": "01",
+      "assetName": "wood-background-orchard",
+      "status": "Finalized / Exported",
+      "category": "Background",
+      "sourcePage": "New Lesson woodland/apple page",
+      "description": "Warm horizontal orchard wood planks with darker seams, subtle grain variation, and soft tonal wear. Used as the base surface behind parchment cards and decorative clusters.",
+      "canonicalCodeNames": [
+        "WOOD_BACKGROUND_ORCHARD",
+        "woodBackgroundOrchardStyle",
+        "WoodBackgroundOrchard"
+      ],
+      "recommendedProjectPlacement": {
+        "assetFolder": "src/assets/ui/wood-background-orchard/",
+        "componentFolder": "src/components/design-system/backgrounds/wood-background-orchard/"
+      },
+      "deliverables": [
+        "preview PNG",
+        "PNG asset",
+        "SVG asset",
+        "CSS implementation",
+        "React/TSX component",
+        "design tokens JSON",
+        "README",
+        "zip handoff package"
+      ],
+      "notes": "Source-derived wood surface asset packaged as a reusable background element.",
+      "files": [
+        "README.md",
+        "WoodBackgroundOrchard.tsx",
+        "asset-manifest.json",
+        "index.ts",
+        "tokens.json",
+        "wood-background-orchard-preview.png",
+        "wood-background-orchard.css",
+        "wood-background-orchard.png",
+        "wood-background-orchard.svg"
+      ]
+    },
+    {
+      "assetNumber": "02",
+      "assetName": "main-cream-paper-panel",
+      "status": "Finalized / Exported",
+      "category": "Panel",
+      "sourcePage": "New Lesson woodland/apple page",
+      "description": "Layered parchment-style primary content panel with outer cream frame, soft paper center, and dashed stitched inner border. Intended as the main reusable content container for forms, notes, and setup screens.",
+      "canonicalCodeNames": [
+        "MAIN_CREAM_PAPER_PANEL",
+        "mainCreamPaperPanelStyle",
+        "mainCreamPaperInnerStyle",
+        "MainCreamPaperPanel"
+      ],
+      "recommendedProjectPlacement": {
+        "assetFolder": "src/assets/ui/main-cream-paper-panel/",
+        "componentFolder": "src/components/design-system/panels/main-cream-paper-panel/"
+      },
+      "deliverables": [
+        "preview PNG",
+        "PNG asset",
+        "SVG asset",
+        "CSS implementation",
+        "React/TSX component",
+        "design tokens JSON",
+        "README",
+        "zip handoff package"
+      ],
+      "notes": "Panel-only. No text, labels, buttons, or fields.",
+      "files": [
+        "MainCreamPaperPanel.tsx",
+        "README.md",
+        "asset-manifest.json",
+        "index.ts",
+        "main-cream-paper-panel-preview.png",
+        "main-cream-paper-panel.css",
+        "main-cream-paper-panel.png",
+        "main-cream-paper-panel.svg",
+        "tokens.json"
+      ]
+    },
+    {
+      "assetNumber": "03",
+      "assetName": "new-lesson-label-apple",
+      "status": "Finalized / Exported",
+      "category": "Label",
+      "sourcePage": "New Lesson woodland/apple page",
+      "description": "Decorative page-title label with apple illustration, blossom cluster, and title treatment extracted from the source image. Intended for headers, section titles, planner title moments, and dashboard hero labels.",
+      "canonicalCodeNames": [
+        "NEW_LESSON_LABEL_APPLE",
+        "AppleIconArtwork",
+        "BlossomCluster",
+        "NewLessonLabelApple"
+      ],
+      "recommendedProjectPlacement": {
+        "assetFolder": "src/assets/ui/new-lesson-label-apple/",
+        "componentFolder": "src/components/design-system/labels/new-lesson-label-apple/"
+      },
+      "deliverables": [
+        "preview PNG",
+        "PNG asset",
+        "SVG asset",
+        "CSS implementation",
+        "React/TSX component",
+        "design tokens JSON",
+        "README",
+        "zip handoff package"
+      ],
+      "notes": "Current raster preserves the reference title treatment for exact visual fidelity.",
+      "files": [
+        "NewLessonLabelApple.tsx",
+        "README.md",
+        "asset-manifest.json",
+        "index.ts",
+        "new-lesson-label-apple-preview.png",
+        "new-lesson-label-apple.css",
+        "new-lesson-label-apple.png",
+        "new-lesson-label-apple.svg",
+        "tokens.json"
+      ]
+    },
+    {
+      "assetNumber": "04",
+      "assetName": "stitched-inner-frame",
+      "status": "Finalized / Exported",
+      "category": "Frame",
+      "sourcePage": "New Lesson woodland/apple page",
+      "description": "Standalone dashed / stitched inner frame extracted from the parchment panel language. Intended as a reusable overlay for cards, forms, planner surfaces, and parchment containers when the inner stitch detail is needed without reusing the full paper panel.",
+      "canonicalCodeNames": [
+        "STITCHED_INNER_FRAME",
+        "stitchedInnerFrameStyle",
+        "StitchedInnerFrame"
+      ],
+      "recommendedProjectPlacement": {
+        "assetFolder": "src/assets/ui/stitched-inner-frame/",
+        "componentFolder": "src/components/design-system/frames/stitched-inner-frame/"
+      },
+      "deliverables": [
+        "preview PNG",
+        "PNG asset",
+        "SVG asset",
+        "CSS implementation",
+        "React/TSX component",
+        "design tokens JSON",
+        "README",
+        "zip handoff package"
+      ],
+      "notes": "Frame-only. Transparent center. No fill, text, labels, buttons, or fields.",
+      "files": [
+        "README.md",
+        "StitchedInnerFrame.tsx",
+        "asset-manifest.json",
+        "index.ts",
+        "stitched-inner-frame-preview.png",
+        "stitched-inner-frame.css",
+        "stitched-inner-frame.png",
+        "stitched-inner-frame.svg",
+        "tokens.json"
+      ]
+    },
+    {
+      "assetNumber": "05",
+      "assetName": "lesson-title-ribbon",
+      "status": "Finalized / Exported",
+      "category": "Ribbon",
+      "sourcePage": "New Lesson woodland/apple page",
+      "description": "Standalone moss ribbon header extracted from the lesson setup screen. Preserves the signature Apple Orchard ribbon treatment with stitched detail, warm moss palette, V-cut tails, lower folded tabs, and the reference title treatment.",
+      "canonicalCodeNames": [
+        "LESSON_TITLE_RIBBON",
+        "lessonTitleRibbonStyle",
+        "LessonTitleRibbon"
+      ],
+      "recommendedProjectPlacement": {
+        "assetFolder": "src/assets/ui/lesson-title-ribbon/",
+        "componentFolder": "src/components/design-system/ribbons/lesson-title-ribbon/"
+      },
+      "deliverables": [
+        "preview PNG",
+        "PNG asset",
+        "SVG asset",
+        "CSS implementation",
+        "React/TSX component",
+        "design tokens JSON",
+        "README",
+        "zip handoff package"
+      ],
+      "notes": "Current exported raster preserves the original baked-in title text for exact visual fidelity.",
+      "files": [
+        "LessonTitleRibbon.tsx",
+        "README.md",
+        "asset-manifest.json",
+        "index.ts",
+        "lesson-title-ribbon-preview.png",
+        "lesson-title-ribbon.css",
+        "lesson-title-ribbon.png",
+        "lesson-title-ribbon.svg",
+        "tokens.json"
+      ]
+    }
+  ]
+}

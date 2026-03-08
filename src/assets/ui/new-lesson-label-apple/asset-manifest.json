@@ -1,0 +1,40 @@
+{
+  "assetNumber": "03",
+  "assetName": "new-lesson-label-apple",
+  "status": "Finalized / Exported",
+  "category": "Label",
+  "sourcePage": "New Lesson woodland/apple page",
+  "description": "Decorative page-title label with apple illustration, blossom cluster, and title treatment extracted from the source image. Intended for headers, section titles, planner title moments, and dashboard hero labels.",
+  "canonicalCodeNames": [
+    "NEW_LESSON_LABEL_APPLE",
+    "AppleIconArtwork",
+    "BlossomCluster",
+    "NewLessonLabelApple"
+  ],
+  "recommendedProjectPlacement": {
+    "assetFolder": "src/assets/ui/new-lesson-label-apple/",
+    "componentFolder": "src/components/design-system/labels/new-lesson-label-apple/"
+  },
+  "deliverables": [
+    "preview PNG",
+    "PNG asset",
+    "SVG asset",
+    "CSS implementation",
+    "React/TSX component",
+    "design tokens JSON",
+    "README",
+    "zip handoff package"
+  ],
+  "notes": "Current raster preserves the reference title treatment for exact visual fidelity.",
+  "files": [
+    "NewLessonLabelApple.tsx",
+    "README.md",
+    "asset-manifest.json",
+    "index.ts",
+    "new-lesson-label-apple-preview.png",
+    "new-lesson-label-apple.css",
+    "new-lesson-label-apple.png",
+    "new-lesson-label-apple.svg",
+    "tokens.json"
+  ]
+}

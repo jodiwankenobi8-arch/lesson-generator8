@@ -1,0 +1,52 @@
+/* Asset 03: new-lesson-label-apple */
+:root {
+  --asset-03-text: #f7f1dc;
+  --asset-03-label-top: #9aa06c;
+  --asset-03-label-bottom: #7d8358;
+  --asset-03-label-border: #7e6f4f;
+  --asset-03-apple-light: #ef9c74;
+  --asset-03-apple-mid: #d76a46;
+  --asset-03-apple-dark: #b64b32;
+  --asset-03-apple-outline: #8f3c2b;
+  --asset-03-leaf-light: #9bb875;
+  --asset-03-leaf-dark: #6c8a4b;
+  --asset-03-blossom: #fff7f2;
+  --asset-03-blossom-stroke: #e6d9d1;
+  --asset-03-blossom-center: #e3c176;
+  --asset-03-shadow: rgba(91,61,44,0.18);
+}
+
+.asset-03-new-lesson-label-apple {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+}
+
+.asset-03-new-lesson-label-apple__label {
+  border: 1px solid var(--asset-03-label-border);
+  border-radius: 999px;
+  padding: 12px 32px;
+  background: linear-gradient(180deg, var(--asset-03-label-top) 0%, var(--asset-03-label-bottom) 100%);
+  box-shadow: 0 8px 16px var(--asset-03-shadow), inset 0 1px 0 rgba(255,255,255,0.15);
+  color: var(--asset-03-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.asset-03-new-lesson-label-apple__art {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex: 0 0 auto;
+}
+
+.asset-03-new-lesson-label-apple__blossoms {
+  position: absolute;
+  right: -28px;
+  top: -24px;
+  width: 64px;
+  height: 64px;
+}

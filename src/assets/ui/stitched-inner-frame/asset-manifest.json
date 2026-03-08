@@ -1,0 +1,39 @@
+{
+  "assetNumber": "04",
+  "assetName": "stitched-inner-frame",
+  "status": "Finalized / Exported",
+  "category": "Frame",
+  "sourcePage": "New Lesson woodland/apple page",
+  "description": "Standalone dashed / stitched inner frame extracted from the parchment panel language. Intended as a reusable overlay for cards, forms, planner surfaces, and parchment containers when the inner stitch detail is needed without reusing the full paper panel.",
+  "canonicalCodeNames": [
+    "STITCHED_INNER_FRAME",
+    "stitchedInnerFrameStyle",
+    "StitchedInnerFrame"
+  ],
+  "recommendedProjectPlacement": {
+    "assetFolder": "src/assets/ui/stitched-inner-frame/",
+    "componentFolder": "src/components/design-system/frames/stitched-inner-frame/"
+  },
+  "deliverables": [
+    "preview PNG",
+    "PNG asset",
+    "SVG asset",
+    "CSS implementation",
+    "React/TSX component",
+    "design tokens JSON",
+    "README",
+    "zip handoff package"
+  ],
+  "notes": "Frame-only. Transparent center. No fill, text, labels, buttons, or fields.",
+  "files": [
+    "README.md",
+    "StitchedInnerFrame.tsx",
+    "asset-manifest.json",
+    "index.ts",
+    "stitched-inner-frame-preview.png",
+    "stitched-inner-frame.css",
+    "stitched-inner-frame.png",
+    "stitched-inner-frame.svg",
+    "tokens.json"
+  ]
+}

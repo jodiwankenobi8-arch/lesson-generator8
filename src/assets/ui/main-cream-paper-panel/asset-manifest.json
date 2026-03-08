@@ -1,0 +1,40 @@
+{
+  "assetNumber": "02",
+  "assetName": "main-cream-paper-panel",
+  "status": "Finalized / Exported",
+  "category": "Panel",
+  "sourcePage": "New Lesson woodland/apple page",
+  "description": "Layered parchment-style primary content panel with outer cream frame, soft paper center, and dashed stitched inner border. Intended as the main reusable content container for forms, notes, and setup screens.",
+  "canonicalCodeNames": [
+    "MAIN_CREAM_PAPER_PANEL",
+    "mainCreamPaperPanelStyle",
+    "mainCreamPaperInnerStyle",
+    "MainCreamPaperPanel"
+  ],
+  "recommendedProjectPlacement": {
+    "assetFolder": "src/assets/ui/main-cream-paper-panel/",
+    "componentFolder": "src/components/design-system/panels/main-cream-paper-panel/"
+  },
+  "deliverables": [
+    "preview PNG",
+    "PNG asset",
+    "SVG asset",
+    "CSS implementation",
+    "React/TSX component",
+    "design tokens JSON",
+    "README",
+    "zip handoff package"
+  ],
+  "notes": "Panel-only. No text, labels, buttons, or fields.",
+  "files": [
+    "MainCreamPaperPanel.tsx",
+    "README.md",
+    "asset-manifest.json",
+    "index.ts",
+    "main-cream-paper-panel-preview.png",
+    "main-cream-paper-panel.css",
+    "main-cream-paper-panel.png",
+    "main-cream-paper-panel.svg",
+    "tokens.json"
+  ]
+}

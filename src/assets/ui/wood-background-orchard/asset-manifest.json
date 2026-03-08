@@ -1,0 +1,39 @@
+{
+  "assetNumber": "01",
+  "assetName": "wood-background-orchard",
+  "status": "Finalized / Exported",
+  "category": "Background",
+  "sourcePage": "New Lesson woodland/apple page",
+  "description": "Warm horizontal orchard wood planks with darker seams, subtle grain variation, and soft tonal wear. Used as the base surface behind parchment cards and decorative clusters.",
+  "canonicalCodeNames": [
+    "WOOD_BACKGROUND_ORCHARD",
+    "woodBackgroundOrchardStyle",
+    "WoodBackgroundOrchard"
+  ],
+  "recommendedProjectPlacement": {
+    "assetFolder": "src/assets/ui/wood-background-orchard/",
+    "componentFolder": "src/components/design-system/backgrounds/wood-background-orchard/"
+  },
+  "deliverables": [
+    "preview PNG",
+    "PNG asset",
+    "SVG asset",
+    "CSS implementation",
+    "React/TSX component",
+    "design tokens JSON",
+    "README",
+    "zip handoff package"
+  ],
+  "notes": "Source-derived wood surface asset packaged as a reusable background element.",
+  "files": [
+    "README.md",
+    "WoodBackgroundOrchard.tsx",
+    "asset-manifest.json",
+    "index.ts",
+    "tokens.json",
+    "wood-background-orchard-preview.png",
+    "wood-background-orchard.css",
+    "wood-background-orchard.png",
+    "wood-background-orchard.svg"
+  ]
+}

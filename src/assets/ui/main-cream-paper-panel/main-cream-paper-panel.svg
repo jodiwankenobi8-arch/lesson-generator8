@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1100" viewBox="0 0 1600 1100" role="img" aria-label="Asset 02 main cream paper panel">
+  <defs>
+    <linearGradient id="paperFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7efe5"/>
+      <stop offset="100%" stop-color="#efe3d4"/>
+    </linearGradient>
+    <radialGradient id="paperGlow" cx="20%" cy="18%" r="30%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.38)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="rgba(91,61,44,0.22)"/>
+    </filter>
+    <pattern id="speckles" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.7" fill="rgba(123,90,66,0.04)"/>
+      <circle cx="7" cy="6" r="0.5" fill="rgba(123,90,66,0.03)"/>
+    </pattern>
+  </defs>
+
+  <rect x="220" y="120" rx="34" ry="34" width="1160" height="780"
+        fill="#efe3d2" stroke="#9a7963" stroke-width="2"
+        filter="url(#shadow)"/>
+
+  <rect x="230" y="130" rx="28" ry="28" width="1140" height="760"
+        fill="url(#paperFill)" stroke="#d8c0ab" stroke-width="2"/>
+  <rect x="230" y="130" rx="28" ry="28" width="1140" height="760" fill="url(#speckles)" opacity="1"/>
+  <ellipse cx="470" cy="260" rx="210" ry="120" fill="white" opacity="0.18"/>
+  <rect x="246" y="146" rx="22" ry="22" width="1108" height="728"
+        fill="none" stroke="#c9ae97" stroke-width="3" stroke-dasharray="10 10"/>
+</svg>

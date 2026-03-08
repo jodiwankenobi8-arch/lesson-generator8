@@ -1,0 +1,72 @@
+:root {
+  --wood-bg-base: #8a654d;
+  --wood-bg-plank-light: #9a7055;
+  --wood-bg-plank-mid: #8b6148;
+  --wood-bg-plank-dark: #7c5742;
+  --wood-bg-seam: #6c4936;
+  --wood-bg-grain: rgba(88, 58, 42, 0.22);
+  --wood-bg-highlight: rgba(255, 255, 255, 0.03);
+  --wood-bg-top-glow: rgba(255, 255, 255, 0.06);
+  --wood-bg-bottom-shadow: rgba(0, 0, 0, 0.18);
+}
+
+.wood-background-orchard {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: var(--wood-bg-base);
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.12)),
+    repeating-linear-gradient(
+      180deg,
+      var(--wood-bg-plank-mid) 0px,
+      var(--wood-bg-plank-mid) 86px,
+      var(--wood-bg-seam) 86px,
+      var(--wood-bg-seam) 90px,
+      var(--wood-bg-plank-light) 90px,
+      var(--wood-bg-plank-light) 176px,
+      var(--wood-bg-seam) 176px,
+      var(--wood-bg-seam) 180px,
+      var(--wood-bg-plank-mid) 180px,
+      var(--wood-bg-plank-mid) 266px,
+      var(--wood-bg-plank-dark) 266px,
+      var(--wood-bg-plank-dark) 270px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--wood-bg-grain) 0px,
+      var(--wood-bg-grain) 2px,
+      transparent 2px,
+      transparent 24px,
+      var(--wood-bg-highlight) 24px,
+      var(--wood-bg-highlight) 25px,
+      transparent 25px,
+      transparent 48px
+    ),
+    linear-gradient(180deg, var(--wood-bg-plank-light) 0%, var(--wood-bg-plank-dark) 100%);
+  background-blend-mode: multiply, normal, overlay, normal;
+}
+
+.wood-background-orchard::before,
+.wood-background-orchard::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.wood-background-orchard::before {
+  top: 0;
+  height: 4rem;
+  background: var(--wood-bg-top-glow);
+  filter: blur(24px);
+}
+
+.wood-background-orchard::after {
+  bottom: 0;
+  height: 7rem;
+  background: var(--wood-bg-bottom-shadow);
+  filter: blur(24px);
+}

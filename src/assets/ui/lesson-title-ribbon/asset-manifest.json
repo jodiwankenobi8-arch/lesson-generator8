@@ -1,0 +1,39 @@
+{
+  "assetNumber": "05",
+  "assetName": "lesson-title-ribbon",
+  "status": "Finalized / Exported",
+  "category": "Ribbon",
+  "sourcePage": "New Lesson woodland/apple page",
+  "description": "Standalone moss ribbon header extracted from the lesson setup screen. Preserves the signature Apple Orchard ribbon treatment with stitched detail, warm moss palette, V-cut tails, lower folded tabs, and the reference title treatment.",
+  "canonicalCodeNames": [
+    "LESSON_TITLE_RIBBON",
+    "lessonTitleRibbonStyle",
+    "LessonTitleRibbon"
+  ],
+  "recommendedProjectPlacement": {
+    "assetFolder": "src/assets/ui/lesson-title-ribbon/",
+    "componentFolder": "src/components/design-system/ribbons/lesson-title-ribbon/"
+  },
+  "deliverables": [
+    "preview PNG",
+    "PNG asset",
+    "SVG asset",
+    "CSS implementation",
+    "React/TSX component",
+    "design tokens JSON",
+    "README",
+    "zip handoff package"
+  ],
+  "notes": "Current exported raster preserves the original baked-in title text for exact visual fidelity.",
+  "files": [
+    "LessonTitleRibbon.tsx",
+    "README.md",
+    "asset-manifest.json",
+    "index.ts",
+    "lesson-title-ribbon-preview.png",
+    "lesson-title-ribbon.css",
+    "lesson-title-ribbon.png",
+    "lesson-title-ribbon.svg",
+    "tokens.json"
+  ]
+}
