@@ -141,6 +141,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
           if (hasStoredLessonPackage()) {
             const loadedCanonical = loadLessonPackage();
             if (loadedCanonical.ok) return loadedCanonical.value;
+            clearLessonPackage();
           }
 
           const fallbackCanonical = toCanonicalLessonPackage(hydrated.package);
