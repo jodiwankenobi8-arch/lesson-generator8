@@ -113,6 +113,62 @@ function SnapshotChip({
   );
 }
 
+function CanonicalInfluenceSnapshot({
+  canonicalPackage,
+  canonicalMaterialRows,
+  canonicalBlueprintInfluenceCount,
+  canonicalGenerationInfluenceCount,
+  canonicalWarningCount,
+  canonicalStandardsSource,
+}: {
+  canonicalPackage: any;
+  canonicalMaterialRows: Array<{
+    id: string;
+    name: string;
+    sourceKind: string;
+    confidence: unknown;
+    influencedBlueprint: boolean;
+    influencedGeneration: boolean;
+    warningCount: number;
+  }>;
+  canonicalBlueprintInfluenceCount: number;
+  canonicalGenerationInfluenceCount: number;
+  canonicalWarningCount: number;
+  canonicalStandardsSource: string;
+}) {
+  if (!canonicalPackage) return null;
+
+  return (
+    <div
+      style={{
+        ...orchardSoftCardStyle(),
+        marginBottom: 14,
+        background: "linear-gradient(135deg, #F8FBF7 0%, #F2F8FF 100%)",
+      }}
+    >
+      <div style={{ fontWeight: 900, fontSize: 18, color: COLORS.heading, marginBottom: 8 }}>
+        Canonical Influence Snapshot
+      </div>
+      <div style={{ ...orchardHelpTextStyle() }}>
+        Shared canonical material and trace selectors are now feeding the Results Hub visibility path.
+      </div>
+
+      <div style={{ marginTop: 12 }}>
+        <SnapshotChip label="Canonical materials" value={canonicalMaterialRows.length} background="#EEF5EA" border="#BFD6B8" />
+        <SnapshotChip label="Blueprint influence" value={canonicalBlueprintInfluenceCount} background="#F2F8FF" border="#C9DAEE" />
+        <SnapshotChip label="Generation influence" value={canonicalGenerationInfluenceCount} background="#FFF6E8" border={COLORS.warnBorder} />
+        <SnapshotChip label="Standards source" value={canonicalStandardsSource} background="#F4EDF8" border="#D7C6E4" />
+      </div>
+
+      {canonicalWarningCount > 0 && (
+        <div style={{ ...orchardHelpTextStyle(), marginTop: 10 }}>
+          Captured extraction warnings across canonical materials: {canonicalWarningCount}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BlueprintInsights({ canonicalPackage }: { canonicalPackage: any }) {
   const bp = useMemo(() => readBlueprint(), []);
   const canonicalMaterialRows = useMemo(
@@ -129,34 +185,14 @@ function BlueprintInsights({ canonicalPackage }: { canonicalPackage: any }) {
   if (!bp) {
     return (
       <div style={{ display: "grid", gap: 14 }}>
-        {canonicalPackage && (
-          <div
-            style={{
-              ...orchardSoftCardStyle(),
-              background: "linear-gradient(135deg, #F8FBF7 0%, #F2F8FF 100%)",
-            }}
-          >
-            <div style={{ fontWeight: 900, fontSize: 18, color: COLORS.heading, marginBottom: 8 }}>
-              Canonical Influence Snapshot
-            </div>
-            <div style={{ ...orchardHelpTextStyle() }}>
-              Shared canonical material and trace selectors are still available even when no saved raw blueprint is present.
-            </div>
-
-            <div style={{ marginTop: 12 }}>
-              <SnapshotChip label="Canonical materials" value={canonicalMaterialRows.length} background="#EEF5EA" border="#BFD6B8" />
-              <SnapshotChip label="Blueprint influence" value={canonicalBlueprintInfluenceCount} background="#F2F8FF" border="#C9DAEE" />
-              <SnapshotChip label="Generation influence" value={canonicalGenerationInfluenceCount} background="#FFF6E8" border={COLORS.warnBorder} />
-              <SnapshotChip label="Standards source" value={canonicalStandardsSource} background="#F4EDF8" border="#D7C6E4" />
-            </div>
-
-            {canonicalWarningCount > 0 && (
-              <div style={{ ...orchardHelpTextStyle(), marginTop: 10 }}>
-                Captured extraction warnings across canonical materials: {canonicalWarningCount}
-              </div>
-            )}
-          </div>
-        )}
+        <CanonicalInfluenceSnapshot
+          canonicalPackage={canonicalPackage}
+          canonicalMaterialRows={canonicalMaterialRows}
+          canonicalBlueprintInfluenceCount={canonicalBlueprintInfluenceCount}
+          canonicalGenerationInfluenceCount={canonicalGenerationInfluenceCount}
+          canonicalWarningCount={canonicalWarningCount}
+          canonicalStandardsSource={canonicalStandardsSource}
+        />
 
         <div style={{ opacity: 0.8, color: COLORS.muted }}>
           No saved Blueprint found for this package yet.
@@ -177,35 +213,14 @@ function BlueprintInsights({ canonicalPackage }: { canonicalPackage: any }) {
 
   return (
     <div>
-      {canonicalPackage && (
-        <div
-          style={{
-            ...orchardSoftCardStyle(),
-            marginBottom: 14,
-            background: "linear-gradient(135deg, #F8FBF7 0%, #F2F8FF 100%)",
-          }}
-        >
-          <div style={{ fontWeight: 900, fontSize: 18, color: COLORS.heading, marginBottom: 8 }}>
-            Canonical Influence Snapshot
-          </div>
-          <div style={{ ...orchardHelpTextStyle() }}>
-            Shared canonical material and trace selectors are now feeding the Results Hub visibility path.
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <SnapshotChip label="Canonical materials" value={canonicalMaterialRows.length} background="#EEF5EA" border="#BFD6B8" />
-            <SnapshotChip label="Blueprint influence" value={canonicalBlueprintInfluenceCount} background="#F2F8FF" border="#C9DAEE" />
-            <SnapshotChip label="Generation influence" value={canonicalGenerationInfluenceCount} background="#FFF6E8" border={COLORS.warnBorder} />
-            <SnapshotChip label="Standards source" value={canonicalStandardsSource} background="#F4EDF8" border="#D7C6E4" />
-          </div>
-
-          {canonicalWarningCount > 0 && (
-            <div style={{ ...orchardHelpTextStyle(), marginTop: 10 }}>
-              Captured extraction warnings across canonical materials: {canonicalWarningCount}
-            </div>
-          )}
-        </div>
-      )}
+      <CanonicalInfluenceSnapshot
+        canonicalPackage={canonicalPackage}
+        canonicalMaterialRows={canonicalMaterialRows}
+        canonicalBlueprintInfluenceCount={canonicalBlueprintInfluenceCount}
+        canonicalGenerationInfluenceCount={canonicalGenerationInfluenceCount}
+        canonicalWarningCount={canonicalWarningCount}
+        canonicalStandardsSource={canonicalStandardsSource}
+      />
 
       <div
         style={{
@@ -973,6 +988,7 @@ export default function ResultsHubPage() {
     </div>
   );
 }
+
 
 
 
