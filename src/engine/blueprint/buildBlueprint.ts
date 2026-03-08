@@ -6,7 +6,7 @@ function isTeacherLedEarlyElementary(plan: PlanInput) {
   const grade = String(plan.grade || "").trim().toUpperCase();
   if (grade === "K" || grade === "1") return true;
 
-  const text = `${plan.lessonTitle || ""} ${plan.objective || ""} ${plan.notes || ""} ${plan.textOrTopic || ""}`.toLowerCase();
+  const text = `${plan.lessonTitle || ""} ${plan.objective || ""} ${plan.essentialQuestion || ""} ${plan.notes || ""} ${plan.textOrTopic || ""}`.toLowerCase();
   return /\bkindergarten\b|\bgrade k\b|\bfirst grade\b|\bgrade 1\b|\b1st\b/.test(text);
 }
 
@@ -86,7 +86,7 @@ export function buildBlueprint(args: {
   const guidepostSlides = [
     { index: 1, title: args.plan.lessonTitle || "Lesson", purpose: "Launch", source: "ai" as const, uses: [{ source: "plan" as const, ref: "lessonTitle" }] },
     { index: 2, title: "I Can", purpose: "Objective", source: "ai" as const, uses: [{ source: "plan" as const, ref: "objective" }] },
-    { index: 3, title: "Bridge", purpose: "Connection and discussion", source: "ai" as const },
+    { index: 3, title: "Bridge", purpose: "Connection and discussion", source: "ai" as const, uses: [{ source: "plan" as const, ref: "essentialQuestion" }] },
     { index: 4, title: "Teach", purpose: "Direct instruction", source: "ai" as const, uses: curriculumChecklist[0] ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "Primary curriculum item" }] : [] },
     { index: 5, title: "Model", purpose: "Think aloud", source: "ai" as const },
     { index: 6, title: "Guided Practice", purpose: "Guided practice", source: "ai" as const },
