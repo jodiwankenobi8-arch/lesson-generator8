@@ -552,7 +552,7 @@ export default function ResultsHubPage() {
             }}
           >
             <div>
-              <div style={orchardRibbonHeaderStyle()}>Results Hub</div>
+              <div style={orchardRibbonHeaderStyle()}>Finished Lesson Package</div>
               <div style={orchardStitchDividerStyle()} />
               <h1 style={orchardHeroTitleStyle()}>{lessonTitle}</h1>
               <div style={{ ...orchardHelpTextStyle(), fontSize: 15, maxWidth: 760 }}>
@@ -568,7 +568,7 @@ export default function ResultsHubPage() {
             </div>
 
             <div style={{ ...orchardSoftCardStyle("#FFFDF9"), minWidth: 270 }}>
-              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 10 }}>Lesson Snapshot</div>
+              <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 10 }}>Today's Lesson Snapshot</div>
               <div style={{ display: "grid", gap: 8, fontSize: 14, lineHeight: 1.55 }}>
                 <div><b>Slides:</b> {slides.length}</div>
                 <div><b>Centers:</b> {centers.length}</div>
@@ -606,9 +606,9 @@ export default function ResultsHubPage() {
             }}
           >
             <div>
-              <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Exports</div>
+              <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Take It With You</div>
               <div style={{ ...orchardHelpTextStyle(), marginBottom: 0 }}>
-                Export only what you need, or download the full lesson package at once.
+                Download the teaching deck, lesson plan, or full package when you are ready to use or share it.
               </div>
             </div>
 
@@ -666,10 +666,9 @@ export default function ResultsHubPage() {
           }}
         >
           <div style={orchardCardStyle()}>
-            <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards Snapshot</div>
+            <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Teaching Priority and Standards</div>
             <div style={{ ...orchardHelpTextStyle(), marginBottom: 8 }}>
-              This now reads from shared canonical standards visibility when available, while keeping
-              the live engine standards path as a compatibility fallback.
+              Start with the main teaching target here. Standards still preserve canonical visibility when available, with the engine path kept as a compatibility fallback.
             </div>
 
             <div style={{ marginBottom: 12 }}>
@@ -788,8 +787,8 @@ export default function ResultsHubPage() {
         </Section>
 
         <Section
-          title="Slide Preview Deck"
-          subtitle="This preview is designed to feel closer to the actual teaching deck instead of a plain text list."
+          title="Teaching Deck Preview"
+          subtitle="Preview the lesson deck in a calmer teaching view before exporting or presenting."
           defaultOpen
         >
           <div
@@ -1000,4 +999,5 @@ export default function ResultsHubPage() {
     </div>
   );
 }
+
 
