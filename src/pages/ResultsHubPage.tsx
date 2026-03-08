@@ -29,6 +29,7 @@ import {
 } from "./orchardUi";
 import { WizardProgress } from "./WizardProgress";
 import { ResultsTraceSummaryCard } from "../components/ResultsTraceSummaryCard";
+import type { LessonPackage as CanonicalLessonPackage } from "../types/lesson-package";
 import {
   getCanonicalMaterialInfluenceRows,
   getCanonicalStandardVisibilityRows,
@@ -121,7 +122,7 @@ function CanonicalInfluenceSnapshot({
   canonicalWarningCount,
   canonicalStandardsSource,
 }: {
-  canonicalPackage: any;
+  canonicalPackage: CanonicalLessonPackage | null;
   canonicalMaterialRows: Array<{
     id: string;
     name: string;
@@ -169,7 +170,11 @@ function CanonicalInfluenceSnapshot({
   );
 }
 
-function BlueprintInsights({ canonicalPackage }: { canonicalPackage: any }) {
+function BlueprintInsights({
+  canonicalPackage,
+}: {
+  canonicalPackage: CanonicalLessonPackage | null;
+}) {
   const bp = useMemo(() => readBlueprint(), []);
   const canonicalMaterialRows = useMemo(
     () => (canonicalPackage ? getCanonicalMaterialInfluenceRows(canonicalPackage) : []),
@@ -988,6 +993,7 @@ export default function ResultsHubPage() {
     </div>
   );
 }
+
 
 
 
