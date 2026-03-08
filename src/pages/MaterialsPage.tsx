@@ -1,9 +1,9 @@
-﻿import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
 import type { UploadedTextFile, SourceRole } from "../engine/blueprint/types";
 import { useLessonStore } from "../state/useLessonStore";
-import { filesToUploaded } from "../utils/readUploadedText";
+import { extractFilesToUploaded } from "../utils/extractLessonMaterialSources";
 import {
   ORCHARD_COLORS as COLORS,
   orchardShellStyle,
@@ -557,7 +557,7 @@ export default function MaterialsPage() {
   const [busy, setBusy] = useState(false);
 
   async function onPickMaterials(files: FileList | null) {
-    const uploaded = await filesToUploaded(files);
+    const uploaded = await extractFilesToUploaded(files);
     setMaterialsPack((current) => [
       ...current,
       ...uploaded.map((item) => ({ ...item, sourceRole: inferRoleForSource(item, "curriculum") })),
@@ -565,7 +565,7 @@ export default function MaterialsPage() {
   }
 
   async function onPickExemplar(files: FileList | null) {
-    const uploaded = await filesToUploaded(files);
+    const uploaded = await extractFilesToUploaded(files);
     setExemplarPack((current) => [
       ...current,
       ...uploaded.map((item) => ({ ...item, sourceRole: inferRoleForSource(item, "exemplar") })),
