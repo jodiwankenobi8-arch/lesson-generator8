@@ -30,6 +30,7 @@ import {
 import { WizardProgress } from "./WizardProgress";
 import { ResultsTraceSummaryCard } from "../components/ResultsTraceSummaryCard";
 import {
+  getCanonicalMaterialInfluenceRows,
   getCanonicalStandardVisibilityRows,
   summarizeStandardsSource,
 } from "../utils/canonical-trace-selectors";
@@ -112,8 +113,19 @@ function SnapshotChip({
   );
 }
 
-function BlueprintInsights() {
+function BlueprintInsights({ canonicalPackage }: { canonicalPackage: any }) {
   const bp = useMemo(() => readBlueprint(), []);
+  const canonicalMaterialRows = useMemo(
+    () => (canonicalPackage ? getCanonicalMaterialInfluenceRows(canonicalPackage) : []),
+    [canonicalPackage]
+  );
+  const canonicalStandardsSource = useMemo(
+    () => (canonicalPackage ? summarizeStandardsSource(canonicalPackage.trace?.standardsSource) : "unknown"),
+    [canonicalPackage]
+  );
+  const canonicalBlueprintInfluenceCount = canonicalMaterialRows.filter((row) => row.influencedBlueprint).length;
+  const canonicalGenerationInfluenceCount = canonicalMaterialRows.filter((row) => row.influencedGeneration).length;
+  const canonicalWarningCount = canonicalMaterialRows.reduce((sum, row) => sum + row.warningCount, 0);
   if (!bp) {
     return <div style={{ opacity: 0.8, color: COLORS.muted }}>No saved Blueprint found for this package yet.</div>;
   }
@@ -130,6 +142,36 @@ function BlueprintInsights() {
 
   return (
     <div>
+      {canonicalPackage && (
+        <div
+          style={{
+            ...orchardSoftCardStyle(),
+            marginBottom: 14,
+            background: "linear-gradient(135deg, #F8FBF7 0%, #F2F8FF 100%)",
+          }}
+        >
+          <div style={{ fontWeight: 900, fontSize: 18, color: COLORS.heading, marginBottom: 8 }}>
+            Canonical Influence Snapshot
+          </div>
+          <div style={{ ...orchardHelpTextStyle() }}>
+            Shared canonical material and trace selectors are now feeding the Results Hub visibility path.
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            <SnapshotChip label="Canonical materials" value={canonicalMaterialRows.length} background="#EEF5EA" border="#BFD6B8" />
+            <SnapshotChip label="Blueprint influence" value={canonicalBlueprintInfluenceCount} background="#F2F8FF" border="#C9DAEE" />
+            <SnapshotChip label="Generation influence" value={canonicalGenerationInfluenceCount} background="#FFF6E8" border={COLORS.warnBorder} />
+            <SnapshotChip label="Standards source" value={canonicalStandardsSource} background="#F4EDF8" border="#D7C6E4" />
+          </div>
+
+          {canonicalWarningCount > 0 && (
+            <div style={{ ...orchardHelpTextStyle(), marginTop: 10 }}>
+              Captured extraction warnings across canonical materials: {canonicalWarningCount}
+            </div>
+          )}
+        </div>
+      )}
+
       <div
         style={{
           ...orchardSoftCardStyle(),
@@ -678,7 +720,7 @@ export default function ResultsHubPage() {
           subtitle="See how curriculum, exemplar framework, and teacher-facing cues shaped the final package."
           defaultOpen
         >
-          <BlueprintInsights />
+          <BlueprintInsights canonicalPackage={canonicalPackage} />
 
       <ResultsTraceSummaryCard canonicalPackage={canonicalPackage} />
         </Section>
@@ -896,4 +938,5 @@ export default function ResultsHubPage() {
     </div>
   );
 }
+
 
