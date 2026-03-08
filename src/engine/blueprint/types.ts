@@ -22,6 +22,7 @@ export type FrameworkDetection = {
 export type PlanInput = {
   lessonTitle?: string;
   objective?: string;
+  essentialQuestion?: string;
   notes?: string;
   grade?: string;
   subject?: string;
@@ -31,7 +32,7 @@ export type PlanInput = {
 export type UploadedFileTraceMetadata = {
   extension?: string;
   mimeType?: string;
-  extractionMethod?: "text" | "docx" | "fallback";
+  extractionMethod?: "text" | "docx" | "pdf" | "pptx" | "fallback";
 };
 
 export type UploadedTextFile = {
