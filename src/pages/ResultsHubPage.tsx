@@ -28,6 +28,7 @@ import {
   orchardStitchDividerStyle,
 } from "./orchardUi";
 import { WizardProgress } from "./WizardProgress";
+import { ResultsTraceSummaryCard } from "../components/ResultsTraceSummaryCard";
 
 function percent(conf: any) {
   const n = Number(conf);
@@ -368,6 +369,7 @@ function SlidePreviewCard({
 }
 
 export default function ResultsHubPage() {
+  const canonicalPackage = useLessonStore((state) => state.canonicalPackage);
   const pkg = useLessonStore((s) => s.package);
 
   const [busy, setBusy] = useState<null | "pptx" | "docx" | "zip">(null);
@@ -626,6 +628,8 @@ export default function ResultsHubPage() {
           defaultOpen
         >
           <BlueprintInsights />
+
+      <ResultsTraceSummaryCard canonicalPackage={canonicalPackage} />
         </Section>
 
         <Section
@@ -841,3 +845,4 @@ export default function ResultsHubPage() {
     </div>
   );
 }
+
