@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLessonStore } from "../state/useLessonStore";
 import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
 import type { UploadedTextFile } from "../engine/blueprint/types";
-import { filesToUploaded } from "../utils/readUploadedText";
+import { extractFilesToUploaded } from "../utils/extractLessonMaterialSources";
 
 export default function BlueprintPage() {
   const navigate = useNavigate();
@@ -18,11 +18,11 @@ export default function BlueprintPage() {
   const [msg, setMsg] = useState("");
 
   async function onPickCurriculum(files: FileList | null) {
-    setCurriculumPack(await filesToUploaded(files));
+    setCurriculumPack(await extractFilesToUploaded(files));
   }
 
   async function onPickExemplar(files: FileList | null) {
-    setExemplarPack(await filesToUploaded(files));
+    setExemplarPack(await extractFilesToUploaded(files));
   }
 
   function buildAndSaveBlueprint() {
