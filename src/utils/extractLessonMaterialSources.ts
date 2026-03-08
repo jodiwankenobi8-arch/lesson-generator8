@@ -1,5 +1,7 @@
-import type { UploadedTextFile } from "../engine/blueprint/types";
+﻿import type { UploadedFileTraceMetadata, UploadedTextFile } from "../engine/blueprint/types";
 import { readTextIfPossible } from "./readUploadedText";
+
+type ExtractionMethod = "text" | "docx" | "pdf" | "pptx" | "fallback";
 
 export type NormalizedExtractedSource = {
   name: string;
@@ -7,11 +9,7 @@ export type NormalizedExtractedSource = {
   text: string;
   confidence: number;
   warnings: string[];
-  metadata: {
-    extension: string;
-    mimeType: string;
-    extractionMethod: "text" | "docx" | "fallback";
-  };
+  metadata: UploadedFileTraceMetadata;
 };
 
 function extensionOf(file: File): string {
@@ -19,10 +17,11 @@ function extensionOf(file: File): string {
   return match ? match[1].toLowerCase() : "";
 }
 
-function detectExtractionMethod(file: File): "text" | "docx" | "fallback" {
+function detectExtractionMethod(file: File): ExtractionMethod {
   const lowerName = file.name.toLowerCase();
+  const mime = (file.type || "").toLowerCase();
 
-  if (lowerName.endsWith(".txt") || lowerName.endsWith(".md") || file.type.startsWith("text/")) {
+  if (lowerName.endsWith(".txt") || lowerName.endsWith(".md") || mime.startsWith("text/")) {
     return "text";
   }
 
@@ -30,20 +29,46 @@ function detectExtractionMethod(file: File): "text" | "docx" | "fallback" {
     return "docx";
   }
 
+  if (lowerName.endsWith(".pdf") || mime.includes("pdf")) {
+    return "pdf";
+  }
+
+  if (
+    lowerName.endsWith(".ppt") ||
+    lowerName.endsWith(".pptx") ||
+    mime.includes("presentation") ||
+    mime.includes("powerpoint")
+  ) {
+    return "pptx";
+  }
+
   return "fallback";
 }
 
-function detectConfidence(method: "text" | "docx" | "fallback"): number {
+function detectConfidence(method: ExtractionMethod, text: string): number {
+  const lower = text.toLowerCase();
+
+  if (lower.includes("text extraction failed") || lower.includes("not available yet")) {
+    return 0.35;
+  }
+
   if (method === "text") return 0.98;
   if (method === "docx") return 0.85;
+  if (method === "pdf") return 0.8;
+  if (method === "pptx") return 0.78;
   return 0.35;
 }
 
-function buildWarnings(text: string, method: "text" | "docx" | "fallback"): string[] {
+function buildWarnings(text: string, method: ExtractionMethod): string[] {
   const warnings: string[] = [];
+  const lower = text.toLowerCase();
 
   if (method === "fallback") {
     warnings.push("Text extraction is not available yet for this file type; using filename and file type as a source signal.");
+  }
+
+  if ((method === "pdf" || method === "pptx") && (lower.includes("text extraction failed") || lower.includes("not available yet"))) {
+    warnings.push("This file type was recognized, but readable document text could not be extracted. Filename and file type are being used as fallback signals.");
   }
 
   if (!text.trim()) {
@@ -68,7 +93,7 @@ export async function extractLessonMaterialSources(
       name: file.name,
       kind: file.type || extensionOf(file) || "unknown",
       text,
-      confidence: detectConfidence(extractionMethod),
+      confidence: detectConfidence(extractionMethod, text),
       warnings: buildWarnings(text, extractionMethod),
       metadata: {
         extension: extensionOf(file),
@@ -88,5 +113,8 @@ export async function extractFilesToUploaded(files: FileList | null): Promise<Up
     name: item.name,
     kind: item.kind,
     text: item.text,
+    confidence: item.confidence,
+    warnings: item.warnings,
+    metadata: item.metadata,
   }));
 }

@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   LessonInput,
   LessonPackage,
   Slide,
@@ -8,12 +8,180 @@ import type {
   InterventionSet,
   SlideType,
 } from "./types";
-import type { LessonBlueprint } from "./blueprint/types";
+import type { LessonBlueprint, BlueprintSourceFile } from "./blueprint/types";
 import { makeId } from "../utils/makeId";
 import { detectKelaBest } from "./standards/detectKelaBest";
 import { buildLessonSpec } from "./spec/buildLessonSpec";
 
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.4.1";
+
+function normalizeForStandardsText(value: string): string {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/\bquthor\b/g, "author")
+    .replace(/\bauthors\b/g, "author")
+    .replace(/\bauthor's\b/g, "author")
+    .replace(/\bauthors purpose\b/g, "author purpose")
+    .replace(/\bauthor purpose\b/g, "author purpose")
+    .replace(/\bpersuade\b/g, "opinion")
+    .replace(/\binform\b/g, "informational")
+    .replace(/\bentertain\b/g, "story");
+}
+
+function normalizeInputForStandards(input: LessonInput): LessonInput {
+  return {
+    ...input,
+    lessonTitle: normalizeForStandardsText(input.lessonTitle),
+    objective: normalizeForStandardsText(input.objective),
+    essentialQuestion: normalizeForStandardsText(input.essentialQuestion),
+    textOrTopic: normalizeForStandardsText(input.textOrTopic),
+    materials: normalizeForStandardsText(input.materials),
+  };
+}
+
+function applyKindergartenAuthorPurposeFallback(
+  standards: DetectedStandard[],
+  input: LessonInput
+): DetectedStandard[] {
+  const corpus = [
+    input.lessonTitle,
+    input.objective,
+    input.essentialQuestion,
+    input.textOrTopic,
+    input.materials,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  const hasAuthorPurposeSignal =
+    /\bauthor\b/.test(corpus) &&
+    /\bpurpose\b/.test(corpus);
+
+  if (!hasAuthorPurposeSignal) {
+    return standards;
+  }
+
+  const boosted = [...standards];
+
+  const hasAuthorRole = boosted.some((s) => s.code === "ELA.K.R.1.3");
+  const hasTopicDetails = boosted.some((s) => s.code === "ELA.K.R.2.2");
+
+  if (!hasAuthorRole) {
+    boosted.push({
+      code: "ELA.K.R.1.3",
+      description: "Explain the roles of author and illustrator of a story.",
+      confidence: 0.72,
+    });
+  }
+
+  if (!hasTopicDetails && /\binformational|topic|details|nonfiction\b/.test(corpus)) {
+    boosted.push({
+      code: "ELA.K.R.2.2",
+      description: "Identify the topic of and multiple details in a text.",
+      confidence: 0.58,
+    });
+  }
+
+  boosted.sort((a, b) => b.confidence - a.confidence || a.code.localeCompare(b.code));
+  return boosted.slice(0, 3);
+}
+
+function toTraceConfidence(value?: number): LessonPackage["materials"][number]["confidence"] {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "unknown";
+  if (value >= 0.85) return "high";
+  if (value >= 0.55) return "medium";
+  if (value > 0) return "low";
+  return "unknown";
+}
+
+function toExtractionKind(file: Pick<BlueprintSourceFile, "kind" | "metadata">): LessonPackage["materials"][number]["extractionKind"] {
+  const extension = String(file.metadata?.extension || "").toLowerCase();
+  const kind = String(file.kind || "").toLowerCase();
+  const mime = String(file.metadata?.mimeType || "").toLowerCase();
+  const extractionMethod = String(file.metadata?.extractionMethod || "").toLowerCase();
+
+  if (extension === "txt" || kind === "txt" || mime === "text/plain" || extractionMethod === "text") return "txt";
+  if (extension === "md" || kind === "md") return "md";
+  if (extension === "docx" || kind.includes("wordprocessingml")) return "docx";
+  if (extension === "pdf" || kind.includes("pdf") || mime.includes("pdf")) return "pdf";
+  if (
+    extension === "ppt" ||
+    extension === "pptx" ||
+    kind.includes("presentation") ||
+    kind.includes("powerpoint") ||
+    mime.includes("presentation") ||
+    mime.includes("powerpoint")
+  ) return "pptx";
+  if (["jpg", "jpeg", "png", "webp"].includes(extension) || kind.startsWith("image/") || mime.startsWith("image/")) return "image";
+  return "unknown";
+}
+
+function toMaterialWarnings(file: Pick<BlueprintSourceFile, "warnings">, prefix: string) {
+  return (file.warnings ?? []).map((message, index) => ({
+    code: `${prefix}_warning_${index + 1}`,
+    message,
+  }));
+}
+
+function buildGeneratedMaterials(input: LessonInput, blueprint?: LessonBlueprint | null): LessonPackage["materials"] {
+  const curriculumFiles = blueprint?.curriculum?.files ?? [];
+  const exemplarFiles = blueprint?.exemplar?.files ?? [];
+
+  const materials: LessonPackage["materials"] = [
+    ...curriculumFiles.map((file, index) => ({
+      id: `curriculum_${index + 1}`,
+      name: file.name,
+      sourceKind: "curriculum" as const,
+      extractionKind: toExtractionKind(file),
+      extractedText: file.text ?? "",
+      confidence: toTraceConfidence(file.confidence),
+      warnings: toMaterialWarnings(file, `curriculum_${index + 1}`),
+      metadata: {
+        ...(file.metadata ?? {}),
+        fileKind: file.kind,
+        sourceRole: file.sourceRole ?? "curriculum",
+      },
+      influencedBlueprint: true,
+      influencedGeneration: true,
+    })),
+    ...exemplarFiles.map((file, index) => ({
+      id: `exemplar_${index + 1}`,
+      name: file.name,
+      sourceKind: "exemplar" as const,
+      extractionKind: toExtractionKind(file),
+      extractedText: file.text ?? "",
+      confidence: toTraceConfidence(file.confidence),
+      warnings: toMaterialWarnings(file, `exemplar_${index + 1}`),
+      metadata: {
+        ...(file.metadata ?? {}),
+        fileKind: file.kind,
+        sourceRole: file.sourceRole ?? "exemplar",
+      },
+      influencedBlueprint: true,
+      influencedGeneration: true,
+    })),
+  ];
+
+  if (materials.length === 0 && input.materials) {
+    materials.push({
+      id: "teacher_note_1",
+      name: "Teacher-entered materials note",
+      sourceKind: "teacher-note",
+      extractionKind: "unknown",
+      extractedText: input.materials,
+      confidence: "unknown",
+      warnings: [],
+      metadata: {
+        source: "input.materials",
+      },
+      influencedBlueprint: false,
+      influencedGeneration: true,
+    });
+  }
+
+  return materials;
+}
 
 function computeDetectedStandards(input: LessonInput): DetectedStandard[] {
   if (Array.isArray(input.manualStandardOverride) && input.manualStandardOverride.length > 0) {
@@ -26,13 +194,15 @@ function computeDetectedStandards(input: LessonInput): DetectedStandard[] {
   }
 
   if (input.grade === "K" && input.subject === "ELA") {
-    return detectKelaBest(
+    const normalized = normalizeInputForStandards(input);
+
+    const detected = detectKelaBest(
       {
-        lessonTitle: input.lessonTitle,
-        objective: input.objective,
-        essentialQuestion: input.essentialQuestion,
-        textOrTopic: input.textOrTopic,
-        materials: input.materials,
+        lessonTitle: normalized.lessonTitle,
+        objective: normalized.objective,
+        essentialQuestion: normalized.essentialQuestion,
+        textOrTopic: normalized.textOrTopic,
+        materials: normalized.materials,
       },
       { max: 3 },
     ).map((item: any) => ({
@@ -40,6 +210,8 @@ function computeDetectedStandards(input: LessonInput): DetectedStandard[] {
       description: item.description || item.label || "",
       confidence: typeof item.confidence === "number" ? item.confidence : 0,
     }));
+
+    return applyKindergartenAuthorPurposeFallback(detected, normalized);
   }
 
   return [];
@@ -56,11 +228,25 @@ function adjustStandardsByIntent(standards: DetectedStandard[], input: LessonInp
 
   const comprehensionIntent = /(comprehens|retell|story|characters?|setting|important\s+events?|beginning|middle|end|who|where|when|plot|sequence|main\s+character|key\s+details)/i.test(corpus);
   const vocabExplicit = /(vocab|vocabulary|word\s+sort|sort\s+words|categories|category|classify\s+words|word\s+relationships|context\s+clues|synonym|antonym)/i.test(corpus);
+  const authorPurposeIntent = /\bauthor\b/.test(corpus) && /\bpurpose\b/.test(corpus);
+  const informationalIntent = /\binformational\b|\btopic\b|\bdetails\b|\bnonfiction\b/.test(corpus);
+  const entertainmentIntent = /\bentertain\b|\bstory\b|\bfunny\b|\bmake you laugh\b/.test(corpus);
 
   const adjusted = standards.map((standard) => {
     let score = standard.confidence;
+
     if (comprehensionIntent && /^ELA\.K\.R\./.test(standard.code)) score += 0.2;
     if (comprehensionIntent && !vocabExplicit && /^ELA\.K\.V\./.test(standard.code)) score -= 0.15;
+
+    if (authorPurposeIntent) {
+      if (standard.code === "ELA.K.R.1.3") score += 0.45;
+      if (standard.code === "ELA.K.R.1.1") score -= 0.18;
+      if (standard.code === "ELA.K.R.3.2") score -= 0.12;
+    }
+
+    if (informationalIntent && standard.code === "ELA.K.R.2.2") score += 0.2;
+    if (entertainmentIntent && standard.code === "ELA.K.R.1.3") score += 0.08;
+
     return { ...standard, confidence: Math.max(0, Math.min(1, score)) };
   });
 
@@ -583,12 +769,14 @@ export function generateLesson(input: LessonInput, blueprint?: LessonBlueprint |
   const centers = buildCenters(input, blueprint);
   const rotationPlan = buildRotationPlan(input, blueprint);
   const interventions = buildInterventions(input);
+  const materials = buildGeneratedMaterials(input, blueprint);
 
   return {
     meta: { generatedAt: new Date().toISOString(), version: APP_VERSION },
     input,
     standards: detected,
     standardsDetected: detected,
+    materials,
     slides,
     lessonPlan,
     centers,
@@ -596,3 +784,8 @@ export function generateLesson(input: LessonInput, blueprint?: LessonBlueprint |
     interventions,
   };
 }
+
+
+
+
+

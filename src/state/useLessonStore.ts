@@ -21,7 +21,7 @@ type StoredWorkspace = {
 
 const STORAGE_VERSION = 3;
 const LS_KEY = "lesson_generator__workspace_v3";
-const LEGACY_PACKAGE_KEY = "lesson_generator__package_v2";
+const LEGACY_PACKAGE_KEY = "lesson_generator__engine_package_v1";
 
 function createDefaultInput(): LessonInput {
   return {
@@ -137,21 +137,22 @@ interface LessonStore {
 export const useLessonStore = create<LessonStore>((set, get) => {
   const hydrated = typeof window !== "undefined" ? safeLoadWorkspace() : null;
   let canonicalStorageNotice: string | undefined;
-  const hydratedCanonical =
-    hydrated?.package
-      ? (() => {
-          if (hasStoredLessonPackage()) {
-            const loadedCanonical = loadLessonPackage();
-            if (loadedCanonical.ok) return loadedCanonical.value;
-            clearLessonPackage();
-            canonicalStorageNotice = "Recovered invalid saved canonical lesson package.";
-          }
+  const hydratedCanonical = (() => {
+    if (hasStoredLessonPackage()) {
+      const loadedCanonical = loadLessonPackage();
+      if (loadedCanonical.ok) return loadedCanonical.value;
+      clearLessonPackage();
+      canonicalStorageNotice = "Recovered invalid saved canonical lesson package.";
+    }
 
-          const fallbackCanonical = toCanonicalLessonPackage(hydrated.package);
-          saveLessonPackage(fallbackCanonical);
-          return fallbackCanonical;
-        })()
-      : null;
+    if (hydrated?.package) {
+      const fallbackCanonical = toCanonicalLessonPackage(hydrated.package);
+      saveLessonPackage(fallbackCanonical);
+      return fallbackCanonical;
+    }
+
+    return null;
+  })();
 
   return {
     input: hydrated?.input ?? createDefaultInput(),
@@ -237,3 +238,4 @@ export const useLessonStore = create<LessonStore>((set, get) => {
     },
   };
 });
+
