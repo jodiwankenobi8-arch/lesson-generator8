@@ -200,4 +200,3 @@ export function getCanonicalTraceSummaryLines(pkg: LessonPackage): string[] {
       : "No extraction warnings were preserved on source materials.",
   ].filter(Boolean);
 }
-

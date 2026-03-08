@@ -9,7 +9,6 @@ import {
   getRotationPlanItems,
   getInterventions,
 } from "../engine/packageCompat";
-
 import {
   ORCHARD_COLORS as COLORS,
   orchardShellStyle,
@@ -37,13 +36,13 @@ import {
   summarizeStandardsSource,
 } from "../utils/canonical-trace-selectors";
 
-function percent(conf: any) {
+function percent(conf: unknown) {
   const n = Number(conf);
   if (!Number.isFinite(n)) return "";
   return `${Math.round(n <= 1 ? n * 100 : n)}%`;
 }
 
-function short(text: any, max = 220) {
+function short(text: unknown, max = 220) {
   const t = String(text ?? "").replace(/\s+/g, " ").trim();
   if (!t) return "(Summary not available)";
   return t.length > max ? t.slice(0, max - 3) + "..." : t;
@@ -978,9 +977,3 @@ export default function ResultsHubPage() {
     </div>
   );
 }
-
-
-
-
-
-
