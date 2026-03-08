@@ -29,6 +29,10 @@ import {
 } from "./orchardUi";
 import { WizardProgress } from "./WizardProgress";
 import { ResultsTraceSummaryCard } from "../components/ResultsTraceSummaryCard";
+import {
+  getCanonicalStandardVisibilityRows,
+  summarizeStandardsSource,
+} from "../utils/canonical-trace-selectors";
 
 function percent(conf: any) {
   const n = Number(conf);
@@ -397,17 +401,29 @@ export default function ResultsHubPage() {
 
   const lessonTitle = (pkg as any)?.input?.lessonTitle ?? "Generated Lesson";
   const rawStandards = useMemo(() => getStandards(pkg as any), [pkg]);
-  const standards = useMemo(
+  const canonicalStandardRows = useMemo(
+    () => (canonicalPackage ? getCanonicalStandardVisibilityRows(canonicalPackage) : []),
+    [canonicalPackage]
+  );
+  const fallbackStandards = useMemo(
     () =>
       (rawStandards || []).map((s: any) => ({
-        ...s,
-        label: findLabelByCode(s?.code),
+        code: s?.code ?? "",
+        description: findLabelByCode(s?.code),
+        source: String(s?.source ?? "detected"),
+        confidence: s?.confidence,
       })),
     [rawStandards]
   );
+  const visibleStandards = canonicalStandardRows.length > 0 ? canonicalStandardRows : fallbackStandards;
+  const standardsSourceText = canonicalPackage
+    ? summarizeStandardsSource(canonicalPackage.trace?.standardsSource)
+    : visibleStandards.length > 0
+      ? "engine package fallback"
+      : "unknown";
 
-  const primary = standards[0];
-  const supporting = standards.slice(1, 4);
+  const primaryStandard = visibleStandards[0];
+  const supportingStandards = visibleStandards.slice(1, 4);
 
   const slides = useMemo(() => getSlides(pkg as any), [pkg]);
   const lessonPlan = useMemo(() => getLessonPlan(pkg as any), [pkg]);
@@ -466,7 +482,7 @@ export default function ResultsHubPage() {
                 <SnapshotChip label="Date" value={(pkg as any)?.input?.date ?? "-"} background="#FFF6E8" border={COLORS.warnBorder} />
                 <SnapshotChip label="Grade" value={(pkg as any)?.input?.grade ?? "-"} background="#EEF5EA" border={COLORS.successBorder} />
                 <SnapshotChip label="Subject" value={(pkg as any)?.input?.subject ?? "-"} background="#F4EDF8" border="#D7C6E4" />
-                <SnapshotChip label="Standards" value={standards.length} background="#F2F8FF" border="#C9DAEE" />
+                <SnapshotChip label="Standards" value={visibleStandards.length} background="#F2F8FF" border="#C9DAEE" />
               </div>
             </div>
 
@@ -554,12 +570,24 @@ export default function ResultsHubPage() {
         >
           <div style={orchardCardStyle()}>
             <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Standards Snapshot</div>
-            <div style={{ ...orchardHelpTextStyle(), marginBottom: 12 }}>
-              This shows the primary standard detected for the lesson, along with a few supporting standards when available.
+            <div style={{ ...orchardHelpTextStyle(), marginBottom: 8 }}>
+              This now reads from shared canonical standards visibility when available, while keeping
+              the live engine standards path as a compatibility fallback.
             </div>
 
-            {standards.length === 0 ? (
-              <div style={{ fontWeight: 800 }}>Standards: (none detected yet - check inputs or add an override)</div>
+            <div style={{ marginBottom: 12 }}>
+              <SnapshotChip
+                label="Standards source"
+                value={standardsSourceText}
+                background="#F6F1E8"
+                border="#E7E2DA"
+              />
+            </div>
+
+            {visibleStandards.length === 0 ? (
+              <div style={{ fontWeight: 800 }}>
+                Standards: (none surfaced yet - check inputs, trace, or add an override)
+              </div>
             ) : (
               <>
                 <div
@@ -569,23 +597,39 @@ export default function ResultsHubPage() {
                     marginBottom: 12,
                   }}
                 >
-                  <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", color: COLORS.accentDark, marginBottom: 6 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 900,
+                      letterSpacing: "0.04em",
+                      textTransform: "uppercase",
+                      color: COLORS.accentDark,
+                      marginBottom: 6,
+                    }}
+                  >
                     Primary Standard
                   </div>
                   <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading, fontSize: 20 }}>
-                    {primary?.code ?? ""}{" "}
+                    {primaryStandard?.code ?? ""}{" "}
                     <span style={{ opacity: 0.8, color: COLORS.muted }}>
-                      {primary?.confidence != null ? `(${percent(primary.confidence)})` : ""}
+                      {primaryStandard?.confidence != null ? `(${percent(primaryStandard.confidence)})` : ""}
                     </span>
                   </div>
-                  <div style={{ opacity: 0.95, lineHeight: 1.55 }}>{short(primary?.label)}</div>
+                  <div style={{ marginBottom: 8 }}>
+                    <span style={orchardPillStyle("#F6F1E8", "#E7E2DA")}>
+                      source: {primaryStandard?.source ?? "unknown"}
+                    </span>
+                  </div>
+                  <div style={{ opacity: 0.95, lineHeight: 1.55 }}>
+                    {short(primaryStandard?.description)}
+                  </div>
                 </div>
 
-                {supporting.length > 0 && (
+                {supportingStandards.length > 0 && (
                   <div style={{ ...orchardSoftCardStyle(), marginBottom: 10 }}>
                     <div style={{ fontWeight: 900, marginBottom: 8, color: COLORS.heading }}>Supporting</div>
                     <ul style={{ margin: 0, paddingLeft: 18 }}>
-                      {supporting.map((s: any, i: number) => (
+                      {supportingStandards.map((s, i) => (
                         <li key={(s.code ?? "") + i} style={{ marginBottom: 10 }}>
                           <div>
                             <b>{s.code}</b>{" "}
@@ -593,7 +637,14 @@ export default function ResultsHubPage() {
                               {s?.confidence != null ? `(${percent(s.confidence)})` : ""}
                             </span>
                           </div>
-                          <div style={{ opacity: 0.92, lineHeight: 1.45 }}>{short(s.label)}</div>
+                          <div style={{ marginTop: 4, marginBottom: 4 }}>
+                            <span style={orchardPillStyle("#F6F1E8", "#E7E2DA")}>
+                              source: {s.source}
+                            </span>
+                          </div>
+                          <div style={{ opacity: 0.92, lineHeight: 1.45 }}>
+                            {short(s.description)}
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -601,7 +652,7 @@ export default function ResultsHubPage() {
                 )}
 
                 <div style={{ opacity: 0.85, color: COLORS.muted }}>
-                  <b>All codes:</b> {standards.map((s: any) => s.code).join(", ")}
+                  <b>All codes:</b> {visibleStandards.map((s) => s.code).join(", ")}
                 </div>
               </>
             )}
