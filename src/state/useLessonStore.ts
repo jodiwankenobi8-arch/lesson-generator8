@@ -125,6 +125,7 @@ interface LessonStore {
   input: LessonInput;
   package: EngineLessonPackage | null;
   canonicalPackage: CanonicalLessonPackage | null;
+  canonicalStorageNotice?: string;
   status: Status;
   errorMessage?: string;
   setInput: (patch: Partial<LessonInput>) => void;
@@ -135,6 +136,7 @@ interface LessonStore {
 
 export const useLessonStore = create<LessonStore>((set, get) => {
   const hydrated = typeof window !== "undefined" ? safeLoadWorkspace() : null;
+  let canonicalStorageNotice: string | undefined;
   const hydratedCanonical =
     hydrated?.package
       ? (() => {
@@ -142,6 +144,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
             const loadedCanonical = loadLessonPackage();
             if (loadedCanonical.ok) return loadedCanonical.value;
             clearLessonPackage();
+            canonicalStorageNotice = "Recovered invalid saved canonical lesson package.";
           }
 
           const fallbackCanonical = toCanonicalLessonPackage(hydrated.package);
@@ -154,6 +157,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
     input: hydrated?.input ?? createDefaultInput(),
     package: hydrated?.package ?? null,
     canonicalPackage: hydratedCanonical,
+    canonicalStorageNotice,
     status: hydrated?.package ? "ready" : "idle",
     errorMessage: undefined,
 
@@ -185,6 +189,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
         set({
           package: pkg,
           canonicalPackage: canonicalPkg,
+          canonicalStorageNotice: undefined,
           status: "ready",
         });
 
@@ -207,6 +212,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
         input: createDefaultInput(),
         package: null,
         canonicalPackage: null,
+        canonicalStorageNotice: undefined,
         status: "idle",
         errorMessage: undefined,
       });
@@ -219,6 +225,7 @@ export const useLessonStore = create<LessonStore>((set, get) => {
       set({
         package: null,
         canonicalPackage: null,
+        canonicalStorageNotice: undefined,
         status: "idle",
       });
       safeSaveWorkspace({

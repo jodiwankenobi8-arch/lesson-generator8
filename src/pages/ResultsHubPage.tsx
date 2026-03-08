@@ -461,6 +461,7 @@ function SlidePreviewCard({
 
 export default function ResultsHubPage() {
   const canonicalPackage = useLessonStore((state) => state.canonicalPackage);
+  const canonicalStorageNotice = useLessonStore((state) => state.canonicalStorageNotice);
   const pkg = useLessonStore((s) => s.package);
 
   const [busy, setBusy] = useState<null | "pptx" | "docx" | "zip">(null);
@@ -579,6 +580,22 @@ export default function ResultsHubPage() {
             </div>
           </div>
         </div>
+
+        {canonicalStorageNotice && (
+          <div
+            style={{
+              ...orchardCardStyle(),
+              border: "1px solid #C9DAEE",
+              background: "#F2F8FF",
+              color: COLORS.heading,
+            }}
+          >
+            <div style={{ ...orchardSectionTitleStyle(), marginBottom: 6 }}>Saved data recovery</div>
+            <div style={{ ...orchardHelpTextStyle(), marginBottom: 0 }}>
+              {canonicalStorageNotice} The Results Hub repaired the saved canonical package and continued with the latest compatible data.
+            </div>
+          </div>
+        )}
 
         <div style={orchardCardStyle()}>
           <div
