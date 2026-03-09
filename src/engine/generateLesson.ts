@@ -8,180 +8,13 @@ import type {
   InterventionSet,
   SlideType,
 } from "./types";
-import type { LessonBlueprint, BlueprintSourceFile } from "./blueprint/types";
+import type { LessonBlueprint } from "./blueprint/types";
 import { makeId } from "../utils/makeId";
 import { detectKelaBest } from "./standards/detectKelaBest";
 import { buildLessonSpec } from "./spec/buildLessonSpec";
+import { resolveLessonContext, type LessonContext } from "./lessonContext";
 
-const APP_VERSION = "1.4.1";
-
-function normalizeForStandardsText(value: string): string {
-  return String(value ?? "")
-    .toLowerCase()
-    .replace(/\bquthor\b/g, "author")
-    .replace(/\bauthors\b/g, "author")
-    .replace(/\bauthor's\b/g, "author")
-    .replace(/\bauthors purpose\b/g, "author purpose")
-    .replace(/\bauthor purpose\b/g, "author purpose")
-    .replace(/\bpersuade\b/g, "opinion")
-    .replace(/\binform\b/g, "informational")
-    .replace(/\bentertain\b/g, "story");
-}
-
-function normalizeInputForStandards(input: LessonInput): LessonInput {
-  return {
-    ...input,
-    lessonTitle: normalizeForStandardsText(input.lessonTitle),
-    objective: normalizeForStandardsText(input.objective),
-    essentialQuestion: normalizeForStandardsText(input.essentialQuestion),
-    textOrTopic: normalizeForStandardsText(input.textOrTopic),
-    materials: normalizeForStandardsText(input.materials),
-  };
-}
-
-function applyKindergartenAuthorPurposeFallback(
-  standards: DetectedStandard[],
-  input: LessonInput
-): DetectedStandard[] {
-  const corpus = [
-    input.lessonTitle,
-    input.objective,
-    input.essentialQuestion,
-    input.textOrTopic,
-    input.materials,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  const hasAuthorPurposeSignal =
-    /\bauthor\b/.test(corpus) &&
-    /\bpurpose\b/.test(corpus);
-
-  if (!hasAuthorPurposeSignal) {
-    return standards;
-  }
-
-  const boosted = [...standards];
-
-  const hasAuthorRole = boosted.some((s) => s.code === "ELA.K.R.1.3");
-  const hasTopicDetails = boosted.some((s) => s.code === "ELA.K.R.2.2");
-
-  if (!hasAuthorRole) {
-    boosted.push({
-      code: "ELA.K.R.1.3",
-      description: "Explain the roles of author and illustrator of a story.",
-      confidence: 0.72,
-    });
-  }
-
-  if (!hasTopicDetails && /\binformational|topic|details|nonfiction\b/.test(corpus)) {
-    boosted.push({
-      code: "ELA.K.R.2.2",
-      description: "Identify the topic of and multiple details in a text.",
-      confidence: 0.58,
-    });
-  }
-
-  boosted.sort((a, b) => b.confidence - a.confidence || a.code.localeCompare(b.code));
-  return boosted.slice(0, 3);
-}
-
-function toTraceConfidence(value?: number): LessonPackage["materials"][number]["confidence"] {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "unknown";
-  if (value >= 0.85) return "high";
-  if (value >= 0.55) return "medium";
-  if (value > 0) return "low";
-  return "unknown";
-}
-
-function toExtractionKind(file: Pick<BlueprintSourceFile, "kind" | "metadata">): LessonPackage["materials"][number]["extractionKind"] {
-  const extension = String(file.metadata?.extension || "").toLowerCase();
-  const kind = String(file.kind || "").toLowerCase();
-  const mime = String(file.metadata?.mimeType || "").toLowerCase();
-  const extractionMethod = String(file.metadata?.extractionMethod || "").toLowerCase();
-
-  if (extension === "txt" || kind === "txt" || mime === "text/plain" || extractionMethod === "text") return "txt";
-  if (extension === "md" || kind === "md") return "md";
-  if (extension === "docx" || kind.includes("wordprocessingml")) return "docx";
-  if (extension === "pdf" || kind.includes("pdf") || mime.includes("pdf")) return "pdf";
-  if (
-    extension === "ppt" ||
-    extension === "pptx" ||
-    kind.includes("presentation") ||
-    kind.includes("powerpoint") ||
-    mime.includes("presentation") ||
-    mime.includes("powerpoint")
-  ) return "pptx";
-  if (["jpg", "jpeg", "png", "webp"].includes(extension) || kind.startsWith("image/") || mime.startsWith("image/")) return "image";
-  return "unknown";
-}
-
-function toMaterialWarnings(file: Pick<BlueprintSourceFile, "warnings">, prefix: string) {
-  return (file.warnings ?? []).map((message, index) => ({
-    code: `${prefix}_warning_${index + 1}`,
-    message,
-  }));
-}
-
-function buildGeneratedMaterials(input: LessonInput, blueprint?: LessonBlueprint | null): LessonPackage["materials"] {
-  const curriculumFiles = blueprint?.curriculum?.files ?? [];
-  const exemplarFiles = blueprint?.exemplar?.files ?? [];
-
-  const materials: LessonPackage["materials"] = [
-    ...curriculumFiles.map((file, index) => ({
-      id: `curriculum_${index + 1}`,
-      name: file.name,
-      sourceKind: "curriculum" as const,
-      extractionKind: toExtractionKind(file),
-      extractedText: file.text ?? "",
-      confidence: toTraceConfidence(file.confidence),
-      warnings: toMaterialWarnings(file, `curriculum_${index + 1}`),
-      metadata: {
-        ...(file.metadata ?? {}),
-        fileKind: file.kind,
-        sourceRole: file.sourceRole ?? "curriculum",
-      },
-      influencedBlueprint: true,
-      influencedGeneration: true,
-    })),
-    ...exemplarFiles.map((file, index) => ({
-      id: `exemplar_${index + 1}`,
-      name: file.name,
-      sourceKind: "exemplar" as const,
-      extractionKind: toExtractionKind(file),
-      extractedText: file.text ?? "",
-      confidence: toTraceConfidence(file.confidence),
-      warnings: toMaterialWarnings(file, `exemplar_${index + 1}`),
-      metadata: {
-        ...(file.metadata ?? {}),
-        fileKind: file.kind,
-        sourceRole: file.sourceRole ?? "exemplar",
-      },
-      influencedBlueprint: true,
-      influencedGeneration: true,
-    })),
-  ];
-
-  if (materials.length === 0 && input.materials) {
-    materials.push({
-      id: "teacher_note_1",
-      name: "Teacher-entered materials note",
-      sourceKind: "teacher-note",
-      extractionKind: "unknown",
-      extractedText: input.materials,
-      confidence: "unknown",
-      warnings: [],
-      metadata: {
-        source: "input.materials",
-      },
-      influencedBlueprint: false,
-      influencedGeneration: true,
-    });
-  }
-
-  return materials;
-}
+const APP_VERSION = "1.4.0";
 
 function computeDetectedStandards(input: LessonInput): DetectedStandard[] {
   if (Array.isArray(input.manualStandardOverride) && input.manualStandardOverride.length > 0) {
@@ -194,15 +27,13 @@ function computeDetectedStandards(input: LessonInput): DetectedStandard[] {
   }
 
   if (input.grade === "K" && input.subject === "ELA") {
-    const normalized = normalizeInputForStandards(input);
-
-    const detected = detectKelaBest(
+    return detectKelaBest(
       {
-        lessonTitle: normalized.lessonTitle,
-        objective: normalized.objective,
-        essentialQuestion: normalized.essentialQuestion,
-        textOrTopic: normalized.textOrTopic,
-        materials: normalized.materials,
+        lessonTitle: input.lessonTitle,
+        objective: input.objective,
+        essentialQuestion: input.essentialQuestion,
+        textOrTopic: input.textOrTopic,
+        materials: input.materials,
       },
       { max: 3 },
     ).map((item: any) => ({
@@ -210,8 +41,6 @@ function computeDetectedStandards(input: LessonInput): DetectedStandard[] {
       description: item.description || item.label || "",
       confidence: typeof item.confidence === "number" ? item.confidence : 0,
     }));
-
-    return applyKindergartenAuthorPurposeFallback(detected, normalized);
   }
 
   return [];
@@ -228,25 +57,11 @@ function adjustStandardsByIntent(standards: DetectedStandard[], input: LessonInp
 
   const comprehensionIntent = /(comprehens|retell|story|characters?|setting|important\s+events?|beginning|middle|end|who|where|when|plot|sequence|main\s+character|key\s+details)/i.test(corpus);
   const vocabExplicit = /(vocab|vocabulary|word\s+sort|sort\s+words|categories|category|classify\s+words|word\s+relationships|context\s+clues|synonym|antonym)/i.test(corpus);
-  const authorPurposeIntent = /\bauthor\b/.test(corpus) && /\bpurpose\b/.test(corpus);
-  const informationalIntent = /\binformational\b|\btopic\b|\bdetails\b|\bnonfiction\b/.test(corpus);
-  const entertainmentIntent = /\bentertain\b|\bstory\b|\bfunny\b|\bmake you laugh\b/.test(corpus);
 
   const adjusted = standards.map((standard) => {
     let score = standard.confidence;
-
     if (comprehensionIntent && /^ELA\.K\.R\./.test(standard.code)) score += 0.2;
     if (comprehensionIntent && !vocabExplicit && /^ELA\.K\.V\./.test(standard.code)) score -= 0.15;
-
-    if (authorPurposeIntent) {
-      if (standard.code === "ELA.K.R.1.3") score += 0.45;
-      if (standard.code === "ELA.K.R.1.1") score -= 0.18;
-      if (standard.code === "ELA.K.R.3.2") score -= 0.12;
-    }
-
-    if (informationalIntent && standard.code === "ELA.K.R.2.2") score += 0.2;
-    if (entertainmentIntent && standard.code === "ELA.K.R.1.3") score += 0.08;
-
     return { ...standard, confidence: Math.max(0, Math.min(1, score)) };
   });
 
@@ -254,38 +69,10 @@ function adjustStandardsByIntent(standards: DetectedStandard[], input: LessonInp
   return adjusted;
 }
 
-function getFramework(blueprint?: LessonBlueprint | null) {
-  return blueprint?.synthesis?.frameworkApplied || "linear";
-}
+function makeMiniLessonBullets(input: LessonInput, context: LessonContext): string[] {
+  const curriculumTitles = context.curriculumTitles;
 
-function isTeacherLedEarlyElementary(input: LessonInput, blueprint?: LessonBlueprint | null) {
-  const grade = String(input.grade || blueprint?.plan?.input?.grade || "").trim().toLowerCase();
-  return /^(k|kg|kindergarten|grade k|grade kindergarten|1|1st|first|grade 1|grade first)$/.test(grade);
-}
-
-function allowStudentNavigationLanguage(input: LessonInput, blueprint?: LessonBlueprint | null) {
-  return getFramework(blueprint) === "clickableHub" && !isTeacherLedEarlyElementary(input, blueprint);
-}
-
-function getCurriculumTitles(blueprint?: LessonBlueprint | null): string[] {
-  return (blueprint?.curriculum?.coverageChecklist || [])
-    .map((item) => item.title)
-    .filter(Boolean)
-    .slice(0, 3);
-}
-
-function getCueText(blueprint?: LessonBlueprint | null): string[] {
-  return (blueprint?.exemplar?.presenterCues || [])
-    .map((cue) => cue.rawText)
-    .filter(Boolean)
-    .slice(0, 4);
-}
-
-function makeMiniLessonBullets(input: LessonInput, blueprint?: LessonBlueprint | null): string[] {
-  const curriculumTitles = getCurriculumTitles(blueprint);
-  const teacherLed = isTeacherLedEarlyElementary(input, blueprint);
-
-  if (teacherLed) {
+  if (context.teacherLed) {
     return [
       `Focus skill: ${input.objective}`,
       `Lesson text/topic: ${input.textOrTopic}`,
@@ -293,7 +80,7 @@ function makeMiniLessonBullets(input: LessonInput, blueprint?: LessonBlueprint |
     ];
   }
 
-  if (getFramework(blueprint) === "clickableHub") {
+  if (context.framework === "clickableHub") {
     return [
       `Focus skill: ${input.objective}`,
       `Lesson text/topic: ${input.textOrTopic}`,
@@ -315,18 +102,17 @@ function makeMiniLessonBullets(input: LessonInput, blueprint?: LessonBlueprint |
   ];
 }
 
-function makePracticeBullets(input: LessonInput, blueprint?: LessonBlueprint | null): string[] {
-  const framework = getFramework(blueprint);
-  const curriculumTitles = getCurriculumTitles(blueprint);
+function makePracticeBullets(input: LessonInput, context: LessonContext): string[] {
+  const curriculumTitles = context.curriculumTitles;
 
-  if (isTeacherLedEarlyElementary(input, blueprint)) {
+  if (context.teacherLed) {
     return [
       "Let's practice together.",
       curriculumTitles[0] ? `Use this example during guided practice: ${curriculumTitles[0]}` : "Use teacher-led examples to practice the target skill.",
     ];
   }
 
-  if (framework === "clickableHub") {
+  if (context.framework === "clickableHub") {
     return [
       "Rotate through the practice path you were assigned.",
       curriculumTitles[0] ? `Use this task during practice: ${curriculumTitles[0]}` : "Use center materials to practice the target skill.",
@@ -346,118 +132,120 @@ function makePracticeBullets(input: LessonInput, blueprint?: LessonBlueprint | n
   ];
 }
 
-function makeExitBullets(input: LessonInput, blueprint?: LessonBlueprint | null): string[] {
-  const framework = getFramework(blueprint);
-
-  if (isTeacherLedEarlyElementary(input, blueprint)) {
+function makeExitBullets(input: LessonInput, context: LessonContext): string[] {
+  if (context.teacherLed) {
     return [
       "Let's show what we learned.",
       `Show this goal: ${input.objective}`,
     ];
   }
 
-  if (framework === "guidepost") {
+  if (context.framework === "guidepost") {
     return [
       "Reflect on what helped you today.",
       `Show how you met this goal: ${input.objective}`,
     ];
   }
-  if (framework === "clickableHub") {
+
+  if (context.framework === "clickableHub") {
     return [
       "Complete the final quick check before leaving the hub.",
       `Show evidence of this goal: ${input.objective}`,
     ];
   }
+
   return [
     "1 quick check",
     "Show you met the objective",
   ];
 }
 
-const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBlueprint | null) => Slide> = {
-  title: (input, blueprint) => ({
+type SlideBuilder = (input: LessonInput, blueprint: LessonBlueprint | null | undefined, context: LessonContext) => Slide;
+
+const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
+  title: (input, blueprint, context) => ({
     id: makeId("s"),
     type: "title",
     title: input.lessonTitle,
     bullets: [
       `${input.subject} | Grade ${input.grade}`,
       `Date: ${input.date}`,
-      ...(getFramework(blueprint) !== "linear" && !isTeacherLedEarlyElementary(input, blueprint) ? [`Framework: ${getFramework(blueprint)}`] : []),
+      ...(context.framework !== "linear" && !context.teacherLed ? [`Framework: ${context.framework}`] : []),
     ],
   }),
-  objective: (input, blueprint) => ({
+  objective: (input, blueprint, context) => ({
     id: makeId("s"),
     type: "objective",
-    title: isTeacherLedEarlyElementary(input, blueprint) ? "I Can" : "Objective",
+    title: context.teacherLed ? "I Can" : "Objective",
     bullets: [input.objective],
     teacherNotes: "State objective. Students echo. Preview lesson steps.",
   }),
-  discussion: (input, blueprint) => ({
+  discussion: (input, blueprint, context) => ({
     id: makeId("s"),
     type: "discussion",
-    title: isTeacherLedEarlyElementary(input, blueprint) ? "What Are We Learning?" : "Essential Question",
+    title: context.teacherLed ? "What Are We Learning?" : "Essential Question",
     bullets: [
-      input.essentialQuestion || "What are we learning today?",
-      ...(getCueText(blueprint).slice(0, 1).length && !isTeacherLedEarlyElementary(input, blueprint) ? [`Cue: ${getCueText(blueprint)[0]}`] : []),
+      context.essentialQuestion || "What are we learning today?",
+      ...(context.cueText.slice(0, 1).length && !context.teacherLed ? [`Cue: ${context.cueText[0]}`] : []),
     ],
-    teacherNotes: allowStudentNavigationLanguage(input, blueprint)
+    teacherNotes: context.allowStudentNavigation
       ? "Use the hub opening to preview choices, then turn-and-talk."
       : "Turn-and-talk; share 2-3 ideas; connect to objective.",
   }),
-  "mini-lesson": (input, blueprint) => ({
+  "mini-lesson": (input, blueprint, context) => ({
     id: makeId("s"),
     type: "mini-lesson",
-    title: isTeacherLedEarlyElementary(input, blueprint) ? "Teach" : getFramework(blueprint) === "clickableHub" ? "Mini Lesson" : "Teach",
-    bullets: makeMiniLessonBullets(input, blueprint),
-    teacherNotes: allowStudentNavigationLanguage(input, blueprint)
+    title: context.teacherLed ? "Teach" : context.framework === "clickableHub" ? "Mini Lesson" : "Teach",
+    bullets: makeMiniLessonBullets(input, context),
+    teacherNotes: context.allowStudentNavigation
       ? "Teach briefly, then launch students into the next hub path."
       : "Teach in short chunks. Name the strategy and model the thinking.",
   }),
-  modeling: (input, blueprint) => ({
+  modeling: (input, blueprint, context) => ({
     id: makeId("s"),
     type: "modeling",
     title: "Modeling",
-    bullets: isTeacherLedEarlyElementary(input, blueprint)
+    bullets: context.teacherLed
       ? ["My turn. Watch and listen.", "Notice how we say the sounds and blend the word."]
-      : getFramework(blueprint) === "clickableHub"
+      : context.framework === "clickableHub"
         ? ["Model one path clearly before rotations begin.", "Show what success looks like in the hub."]
         : ["I do: Watch me think aloud.", "Notice the steps and language I use."],
     teacherNotes: "Think aloud. Show one complete example before release.",
   }),
-  guided: (input, blueprint) => ({
+  guided: (input, blueprint, context) => ({
     id: makeId("s"),
     type: "guided",
     title: "Guided Practice",
-    bullets: isTeacherLedEarlyElementary(input, blueprint)
+    bullets: context.teacherLed
       ? ["Let's do one together.", "Say it with me. Then try one."]
-      : getFramework(blueprint) === "clickableHub"
+      : context.framework === "clickableHub"
         ? ["We do: Practice one round together before students rotate.", "Name the transition expectations."]
         : ["We do: Solve one together.", "Students respond with support."],
     teacherNotes: "Prompt and scaffold. Correct misconceptions immediately.",
   }),
-  practice: (input, blueprint) => ({
+  practice: (input, blueprint, context) => ({
     id: makeId("s"),
     type: "practice",
-    title: isTeacherLedEarlyElementary(input, blueprint)
+    title: context.teacherLed
       ? "Let's Practice"
-      : getFramework(blueprint) === "clickableHub"
+      : context.framework === "clickableHub"
         ? "Center Rotation"
         : "Independent Practice",
-    bullets: makePracticeBullets(input, blueprint),
-    teacherNotes: allowStudentNavigationLanguage(input, blueprint)
+    bullets: makePracticeBullets(input, context),
+    teacherNotes: context.allowStudentNavigation
       ? "Circulate between stations. Reinforce routines and accountability."
       : "Circulate. Pull Tier 3 first. Provide fast feedback.",
   }),
-  "exit-ticket": (input, blueprint) => ({
+  "exit-ticket": (input, blueprint, context) => ({
     id: makeId("s"),
     type: "exit-ticket",
-    title: isTeacherLedEarlyElementary(input, blueprint)
+    title: context.teacherLed
       ? "Show What You Know"
-      : getFramework(blueprint) === "guidepost"
+      : context.framework === "guidepost"
         ? "Reflection"
         : "Exit Ticket",
-    bullets: makeExitBullets(input, blueprint),
-    teacherNotes: allowStudentNavigationLanguage(input, blueprint)
+    bullets: makeExitBullets(input, context),
+    teacherNotes: context.allowStudentNavigation
       ? "Bring students back together and close the hub path with one final check."
       : "Collect evidence to decide reteach or enrich next lesson.",
   }),
@@ -465,20 +253,26 @@ const SLIDE_LIBRARY: Record<SlideType, (input: LessonInput, blueprint?: LessonBl
 
 function buildSlides(input: LessonInput, blueprint?: LessonBlueprint | null): Slide[] {
   const spec = buildLessonSpec(input, blueprint);
+  const context = resolveLessonContext(input, blueprint);
+
   return spec.slideOrder.map((type, index) => {
-    const slide = SLIDE_LIBRARY[type](input, blueprint);
+    const slide = SLIDE_LIBRARY[type](input, blueprint, context);
     const extraNotes = spec.teacherNoteAdditions[type] || [];
+
     if (extraNotes.length) {
       slide.teacherNotes = [slide.teacherNotes, ...extraNotes].filter(Boolean).join("\n");
     }
-    if (spec.frameworkApplied === "clickableHub" && index === 1 && !isTeacherLedEarlyElementary(input, blueprint)) {
+
+    if (spec.frameworkApplied === "clickableHub" && index === 1 && !context.teacherLed) {
       slide.title = "Lesson Hub";
       slide.bullets = ["Choose the lesson path together.", "Preview stations, teaching, and exit steps."];
     }
+
     if (spec.frameworkApplied === "guidepost" && type === "discussion") {
       slide.title = "Bridge";
-      slide.bullets = ["Connect prior learning to today.", input.essentialQuestion || "Discuss the focus of the lesson."];
+      slide.bullets = ["Connect prior learning to today.", context.essentialQuestion || "Discuss the focus of the lesson."];
     }
+
     return slide;
   });
 }
@@ -525,40 +319,42 @@ function buildStrandDifferentiation(primaryCode?: string) {
   }
 }
 
-function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCode?: string, blueprint?: LessonBlueprint | null): LessonPlanSection[] {
+function buildLessonPlan(
+  input: LessonInput,
+  slides: Slide[],
+  primaryStandardCode?: string,
+  blueprint?: LessonBlueprint | null
+): LessonPlanSection[] {
   const idx = (type: SlideType) => slides.findIndex((slide) => slide.type === type) + 1;
   const diff = buildStrandDifferentiation(primaryStandardCode);
   const tier3 = input.groupNotes?.tier3 || diff.tier3;
   const tier2 = input.groupNotes?.tier2 || diff.tier2;
   const enrichment = input.groupNotes?.enrichment || diff.enrichment;
-  const framework = blueprint?.synthesis?.frameworkApplied || "linear";
-  const curriculumTitles = getCurriculumTitles(blueprint);
-  const cueText = getCueText(blueprint);
-  const teacherLed = isTeacherLedEarlyElementary(input, blueprint);
+  const context = resolveLessonContext(input, blueprint);
 
-  if (framework === "clickableHub" && !teacherLed) {
+  if (context.framework === "clickableHub" && !context.teacherLed) {
     return [
       {
         heading: "Launch and Navigation",
         slides: [idx("title"), idx("discussion"), idx("objective")].filter((n) => n > 0),
-        description: cueText[0]
-          ? `Open the lesson with a warm lesson overview, preview choices, and use this cue: ${cueText[0]}.`
-          : "Open the lesson with a warm lesson overview, preview choices, and anchor the objective before instruction begins.",
+        description: context.cueText[0]
+          ? `Open the lesson with a hub-style overview, preview choices, and use this cue: ${context.cueText[0]}.`
+          : "Open the lesson with a hub-style overview, preview choices, and anchor the objective before instruction begins.",
         differentiation: { tier3, tier2, enrichment },
       },
       {
         heading: "Mini Lesson and Model",
         slides: [idx("mini-lesson"), idx("modeling")].filter((n) => n > 0),
-        description: curriculumTitles[0]
-          ? `Teach the skill using ${input.textOrTopic} and anchor the model in ${curriculumTitles[0]}.`
+        description: context.curriculumTitles[0]
+          ? `Teach the skill using ${input.textOrTopic} and anchor the model in ${context.curriculumTitles[0]}.`
           : `Teach the skill using ${input.textOrTopic}. Model the process clearly, then set students up for station or center work.`,
         differentiation: { tier3, tier2, enrichment },
       },
       {
         heading: "Guided Rotation and Practice",
         slides: [idx("guided"), idx("practice")].filter((n) => n > 0),
-        description: cueText[1]
-          ? `Move students through guided support and center-based practice with this transition cue: ${cueText[1]}.`
+        description: context.cueText[1]
+          ? `Move students through guided support and center-based practice with this transition cue: ${context.cueText[1]}.`
           : "Move students through guided support and center-based practice with explicit transitions.",
         differentiation: { tier3, tier2, enrichment },
       },
@@ -571,7 +367,7 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
     ];
   }
 
-  if (framework === "guidepost" && !teacherLed) {
+  if (context.framework === "guidepost" && !context.teacherLed) {
     return [
       {
         heading: "Launch and Bridge",
@@ -582,8 +378,8 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
       {
         heading: "Teach and Guided Practice",
         slides: [idx("mini-lesson"), idx("guided")].filter((n) => n > 0),
-        description: curriculumTitles[0]
-          ? `Teach the skill using ${input.textOrTopic} and practice it through ${curriculumTitles[0]}.`
+        description: context.curriculumTitles[0]
+          ? `Teach the skill using ${input.textOrTopic} and practice it through ${context.curriculumTitles[0]}.`
           : `Teach the skill using ${input.textOrTopic}, then move quickly into supported guided practice.`,
         differentiation: { tier3, tier2, enrichment },
       },
@@ -606,16 +402,16 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
     {
       heading: "Teach and Model",
       slides: [idx("mini-lesson"), idx("modeling")].filter((n) => n > 0),
-      description: curriculumTitles[0]
-        ? `Teach the skill using ${input.textOrTopic} and model it with ${curriculumTitles[0]}.`
+      description: context.curriculumTitles[0]
+        ? `Teach the skill using ${input.textOrTopic} and model it with ${context.curriculumTitles[0]}.`
         : `Teach the skill using ${input.textOrTopic}. Model the thinking and name the steps explicitly.`,
       differentiation: { tier3, tier2, enrichment },
     },
     {
-      heading: teacherLed ? "Guided Practice and Teacher Support" : "Guided and Independent Practice",
+      heading: context.teacherLed ? "Guided Practice and Teacher Support" : "Guided and Independent Practice",
       slides: [idx("guided"), idx("practice")].filter((n) => n > 0),
-      description: curriculumTitles[1]
-        ? `Guide one example together, then release students to apply the skill using ${curriculumTitles[1]}.`
+      description: context.curriculumTitles[1]
+        ? `Guide one example together, then release students to apply the skill using ${context.curriculumTitles[1]}.`
         : "Guide one example together, then release students to apply the skill with support matched to need.",
       differentiation: { tier3, tier2, enrichment },
     },
@@ -629,16 +425,15 @@ function buildLessonPlan(input: LessonInput, slides: Slide[], primaryStandardCod
 }
 
 function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): Center[] {
-  const framework = blueprint?.synthesis?.frameworkApplied || "linear";
-  const curriculumTitles = getCurriculumTitles(blueprint);
+  const context = resolveLessonContext(input, blueprint);
 
-  if (framework === "clickableHub" && !isTeacherLedEarlyElementary(input, blueprint)) {
+  if (context.framework === "clickableHub" && !context.teacherLed) {
     return [
       {
         title: "Teacher Table",
         objective: input.objective,
-        direction: curriculumTitles[0]
-          ? `Meet with the teacher for a guided round using ${curriculumTitles[0]}.`
+        direction: context.curriculumTitles[0]
+          ? `Meet with the teacher for a guided round using ${context.curriculumTitles[0]}.`
           : "Meet with the teacher for a guided round tied to the mini lesson.",
         materials: input.materials || "Teacher-selected lesson materials",
         printables: "Optional guided group sheet",
@@ -646,8 +441,8 @@ function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): C
       {
         title: "Center Rotation",
         objective: "Practice the focus skill in a station format",
-        direction: curriculumTitles[1]
-          ? `Rotate through a short task using ${curriculumTitles[1]}.`
+        direction: context.curriculumTitles[1]
+          ? `Rotate through a short task using ${context.curriculumTitles[1]}.`
           : `Rotate through a short task using ${input.textOrTopic}.`,
         materials: input.materials || "Primary lesson text or topic materials",
         printables: "Optional station card",
@@ -673,8 +468,8 @@ function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): C
     {
       title: "Skill Builder Center",
       objective: input.objective,
-      direction: curriculumTitles[0]
-        ? `Repeat the exact skill with this material: ${curriculumTitles[0]}. Complete 2-3 reps.`
+      direction: context.curriculumTitles[0]
+        ? `Repeat the exact skill with this material: ${context.curriculumTitles[0]}. Complete 2-3 reps.`
         : "Repeat the exact skill with a short routine. Complete 2-3 reps.",
       materials: input.materials || "Teacher-selected lesson materials",
       printables: "Optional teacher-created response sheet",
@@ -682,8 +477,8 @@ function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): C
     {
       title: "Apply It Center",
       objective: "Apply the skill in context",
-      direction: curriculumTitles[1]
-        ? `Use ${curriculumTitles[1]} to apply the skill and explain your thinking.`
+      direction: context.curriculumTitles[1]
+        ? `Use ${context.curriculumTitles[1]} to apply the skill and explain your thinking.`
         : `Use ${input.textOrTopic} to apply the skill and explain your thinking.`,
       materials: input.materials || "Primary lesson text or topic materials",
       printables: "Optional recording sheet",
@@ -699,10 +494,9 @@ function buildCenters(input: LessonInput, blueprint?: LessonBlueprint | null): C
 }
 
 function buildRotationPlan(input: LessonInput, blueprint?: LessonBlueprint | null) {
-  const framework = blueprint?.synthesis?.frameworkApplied || "linear";
-  const cueText = getCueText(blueprint);
+  const context = resolveLessonContext(input, blueprint);
 
-  if (framework === "clickableHub" && !isTeacherLedEarlyElementary(input, blueprint)) {
+  if (context.framework === "clickableHub" && !context.teacherLed) {
     return [
       {
         title: "Hub Launch",
@@ -710,14 +504,14 @@ function buildRotationPlan(input: LessonInput, blueprint?: LessonBlueprint | nul
       },
       {
         title: "Teacher Table Rotation",
-        description: cueText[0]
-          ? `Start guided support and use this launch cue: ${cueText[0]}`
+        description: context.cueText[0]
+          ? `Start guided support and use this launch cue: ${context.cueText[0]}`
           : `Start with guided support for about ${Math.max(8, Math.round(input.durationMinutes / 5))} minutes while others work in stations.`,
       },
       {
         title: "Center Rotation",
-        description: cueText[1]
-          ? `Rotate students through tasks using this transition cue: ${cueText[1]}`
+        description: context.cueText[1]
+          ? `Rotate students through tasks using this transition cue: ${context.cueText[1]}`
           : "Rotate students through independent or partner tasks with explicit transitions.",
       },
       {
@@ -769,14 +563,12 @@ export function generateLesson(input: LessonInput, blueprint?: LessonBlueprint |
   const centers = buildCenters(input, blueprint);
   const rotationPlan = buildRotationPlan(input, blueprint);
   const interventions = buildInterventions(input);
-  const materials = buildGeneratedMaterials(input, blueprint);
 
   return {
     meta: { generatedAt: new Date().toISOString(), version: APP_VERSION },
     input,
     standards: detected,
     standardsDetected: detected,
-    materials,
     slides,
     lessonPlan,
     centers,
@@ -784,8 +576,3 @@ export function generateLesson(input: LessonInput, blueprint?: LessonBlueprint |
     interventions,
   };
 }
-
-
-
-
-
