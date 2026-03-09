@@ -172,20 +172,20 @@ async function seedWorkspace(page: any, pkg: any) {
 
 async function gotoSeededResults(page: any, pkg: any) {
   await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await page.goto("/results", { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("domcontentloaded");
   await page.reload();
   await page.waitForLoadState("networkidle");
 }
 
 test("inputs page loads", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("body")).toContainText(/Grade/i);
   await expect(page.locator("body")).toContainText(/Objective/i);
 });
 
 test("materials page loads", async ({ page }) => {
-  await page.goto("/materials");
+  await page.goto("/materials", { waitUntil: "domcontentloaded" });
   await expect(page.locator("body")).toContainText(/Materials/i);
 });
 
