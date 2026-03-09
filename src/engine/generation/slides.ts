@@ -10,14 +10,11 @@ function curriculumTitleAt(context: LessonContext, index: number, fallback?: str
 }
 
 function detectTwoPartLesson(input: LessonInput, blueprint?: LessonBlueprint | null) {
-  const corpus = [
+  const teacherCorpus = [
     input.lessonTitle || "",
     input.objective || "",
     input.essentialQuestion || "",
     input.textOrTopic || "",
-    blueprint?.synthesis?.notes || "",
-    ...(blueprint?.curriculum?.coverageChecklist ?? []).map((item) => item.title || ""),
-    ...(blueprint?.exemplar?.presenterCues ?? []).map((cue: any) => cue?.text || cue?.note || ""),
   ]
     .join(" ")
     .toLowerCase();
@@ -39,12 +36,10 @@ function detectTwoPartLesson(input: LessonInput, blueprint?: LessonBlueprint | n
 
   const comprehensionSignals = [
     /\bauthor'?s purpose\b/,
-    /\bpurpose\b/,
     /\bsetting\b/,
     /\bcharacter\b/,
     /\bretell\b/,
     /\bmain idea\b/,
-    /\bstory\b/,
     /\bplot\b/,
     /\bdetails\b/,
     /\binfer\b/,
@@ -52,8 +47,8 @@ function detectTwoPartLesson(input: LessonInput, blueprint?: LessonBlueprint | n
     /\bcomprehension\b/,
   ];
 
-  const phonicsHit = phonicsSignals.some((pattern) => pattern.test(corpus));
-  const comprehensionHit = comprehensionSignals.some((pattern) => pattern.test(corpus));
+  const phonicsHit = phonicsSignals.some((pattern) => pattern.test(teacherCorpus));
+  const comprehensionHit = comprehensionSignals.some((pattern) => pattern.test(teacherCorpus));
   const split = phonicsHit && comprehensionHit;
 
   return {
@@ -245,7 +240,7 @@ function makeExitBullets(input: LessonInput, context: LessonContext, splitMode: 
 type SlideBuilder = (input: LessonInput, blueprint: LessonBlueprint | null | undefined, context: LessonContext, splitMode: ReturnType<typeof detectTwoPartLesson>) => Slide;
 
 const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
-  title: (input, blueprint, context, splitMode) => ({
+  title: (input, blueprint, context, _splitMode) => ({
     id: makeId("s"),
     type: "title",
     title: input.lessonTitle,
@@ -255,14 +250,14 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
       ...(context.framework !== "linear" && !context.teacherLed ? [`Framework: ${context.framework}`] : []),
     ],
   }),
-  objective: (input, blueprint, context, splitMode) => ({
+  objective: (input, blueprint, context, _splitMode) => ({
     id: makeId("s"),
     type: "objective",
     title: context.teacherLed ? "I Can" : "Objective",
     bullets: [input.objective],
     teacherNotes: "State objective. Students echo. Preview lesson steps.",
   }),
-  discussion: (input, blueprint, context, splitMode) => ({
+  discussion: (input, blueprint, context, _splitMode) => ({
     id: makeId("s"),
     type: "discussion",
     title: context.teacherLed ? "What Are We Learning?" : "Essential Question",
@@ -283,7 +278,7 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
       ? "Teach briefly, then launch students into the next hub path."
       : "Teach in short chunks. Name the strategy and model the thinking.",
   }),
-  modeling: (input, blueprint, context, splitMode) => ({
+  modeling: (input, blueprint, context, _splitMode) => ({
     id: makeId("s"),
     type: "modeling",
     title: "Modeling",
@@ -369,6 +364,8 @@ export function buildSlides(input: LessonInput, blueprint?: LessonBlueprint | nu
     return slide;
   });
 }
+
+
 
 
 

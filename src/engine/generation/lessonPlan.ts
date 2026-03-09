@@ -1,4 +1,4 @@
-import type { LessonInput, LessonPlanSection, Slide, SlideType } from "../types";
+﻿import type { LessonInput, LessonPlanSection, Slide, SlideType } from "../types";
 import type { LessonBlueprint } from "../blueprint/types";
 import { resolveLessonContext } from "../lessonContext";
 
