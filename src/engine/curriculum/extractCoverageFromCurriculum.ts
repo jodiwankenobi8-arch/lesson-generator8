@@ -116,7 +116,7 @@ export function extractCoverageFromCurriculum(files: UploadedTextFile[]): Curric
   const curriculumFiles = (files ?? []).filter((file) => {
     const text = String(file.text ?? "");
     const role = String(file.sourceRole ?? "curriculum").toLowerCase();
-    return role === "curriculum" && text.trim() && !isLikelyFallbackText(text);
+    return (role === "curriculum" || role === "teachingtool" || role === "mixed") && text.trim() && !isLikelyFallbackText(text);
   });
 
   const items: CurriculumCoverageItem[] = [];
@@ -144,7 +144,7 @@ export function extractCoverageFromCurriculum(files: UploadedTextFile[]): Curric
       if (!looksUsefulCurriculumSentence(rawSentence)) continue;
 
       const cleaned = sanitizeTitle(cleanCurriculumLine(rawSentence));
-      if (cleaned.length < 18) continue;
+      if (cleaned.length < 12) continue;
 
       const key = canonicalize(cleaned);
       if (!key || seen.has(key)) continue;
