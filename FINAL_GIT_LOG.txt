@@ -1,0 +1,5 @@
+﻿2c39ee9 docs: add QA checklist and release snapshot
+f162692 refactor: split lesson generation into focused modules
+ed658a5 refactor: centralize lesson context across spec and generation
+6caab43 fix: reconcile hardening work and patch runtime generator
+0cc2a4e Add Apple Orchard asset system packages for assets 01-05
