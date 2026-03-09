@@ -2,6 +2,25 @@ import type { LessonInput, LessonPlanSection, Slide, SlideType } from "../types"
 import type { LessonBlueprint } from "../blueprint/types";
 import { resolveLessonContext } from "../lessonContext";
 
+function detectTwoPartLessonPlanMode(input: LessonInput, blueprint?: LessonBlueprint | null) {
+  const corpus = [
+    input.lessonTitle || "",
+    input.objective || "",
+    input.essentialQuestion || "",
+    input.textOrTopic || "",
+    blueprint?.synthesis?.notes || "",
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const phonicsHit = /\bcvc\b|\bcvce\b|\bphonics\b|\bblend\b|\bsegment\b|\blong a\b|\bshort a\b|\bmagic e\b|\bword family\b/.test(corpus);
+  const comprehensionHit = /\bauthor'?s purpose\b|\bsetting\b|\bcharacter\b|\bretell\b|\bmain idea\b|\bstory\b|\bdetails\b|\binfer\b|\bcomprehension\b/.test(corpus);
+
+  return {
+    split: phonicsHit && comprehensionHit,
+  };
+}
+
 function getStrandFromCode(primaryCode?: string): string | undefined {
   if (!primaryCode) return undefined;
   const parts = primaryCode.split(".");
@@ -56,6 +75,7 @@ export function buildLessonPlan(
   const tier2 = input.groupNotes?.tier2 || diff.tier2;
   const enrichment = input.groupNotes?.enrichment || diff.enrichment;
   const context = resolveLessonContext(input, blueprint);
+  const splitMode = detectTwoPartLessonPlanMode(input, blueprint);
 
   if (context.framework === "clickableHub" && !context.teacherLed) {
     return [
@@ -121,29 +141,37 @@ export function buildLessonPlan(
     {
       heading: "Launch and Objective",
       slides: [idx("title"), idx("objective"), idx("discussion")].filter((n) => n > 0),
-      description: "Welcome students, introduce the objective, and anchor the lesson with the essential question.",
+      description: splitMode.split
+        ? "Open the lesson by naming the two parts clearly: first the phonics skill, then the comprehension/application task."
+        : "Welcome students, introduce the objective, and anchor the lesson with the essential question.",
       differentiation: { tier3, tier2, enrichment },
     },
     {
       heading: "Teach and Model",
       slides: [idx("mini-lesson"), idx("modeling")].filter((n) => n > 0),
-      description: context.curriculumTitles[0]
-        ? `Teach the skill using ${input.textOrTopic} and model it with ${context.curriculumTitles[0]}.`
-        : `Teach the skill using ${input.textOrTopic}. Model the thinking and name the steps explicitly.`,
+      description: splitMode.split
+        ? "Part 1 teaches the phonics or word-reading skill explicitly. Part 2 models how that skill connects to meaning or text work."
+        : context.curriculumTitles[0]
+          ? `Teach the skill using ${input.textOrTopic} and model it with ${context.curriculumTitles[0]}.`
+          : `Teach the skill using ${input.textOrTopic}. Model the thinking and name the steps explicitly.`,
       differentiation: { tier3, tier2, enrichment },
     },
     {
       heading: context.teacherLed ? "Guided Practice and Teacher Support" : "Guided and Independent Practice",
       slides: [idx("guided"), idx("practice")].filter((n) => n > 0),
-      description: context.curriculumTitles[1]
-        ? `Guide one example together, then release students to apply the skill using ${context.curriculumTitles[1]}.`
-        : "Guide one example together, then release students to apply the skill with support matched to need.",
+      description: splitMode.split
+        ? "Guide students through the phonics practice first, then shift into comprehension/application with clear teacher support."
+        : context.curriculumTitles[1]
+          ? `Guide one example together, then release students to apply the skill using ${context.curriculumTitles[1]}.`
+          : "Guide one example together, then release students to apply the skill with support matched to need.",
       differentiation: { tier3, tier2, enrichment },
     },
     {
       heading: "Assessment and Next Steps",
       slides: [idx("exit-ticket")].filter((n) => n > 0),
-      description: "Use a quick exit ticket to check mastery and decide reteach, review, or enrichment.",
+      description: splitMode.split
+        ? "Use a brief exit check that confirms both the phonics skill and the connected comprehension/application task."
+        : "Use a quick exit ticket to check mastery and decide reteach, review, or enrichment.",
       differentiation: { tier3, tier2, enrichment },
     },
   ];

@@ -10,6 +10,59 @@ function isTeacherLedEarlyElementary(plan: PlanInput) {
   return /\bkindergarten\b|\bgrade k\b|\bfirst grade\b|\bgrade 1\b|\b1st\b/.test(text);
 }
 
+function detectMixedLessonSignal(plan: PlanInput, curriculumFiles: UploadedTextFile[], exemplarFiles: UploadedTextFile[]) {
+  const corpus = [
+    plan.lessonTitle || "",
+    plan.objective || "",
+    plan.essentialQuestion || "",
+    plan.notes || "",
+    plan.textOrTopic || "",
+    ...(curriculumFiles ?? []).map((f) => `${f.name || ""} ${f.text || ""}`),
+    ...(exemplarFiles ?? []).map((f) => `${f.name || ""} ${f.text || ""}`),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const phonicsSignals = [
+    /\bcvc\b/,
+    /\bcvce\b/,
+    /\bphonics\b/,
+    /\bdecodable\b/,
+    /\bblend\b/,
+    /\bsegment\b/,
+    /\blong a\b/,
+    /\bshort a\b/,
+    /\bmagic e\b/,
+    /\bonset\b/,
+    /\brime\b/,
+    /\bword family\b/,
+  ];
+
+  const comprehensionSignals = [
+    /\bauthor'?s purpose\b/,
+    /\bpurpose\b/,
+    /\bsetting\b/,
+    /\bcharacter\b/,
+    /\bretell\b/,
+    /\bmain idea\b/,
+    /\bstory\b/,
+    /\bplot\b/,
+    /\bdetails\b/,
+    /\binfer\b/,
+    /\btheme\b/,
+    /\bcomprehension\b/,
+  ];
+
+  const phonicsHit = phonicsSignals.some((pattern) => pattern.test(corpus));
+  const comprehensionHit = comprehensionSignals.some((pattern) => pattern.test(corpus));
+
+  return {
+    mixed: phonicsHit && comprehensionHit,
+    phonicsHit,
+    comprehensionHit,
+  };
+}
+
 function toBlueprintFile(file: UploadedTextFile) {
   return {
     name: file.name,
@@ -49,6 +102,8 @@ export function buildBlueprint(args: {
 
   const presenterCueFiles = [...trueExemplarFiles, ...mixedExemplarFiles];
   const presenterCues = presenterCueFiles.flatMap((f) => extractPresenterCues(f.text ?? "", f.name));
+
+  const mixedLessonSignal = detectMixedLessonSignal(args.plan, args.curriculumFiles ?? [], args.exemplarFiles ?? []);
 
   const hasTrueExemplar = trueExemplarFiles.length > 0;
   const hasCurriculum = curriculumChecklist.length > 0;
@@ -117,6 +172,9 @@ export function buildBlueprint(args: {
     extracted.summary,
     curriculumChecklist.length > 0
       ? `Curriculum focus items: ${curriculumChecklist.slice(0, 3).map((item) => item.title).join(" | ")}`
+      : "",
+    mixedLessonSignal.mixed
+      ? "Potential mixed instructional targets detected. Prefer a two-part lesson structure (phonics + comprehension) or prompt the user to confirm whether the combination was intentional."
       : "",
     teacherLedEarlyElementary ? "Teacher-led early elementary override applied: linear framework enforced." : "",
   ].filter(Boolean);

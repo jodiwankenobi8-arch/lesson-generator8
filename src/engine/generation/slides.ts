@@ -4,8 +4,71 @@ import { makeId } from "../../utils/makeId";
 import { buildLessonSpec } from "../spec/buildLessonSpec";
 import { resolveLessonContext, type LessonContext } from "../lessonContext";
 
-function makeMiniLessonBullets(input: LessonInput, context: LessonContext): string[] {
+function detectTwoPartLesson(input: LessonInput, blueprint?: LessonBlueprint | null) {
+  const corpus = [
+    input.lessonTitle || "",
+    input.objective || "",
+    input.essentialQuestion || "",
+    input.textOrTopic || "",
+    blueprint?.synthesis?.notes || "",
+    ...(blueprint?.curriculum?.coverageChecklist ?? []).map((item) => item.title || ""),
+    ...(blueprint?.exemplar?.presenterCues ?? []).map((cue: any) => cue?.text || cue?.note || ""),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const phonicsSignals = [
+    /\bcvc\b/,
+    /\bcvce\b/,
+    /\bphonics\b/,
+    /\bdecodable\b/,
+    /\bblend\b/,
+    /\bsegment\b/,
+    /\blong a\b/,
+    /\bshort a\b/,
+    /\bmagic e\b/,
+    /\bonset\b/,
+    /\brime\b/,
+    /\bword family\b/,
+  ];
+
+  const comprehensionSignals = [
+    /\bauthor'?s purpose\b/,
+    /\bpurpose\b/,
+    /\bsetting\b/,
+    /\bcharacter\b/,
+    /\bretell\b/,
+    /\bmain idea\b/,
+    /\bstory\b/,
+    /\bplot\b/,
+    /\bdetails\b/,
+    /\binfer\b/,
+    /\btheme\b/,
+    /\bcomprehension\b/,
+  ];
+
+  const phonicsHit = phonicsSignals.some((pattern) => pattern.test(corpus));
+  const comprehensionHit = comprehensionSignals.some((pattern) => pattern.test(corpus));
+  const split = phonicsHit && comprehensionHit;
+
+  return {
+    split,
+    phonicsHit,
+    comprehensionHit,
+    objectiveLabel: split ? "Phonics + Comprehension" : null,
+  };
+}
+
+function makeMiniLessonBullets(input: LessonInput, context: LessonContext, splitMode: ReturnType<typeof detectTwoPartLesson>): string[] {
   const curriculumTitles = context.curriculumTitles;
+
+  if (splitMode.split) {
+    return [
+      `Part 1: phonics focus -> ${input.objective}`,
+      `Part 2: comprehension/application -> ${input.textOrTopic}`,
+      curriculumTitles[0] ? `Curriculum anchor: ${curriculumTitles[0]}` : "Teach each part separately and connect them at the end.",
+    ];
+  }
 
   if (context.teacherLed) {
     return [
@@ -37,8 +100,16 @@ function makeMiniLessonBullets(input: LessonInput, context: LessonContext): stri
   ];
 }
 
-function makePracticeBullets(input: LessonInput, context: LessonContext): string[] {
+function makePracticeBullets(input: LessonInput, context: LessonContext, splitMode: ReturnType<typeof detectTwoPartLesson>): string[] {
   const curriculumTitles = context.curriculumTitles;
+
+  if (splitMode.split) {
+    return [
+      `Part 1: phonics focus -> ${input.objective}`,
+      `Part 2: comprehension/application -> ${input.textOrTopic}`,
+      curriculumTitles[0] ? `Curriculum anchor: ${curriculumTitles[0]}` : "Teach each part separately and connect them at the end.",
+    ];
+  }
 
   if (context.teacherLed) {
     return [
@@ -67,7 +138,7 @@ function makePracticeBullets(input: LessonInput, context: LessonContext): string
   ];
 }
 
-function makeExitBullets(input: LessonInput, context: LessonContext): string[] {
+function makeExitBullets(input: LessonInput, context: LessonContext, splitMode: ReturnType<typeof detectTwoPartLesson>): string[] {
   if (context.teacherLed) {
     return [
       "Let's show what we learned.",
@@ -131,7 +202,7 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
     id: makeId("s"),
     type: "mini-lesson",
     title: context.teacherLed ? "Teach" : context.framework === "clickableHub" ? "Mini Lesson" : "Teach",
-    bullets: makeMiniLessonBullets(input, context),
+    bullets: makeMiniLessonBullets(input, context, splitMode),
     teacherNotes: context.allowStudentNavigation
       ? "Teach briefly, then launch students into the next hub path."
       : "Teach in short chunks. Name the strategy and model the thinking.",
@@ -166,7 +237,7 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
       : context.framework === "clickableHub"
         ? "Center Rotation"
         : "Independent Practice",
-    bullets: makePracticeBullets(input, context),
+    bullets: makePracticeBullets(input, context, splitMode),
     teacherNotes: context.allowStudentNavigation
       ? "Circulate between stations. Reinforce routines and accountability."
       : "Circulate. Pull Tier 3 first. Provide fast feedback.",
@@ -179,7 +250,7 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
       : context.framework === "guidepost"
         ? "Reflection"
         : "Exit Ticket",
-    bullets: makeExitBullets(input, context),
+    bullets: makeExitBullets(input, context, splitMode),
     teacherNotes: context.allowStudentNavigation
       ? "Bring students back together and close the hub path with one final check."
       : "Collect evidence to decide reteach or enrich next lesson.",
@@ -189,6 +260,7 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
 export function buildSlides(input: LessonInput, blueprint?: LessonBlueprint | null): Slide[] {
   const spec = buildLessonSpec(input, blueprint);
   const context = resolveLessonContext(input, blueprint);
+  const splitMode = detectTwoPartLesson(input, blueprint);
 
   return spec.slideOrder.map((type, index) => {
     const slide = SLIDE_LIBRARY[type](input, blueprint, context);
@@ -206,6 +278,20 @@ export function buildSlides(input: LessonInput, blueprint?: LessonBlueprint | nu
     if (spec.frameworkApplied === "guidepost" && type === "discussion") {
       slide.title = "Bridge";
       slide.bullets = ["Connect prior learning to today.", context.essentialQuestion || "Discuss the focus of the lesson."];
+    }
+
+    if (splitMode.split && type === "objective") {
+      slide.bullets = [
+        input.objective,
+        "Two-part lesson: phonics first, then comprehension/application.",
+      ];
+    }
+
+    if (splitMode.split && type === "discussion") {
+      slide.bullets = [
+        "We have two jobs today.",
+        "Part 1 builds the word-reading skill. Part 2 uses that skill in meaning work.",
+      ];
     }
 
     return slide;
