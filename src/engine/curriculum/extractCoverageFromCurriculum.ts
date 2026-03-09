@@ -98,6 +98,12 @@ function looksUsefulCurriculumSentence(line: string) {
 function sanitizeTitle(line: string) {
   return normalize(
     String(line ?? "")
+      .replace(/^notes:\s*slide\s*\d+\/\d+:\s*/i, "")
+      .replace(/^text:\s*/i, "")
+      .replace(/^slide\s*\d+:\s*/i, "")
+      .replace(/\s+\d+\s*$/, "")
+      .replace(/\bpage\s+\d+\-\d+\b/gi, "")
+      .replace(/\bcontinued\b/gi, "")
       .replace(/\s+/g, " ")
       .replace(/^[,:;\-\s]+/, "")
       .replace(/[,:;\-\s]+$/, "")
@@ -110,6 +116,31 @@ function canonicalize(line: string) {
     .replace(/[^a-z0-9\s]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function scoreCurriculumTitle(title: string) {
+  const t = canonicalize(title);
+
+  let score = 0;
+
+  if (/\blong a\b/.test(t)) score += 10;
+  if (/\bmagic e\b/.test(t)) score += 10;
+  if (/\bae\b/.test(t)) score += 6;
+  if (/\bword example\b/.test(t)) score += 7;
+  if (/\bpractice words\b/.test(t)) score += 8;
+  if (/\bcvc\b|\bcvce\b/.test(t)) score += 7;
+  if (/\bblend\b|\bsegment\b|\bspell\b/.test(t)) score += 6;
+  if (/\bsight word\b/.test(t)) score += 4;
+  if (/\blets read together\b/.test(t)) score += 5;
+  if (/\bphonemic awareness\b/.test(t)) score += 5;
+
+  if (/\broadmap\b|\bschedule check\b|\bactivity roadmap\b/.test(t)) score -= 8;
+  if (/\bcelebration\b|\bgreat job\b|\bdaily reflection\b/.test(t)) score -= 8;
+  if (/\bstory cover\b|\bfirst read\b|\bauthors purpose\b|\bturn talk\b|\bclass discussion\b/.test(t)) score -= 6;
+  if (/\bpage\b/.test(t)) score -= 5;
+  if (/\bslide\b/.test(t)) score -= 4;
+
+  return score;
 }
 
 export function extractCoverageFromCurriculum(files: UploadedTextFile[]): CurriculumCoverageResult {
@@ -164,10 +195,14 @@ export function extractCoverageFromCurriculum(files: UploadedTextFile[]): Curric
   }
 
   items.sort((a, b) => {
-    const req = Number(b.required) - Number(a.required);
-    if (req !== 0) return req;
-    return a.title.localeCompare(b.title);
-  });
+  const scoreDiff = scoreCurriculumTitle(b.title) - scoreCurriculumTitle(a.title);
+  if (scoreDiff !== 0) return scoreDiff;
+
+  const req = Number(b.required) - Number(a.required);
+  if (req !== 0) return req;
+
+  return a.title.localeCompare(b.title);
+});
 
   const summary = items.length
     ? `Extracted ${items.length} curriculum coverage items from readable curriculum text.`
