@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { buildBlueprint } from "../engine/blueprint/buildBlueprint";
 import type { UploadedTextFile, SourceRole } from "../engine/blueprint/types";
@@ -25,6 +25,129 @@ import { WizardProgress } from "./WizardProgress";
 import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } from "./orchardDecor";
 
 const ACCEPT_ATTR = ".txt,.md,.doc,.docx,.pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp";
+const MATERIALS_DRAFT_KEY = "lesson_generator__materials_draft_v1";
+
+type MaterialsDraft = {
+  lessonNotes: string;
+  materialsPack: UploadedTextFile[];
+  exemplarPack: UploadedTextFile[];
+  curriculumLinks: string;
+  exemplarLinks: string;
+  materialsItemQueue: Record<string, ItemQueueState>;
+  exemplarItemQueue: Record<string, ItemQueueState>;
+};
+
+function loadMaterialsDraft(): MaterialsDraft | null {
+  try {
+    const raw = localStorage.getItem(MATERIALS_DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+
+    return {
+      lessonNotes: typeof parsed.lessonNotes === "string" ? parsed.lessonNotes : "",
+      materialsPack: Array.isArray(parsed.materialsPack) ? parsed.materialsPack : [],
+      exemplarPack: Array.isArray(parsed.exemplarPack) ? parsed.exemplarPack : [],
+      curriculumLinks: typeof parsed.curriculumLinks === "string" ? parsed.curriculumLinks : "",
+      exemplarLinks: typeof parsed.exemplarLinks === "string" ? parsed.exemplarLinks : "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveMaterialsDraft(draft: MaterialsDraft) {
+  try {
+    localStorage.setItem(MATERIALS_DRAFT_KEY, JSON.stringify(draft));
+  } catch {
+    // ignore storage failures
+  }
+}
+
+type ItemQueueState = {
+  uploadStatus: string;
+  evaluationStatus: string;
+  pipelineStatus: string;
+  updatedAt: string;
+};
+
+function makeItemQueueState(
+  uploadStatus: string,
+  evaluationStatus: string,
+  pipelineStatus: string
+): ItemQueueState {
+  return {
+    uploadStatus,
+    evaluationStatus,
+    pipelineStatus,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function makeQueueKey(item: { name: string; kind?: string }) {
+  return `${item.name}__${String(item.kind || "")}`;
+}
+
+function singleFileList(file: File): FileList | null {
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  return dt.files;
+}
+
+function queueStateFromItem(item: UploadedTextFile): ItemQueueState {
+  const kind = String(item.kind || "").toLowerCase();
+
+  if (kind === "url") {
+    return makeItemQueueState(
+      "Link saved",
+      "Ready to analyze from link",
+      "Waiting in intake queue"
+    );
+  }
+
+  if (item.text && !hasFallbackOnlyText(item)) {
+    return makeItemQueueState(
+      "Saved to stack",
+      "Readable content extracted",
+      "Waiting in intake queue"
+    );
+  }
+
+  if (item.text && hasFallbackOnlyText(item)) {
+    return makeItemQueueState(
+      "Saved to stack",
+      "Fallback text only",
+      "Waiting in intake queue"
+    );
+  }
+
+  return makeItemQueueState(
+    "Saved to stack",
+    "Awaiting evaluation",
+    "Waiting in intake queue"
+  );
+}
+
+function updateQueuePipeline(
+  current: Record<string, ItemQueueState>,
+  pipelineStatus: string
+): Record<string, ItemQueueState> {
+  const next: Record<string, ItemQueueState> = {};
+  for (const [key, value] of Object.entries(current)) {
+    next[key] = {
+      ...value,
+      pipelineStatus,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+  return next;
+}
+
+function areAllQueueItemsReady(queue: Record<string, ItemQueueState>) {
+  const values = Object.values(queue || {});
+  if (values.length === 0) return true;
+  return values.every((item) => item.pipelineStatus === "Ready for Results");
+}
 
 type ProcessingStage =
   | "idle"
@@ -268,20 +391,25 @@ function buildInfluenceSummary(curriculumItems: UploadedTextFile[], exemplarItem
 function UploadItemCard({
   item,
   onRemove,
+  processing,
+  queueState,
 }: {
   item: UploadedTextFile;
   onRemove: () => void;
+  processing: ProcessingState;
+  queueState?: ItemQueueState;
 }) {
   const fallbackOnly = hasFallbackOnlyText(item);
+  const uploadStatus = queueState?.uploadStatus ?? itemUploadStatus(item);
+  const evaluationStatus = queueState?.evaluationStatus ?? itemEvaluationStatus(item);
+  const pipelineStatus = queueState?.pipelineStatus ?? processingLabelForItem(processing);
 
   return (
     <div
       style={{
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 18,
-        background: "#FFFDF9",
+        ...plannerSheetStyle("#FFFFFF"),
         padding: 12,
-        boxShadow: "0 4px 10px rgba(47,47,47,0.03)",
+        border: `1px solid ${fallbackOnly ? COLORS.warnBorder : COLORS.border}`,
       }}
     >
       <div
@@ -289,101 +417,43 @@ function UploadItemCard({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          gap: 10,
-          marginBottom: 10,
+          gap: 12,
         }}
       >
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div
-            style={{
-              fontWeight: 800,
-              color: COLORS.heading,
-              marginBottom: 4,
-              wordBreak: "break-word",
-            }}
-          >
+          <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: 4, wordBreak: "break-word" }}>
             {item.name}
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 6,
-              flexWrap: "wrap",
-              fontSize: 11,
-              fontWeight: 800,
-            }}
-          >
-            <span
-              style={{
-                display: "inline-block",
-                padding: "5px 8px",
-                borderRadius: 999,
-                background: "#FFF7F2",
-                border: `1px solid ${COLORS.border}`,
-                color: COLORS.heading,
-              }}
-            >
-              {itemTypeLabel(item)}
-            </span>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "5px 8px",
-                borderRadius: 999,
-                background: "#F3F8F1",
-                border: `1px solid ${COLORS.successBorder}`,
-                color: COLORS.heading,
-              }}
-            >
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+            <span style={plannerTabStyle("linear-gradient(180deg, #EEF5EA 0%, #E4F0DE 100%)", COLORS.heading, COLORS.successBorder)}>
               {roleLabel(item.sourceRole)}
             </span>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "5px 8px",
-                borderRadius: 999,
-                background: fallbackOnly ? "#FFF6E8" : "#FFFDF9",
-                border: `1px solid ${fallbackOnly ? COLORS.warnBorder : COLORS.border}`,
-                color: COLORS.muted,
-              }}
-            >
-              {fallbackOnly ? "Fallback note only" : "Text available"}
+            <span style={plannerTabStyle("linear-gradient(180deg, #FFF7E8 0%, #F6E8C8 100%)", "#5C4A20", COLORS.warnBorder)}>
+              {itemTypeLabel(item)}
             </span>
+          </div>
+
+          <div style={{ display: "grid", gap: 6 }}>
+            <div style={{ fontSize: 12, color: COLORS.muted }}>
+              <b>Upload:</b> {uploadStatus}
+            </div>
+            <div style={{ fontSize: 12, color: COLORS.muted }}>
+              <b>Evaluation:</b> {evaluationStatus}
+            </div>
+            <div style={{ fontSize: 12, color: COLORS.muted }}>
+              <b>Pipeline:</b> {pipelineStatus}
+            </div>
           </div>
         </div>
 
         <button
           type="button"
           onClick={onRemove}
-          style={{
-            border: `1px solid ${COLORS.border}`,
-            background: "#FFF6F4",
-            color: COLORS.heading,
-            borderRadius: 14,
-            padding: "7px 10px",
-            fontWeight: 700,
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
+          style={orchardGhostButtonStyle()}
         >
           Remove
         </button>
-      </div>
-
-      <div
-        style={{
-          fontSize: 12,
-          color: COLORS.muted,
-          lineHeight: 1.55,
-          background: "#FFFCF7",
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 14,
-          padding: 10,
-        }}
-      >
-        {String(item.text || "").slice(0, 180) || "No text extracted."}
-        {String(item.text || "").length > 180 ? "..." : ""}
       </div>
     </div>
   );
@@ -591,25 +661,164 @@ export default function MaterialsPage() {
   const [exemplarPack, setExemplarPack] = useState<UploadedTextFile[]>([]);
   const [curriculumLinks, setCurriculumLinks] = useState("");
   const [exemplarLinks, setExemplarLinks] = useState("");
+  const [materialsItemQueue, setMaterialsItemQueue] = useState<Record<string, ItemQueueState>>({});
+  const [exemplarItemQueue, setExemplarItemQueue] = useState<Record<string, ItemQueueState>>({});
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const draft = loadMaterialsDraft();
+    if (!draft) return;
+
+    setLessonNotes(draft.lessonNotes || "");
+    setMaterialsPack(Array.isArray(draft.materialsPack) ? draft.materialsPack : []);
+    setExemplarPack(Array.isArray(draft.exemplarPack) ? draft.exemplarPack : []);
+    setCurriculumLinks(draft.curriculumLinks || "");
+    setExemplarLinks(draft.exemplarLinks || "");
+    setMaterialsItemQueue(
+      draft.materialsItemQueue && typeof draft.materialsItemQueue === "object"
+        ? draft.materialsItemQueue
+        : {}
+    );
+    setExemplarItemQueue(
+      draft.exemplarItemQueue && typeof draft.exemplarItemQueue === "object"
+        ? draft.exemplarItemQueue
+        : {}
+    );
+  }, []);
+
+  useEffect(() => {
+    saveMaterialsDraft({
+      lessonNotes,
+      materialsPack,
+      exemplarPack,
+      curriculumLinks,
+      exemplarLinks,
+      materialsItemQueue,
+      exemplarItemQueue,
+    });
+  }, [
+    lessonNotes,
+    materialsPack,
+    exemplarPack,
+    curriculumLinks,
+    exemplarLinks,
+    materialsItemQueue,
+    exemplarItemQueue,
+  ]);
   const [processing, setProcessing] = useState<ProcessingState>(IDLE_PROCESSING_STATE);
 
   async function onPickMaterials(files: FileList | null) {
-    const uploaded = await extractFilesToUploaded(files);
-    setMaterialsPack((current) => [
+  if (!files || files.length === 0) return;
+
+  setProcessing(
+    createProcessingState(
+      "uploading",
+      12,
+      "Uploading curriculum sources",
+      "Saving curriculum files into the intake queue.",
+      ""
+    )
+  );
+
+  for (const file of Array.from(files)) {
+    const tempKey = `${file.name}__${file.type || "file"}`;
+
+    setMaterialsItemQueue((current) => ({
       ...current,
-      ...uploaded.map((item) => ({ ...item, sourceRole: inferRoleForSource(item, "curriculum") })),
-    ]);
+      [tempKey]: makeItemQueueState(
+        "Uploading",
+        "Waiting to read file",
+        "Queued for extraction"
+      ),
+    }));
+
+    setProcessing(
+      createProcessingState(
+        "extracting",
+        24,
+        "Extracting readable text",
+        "Pulling text from uploaded curriculum files.",
+        ""
+      )
+    );
+
+    const uploaded = await extractFilesToUploaded(singleFileList(file));
+    const normalized = uploaded.map((item) => ({
+      ...item,
+      sourceRole: inferRoleForSource(item, "curriculum"),
+    }));
+
+    setMaterialsPack((current) => [...current, ...normalized]);
+
+    setMaterialsItemQueue((current) => {
+      const next = { ...current };
+      delete next[tempKey];
+      for (const item of normalized) {
+        next[makeQueueKey(item)] = queueStateFromItem(item);
+      }
+      return next;
+    });
   }
 
+  setProcessing(IDLE_PROCESSING_STATE);
+}
+
   async function onPickExemplar(files: FileList | null) {
-    const uploaded = await extractFilesToUploaded(files);
-    setExemplarPack((current) => [
+  if (!files || files.length === 0) return;
+
+  setProcessing(
+    createProcessingState(
+      "uploading",
+      12,
+      "Uploading exemplar sources",
+      "Saving exemplar files into the intake queue.",
+      ""
+    )
+  );
+
+  for (const file of Array.from(files)) {
+    const tempKey = `${file.name}__${file.type || "file"}`;
+
+    setExemplarItemQueue((current) => ({
       ...current,
-      ...uploaded.map((item) => ({ ...item, sourceRole: inferRoleForSource(item, "exemplar") })),
-    ]);
+      [tempKey]: makeItemQueueState(
+        "Uploading",
+        "Waiting to read file",
+        "Queued for extraction"
+      ),
+    }));
+
+    setProcessing(
+      createProcessingState(
+        "extracting",
+        24,
+        "Extracting readable text",
+        "Pulling text from uploaded exemplar files.",
+        ""
+      )
+    );
+
+    const uploaded = await extractFilesToUploaded(singleFileList(file));
+    const normalized = uploaded.map((item) => ({
+      ...item,
+      sourceRole: inferRoleForSource(item, "exemplar"),
+    }));
+
+    setExemplarPack((current) => [...current, ...normalized]);
+
+    setExemplarItemQueue((current) => {
+      const next = { ...current };
+      delete next[tempKey];
+      for (const item of normalized) {
+        next[makeQueueKey(item)] = queueStateFromItem(item);
+      }
+      return next;
+    });
   }
+
+  setProcessing(IDLE_PROCESSING_STATE);
+}
 
   function removeCurriculumItem(index: number) {
     const fileCount = materialsPack.length;
@@ -654,6 +863,18 @@ export default function MaterialsPage() {
     [exemplarPack, exemplarLinks]
   );
 
+  const allMaterialsReady = useMemo(
+    () => areAllQueueItemsReady(materialsItemQueue),
+    [materialsItemQueue]
+  );
+
+  const allExemplarsReady = useMemo(
+    () => areAllQueueItemsReady(exemplarItemQueue),
+    [exemplarItemQueue]
+  );
+
+  const allQueuedItemsReady = allMaterialsReady && allExemplarsReady;
+
   const clarificationNotes = useMemo(
     () => buildClarificationNotes(finalCurriculumItems, finalExemplarItems, lessonNotes),
     [finalCurriculumItems, finalExemplarItems, lessonNotes]
@@ -672,7 +893,8 @@ export default function MaterialsPage() {
     processing.stage !== "analyzingCurriculum" &&
     processing.stage !== "analyzingExemplars" &&
     processing.stage !== "buildingBlueprint" &&
-    processing.stage !== "generating";
+    processing.stage !== "generating" &&
+    allQueuedItemsReady;
 
   async function onBuildAndGenerate() {
     setMsg("");
@@ -685,7 +907,7 @@ export default function MaterialsPage() {
           68,
           "Analyzing curriculum content",
           "Checking uploaded curriculum for lesson content, targets, and teacher-usable signals.",
-          "About 10–20 seconds"
+          "About 10â€“20 seconds"
         )
       );
       setProcessing(
@@ -694,7 +916,7 @@ export default function MaterialsPage() {
           80,
           "Analyzing exemplar structure and style",
           "Looking for order, pacing, cues, and model lesson patterns.",
-          "About 5–15 seconds"
+          "About 5â€“15 seconds"
         )
       );
 
@@ -1145,7 +1367,7 @@ export default function MaterialsPage() {
                 disabled={busy || status === "generating" || missingBasics || !canAdvance}
                 style={orchardPrimaryButtonStyle(busy || status === "generating" || missingBasics)}
               >
-                {busy || status === "generating" ? "Building + Generating..." : processing.stage !== "ready" && (finalCurriculumItems.length > 0 || finalExemplarItems.length > 0) ? "Finish scanning before opening Results" : "Build Blueprint + Generate Lesson + Open Results ->"}
+                {busy || status === "generating" ? "Building + Generating..." : !allQueuedItemsReady && (finalCurriculumItems.length > 0 || finalExemplarItems.length > 0) ? "Finish processing materials before Push to Results" : "Push to Results ->"}
               </button>
 
               <Link to="/" style={orchardLinkStyle()}>
@@ -1158,5 +1380,9 @@ export default function MaterialsPage() {
     </div>
   );
 }
+
+
+
+
 
 
