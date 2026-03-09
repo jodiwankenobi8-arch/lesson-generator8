@@ -26,6 +26,44 @@ import { OrchardBlossomCorner, OrchardGinghamCorner, OrchardMushroomCluster } fr
 
 const ACCEPT_ATTR = ".txt,.md,.doc,.docx,.pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp";
 
+type ProcessingStage =
+  | "idle"
+  | "uploading"
+  | "extracting"
+  | "scanning"
+  | "analyzingCurriculum"
+  | "analyzingExemplars"
+  | "buildingBlueprint"
+  | "generating"
+  | "ready"
+  | "error";
+
+type ProcessingState = {
+  stage: ProcessingStage;
+  percent: number;
+  label: string;
+  detail: string;
+  eta: string;
+};
+
+const IDLE_PROCESSING_STATE: ProcessingState = {
+  stage: "idle",
+  percent: 0,
+  label: "Waiting for materials",
+  detail: "Add curriculum and exemplar files to begin processing.",
+  eta: "",
+};
+
+function createProcessingState(
+  stage: ProcessingStage,
+  percent: number,
+  label: string,
+  detail: string,
+  eta: string = ""
+): ProcessingState {
+  return { stage, percent, label, detail, eta };
+}
+
 function plannerSheetStyle(background: string = "#FFFDF9"): React.CSSProperties {
   return {
     ...orchardSoftCardStyle(background),
@@ -555,6 +593,7 @@ export default function MaterialsPage() {
   const [exemplarLinks, setExemplarLinks] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [processing, setProcessing] = useState<ProcessingState>(IDLE_PROCESSING_STATE);
 
   async function onPickMaterials(files: FileList | null) {
     const uploaded = await extractFilesToUploaded(files);
@@ -625,10 +664,40 @@ export default function MaterialsPage() {
     [finalCurriculumItems, finalExemplarItems]
   );
 
+  const canAdvance =
+    !busy &&
+    processing.stage !== "uploading" &&
+    processing.stage !== "extracting" &&
+    processing.stage !== "scanning" &&
+    processing.stage !== "analyzingCurriculum" &&
+    processing.stage !== "analyzingExemplars" &&
+    processing.stage !== "buildingBlueprint" &&
+    processing.stage !== "generating";
+
   async function onBuildAndGenerate() {
     setMsg("");
     setBusy(true);
+
     try {
+      setProcessing(
+        createProcessingState(
+          "analyzingCurriculum",
+          68,
+          "Analyzing curriculum content",
+          "Checking uploaded curriculum for lesson content, targets, and teacher-usable signals.",
+          "About 10–20 seconds"
+        )
+      );
+      setProcessing(
+        createProcessingState(
+          "analyzingExemplars",
+          80,
+          "Analyzing exemplar structure and style",
+          "Looking for order, pacing, cues, and model lesson patterns.",
+          "About 5–15 seconds"
+        )
+      );
+
       const blueprint = buildBlueprint({
         plan: {
           lessonTitle: input.lessonTitle ?? "",
@@ -642,10 +711,51 @@ export default function MaterialsPage() {
         exemplarFiles: finalExemplarItems,
       });
 
+      setProcessing(
+        createProcessingState(
+          "buildingBlueprint",
+          90,
+          "Building lesson blueprint",
+          "Turning source signals into a structured lesson plan blueprint.",
+          "Just a moment"
+        )
+      );
+
       localStorage.setItem("lessonBlueprintV1", JSON.stringify(blueprint, null, 2));
+
+      setProcessing(
+        createProcessingState(
+          "generating",
+          96,
+          "Generating lesson package",
+          "Preparing slides, lesson plan, centers, interventions, and exports.",
+          "Just a moment"
+        )
+      );
+
       await generate(blueprint);
+
+      setProcessing(
+        createProcessingState(
+          "ready",
+          100,
+          "Ready for Results",
+          "Materials were processed and the lesson package is ready to open.",
+          ""
+        )
+      );
+
       navigate("/results");
     } catch (e: any) {
+      setProcessing(
+        createProcessingState(
+          "error",
+          0,
+          "Processing stopped",
+          "Something went wrong while scanning or generating. Review the message below and try again.",
+          ""
+        )
+      );
       setMsg("Build/Generate failed: " + (e?.message ?? String(e)));
     } finally {
       setBusy(false);
@@ -1025,19 +1135,17 @@ export default function MaterialsPage() {
             <div>
               <div style={orchardSectionTitleStyle()}>Build the package</div>
               <div style={orchardHelpTextStyle()}>
-                Status: <b>{status}</b> | Curriculum items: <b>{finalCurriculumItems.length}</b> | Exemplar items: <b>{finalExemplarItems.length}</b>
+                Status: <b>{status}</b> | Processing: <b>{processing.stage}</b> | Curriculum items: <b>{finalCurriculumItems.length}</b> | Exemplar items: <b>{finalExemplarItems.length}</b>
               </div>
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <button
                 onClick={onBuildAndGenerate}
-                disabled={busy || status === "generating" || missingBasics}
+                disabled={busy || status === "generating" || missingBasics || !canAdvance}
                 style={orchardPrimaryButtonStyle(busy || status === "generating" || missingBasics)}
               >
-                {busy || status === "generating"
-                  ? "Building + Generating..."
-                  : "Build Blueprint + Generate Lesson + Open Results ->"}
+                {busy || status === "generating" ? "Building + Generating..." : processing.stage !== "ready" && (finalCurriculumItems.length > 0 || finalExemplarItems.length > 0) ? "Finish scanning before opening Results" : "Build Blueprint + Generate Lesson + Open Results ->"}
               </button>
 
               <Link to="/" style={orchardLinkStyle()}>
