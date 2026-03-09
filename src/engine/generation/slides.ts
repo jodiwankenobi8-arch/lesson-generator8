@@ -4,6 +4,11 @@ import { makeId } from "../../utils/makeId";
 import { buildLessonSpec } from "../spec/buildLessonSpec";
 import { resolveLessonContext, type LessonContext } from "../lessonContext";
 
+function curriculumTitleAt(context: LessonContext, index: number, fallback?: string): string {
+  const value = context.curriculumTitles[index];
+  return value && value.trim() ? value.trim() : (fallback || "");
+}
+
 function detectTwoPartLesson(input: LessonInput, blueprint?: LessonBlueprint | null) {
   const corpus = [
     input.lessonTitle || "",
@@ -74,24 +79,29 @@ function makeMiniLessonBullets(input: LessonInput, context: LessonContext, split
     return [
       `Focus skill: ${input.objective}`,
       `Lesson text/topic: ${input.textOrTopic}`,
-      curriculumTitles[0] ? `Teaching example: ${curriculumTitles[0]}` : "Teaching example: teacher-led modeled example",
-    ];
+      curriculumTitleAt(context, 0, "Teaching example: teacher-led modeled example")
+        ? `Teaching example: ${curriculumTitleAt(context, 0, "teacher-led modeled example")}`
+        : "Teaching example: teacher-led modeled example",
+      curriculumTitleAt(context, 1) ? `Guided connection: ${curriculumTitleAt(context, 1)}` : "",
+    ].filter(Boolean);
   }
 
   if (context.framework === "clickableHub") {
     return [
       `Focus skill: ${input.objective}`,
       `Lesson text/topic: ${input.textOrTopic}`,
-      curriculumTitles[0] ? `Anchor task: ${curriculumTitles[0]}` : "Anchor task: teacher-led modeled example",
-    ];
+      curriculumTitleAt(context, 0) ? `Anchor task: ${curriculumTitleAt(context, 0)}` : "Anchor task: teacher-led modeled example",
+      curriculumTitleAt(context, 1) ? `Support task: ${curriculumTitleAt(context, 1)}` : "",
+    ].filter(Boolean);
   }
 
   if (curriculumTitles.length) {
     return [
       `Focus skill: ${input.objective}`,
       `Lesson text/topic: ${input.textOrTopic}`,
-      `Curriculum connection: ${curriculumTitles.join(" | ")}`,
-    ];
+      curriculumTitleAt(context, 0) ? `Curriculum connection: ${curriculumTitleAt(context, 0)}` : "",
+      curriculumTitleAt(context, 1) ? `Next example: ${curriculumTitleAt(context, 1)}` : "",
+    ].filter(Boolean);
   }
 
   return [
@@ -114,27 +124,37 @@ function makePracticeBullets(input: LessonInput, context: LessonContext, splitMo
   if (context.teacherLed) {
     return [
       "Let's practice together.",
-      curriculumTitles[0] ? `Use this example during guided practice: ${curriculumTitles[0]}` : "Use teacher-led examples to practice the target skill.",
-    ];
+      curriculumTitleAt(context, 1)
+        ? `Use this example during guided practice: ${curriculumTitleAt(context, 1)}`
+        : curriculumTitleAt(context, 0)
+          ? `Use this example during guided practice: ${curriculumTitleAt(context, 0)}`
+          : "Use teacher-led examples to practice the target skill.",
+      curriculumTitleAt(context, 2) ? `Independent try: ${curriculumTitleAt(context, 2)}` : "",
+    ].filter(Boolean);
   }
 
   if (context.framework === "clickableHub") {
     return [
       "Rotate through the practice path you were assigned.",
-      curriculumTitles[0] ? `Use this task during practice: ${curriculumTitles[0]}` : "Use center materials to practice the target skill.",
-    ];
+      curriculumTitleAt(context, 1)
+        ? `Use this task during practice: ${curriculumTitleAt(context, 1)}`
+        : curriculumTitleAt(context, 0)
+          ? `Use this task during practice: ${curriculumTitleAt(context, 0)}`
+          : "Use center materials to practice the target skill.",
+      curriculumTitleAt(context, 2) ? `Then move to: ${curriculumTitleAt(context, 2)}` : "",
+    ].filter(Boolean);
   }
 
   if (curriculumTitles.length) {
     return [
       "You do: Try it on your own.",
-      `Apply the skill with: ${curriculumTitles[0]}`,
+      `Apply the skill with: ${curriculumTitleAt(context, 2) || curriculumTitleAt(context, 1) || curriculumTitleAt(context, 0)}`,
     ];
   }
 
   return [
     "You do: Try it on your own.",
-    "Explain or show your thinking.",
+    curriculumTitleAt(context, 2) || curriculumTitleAt(context, 1) || curriculumTitleAt(context, 0) || "Explain or show your thinking.",
   ];
 }
 
