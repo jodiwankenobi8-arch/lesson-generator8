@@ -1,0 +1,11 @@
+#!/bin/sh
+echo ""
+echo "Running local QA gate: build + smoke"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "./scripts/run-qa-gate.ps1"
+status=$?
+if [ $status -ne 0 ]; then
+  echo ""
+  echo "Push blocked by QA gate."
+  exit $status
+fi
+exit 0
