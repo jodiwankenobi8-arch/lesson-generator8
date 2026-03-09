@@ -1,9 +1,9 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import type { LessonInput, LessonPackage as EngineLessonPackage } from "../engine/types";
 import type { LessonBlueprint } from "../engine/blueprint/types";
 import type { LessonPackage as CanonicalLessonPackage } from "../types/lesson-package";
 import { generateLesson } from "../engine/generateLesson";
-import { toCanonicalLessonPackage } from "../utils/lesson-package-adapters";
+import { toCanonicalLessonPackage, fromCanonicalLessonPackage } from "../utils/lesson-package-adapters";
 import {
   clearLessonPackage,
   hasStoredLessonPackage,
@@ -154,12 +154,16 @@ export const useLessonStore = create<LessonStore>((set, get) => {
     return null;
   })();
 
+  const recoveredPackage =
+    hydrated?.package ??
+    (hydratedCanonical ? (fromCanonicalLessonPackage(hydratedCanonical) as EngineLessonPackage) : null);
+
   return {
     input: hydrated?.input ?? createDefaultInput(),
-    package: hydrated?.package ?? null,
+    package: recoveredPackage,
     canonicalPackage: hydratedCanonical,
     canonicalStorageNotice,
-    status: hydrated?.package ? "ready" : "idle",
+    status: recoveredPackage ? "ready" : "idle",
     errorMessage: undefined,
 
     setInput: (patch) => {
@@ -181,11 +185,22 @@ export const useLessonStore = create<LessonStore>((set, get) => {
 
     generate: async (blueprint) => {
       const input = get().input;
+      console.log("[LG8 DEBUG] generate:start", {
+        lessonTitle: input.lessonTitle,
+        hasBlueprint: Boolean(blueprint),
+        curriculumItems: blueprint?.curriculum?.coverageChecklist?.length ?? 0,
+      });
       set({ status: "generating", errorMessage: undefined });
 
       try {
         const pkg = generateLesson(input, blueprint);
         const canonicalPkg = toCanonicalLessonPackage(pkg);
+
+        console.log("[LG8 DEBUG] generate:built", {
+          slides: Array.isArray((pkg as any)?.slides) ? (pkg as any).slides.length : null,
+          lessonPlan: Array.isArray((pkg as any)?.lessonPlan) ? (pkg as any).lessonPlan.length : null,
+          standards: Array.isArray((pkg as any)?.standards) ? (pkg as any).standards.length : null,
+        });
 
         set({
           package: pkg,
@@ -194,13 +209,26 @@ export const useLessonStore = create<LessonStore>((set, get) => {
           status: "ready",
         });
 
+        console.log("[LG8 DEBUG] generate:after-set", {
+          hasPackage: Boolean(get().package),
+          hasCanonicalPackage: Boolean(get().canonicalPackage),
+          status: get().status,
+        });
+
         safeSaveWorkspace({
           version: STORAGE_VERSION,
           input,
           package: pkg,
         });
         saveLessonPackage(canonicalPkg);
+
+        console.log("[LG8 DEBUG] generate:after-save", {
+          hasPackage: Boolean(get().package),
+          hasCanonicalPackage: Boolean(get().canonicalPackage),
+          status: get().status,
+        });
       } catch (error) {
+        console.error("[LG8 DEBUG] generate:error", error);
         set({
           status: "error",
           errorMessage: error instanceof Error ? error.message : "Generation failed.",
@@ -238,4 +266,6 @@ export const useLessonStore = create<LessonStore>((set, get) => {
     },
   };
 });
+
+
 

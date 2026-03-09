@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLessonStore } from "../state/useLessonStore";
 import {
@@ -463,6 +463,15 @@ export default function ResultsHubPage() {
   const canonicalPackage = useLessonStore((state) => state.canonicalPackage);
   const canonicalStorageNotice = useLessonStore((state) => state.canonicalStorageNotice);
   const pkg = useLessonStore((s) => s.package);
+  const status = useLessonStore((s) => s.status);
+  const errorMessage = useLessonStore((s) => s.errorMessage);
+
+  console.log("[LG8 DEBUG] results:render", {
+    hasPackage: Boolean(pkg),
+    hasCanonicalPackage: Boolean(canonicalPackage),
+    status,
+    errorMessage,
+  });
 
   const [busy, setBusy] = useState<null | "pptx" | "docx" | "zip">(null);
   const [err, setErr] = useState<string | null>(null);
@@ -999,5 +1008,6 @@ export default function ResultsHubPage() {
     </div>
   );
 }
+
 
 

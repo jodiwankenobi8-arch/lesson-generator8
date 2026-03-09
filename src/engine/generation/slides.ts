@@ -1,4 +1,4 @@
-import type { LessonInput, Slide, SlideType } from "../types";
+﻿import type { LessonInput, Slide, SlideType } from "../types";
 import type { LessonBlueprint } from "../blueprint/types";
 import { makeId } from "../../utils/makeId";
 import { buildLessonSpec } from "../spec/buildLessonSpec";
@@ -79,10 +79,10 @@ function makeMiniLessonBullets(input: LessonInput, context: LessonContext, split
     return [
       `Focus skill: ${input.objective}`,
       `Lesson text/topic: ${input.textOrTopic}`,
-      curriculumTitleAt(context, 0, "Teaching example: teacher-led modeled example")
-        ? `Teaching example: ${curriculumTitleAt(context, 0, "teacher-led modeled example")}`
-        : "Teaching example: teacher-led modeled example",
-      curriculumTitleAt(context, 1) ? `Guided connection: ${curriculumTitleAt(context, 1)}` : "",
+      curriculumTitleAt(context, 0)
+        ? `Model with: ${curriculumTitleAt(context, 0)}`
+        : "Model with one clear teacher-led example tied to the target skill.",
+      curriculumTitleAt(context, 1) ? `Next connection: ${curriculumTitleAt(context, 1)}` : "",
     ].filter(Boolean);
   }
 
@@ -109,7 +109,63 @@ function makeMiniLessonBullets(input: LessonInput, context: LessonContext, split
     "Teach the new skill clearly and briefly.",
   ];
 }
+function makeGuidedBullets(input: LessonInput, context: LessonContext, splitMode: ReturnType<typeof detectTwoPartLesson>): string[] {
+  const curriculumTitles = context.curriculumTitles;
 
+  if (splitMode.split) {
+    return [
+      "Part 1 guided practice: rehearse the phonics pattern together.",
+      curriculumTitleAt(context, 1)
+        ? `Part 2 guided application: ${curriculumTitleAt(context, 1)}`
+        : curriculumTitleAt(context, 0)
+          ? `Part 2 guided application: ${curriculumTitleAt(context, 0)}`
+          : "Part 2 guided application: connect the phonics work to meaning or text work.",
+    ].filter(Boolean);
+  }
+
+  if (context.teacherLed) {
+    return [
+      "Let's do one together.",
+      curriculumTitleAt(context, 1)
+        ? `Guided example: ${curriculumTitleAt(context, 1)}`
+        : curriculumTitleAt(context, 0)
+          ? `Guided example: ${curriculumTitleAt(context, 0)}`
+          : "Guided example: one supported teacher-led example tied to the target skill.",
+      curriculumTitleAt(context, 2)
+        ? `Then students try: ${curriculumTitleAt(context, 2)}`
+        : "Say it with me. Then try one.",
+    ].filter(Boolean);
+  }
+
+  if (context.framework === "clickableHub") {
+    return [
+      curriculumTitleAt(context, 1)
+        ? `We do: Practice this path together first -> ${curriculumTitleAt(context, 1)}`
+        : curriculumTitleAt(context, 0)
+          ? `We do: Practice this path together first -> ${curriculumTitleAt(context, 0)}`
+          : "We do: Practice one round together before students rotate.",
+      context.cueText[1]
+        ? `Transition cue: ${context.cueText[1]}`
+        : "Name the transition expectations.",
+    ].filter(Boolean);
+  }
+
+  if (curriculumTitles.length) {
+    return [
+      curriculumTitleAt(context, 1)
+        ? `We do: Solve one together using ${curriculumTitleAt(context, 1)}`
+        : curriculumTitleAt(context, 0)
+          ? `We do: Solve one together using ${curriculumTitleAt(context, 0)}`
+          : "We do: Solve one together.",
+      "Students respond with support.",
+    ];
+  }
+
+  return [
+    "We do: Solve one together.",
+    "Students respond with support.",
+  ];
+}
 function makePracticeBullets(input: LessonInput, context: LessonContext, splitMode: ReturnType<typeof detectTwoPartLesson>): string[] {
   const curriculumTitles = context.curriculumTitles;
 
@@ -186,10 +242,10 @@ function makeExitBullets(input: LessonInput, context: LessonContext, splitMode: 
   ];
 }
 
-type SlideBuilder = (input: LessonInput, blueprint: LessonBlueprint | null | undefined, context: LessonContext) => Slide;
+type SlideBuilder = (input: LessonInput, blueprint: LessonBlueprint | null | undefined, context: LessonContext, splitMode: ReturnType<typeof detectTwoPartLesson>) => Slide;
 
 const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
-  title: (input, blueprint, context) => ({
+  title: (input, blueprint, context, splitMode) => ({
     id: makeId("s"),
     type: "title",
     title: input.lessonTitle,
@@ -199,14 +255,14 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
       ...(context.framework !== "linear" && !context.teacherLed ? [`Framework: ${context.framework}`] : []),
     ],
   }),
-  objective: (input, blueprint, context) => ({
+  objective: (input, blueprint, context, splitMode) => ({
     id: makeId("s"),
     type: "objective",
     title: context.teacherLed ? "I Can" : "Objective",
     bullets: [input.objective],
     teacherNotes: "State objective. Students echo. Preview lesson steps.",
   }),
-  discussion: (input, blueprint, context) => ({
+  discussion: (input, blueprint, context, splitMode) => ({
     id: makeId("s"),
     type: "discussion",
     title: context.teacherLed ? "What Are We Learning?" : "Essential Question",
@@ -218,7 +274,7 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
       ? "Use the hub opening to preview choices, then turn-and-talk."
       : "Turn-and-talk; share 2-3 ideas; connect to objective.",
   }),
-  "mini-lesson": (input, blueprint, context) => ({
+  "mini-lesson": (input, blueprint, context, splitMode) => ({
     id: makeId("s"),
     type: "mini-lesson",
     title: context.teacherLed ? "Teach" : context.framework === "clickableHub" ? "Mini Lesson" : "Teach",
@@ -227,7 +283,7 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
       ? "Teach briefly, then launch students into the next hub path."
       : "Teach in short chunks. Name the strategy and model the thinking.",
   }),
-  modeling: (input, blueprint, context) => ({
+  modeling: (input, blueprint, context, splitMode) => ({
     id: makeId("s"),
     type: "modeling",
     title: "Modeling",
@@ -238,18 +294,14 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
         : ["I do: Watch me think aloud.", "Notice the steps and language I use."],
     teacherNotes: "Think aloud. Show one complete example before release.",
   }),
-  guided: (input, blueprint, context) => ({
-    id: makeId("s"),
-    type: "guided",
-    title: "Guided Practice",
-    bullets: context.teacherLed
-      ? ["Let's do one together.", "Say it with me. Then try one."]
-      : context.framework === "clickableHub"
-        ? ["We do: Practice one round together before students rotate.", "Name the transition expectations."]
-        : ["We do: Solve one together.", "Students respond with support."],
-    teacherNotes: "Prompt and scaffold. Correct misconceptions immediately.",
-  }),
-  practice: (input, blueprint, context) => ({
+    guided: (input, blueprint, context, splitMode) => ({
+      id: makeId("s"),
+      type: "guided",
+      title: "Guided Practice",
+      bullets: makeGuidedBullets(input, context, splitMode),
+      teacherNotes: "Prompt and scaffold. Correct misconceptions immediately.",
+    }),
+  practice: (input, blueprint, context, splitMode) => ({
     id: makeId("s"),
     type: "practice",
     title: context.teacherLed
@@ -262,7 +314,7 @@ const SLIDE_LIBRARY: Record<SlideType, SlideBuilder> = {
       ? "Circulate between stations. Reinforce routines and accountability."
       : "Circulate. Pull Tier 3 first. Provide fast feedback.",
   }),
-  "exit-ticket": (input, blueprint, context) => ({
+  "exit-ticket": (input, blueprint, context, splitMode) => ({
     id: makeId("s"),
     type: "exit-ticket",
     title: context.teacherLed
@@ -283,7 +335,7 @@ export function buildSlides(input: LessonInput, blueprint?: LessonBlueprint | nu
   const splitMode = detectTwoPartLesson(input, blueprint);
 
   return spec.slideOrder.map((type, index) => {
-    const slide = SLIDE_LIBRARY[type](input, blueprint, context);
+    const slide = SLIDE_LIBRARY[type](input, blueprint, context, splitMode);
     const extraNotes = spec.teacherNoteAdditions[type] || [];
 
     if (extraNotes.length) {
@@ -317,3 +369,9 @@ export function buildSlides(input: LessonInput, blueprint?: LessonBlueprint | nu
     return slide;
   });
 }
+
+
+
+
+
+
