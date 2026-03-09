@@ -1,0 +1,20 @@
+* f162692 (HEAD -> feat/hardened-pass5-runtime-and-polish-fastfix-phase1-reconcile-phase2-context-phase3-split-phase4-qa, origin/feat/hardened-pass5-runtime-and-polish-fastfix-phase1-reconcile-phase2-context-phase3-split, feat/hardened-pass5-runtime-and-polish-fastfix-phase1-reconcile-phase2-context-phase3-split) refactor: split lesson generation into focused modules
+* ed658a5 (origin/feat/hardened-pass5-runtime-and-polish-fastfix-phase1-reconcile-phase2-context, feat/hardened-pass5-runtime-and-polish-fastfix-phase1-reconcile-phase2-context) refactor: centralize lesson context across spec and generation
+* 6caab43 (origin/feat/hardened-pass5-runtime-and-polish-fastfix-phase1-reconcile, origin/feat/hardened-pass5-runtime-and-polish-fastfix, feat/hardened-pass5-runtime-and-polish-fastfix-phase1-reconcile, feat/hardened-pass5-runtime-and-polish-fastfix) fix: reconcile hardening work and patch runtime generator
+* 0cc2a4e (origin/feat/hardened-pass5-runtime-and-polish, feat/hardened-pass5-runtime-and-polish) Add Apple Orchard asset system packages for assets 01-05
+* 608d305 harden: carry essential question through blueprint synthesis
+* 9219722 harden: align blueprint types with lesson flow and extraction metadata
+* c7fccbd harden: improve curriculum coverage extraction from readable text
+* 9c013bc polish: warm Results Hub labels and teacher-facing section copy
+* 3292482 polish: soften Results Hub hierarchy and tuck trace details
+* 23e8fd3 chore: save remaining runtime, blueprint, and config updates
+* e5740de checkpoint: stabilize blueprint flow, extraction, and standards visibility
+* 54cddea Unify BlueprintPage material extraction path
+* c23dd59 Add unified lesson material extraction entrypoint
+* 69125c7 Expose canonical conflicts and overrides in Results Hub
+* 2caf003 Surface canonical storage recovery in Results Hub
+* cc3e1d0 Recover from invalid canonical package storage
+* 4e7fcf0 Wire canonical lesson package storage into store
+* 4ec3ee5 (tag: phase1-closure-checkpoint) Polish Results Hub canonical cleanup
+* 7e235c0 Centralize standards fallback visibility mapping
+* 9d09c21 Tighten canonical Results Hub typing

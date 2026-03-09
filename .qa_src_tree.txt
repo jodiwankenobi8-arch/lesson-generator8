@@ -1,0 +1,167 @@
+Folder PATH listing for volume OS
+Volume serial number is 1AC8-415F
+C:\USERS\JODIW\ONEDRIVE\DESKTOP\PROJECT\LESSON-GENERATOR8_HARDENED_PASS5\LESSON-GENERATOR8-HARDENED\SRC
+¦   App.tsx
+¦   file-saver.d.ts
+¦   main.tsx
+¦   vite-env.d.ts
+¦   
++---app
+¦       AppRouter.tsx
+¦       
++---assets
+¦   ¦   3c5f456ff361271f7d99297678004fcd37902fc2.png
+¦   ¦   
+¦   +---ui
+¦       +---lesson-title-ribbon
+¦       ¦       asset-manifest.json
+¦       ¦       lesson-title-ribbon-preview.png
+¦       ¦       lesson-title-ribbon.png
+¦       ¦       lesson-title-ribbon.svg
+¦       ¦       README.md
+¦       ¦       tokens.json
+¦       ¦       
+¦       +---main-cream-paper-panel
+¦       ¦       asset-manifest.json
+¦       ¦       main-cream-paper-panel-preview.png
+¦       ¦       main-cream-paper-panel.png
+¦       ¦       main-cream-paper-panel.svg
+¦       ¦       README.md
+¦       ¦       tokens.json
+¦       ¦       
+¦       +---new-lesson-label-apple
+¦       ¦       asset-manifest.json
+¦       ¦       new-lesson-label-apple-preview.png
+¦       ¦       new-lesson-label-apple.png
+¦       ¦       new-lesson-label-apple.svg
+¦       ¦       README.md
+¦       ¦       tokens.json
+¦       ¦       
+¦       +---stitched-inner-frame
+¦       ¦       asset-manifest.json
+¦       ¦       README.md
+¦       ¦       stitched-inner-frame-preview.png
+¦       ¦       stitched-inner-frame.png
+¦       ¦       stitched-inner-frame.svg
+¦       ¦       tokens.json
+¦       ¦       
+¦       +---wood-background-orchard
+¦               asset-manifest.json
+¦               README.md
+¦               tokens.json
+¦               wood-background-orchard-preview.png
+¦               wood-background-orchard.png
+¦               wood-background-orchard.svg
+¦               
++---components
+¦   ¦   ResultsTraceSummaryCard.tsx
+¦   ¦   
+¦   +---design-system
+¦       +---backgrounds
+¦       ¦   +---wood-background-orchard
+¦       ¦           index.ts
+¦       ¦           wood-background-orchard.css
+¦       ¦           WoodBackgroundOrchard.tsx
+¦       ¦           
+¦       +---frames
+¦       ¦   +---stitched-inner-frame
+¦       ¦           index.ts
+¦       ¦           stitched-inner-frame.css
+¦       ¦           StitchedInnerFrame.tsx
+¦       ¦           
+¦       +---labels
+¦       ¦   +---new-lesson-label-apple
+¦       ¦           index.ts
+¦       ¦           new-lesson-label-apple.css
+¦       ¦           NewLessonLabelApple.tsx
+¦       ¦           
+¦       +---panels
+¦       ¦   +---main-cream-paper-panel
+¦       ¦           index.ts
+¦       ¦           main-cream-paper-panel.css
+¦       ¦           MainCreamPaperPanel.tsx
+¦       ¦           
+¦       +---ribbons
+¦       ¦   +---lesson-title-ribbon
+¦       ¦           index.ts
+¦       ¦           lesson-title-ribbon.css
+¦       ¦           LessonTitleRibbon.tsx
+¦       ¦           
+¦       +---tokens
+¦               appleOrchardAssetTokens.ts
+¦               
++---design
+¦       orchardTokens.ts
+¦       
++---engine
+¦   ¦   generateLesson.ts
+¦   ¦   lessonContext.ts
+¦   ¦   packageCompat.ts
+¦   ¦   types.ts
+¦   ¦   
+¦   +---blueprint
+¦   ¦       buildBlueprint.ts
+¦   ¦       exemplarAnalysis.ts
+¦   ¦       types.ts
+¦   ¦       
+¦   +---curriculum
+¦   ¦       extractCoverageFromCurriculum.ts
+¦   ¦       
+¦   +---domain
+¦   ¦       classifyLessonDomain.ts
+¦   ¦       
+¦   +---exports
+¦   ¦       exportFullZip.ts
+¦   ¦       exportLessonPlanDocx.ts
+¦   ¦       exportSlidesPptx.ts
+¦   ¦       
+¦   +---generation
+¦   ¦       centers.ts
+¦   ¦       interventions.ts
+¦   ¦       lessonPlan.ts
+¦   ¦       rotationPlan.ts
+¦   ¦       slides.ts
+¦   ¦       
+¦   +---spec
+¦   ¦       buildLessonSpec.ts
+¦   ¦       
+¦   +---standards
+¦       ¦   detectKelaBest.ts
+¦       ¦   
+¦       +---data
+¦               k_ela_best_dataset.ts
+¦               
++---ocr
+¦       README.md
+¦       
++---pages
+¦       BlueprintPage.tsx
+¦       InputsPage.tsx
+¦       MaterialsPage.tsx
+¦       orchardDecor.tsx
+¦       orchardUi.ts
+¦       ResultsHubPage.tsx
+¦       WizardProgress.tsx
+¦       
++---state
+¦       useLessonStore.ts
+¦       
++---styles
+¦       fonts.css
+¦       index.css
+¦       tailwind.css
+¦       theme.css
+¦       
++---types
+¦       lesson-package.ts
+¦       
++---utils
+        canonical-trace-selectors.ts
+        extractLessonMaterialSources.ts
+        lesson-package-adapters.ts
+        lesson-package-storage.ts
+        lesson-package-trace.ts
+        makeId.ts
+        readUploadedText.ts
+        results-trace-summary.ts
+        

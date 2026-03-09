@@ -1,0 +1,3 @@
+?? .qa_git_status.txt
+?? QA_CHECKLIST.md
+?? RELEASE_NOTES_DRAFT.md
