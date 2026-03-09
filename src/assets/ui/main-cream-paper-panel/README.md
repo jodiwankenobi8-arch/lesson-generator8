@@ -1,27 +1,28 @@
 # Asset 02: main-cream-paper-panel
 
-Reusable parchment-style structural panel extracted from the Apple Orchard / woodland planner references.
+Status: Finalized / Exported
 
-## Included
-- `main-cream-paper-panel.png` — preview/export raster asset
-- `main-cream-paper-panel.svg` — vector asset
-- `main-cream-paper-panel.css` — plain CSS implementation
-- `MainCreamPaperPanel.tsx` — React component
-- `tokens.json` — design tokens / metadata
-- `index.ts` — barrel export
+## Description
+Cream parchment paper panel with rounded outer frame and stitched inner border, rebuilt from the approved preview and intended as the main reusable parchment container.
 
-## Usage
-Use this as a structural container on top of `wood-background-orchard` or other warm scrapbook/desk surfaces.
+## Deliverables
+- main-cream-paper-panel-preview.png
+- main-cream-paper-panel.png
+- main-cream-paper-panel.svg
+- main-cream-paper-panel.css
+- MainCreamPaperPanel.tsx
+- index.ts
+- tokens.json
+- asset-manifest.json
+
+## Recommended project placement
+- src/assets/ui/main-cream-paper-panel/
+- src/components/design-system/panels/main-cream-paper-panel/
 
 ## Notes
-This asset intentionally contains:
-- no text
-- no labels
-- no buttons
-- no form fields
-
-It is only the panel container system:
-- outer parchment frame
-- cream paper interior
-- stitched inner border
-- soft paper texture
+- Panel-only
+- No text
+- No labels
+- No buttons
+- No fields
+- This package uses the approved preview image for visual fidelity
