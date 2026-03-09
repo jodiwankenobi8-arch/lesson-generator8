@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 
 const WORKSPACE_KEY = "lesson_generator__workspace_v3";
 const LEGACY_ENGINE_KEY = "lesson_generator__engine_package_v1";
-
+const STORE_PACKAGE_KEY = "lesson_generator__package_v2";
+const CANONICAL_PACKAGE_KEY = "lesson_package";
+const BLUEPRINT_KEY = "lessonBlueprintV1";
 function makeEnginePackage(overrides: Record<string, any> = {}) {
   return {
     meta: { generatedAt: new Date().toISOString(), version: "test" },
@@ -57,18 +59,123 @@ function makeEnginePackage(overrides: Record<string, any> = {}) {
     ...overrides,
   };
 }
-
 async function seedWorkspace(page: any, pkg: any) {
   const workspace = {
     version: 3,
-    input: pkg.input,
+    input: pkg?.input ?? null,
     package: pkg,
   };
 
-  await page.addInitScript(([workspaceKey, legacyKey, workspaceValue, enginePkg]) => {
-    window.localStorage.setItem(workspaceKey, JSON.stringify(workspaceValue));
-    window.localStorage.setItem(legacyKey, JSON.stringify(enginePkg));
-  }, [WORKSPACE_KEY, LEGACY_ENGINE_KEY, workspace, pkg]);
+  await page.addInitScript(
+    ([workspaceKey, legacyKey, storePackageKey, canonicalPackageKey, blueprintKey, workspaceValue, enginePkg]) => {
+      const setBoth = (key: string, value: string) => {
+        try { window.localStorage.setItem(key, value); } catch {}
+        try { window.sessionStorage.setItem(key, value); } catch {}
+      };
+
+      const rawEnginePkg = JSON.stringify(enginePkg);
+      const rawWorkspace = JSON.stringify(workspaceValue);
+      const rawBlueprint = JSON.stringify(enginePkg?.blueprint ?? null);
+
+      setBoth(workspaceKey, rawWorkspace);
+      setBoth(legacyKey, rawEnginePkg);
+      setBoth(storePackageKey, rawEnginePkg);
+      setBoth(blueprintKey, rawBlueprint);
+
+      try {
+        const canonical = {
+          metadata: {
+            id: "test-seeded-package",
+            title:
+              enginePkg?.input?.lessonTitle ??
+              enginePkg?.input?.topic ??
+              enginePkg?.input?.textOrTopic ??
+              "Seeded Lesson",
+            createdAt: "2026-03-06T00:00:00.000Z",
+            updatedAt: "2026-03-06T00:00:00.000Z",
+            status: "generated",
+            version: 1,
+          },
+          input: {
+            grade: enginePkg?.input?.grade ?? "",
+            subject: enginePkg?.input?.subject ?? "",
+            topic:
+              enginePkg?.input?.topic ??
+              enginePkg?.input?.lessonTitle ??
+              enginePkg?.input?.textOrTopic ??
+              "",
+            objective: enginePkg?.input?.objective ?? "",
+            notes: enginePkg?.input?.notes ?? enginePkg?.input?.materials ?? "",
+          },
+          standards: Array.isArray(enginePkg?.standards) ? enginePkg.standards : (Array.isArray(enginePkg?.standardsDetected) ? enginePkg.standardsDetected : []),
+          materials: [],
+          blueprint: {
+            summary: enginePkg?.blueprint?.teacherSummary ?? enginePkg?.blueprint?.summary ?? "",
+            essentialQuestion: enginePkg?.blueprint?.essentialQuestion ?? enginePkg?.input?.essentialQuestion ?? "",
+            learningTargets: Array.isArray(enginePkg?.blueprint?.learningTargets)
+              ? enginePkg.blueprint.learningTargets
+              : [enginePkg?.input?.objective].filter(Boolean),
+            vocabulary: Array.isArray(enginePkg?.blueprint?.vocabulary) ? enginePkg.blueprint.vocabulary : [],
+            sequence: Array.isArray(enginePkg?.blueprint?.sequence) ? enginePkg.blueprint.sequence : [],
+          },
+          lessonPlan: {
+            blocks: Array.isArray(enginePkg?.lessonPlan)
+              ? enginePkg.lessonPlan.map((block: any, index: number) => ({
+                  title: block?.title ?? block?.heading ?? `Block ${index + 1}`,
+                  text: block?.text ?? block?.description ?? block?.content ?? "",
+                  durationMinutes: typeof block?.durationMinutes === "number" ? block.durationMinutes : undefined,
+                }))
+              : [],
+          },
+          slides: Array.isArray(enginePkg?.slides)
+            ? enginePkg.slides.map((slide: any, index: number) => ({
+                id: slide?.id ?? `slide_${index + 1}`,
+                title: slide?.title ?? `Slide ${index + 1}`,
+                content: typeof slide?.content === "string"
+                  ? slide.content
+                  : Array.isArray(slide?.bullets)
+                    ? slide.bullets.join("\n")
+                    : (slide?.body ?? slide?.text ?? ""),
+                notes: slide?.notes ?? slide?.teacherNotes ?? "",
+              }))
+            : [],
+          exports: {
+            pptxReady: Array.isArray(enginePkg?.slides) && enginePkg.slides.length > 0,
+            docxReady: Array.isArray(enginePkg?.lessonPlan) && enginePkg.lessonPlan.length > 0,
+            zipReady: true,
+          },
+          trace: {
+            standardsSource: [],
+            curriculumInfluence: [],
+            exemplarInfluence: [],
+            extractionWarnings: [],
+            unresolvedConflicts: [],
+            manualOverrides: [],
+          },
+        };
+
+        setBoth(canonicalPackageKey, JSON.stringify(canonical));
+      } catch {}
+
+      try {
+        window.dispatchEvent(new StorageEvent("storage", { key: storePackageKey, newValue: rawEnginePkg }));
+      } catch {}
+
+      try {
+        (window as any).__LG8_TEST_WORKSPACE__ = workspaceValue;
+        (window as any).__LG8_TEST_PACKAGE__ = enginePkg;
+      } catch {}
+    },
+    [WORKSPACE_KEY, LEGACY_ENGINE_KEY, STORE_PACKAGE_KEY, CANONICAL_PACKAGE_KEY, BLUEPRINT_KEY, workspace, pkg]
+  );
+}
+
+async function gotoSeededResults(page: any, pkg: any) {
+  await seedWorkspace(page, pkg);
+  await page.goto("/results");
+  await page.waitForLoadState("domcontentloaded");
+  await page.reload();
+  await page.waitForLoadState("networkidle");
 }
 
 test("inputs page loads", async ({ page }) => {
@@ -84,8 +191,7 @@ test("materials page loads", async ({ page }) => {
 
 test("results page opens with seeded package", async ({ page }) => {
   const pkg = makeEnginePackage();
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   await expect(page.locator("body")).toContainText(/Finished Lesson Package|Results Hub/i);
   await expect(page.locator("body")).toContainText(/Take It With You/i);
@@ -95,8 +201,7 @@ test("results page opens with seeded package", async ({ page }) => {
 
 test("default seeded package renders expected lesson plan structure", async ({ page }) => {
   const pkg = makeEnginePackage();
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   await expect(page.locator("body")).toContainText(/Launch and Objective/i);
   await expect(page.locator("body")).toContainText(/Assessment and Next Steps/i);
@@ -115,8 +220,7 @@ test("kindergarten package renders teacher-led labels", async ({ page }) => {
     ],
   });
 
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   await expect(page.locator("body")).toContainText(/I Can/i);
   await expect(page.locator("body")).toContainText(/Let's Practice/i);
@@ -151,8 +255,7 @@ test("grade 2 hub package renders hub lesson structure", async ({ page }) => {
     centers: [{}, {}, {}, {}],
   });
 
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   await expect(page.locator("body")).toContainText(/Lesson Hub/i);
   await expect(page.locator("body")).toContainText(/Launch and Navigation/i);
@@ -179,8 +282,7 @@ test("guidepost package renders bridge behavior", async ({ page }) => {
     ],
   });
 
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   await expect(page.locator("body")).toContainText(/Bridge/i);
   await expect(page.locator("body")).toContainText(/How do characters change across a story/i);
@@ -197,8 +299,7 @@ test("curriculum influence appears in plan and centers", async ({ page }) => {
     ],
   });
 
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   await expect(page.locator("body")).toContainText(/Curriculum Story Map/i);
   await expect(page.locator("body")).toContainText(/Decodable Practice Page/i);
@@ -215,8 +316,7 @@ test("exemplar cue influence appears in teacher-facing wording", async ({ page }
     ],
   });
 
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   await expect(page.locator("body")).toContainText(/clap twice and turn/i);
   await expect(page.locator("body")).toContainText(/pause after each blend/i);
@@ -235,8 +335,7 @@ test("results page handles sparse package safely", async ({ page }) => {
     interventions: { tier3: [], tier2: [], enrichment: [] },
   });
 
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   await expect(page.locator("body")).toContainText(/Sparse Lesson/i);
   await expect(page.locator("body")).toContainText(/Finished Lesson Package|Results Hub/i);
@@ -244,8 +343,7 @@ test("results page handles sparse package safely", async ({ page }) => {
 
 test("pptx export triggers a download", async ({ page }) => {
   const pkg = makeEnginePackage();
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: /Export PPTX/i }).click();
@@ -257,8 +355,7 @@ test("pptx export triggers a download", async ({ page }) => {
 
 test("docx export triggers a download", async ({ page }) => {
   const pkg = makeEnginePackage();
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: /Export DOCX/i }).click();
@@ -270,8 +367,7 @@ test("docx export triggers a download", async ({ page }) => {
 
 test("zip export triggers a download", async ({ page }) => {
   const pkg = makeEnginePackage();
-  await seedWorkspace(page, pkg);
-  await page.goto("/results");
+  await gotoSeededResults(page, pkg);
 
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: /Full Export \(ZIP\)|ZIP/i }).click();
@@ -279,3 +375,5 @@ test("zip export triggers a download", async ({ page }) => {
 
   expect(download.suggestedFilename().toLowerCase().endsWith(".zip")).toBeTruthy();
 });
+
+

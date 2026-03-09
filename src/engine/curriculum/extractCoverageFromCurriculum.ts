@@ -20,6 +20,7 @@ function normalize(line: string) {
   return String(line ?? "")
     .replace(/\u0000/g, " ")
     .replace(/[ \t]+/g, " ")
+    .replace(/[ ]*\n[ ]*/g, "\n")
     .trim();
 }
 
@@ -27,7 +28,9 @@ function cleanCurriculumLine(line: string) {
   return normalize(
     String(line ?? "")
       .replace(/^[\-\*\u2022\u25CF\u25E6\u2023\u2043]+\s*/, "")
-      .replace(/^(lesson\s*objective|objective|i can|students will|teaching point|focus skill|standard|skill focus)\s*[:\-]\s*/i, "")
+      .replace(/^\(?\d+[A-Za-z]?\)?[.)\-\s]+/, "")
+      .replace(/^[A-Za-z]\.[)\-\s]+/, "")
+      .replace(/^(lesson\s*objective|objective|learning\s*target|target|i can|students will|student will|we will|teaching point|focus skill|standard|skill focus|success criteria|goal|benchmark)\s*[:\-]\s*/i, "")
   );
 }
 
@@ -50,16 +53,63 @@ function splitIntoCandidateLines(text: string) {
     .filter(Boolean);
 }
 
+function splitIntoCandidateSentences(text: string) {
+  const normalized = String(text ?? "")
+    .replace(/\r/g, "\n")
+    .replace(/\n+/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+
+  if (!normalized) return [];
+
+  return normalized
+    .split(/(?<=[.!?])\s+|(?<=;)\s+(?=[A-Z0-9])/)
+    .map(normalize)
+    .filter(Boolean);
+}
+
+function looksLikeStandardCode(line: string) {
+  return /\b([A-Z]{1,4}[.\-]?\d+(?:\.\d+){0,4}[A-Z]?)\b/.test(line);
+}
+
 function looksUsefulCurriculumLine(line: string) {
   if (!line) return false;
   if (line.length < 8) return false;
-  if (line.length > 220) return false;
+  if (line.length > 260) return false;
 
   const looksBulleted = /^[-*\u2022\u25CF\u25E6\u2023\u2043]/.test(line);
-  const startsWithLabel = /^(lesson\s*objective|objective|i can|students will|teaching point|focus skill|standard|skill focus)\b/i.test(line);
-  const hasDirective = /\b(must|required|teach|include|students will|today you will|objective|i can|identify|explain|describe|compare|retell|read|write|solve|practice|model|determine|analyze)\b/i.test(line);
+  const startsWithLabel = /^(lesson\s*objective|objective|learning\s*target|target|i can|students will|student will|we will|teaching point|focus skill|standard|skill focus|success criteria|goal|benchmark)\b/i.test(line);
+  const hasDirective = /\b(must|required|teach|include|students will|student will|we will|today you will|objective|i can|identify|explain|describe|compare|retell|read|write|solve|practice|model|determine|analyze|decode|segment|blend|infer|cite|summarize|justify|demonstrate)\b/i.test(line);
+  const standardish = looksLikeStandardCode(line);
 
-  return looksBulleted || startsWithLabel || hasDirective;
+  return looksBulleted || startsWithLabel || hasDirective || standardish;
+}
+
+function looksUsefulCurriculumSentence(line: string) {
+  if (!line) return false;
+  if (line.length < 18) return false;
+  if (line.length > 260) return false;
+
+  return /\b(students will|student will|we will|i can|objective|learning target|success criteria|teach|identify|explain|describe|compare|retell|read|write|solve|practice|model|determine|analyze|decode|segment|blend|infer|summarize|justify|demonstrate)\b/i.test(
+    line,
+  );
+}
+
+function sanitizeTitle(line: string) {
+  return normalize(
+    String(line ?? "")
+      .replace(/\s+/g, " ")
+      .replace(/^[,:;\-\s]+/, "")
+      .replace(/[,:;\-\s]+$/, "")
+  );
+}
+
+function canonicalize(line: string) {
+  return sanitizeTitle(line)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function extractCoverageFromCurriculum(files: UploadedTextFile[]): CurriculumCoverageResult {
@@ -73,17 +123,33 @@ export function extractCoverageFromCurriculum(files: UploadedTextFile[]): Curric
   const seen = new Map<string, string[]>();
 
   for (const file of curriculumFiles) {
-    const lines = splitIntoCandidateLines(String(file.text ?? ""));
+    const rawText = String(file.text ?? "");
+    const lineCandidates = splitIntoCandidateLines(rawText);
+    const sentenceCandidates = splitIntoCandidateSentences(rawText);
 
-    for (const rawLine of lines) {
+    for (const rawLine of lineCandidates) {
       if (!looksUsefulCurriculumLine(rawLine)) continue;
 
-      const cleaned = cleanCurriculumLine(rawLine);
+      const cleaned = sanitizeTitle(cleanCurriculumLine(rawLine));
       if (cleaned.length < 8) continue;
 
-      const key = cleaned.toLowerCase();
+      const key = canonicalize(cleaned);
+      if (!key) continue;
+
       if (!seen.has(key)) seen.set(key, []);
       seen.get(key)!.push(`${file.name}: ${cleaned}`);
+    }
+
+    for (const rawSentence of sentenceCandidates) {
+      if (!looksUsefulCurriculumSentence(rawSentence)) continue;
+
+      const cleaned = sanitizeTitle(cleanCurriculumLine(rawSentence));
+      if (cleaned.length < 18) continue;
+
+      const key = canonicalize(cleaned);
+      if (!key || seen.has(key)) continue;
+
+      seen.set(key, [`${file.name}: ${cleaned}`]);
     }
   }
 
@@ -92,7 +158,7 @@ export function extractCoverageFromCurriculum(files: UploadedTextFile[]): Curric
     items.push({
       id: mkId("cov"),
       title,
-      required: /\b(must|required|objective|students will|i can)\b/i.test(title),
+      required: /\b(must|required|objective|students will|student will|we will|i can|learning target|success criteria)\b/i.test(title),
       evidence: evidence.slice(0, 3),
     });
   }

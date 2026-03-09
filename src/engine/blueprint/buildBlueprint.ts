@@ -30,7 +30,7 @@ export function buildBlueprint(args: {
   const createdAtISO = new Date().toISOString();
 
   const extracted = extractCoverageFromCurriculum(args.curriculumFiles);
-  const curriculumChecklist = (extracted.items ?? []).map(i => ({
+  const curriculumChecklist = (extracted.items ?? []).map((i) => ({
     id: i.id,
     title: i.title,
     required: i.required,
@@ -38,17 +38,17 @@ export function buildBlueprint(args: {
   }));
 
   const trueExemplarFiles = (args.exemplarFiles ?? []).filter(
-    f => (f.sourceRole ?? "exemplar") === "exemplar"
+    (f) => (f.sourceRole ?? "exemplar") === "exemplar"
   );
   const mixedExemplarFiles = (args.exemplarFiles ?? []).filter(
-    f => (f.sourceRole ?? "exemplar") === "mixed"
+    (f) => (f.sourceRole ?? "exemplar") === "mixed"
   );
 
-  const exemplarTextAll = trueExemplarFiles.map(f => f.text ?? "").join("\n\n");
+  const exemplarTextAll = trueExemplarFiles.map((f) => f.text ?? "").join("\n\n");
   const frameworkDetection = detectFramework(exemplarTextAll);
 
   const presenterCueFiles = [...trueExemplarFiles, ...mixedExemplarFiles];
-  const presenterCues = presenterCueFiles.flatMap(f => extractPresenterCues(f.text ?? "", f.name));
+  const presenterCues = presenterCueFiles.flatMap((f) => extractPresenterCues(f.text ?? "", f.name));
 
   const hasTrueExemplar = trueExemplarFiles.length > 0;
   const hasCurriculum = curriculumChecklist.length > 0;
@@ -61,12 +61,20 @@ export function buildBlueprint(args: {
         ? (frameworkDetection.framework !== "linear" ? frameworkDetection.framework : "clickableHub")
         : "linear";
 
+  const primaryCurriculumUse = curriculumChecklist[0]
+    ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "Primary curriculum item" }]
+    : [];
+
+  const secondaryCurriculumUse = curriculumChecklist[1]
+    ? [{ source: "curriculum" as const, ref: curriculumChecklist[1].id, note: "Secondary curriculum item" }]
+    : primaryCurriculumUse;
+
   const defaultSlides = [
     { index: 1, title: args.plan.lessonTitle || "Lesson", purpose: "Title", source: "ai" as const, uses: [{ source: "plan" as const, ref: "lessonTitle" }] },
     { index: 2, title: "I Can", purpose: "Objective", source: "ai" as const, uses: [{ source: "plan" as const, ref: "objective" }] },
     { index: 3, title: "Essential Question", purpose: "Discussion", source: "ai" as const, uses: [{ source: "plan" as const, ref: "essentialQuestion" }] },
-    { index: 4, title: "Teach", purpose: "Direct instruction", source: "ai" as const, uses: curriculumChecklist[0] ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "Primary curriculum item" }] : [] },
-    ...(hasCurriculum ? [{ index: 5, title: "Guided Practice", purpose: "Guided practice", source: "ai" as const }] : []),
+    { index: 4, title: "Teach", purpose: "Direct instruction", source: "ai" as const, uses: primaryCurriculumUse },
+    ...(hasCurriculum ? [{ index: 5, title: "Guided Practice", purpose: "Guided practice", source: "ai" as const, uses: secondaryCurriculumUse }] : []),
     { index: hasCurriculum ? 6 : 5, title: "Practice", purpose: "Independent practice", source: "ai" as const, presenterCues: presenterCues.slice(0, 2) },
     { index: hasCurriculum ? 7 : 6, title: "Exit Ticket", purpose: "Check for understanding", source: "ai" as const },
   ];
@@ -76,8 +84,8 @@ export function buildBlueprint(args: {
     { index: 2, title: "Lesson Hub", purpose: "Navigation menu", source: "ai" as const, presenterCues: presenterCues.slice(0, 3) },
     { index: 3, title: "I Can", purpose: "Objective", source: "ai" as const, uses: [{ source: "plan" as const, ref: "objective" }] },
     { index: 4, title: "Hook", purpose: "Discussion", source: "ai" as const, uses: [{ source: "plan" as const, ref: "essentialQuestion" }] },
-    { index: 5, title: "Teach", purpose: "Mini lesson", source: "ai" as const, uses: curriculumChecklist[0] ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "Primary curriculum item" }] : [] },
-    { index: 6, title: "Model", purpose: "Think aloud", source: "ai" as const },
+    { index: 5, title: "Teach", purpose: "Mini lesson", source: "ai" as const, uses: primaryCurriculumUse },
+    { index: 6, title: "Model", purpose: "Think aloud", source: "ai" as const, uses: secondaryCurriculumUse },
     { index: 7, title: "Guided Practice", purpose: "We do", source: "ai" as const, presenterCues: presenterCues.slice(3, 5) },
     { index: 8, title: "Center Rotation", purpose: "Independent practice", source: "ai" as const },
     { index: 9, title: "Exit Ticket", purpose: "Check for understanding", source: "ai" as const },
@@ -87,8 +95,8 @@ export function buildBlueprint(args: {
     { index: 1, title: args.plan.lessonTitle || "Lesson", purpose: "Launch", source: "ai" as const, uses: [{ source: "plan" as const, ref: "lessonTitle" }] },
     { index: 2, title: "I Can", purpose: "Objective", source: "ai" as const, uses: [{ source: "plan" as const, ref: "objective" }] },
     { index: 3, title: "Bridge", purpose: "Connection and discussion", source: "ai" as const, uses: [{ source: "plan" as const, ref: "essentialQuestion" }] },
-    { index: 4, title: "Teach", purpose: "Direct instruction", source: "ai" as const, uses: curriculumChecklist[0] ? [{ source: "curriculum" as const, ref: curriculumChecklist[0].id, note: "Primary curriculum item" }] : [] },
-    { index: 5, title: "Model", purpose: "Think aloud", source: "ai" as const },
+    { index: 4, title: "Teach", purpose: "Direct instruction", source: "ai" as const, uses: primaryCurriculumUse },
+    { index: 5, title: "Model", purpose: "Think aloud", source: "ai" as const, uses: secondaryCurriculumUse },
     { index: 6, title: "Guided Practice", purpose: "Guided practice", source: "ai" as const },
     { index: 7, title: "Independent Practice", purpose: "Independent practice", source: "ai" as const, presenterCues: presenterCues.slice(0, 2) },
     { index: 8, title: "Reflection", purpose: "Closure and exit ticket", source: "ai" as const },
@@ -102,10 +110,14 @@ export function buildBlueprint(args: {
         : defaultSlides;
 
   if (curriculumChecklist[0]) curriculumChecklist[0].placed = true;
+  if (curriculumChecklist[1]) curriculumChecklist[1].placed = true;
 
   const noteParts = [
     "Blueprint uses framework-aware slide skeletons.",
     extracted.summary,
+    curriculumChecklist.length > 0
+      ? `Curriculum focus items: ${curriculumChecklist.slice(0, 3).map((item) => item.title).join(" | ")}`
+      : "",
     teacherLedEarlyElementary ? "Teacher-led early elementary override applied: linear framework enforced." : "",
   ].filter(Boolean);
 
