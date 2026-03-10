@@ -197,6 +197,21 @@ function plannerSheetStyle(background: string = "#FFFDF9"): React.CSSProperties 
   };
 }
 
+function orchardGhostButtonStyle(): React.CSSProperties {
+  return {
+    appearance: "none",
+    border: `1px solid ${COLORS.border}`,
+    background: "#FFFFFF",
+    color: COLORS.heading,
+    borderRadius: 999,
+    padding: "8px 12px",
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+  };
+}
+
 function plannerTabStyle(background: string, color: string, border: string = COLORS.borderStrong): React.CSSProperties {
   return {
     display: "inline-block",
