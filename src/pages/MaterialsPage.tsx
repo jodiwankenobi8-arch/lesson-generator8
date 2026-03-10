@@ -401,6 +401,10 @@ function UploadItemCard({
 }) {
   const fallbackOnly = hasFallbackOnlyText(item);
   const uploadStatus = queueState?.uploadStatus ?? itemUploadStatus(item);
+function itemUploadStatus(item: UploadedTextFile) {
+  return item.text && item.text.trim() ? "Ready" : "Pending extraction";
+}
+
   const evaluationStatus = queueState?.evaluationStatus ?? itemEvaluationStatus(item);
   const pipelineStatus = queueState?.pipelineStatus ?? processingLabelForItem(processing);
 
