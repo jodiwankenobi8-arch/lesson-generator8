@@ -400,12 +400,23 @@ function UploadItemCard({
   queueState?: ItemQueueState;
 }) {
   const fallbackOnly = hasFallbackOnlyText(item);
-  const uploadStatus = queueState?.uploadStatus ?? itemUploadStatus(item);
-function itemUploadStatus(item: UploadedTextFile) {
-  return item.text && item.text.trim() ? "Ready" : "Pending extraction";
-}
+  const extractedText = String(item.text ?? "").replace(/\s+/g, " ").trim();
+  const extractedWordCount = extractedText ? extractedText.split(/\s+/).filter(Boolean).length : 0;
 
-  const evaluationStatus = queueState?.evaluationStatus ?? itemEvaluationStatus(item);
+  const uploadStatus =
+    queueState?.uploadStatus ??
+    (extractedText ? "Ready for generation" : "Pending extraction");
+
+  const evaluationStatus =
+    queueState?.evaluationStatus ??
+    (!extractedText
+      ? "No extracted text yet"
+      : fallbackOnly
+        ? "Fallback text only"
+        : extractedWordCount > 0
+          ? "Extracted " + extractedWordCount + " words"
+          : "Readable content extracted");
+
   const pipelineStatus = queueState?.pipelineStatus ?? processingLabelForItem(processing);
 
   return (
