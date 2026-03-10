@@ -920,17 +920,21 @@ export default function MaterialsPage() {
     [finalCurriculumItems, finalExemplarItems]
   );
 
-  const canAdvance =
-    !busy &&
-    processing.stage !== "uploading" &&
-    processing.stage !== "extracting" &&
-    processing.stage !== "scanning" &&
-    processing.stage !== "analyzingCurriculum" &&
-    processing.stage !== "analyzingExemplars" &&
-    processing.stage !== "buildingBlueprint" &&
-    processing.stage !== "generating" &&
-    allQueuedItemsReady;
+  const hasAnyMaterials = finalCurriculumItems.length > 0 || finalExemplarItems.length > 0;
+  const processingActive =
+    processing.stage !== "idle" &&
+    processing.stage !== "completed" &&
+    processing.stage !== "error";
 
+  const basicsMissing =
+    !(String(input.lessonTitle ?? "").trim()) ||
+    !(String(input.objective ?? "").trim());
+
+  const canAdvance =
+    !basicsMissing &&
+    !busy &&
+    status !== "generating" &&
+    (!hasAnyMaterials || !processingActive || allQueuedItemsReady);
   async function onBuildAndGenerate() {
     setMsg("");
     setBusy(true);
@@ -1399,10 +1403,10 @@ export default function MaterialsPage() {
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <button
                 onClick={onBuildAndGenerate}
-                disabled={busy || status === "generating" || missingBasics || !canAdvance}
-                style={orchardPrimaryButtonStyle(busy || status === "generating" || missingBasics)}
+                disabled={!canAdvance}
+                style={orchardPrimaryButtonStyle(!canAdvance)}
               >
-                {busy || status === "generating" ? "Building + Generating..." : !allQueuedItemsReady && (finalCurriculumItems.length > 0 || finalExemplarItems.length > 0) ? "Finish processing materials before Push to Results" : "Push to Results ->"}
+                {busy || status === "generating" ? "Building + Generating..." : processingActive && hasAnyMaterials && !allQueuedItemsReady ? "Wait for processing to finish" : "Push to Results ->"}
               </button>
 
               <Link to="/" style={orchardLinkStyle()}>
