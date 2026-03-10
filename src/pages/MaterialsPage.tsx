@@ -340,6 +340,11 @@ function buildClarificationNotes(curriculumItems: UploadedTextFile[], exemplarIt
   return notes;
 }
 
+
+function processingLabelForItem(processing: ProcessingState) {
+  if (!processing || processing.stage === "idle") return "Ready for generation";
+  return processing.label || processing.detail || "Processing";
+}
 function itemTypeLabel(item: UploadedTextFile) {
   const kind = String(item.kind || "").toLowerCase();
   const name = String(item.name || "").toLowerCase();
