@@ -1,4 +1,4 @@
-import { LessonBlueprint, PlanInput, UploadedTextFile } from "./types";
+﻿import { LessonBlueprint, PlanInput, UploadedTextFile } from "./types";
 import { detectFramework, extractPresenterCues } from "./exemplarAnalysis";
 import { extractCoverageFromCurriculum } from "../curriculum/extractCoverageFromCurriculum";
 
@@ -96,11 +96,16 @@ export function buildBlueprint(args: {
   const mixedExemplarFiles = (args.exemplarFiles ?? []).filter(
     (f) => (f.sourceRole ?? "exemplar") === "mixed"
   );
+  const teachingToolExemplarFiles = (args.exemplarFiles ?? []).filter(
+    (f) => (f.sourceRole ?? "exemplar") === "teachingTool"
+  );
 
-  const exemplarTextAll = trueExemplarFiles.map((f) => f.text ?? "").join("\n\n");
+  const exemplarTextAll = [...trueExemplarFiles, ...mixedExemplarFiles, ...teachingToolExemplarFiles]
+    .map((f) => f.text ?? "")
+    .join("\n\n");
   const frameworkDetection = detectFramework(exemplarTextAll);
 
-  const presenterCueFiles = [...trueExemplarFiles, ...mixedExemplarFiles];
+  const presenterCueFiles = [...trueExemplarFiles, ...mixedExemplarFiles, ...teachingToolExemplarFiles];
   const presenterCues = presenterCueFiles.flatMap((f) => extractPresenterCues(f.text ?? "", f.name));
 
   const mixedLessonSignal = detectMixedLessonSignal(args.plan, args.curriculumFiles ?? [], args.exemplarFiles ?? []);

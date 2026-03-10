@@ -1,4 +1,4 @@
-import type { UploadedTextFile } from "../blueprint/types";
+﻿import type { UploadedTextFile } from "../blueprint/types";
 
 export interface CurriculumCoverageItem {
   id: string;
@@ -74,15 +74,16 @@ function looksLikeStandardCode(line: string) {
 
 function looksUsefulCurriculumLine(line: string) {
   if (!line) return false;
-  if (line.length < 8) return false;
+  if (line.length < 6) return false;
   if (line.length > 260) return false;
 
   const looksBulleted = /^[-*\u2022\u25CF\u25E6\u2023\u2043]/.test(line);
-  const startsWithLabel = /^(lesson\s*objective|objective|learning\s*target|target|i can|students will|student will|we will|teaching point|focus skill|standard|skill focus|success criteria|goal|benchmark)\b/i.test(line);
-  const hasDirective = /\b(must|required|teach|include|students will|student will|we will|today you will|objective|i can|identify|explain|describe|compare|retell|read|write|solve|practice|model|determine|analyze|decode|segment|blend|infer|cite|summarize|justify|demonstrate)\b/i.test(line);
+  const startsWithLabel = /^(lesson\s*objective|objective|learning\s*target|target|i can|students will|student will|we will|teaching point|focus skill|standard|skill focus|success criteria|goal|benchmark|practice words|word list|decodable|phonemic awareness|segment\s*&\s*spell|let'?s read together)\b/i.test(line);
+  const hasDirective = /\b(must|required|teach|include|students will|student will|we will|today you will|objective|i can|identify|explain|describe|compare|retell|read|write|solve|practice|model|determine|analyze|decode|segment|blend|infer|cite|summarize|justify|demonstrate|tap|map|sort|spell|say)\b/i.test(line);
   const standardish = looksLikeStandardCode(line);
+  const looksLikeWordList = /^(?:[a-z]{2,}(?:,\s*|\s+)){2,}[a-z]{2,}$/i.test(line);
 
-  return looksBulleted || startsWithLabel || hasDirective || standardish;
+  return looksBulleted || startsWithLabel || hasDirective || standardish || looksLikeWordList;
 }
 
 function looksUsefulCurriculumSentence(line: string) {
@@ -90,7 +91,7 @@ function looksUsefulCurriculumSentence(line: string) {
   if (line.length < 18) return false;
   if (line.length > 260) return false;
 
-  return /\b(students will|student will|we will|i can|objective|learning target|success criteria|teach|identify|explain|describe|compare|retell|read|write|solve|practice|model|determine|analyze|decode|segment|blend|infer|summarize|justify|demonstrate)\b/i.test(
+  return /\b(students will|student will|we will|i can|objective|learning target|success criteria|teach|identify|explain|describe|compare|retell|read|write|solve|practice|model|determine|analyze|decode|segment|blend|infer|summarize|justify|demonstrate|phonemic awareness|practice words|segment and spell|lets read together|long a|magic e)\b/i.test(
     line,
   );
 }

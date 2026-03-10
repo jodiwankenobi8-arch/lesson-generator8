@@ -22,8 +22,8 @@ export function extractPresenterCues(exemplarText: string, sourceFile?: string):
   for (const line of lines) {
     const hasTimer = /(timer|countdown|\b\d{1,2}:\d{2}\b|\b\d+\s*(min|minute|sec|second)s?\b)/i.test(line);
     const hasClicker = /\b(clicker|remote|click|advance|next slide|press)\b/i.test(line);
-    const hasScript = /^(teacher:|say:|script:)/i.test(line);
-    const hasTransition = /\b(turn and talk|stop and jot|pause|wait time|transition|now move to)\b/i.test(line);
+    const hasScript = /^(teacher note|teacher:|say:|script:|notes?:)/i.test(line);
+    const hasTransition = /\b(turn and talk|turn-and-talk|stop and jot|pause|wait time|transition|now move to|preview lesson steps|students echo|echo|my turn|your turn|watch and listen|say it with me|circulate|pull tier 3|fast feedback)\b/i.test(line);
 
     if (hasTimer) {
       cues.push({
@@ -40,11 +40,11 @@ export function extractPresenterCues(exemplarText: string, sourceFile?: string):
       continue;
     }
     if (hasScript) {
-      cues.push({ type: "script", rawText: line, confidence: 0.7, sourceFile });
+      cues.push({ type: "script", rawText: line, confidence: 0.72, sourceFile });
       continue;
     }
     if (hasTransition) {
-      cues.push({ type: "transition", rawText: line, confidence: 0.65, sourceFile });
+      cues.push({ type: "transition", rawText: line, confidence: 0.68, sourceFile });
       continue;
     }
   }
