@@ -73,6 +73,8 @@ export type MaterialFile = {
   analysis: MaterialAnalysis | null
   errorMessage: string | null
   styleSettings?: ExemplarStyleSettings | null
+  fileBuffer: ArrayBuffer | null
+  fileContent: string | null
 }
 
 export type LessonMode = "single" | "full" | "phonics_only" | "comprehension_only"

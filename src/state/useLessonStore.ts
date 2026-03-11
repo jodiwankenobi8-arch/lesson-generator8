@@ -33,6 +33,13 @@ type LessonStore = {
   setSelectedLessonMode: (mode: LessonMode) => void
 
   addMaterial: (role: MaterialRole, name?: string) => string
+  setMaterialSource: (
+    id: string,
+    source: {
+      fileBuffer: ArrayBuffer | null
+      fileContent?: string | null
+    }
+  ) => void
   updateMaterialStatus: (id: string, status: MaterialStatus) => void
   setMaterialAnalysis: (id: string, analysis: MaterialAnalysis) => void
   setMaterialError: (id: string, message: string) => void
@@ -145,6 +152,8 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
           analysis: null,
           errorMessage: null,
           styleSettings: role === "exemplar" ? defaultExemplarStyleSettings() : null,
+          fileBuffer: null,
+          fileContent: null,
         },
       ],
       ...clearedGeneratedState(),
@@ -152,6 +161,20 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
     return id
   },
+
+  setMaterialSource: (id, source) =>
+    set((state) => ({
+      materials: state.materials.map((material) =>
+        material.id === id
+          ? {
+              ...material,
+              fileBuffer: source.fileBuffer,
+              fileContent: source.fileContent ?? null,
+            }
+          : material
+      ),
+      ...clearedGeneratedState(),
+    })),
 
   updateMaterialStatus: (id, status) =>
     set((state) => ({
@@ -265,4 +288,3 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   getMaterialCounts: () => buildMaterialCounts(get().materials),
 }))
-

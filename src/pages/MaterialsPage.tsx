@@ -1,4 +1,6 @@
-﻿import React from "react"
+﻿import React, { useRef } from "react"
+import { processMaterial } from "../engine/workflow/processMaterial"
+import { MaterialRole, MaterialStatus } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
 const cardStyle: React.CSSProperties = {
@@ -33,20 +35,76 @@ const summaryGridStyle: React.CSSProperties = {
   marginBottom: 20,
 }
 
+const hiddenInputStyle: React.CSSProperties = {
+  display: "none",
+}
+
 export default function MaterialsPage() {
   const materials = useLessonStore((state) => state.materials)
   const addMaterial = useLessonStore((state) => state.addMaterial)
+  const setMaterialSource = useLessonStore((state) => state.setMaterialSource)
+  const removeMaterial = useLessonStore((state) => state.removeMaterial)
   const counts = useLessonStore((state) => state.getMaterialCounts)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
   const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
+
+  const curriculumInputRef = useRef<HTMLInputElement | null>(null)
+  const exemplarInputRef = useRef<HTMLInputElement | null>(null)
+
+  async function handleFilesSelected(
+    role: MaterialRole,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const files = Array.from(event.target.files ?? [])
+
+    for (const file of files) {
+      const id = addMaterial(role, file.name)
+
+      try {
+        const fileBuffer = await file.arrayBuffer()
+        const fileContent = shouldCapturePlainText(file.name) ? await file.text() : null
+
+        setMaterialSource(id, {
+          fileBuffer,
+          fileContent,
+        })
+
+        void processMaterial(id)
+      } catch (error) {
+        const store = useLessonStore.getState()
+        const message =
+          error instanceof Error ? error.message : "Unable to read uploaded file"
+
+        store.setMaterialError(id, message)
+      }
+    }
+
+    event.target.value = ""
+  }
 
   return (
     <div>
       <h2 style={{ marginTop: 0 }}>Materials</h2>
       <p style={{ color: "#4b5563", marginBottom: 24 }}>
-        Upload curriculum and exemplar files. Materials appear immediately and
-        stay visible while they move through upload, scanning, analysis, and ready states.
+        Upload curriculum and exemplar files. Materials appear immediately and stay
+        visible while they move through upload, extraction, analysis, and ready states.
       </p>
+
+      <input
+        ref={curriculumInputRef}
+        type="file"
+        multiple
+        onChange={(event) => handleFilesSelected("curriculum", event)}
+        style={hiddenInputStyle}
+      />
+
+      <input
+        ref={exemplarInputRef}
+        type="file"
+        multiple
+        onChange={(event) => handleFilesSelected("exemplar", event)}
+        style={hiddenInputStyle}
+      />
 
       <div
         style={{
@@ -62,8 +120,12 @@ export default function MaterialsPage() {
             Teaching content authority: standards, word lists, texts, examples,
             and practice activities.
           </p>
-          <button style={buttonStyle} onClick={() => addMaterial("curriculum")}>
-            Add Curriculum File
+          <button
+            type="button"
+            style={buttonStyle}
+            onClick={() => curriculumInputRef.current?.click()}
+          >
+            Upload Curriculum Files
           </button>
         </div>
 
@@ -72,8 +134,12 @@ export default function MaterialsPage() {
           <p style={{ color: "#6b7280" }}>
             Presentation authority: slide order, pacing, prompts, layout, and timing.
           </p>
-          <button style={buttonStyle} onClick={() => addMaterial("exemplar")}>
-            Add Exemplar File
+          <button
+            type="button"
+            style={buttonStyle}
+            onClick={() => exemplarInputRef.current?.click()}
+          >
+            Upload Exemplar Files
           </button>
         </div>
       </div>
@@ -84,11 +150,18 @@ export default function MaterialsPage() {
         <div style={summaryGridStyle}>
           <SummaryCard label="Total" value={counts.total} />
           <SummaryCard label="Ready" value={counts.ready} />
-          <SummaryCard label="Processing" value={counts.uploaded + counts.extracting + counts.analyzing} />
+          <SummaryCard
+            label="Processing"
+            value={counts.uploaded + counts.extracting + counts.analyzing}
+          />
           <SummaryCard label="Errors" value={counts.error} />
         </div>
 
-        <div style={noticeStyle(hasProcessingMaterials ? "processing" : hasReadyMaterials ? "ready" : "idle")}>
+        <div
+          style={noticeStyle(
+            hasProcessingMaterials ? "processing" : hasReadyMaterials ? "ready" : "idle"
+          )}
+        >
           {hasProcessingMaterials
             ? "Results stay blocked until all uploaded materials finish processing."
             : hasReadyMaterials
@@ -101,18 +174,19 @@ export default function MaterialsPage() {
         <h3 style={{ marginTop: 0, marginBottom: 16 }}>Processing Status</h3>
 
         {materials.length === 0 ? (
-          <p style={{ color: "#6b7280", marginBottom: 0 }}>
-            No materials added yet.
-          </p>
+          <p style={{ color: "#6b7280", marginBottom: 0 }}>No materials added yet.</p>
         ) : (
           <div style={{ display: "grid", gap: 12 }}>
             {materials.map((material) => (
               <div key={material.id} style={rowStyle}>
                 <div>
                   <div style={{ fontWeight: 600 }}>{material.name}</div>
+
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
                     <span style={roleBadgeStyle(material.role)}>{material.role}</span>
-                    <span style={statusBadgeStyle(material.status)}>{formatStatus(material.status)}</span>
+                    <span style={statusBadgeStyle(material.status)}>
+                      {formatStatus(material.status)}
+                    </span>
                   </div>
 
                   {material.analysis && (
@@ -128,8 +202,26 @@ export default function MaterialsPage() {
                   )}
                 </div>
 
-                <div style={{ minWidth: 160, textAlign: "right", color: "#6b7280", fontSize: 13 }}>
-                  {getStatusExplanation(material.status)}
+                <div
+                  style={{
+                    minWidth: 180,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: 10,
+                  }}
+                >
+                  <div style={{ textAlign: "right", color: "#6b7280", fontSize: 13 }}>
+                    {getStatusExplanation(material.status)}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => removeMaterial(material.id)}
+                    style={secondaryButtonStyle()}
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
             ))}
@@ -156,13 +248,18 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
   )
 }
 
+function shouldCapturePlainText(fileName: string): boolean {
+  const normalized = fileName.toLowerCase()
+  return normalized.endsWith(".txt") || normalized.endsWith(".html") || normalized.endsWith(".htm")
+}
+
 function formatStatus(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
-function getStatusExplanation(status: string): string {
-  if (status === "uploaded") return "Queued for scanning"
-  if (status === "scanning") return "Extracting file contents"
+function getStatusExplanation(status: MaterialStatus): string {
+  if (status === "uploaded") return "Queued for extraction"
+  if (status === "extracting") return "Extracting file contents"
   if (status === "analyzing") return "Building lesson signals"
   if (status === "ready") return "Available for lesson generation"
   return "Needs attention"
@@ -181,7 +278,7 @@ function roleBadgeStyle(role: string): React.CSSProperties {
   }
 }
 
-function statusBadgeStyle(status: string): React.CSSProperties {
+function statusBadgeStyle(status: MaterialStatus): React.CSSProperties {
   const palette =
     status === "ready"
       ? { background: "#ecfdf5", color: "#047857" }
@@ -197,6 +294,18 @@ function statusBadgeStyle(status: string): React.CSSProperties {
     fontWeight: 600,
     background: palette.background,
     color: palette.color,
+  }
+}
+
+function secondaryButtonStyle(): React.CSSProperties {
+  return {
+    padding: "8px 10px",
+    borderRadius: 10,
+    border: "1px solid #e5e7eb",
+    background: "#ffffff",
+    cursor: "pointer",
+    fontSize: 12,
+    fontWeight: 600,
   }
 }
 
@@ -216,4 +325,3 @@ function noticeStyle(mode: "idle" | "processing" | "ready"): React.CSSProperties
     color: palette.color,
   }
 }
-
