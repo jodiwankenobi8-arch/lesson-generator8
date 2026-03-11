@@ -10,32 +10,44 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
   const texts = take(blueprint.content.texts, 2, ["teacher-provided text"])
   const practiceIdeas = take(blueprint.content.practiceIdeas, 4, ["guided practice"])
   const standards = take(blueprint.content.standards, 2, ["teacher-selected standard"])
+  const lessonFlow = take(blueprint.structure.lessonSegments, 6, ["Teach", "Practice", "Closure"])
+  const timing = take(blueprint.structure.timing, 6, ["Mini-lesson", "Practice", "Closure"])
+
+  const openingLine = buildOpeningLine(target.primary, target.secondary, standards)
+  const modeledResources = buildModeledResources(primary, wordList, texts)
+  const guidedTaskLine = buildGuidedTaskLine(primary, practiceIdeas, standards)
+  const independentTaskLine = buildIndependentTaskLine(primary, practiceIdeas, wordList, texts)
+  const closureLine = buildClosureLine(primary, vocabulary, wordList)
+  const flowLine = `Follow the exemplar lesson flow: ${lessonFlow.join(" -> ")}.`
+  const timingLine = `Keep pacing aligned to: ${timing.join(" | ")}.`
 
   if (isFullMixed) {
     return {
       teach: {
         title: "Teach",
         steps: [
-          `Introduce the two-part lesson target: ${formatTargetLabel(target.primary, target.secondary)}.`,
-          `Teach the foundational content using: ${wordList.join(", ")}.`,
-          `Connect the lesson to meaning and text work using: ${texts.join(", ")}.`,
-          `Highlight key vocabulary for both parts: ${vocabulary.join(", ")}.`,
+          openingLine,
+          `Model the foundational skill first using: ${wordList.join(", ")}.`,
+          `Then connect students to meaning and text work using: ${texts.join(", ")}.`,
+          `Preteach and revisit vocabulary across both parts: ${vocabulary.join(", ")}.`,
+          flowLine,
         ],
       },
       guidedPractice: {
         title: "Guided Practice",
         steps: [
-          `Guide students through the first practice block using these curriculum tasks: ${practiceIdeas.join(", ")}.`,
-          `Use the lesson examples and texts during teacher support: ${wordList.join(", ")}; ${texts.join(", ")}.`,
-          `Reference the lesson standards during support: ${standards.join(", ")}.`,
+          `Guide students through two curriculum-aligned practice blocks: ${practiceIdeas.join(", ")}.`,
+          `Use modeled examples and text support during teacher guidance: ${wordList.join(", ")}; ${texts.join(", ")}.`,
+          `Keep support anchored to the standards: ${standards.join(", ")}.`,
+          timingLine,
         ],
       },
       independentPractice: {
         title: "Independent Practice",
         steps: [
-          `Students complete two aligned tasks drawn from the lesson materials: ${practiceIdeas.slice(0, 2).join(", ")}.`,
-          `Use these lesson resources during practice: ${wordList.join(", ")} and ${texts.join(", ")}.`,
-          "Check for transfer from teacher-supported work to student-owned work in both parts of the lesson.",
+          `Students complete two aligned independent tasks using: ${practiceIdeas.slice(0, 2).join(", ")}.`,
+          `Require students to apply both lesson resources and text support: ${wordList.join(", ")} / ${texts.join(", ")}.`,
+          "Check for transfer from teacher-supported work to student-owned work in both lesson parts.",
         ],
       },
       centers: {
@@ -50,8 +62,9 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         title: "Closure",
         steps: [
           "Review what students learned in both parts of the lesson.",
-          `Revisit the lesson flow: ${blueprint.structure.lessonSegments.join(" -> ")}.`,
-          "End with a quick check for understanding and note who needs reteach.",
+          flowLine,
+          timingLine,
+          "End with a quick check for understanding and identify students needing reteach.",
         ],
       },
     }
@@ -62,24 +75,26 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       teach: {
         title: "Teach",
         steps: [
-          "State the phonics objective and name the focus pattern or skill.",
-          `Model the target pattern with these examples: ${wordList.join(", ")}.`,
-          `Teach key language students will use: ${vocabulary.join(", ")}.`,
-          "Think aloud while blending, reading, or sorting target words.",
+          openingLine,
+          `Model the phonics focus with these curriculum examples: ${wordList.join(", ")}.`,
+          `Teach and reinforce the key language students will use: ${vocabulary.join(", ")}.`,
+          "Think aloud while blending, reading, sorting, or encoding target words.",
+          flowLine,
         ],
       },
       guidedPractice: {
         title: "Guided Practice",
         steps: [
-          `Guide practice with these curriculum-aligned phonics tasks: ${practiceIdeas.join(", ")}.`,
+          guidedTaskLine,
           `Use the lesson word list during support: ${wordList.join(", ")}.`,
-          `Keep practice aligned to the lesson standard: ${standards.join(", ")}.`,
+          `Require students to explain or show the target pattern with teacher guidance.`,
+          timingLine,
         ],
       },
       independentPractice: {
         title: "Independent Practice",
         steps: [
-          `Students complete independent phonics work using these lesson tasks or examples: ${practiceIdeas.slice(0, 2).join(", ")}.`,
+          independentTaskLine,
           `Use these words or examples during practice: ${wordList.join(", ")}.`,
           "Check for accurate decoding, sorting, encoding, and pattern application.",
         ],
@@ -96,7 +111,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         title: "Closure",
         steps: [
           "Review the target sound, pattern, or decoding skill.",
-          `Have students revisit the strongest examples: ${wordList.slice(0, 3).join(", ")}.`,
+          closureLine,
           "End with a quick oral read, sort, or exit check.",
         ],
       },
@@ -108,25 +123,27 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       teach: {
         title: "Teach",
         steps: [
-          "Introduce the comprehension focus and connect it to the lesson text.",
-          `Model comprehension thinking with: ${texts.join(", ")}.`,
-          `Preteach or review key vocabulary: ${vocabulary.join(", ")}.`,
-          "Demonstrate how students should discuss, answer, or cite thinking from the text.",
+          openingLine,
+          `Model comprehension thinking with these lesson texts: ${texts.join(", ")}.`,
+          `Preteach or revisit the lesson vocabulary: ${vocabulary.join(", ")}.`,
+          "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
+          flowLine,
         ],
       },
       guidedPractice: {
         title: "Guided Practice",
         steps: [
-          `Guide students through these curriculum-based comprehension tasks: ${practiceIdeas.join(", ")}.`,
+          guidedTaskLine,
           `Use the lesson text and prompts during support: ${texts.join(", ")}.`,
           `Anchor the work to the lesson standard: ${standards.join(", ")}.`,
+          timingLine,
         ],
       },
       independentPractice: {
         title: "Independent Practice",
         steps: [
-          `Students complete an independent response task using these lesson activities or prompts: ${practiceIdeas.slice(0, 2).join(", ")}.`,
-          `Use these lesson texts or prompts during practice: ${texts.join(", ")}.`,
+          independentTaskLine,
+          `Use these texts or prompts during student work: ${texts.join(", ")}.`,
           "Check for understanding, accuracy, and evidence of reasoning.",
         ],
       },
@@ -142,7 +159,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         title: "Closure",
         steps: [
           "Review the comprehension objective and key takeaway from the text.",
-          `Reinforce the lesson vocabulary: ${vocabulary.slice(0, 3).join(", ")}.`,
+          closureLine,
           "Close with a brief discussion, written response, or oral recap.",
         ],
       },
@@ -153,22 +170,25 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
     teach: {
       title: "Teach",
       steps: [
-        `Introduce the lesson target: ${formatTargetLabel(target.primary, target.secondary)}.`,
-        `Model key lesson content using: ${vocabulary.join(", ")}.`,
+        openingLine,
+        `Model the lesson content using: ${modeledResources}.`,
+        `Teach the lesson vocabulary and focus language: ${vocabulary.join(", ")}.`,
+        flowLine,
       ],
     },
     guidedPractice: {
       title: "Guided Practice",
       steps: [
-        `Practice with teacher support using these lesson tasks: ${practiceIdeas.join(", ")}.`,
+        guidedTaskLine,
         `Reference standards during support: ${standards.join(", ")}.`,
+        timingLine,
       ],
     },
     independentPractice: {
       title: "Independent Practice",
       steps: [
-        `Students complete independent practice using these lesson materials or tasks: ${practiceIdeas.slice(0, 2).join(", ")}.`,
-        `Use these lesson resources: ${wordList.join(", ")}.`,
+        independentTaskLine,
+        `Use these lesson resources: ${wordList.join(", ")} / ${texts.join(", ")}.`,
       ],
     },
     centers: {
@@ -183,10 +203,73 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       title: "Closure",
       steps: [
         "Review the lesson objective.",
-        `Revisit the lesson flow: ${blueprint.structure.lessonSegments.join(" -> ")}.`,
+        `Revisit the lesson flow: ${lessonFlow.join(" -> ")}.`,
+        closureLine,
       ],
     },
   }
+}
+
+function buildOpeningLine(
+  primary: string,
+  secondary: string | null,
+  standards: string[]
+): string {
+  const targetLabel = formatTargetLabel(primary, secondary)
+  return `Introduce the lesson target: ${targetLabel}. Connect the work to: ${standards.join(", ")}.`
+}
+
+function buildModeledResources(primary: string, wordList: string[], texts: string[]): string {
+  if (primary === "phonics") {
+    return wordList.join(", ")
+  }
+
+  if (primary === "comprehension") {
+    return texts.join(", ")
+  }
+
+  return `${wordList.join(", ")}; ${texts.join(", ")}`
+}
+
+function buildGuidedTaskLine(
+  primary: string,
+  practiceIdeas: string[],
+  standards: string[]
+): string {
+  if (primary === "phonics") {
+    return `Guide practice with these curriculum-aligned phonics tasks: ${practiceIdeas.join(", ")}. Keep practice aligned to: ${standards.join(", ")}.`
+  }
+
+  if (primary === "comprehension") {
+    return `Guide students through these curriculum-based comprehension tasks: ${practiceIdeas.join(", ")}. Keep the work aligned to: ${standards.join(", ")}.`
+  }
+
+  return `Guide students through these lesson tasks: ${practiceIdeas.join(", ")}. Keep support aligned to: ${standards.join(", ")}.`
+}
+
+function buildIndependentTaskLine(
+  primary: string,
+  practiceIdeas: string[],
+  wordList: string[],
+  texts: string[]
+): string {
+  if (primary === "phonics") {
+    return `Students complete independent phonics work using: ${practiceIdeas.slice(0, 2).join(", ")}.`
+  }
+
+  if (primary === "comprehension") {
+    return `Students complete an independent response task using: ${practiceIdeas.slice(0, 2).join(", ")}.`
+  }
+
+  return `Students complete independent practice using: ${practiceIdeas.slice(0, 2).join(", ")}. Reference ${wordList.join(", ")} and ${texts.join(", ")} as needed.`
+}
+
+function buildClosureLine(primary: string, vocabulary: string[], wordList: string[]): string {
+  if (primary === "phonics") {
+    return `Revisit the strongest word examples: ${wordList.slice(0, 3).join(", ")}.`
+  }
+
+  return `Reinforce key lesson vocabulary: ${vocabulary.slice(0, 3).join(", ")}.`
 }
 
 function formatTargetLabel(primary: string, secondary: string | null): string {
