@@ -1,4 +1,4 @@
-import {
+﻿import {
   LessonBlueprint,
   LessonInputs,
   LessonPackage,
@@ -20,12 +20,26 @@ export function buildLessonPackage(
   const texts = take(blueprint.content.texts, 3, ["teacher-provided text"])
   const wordLists = take(blueprint.content.wordLists, 6, ["teacher-selected examples"])
   const timing = take(blueprint.structure.timing, 6, ["Mini-lesson", "Practice", "Closure"])
+  const lessonSegments = take(blueprint.structure.lessonSegments, 8, ["Teach", "Practice", "Closure"])
+  const teacherMoves = take(blueprint.structure.teacherMoves, 5, ["teacher model", "guided support"])
+  const promptStyle = take(blueprint.structure.promptStyle, 5, ["teacher prompt"])
+  const tone = take(blueprint.structure.tone, 3, ["clear instructional tone"])
 
   return {
-    slides: buildSlides(targetLabel, blueprint, spec),
-    lessonPlan: buildLessonPlan(inputs, blueprint, spec, targetLabel),
+    slides: buildSlides(targetLabel, blueprint, spec, standards, vocabulary, teacherMoves, promptStyle, tone),
+    lessonPlan: buildLessonPlan(
+      inputs,
+      blueprint,
+      spec,
+      targetLabel,
+      lessonSegments,
+      timing,
+      teacherMoves,
+      promptStyle,
+      tone
+    ),
     centers: spec.centers.steps,
-    rotationPlan: buildRotationPlan(blueprint),
+    rotationPlan: buildRotationPlan(lessonSegments, timing),
     interventions: buildInterventions(primary, isFullMixed, vocabulary, wordLists, texts),
     exports: buildExports(primary, isFullMixed),
   }
@@ -34,19 +48,29 @@ export function buildLessonPackage(
 function buildSlides(
   targetLabel: string,
   blueprint: LessonBlueprint,
-  spec: LessonSpec
+  spec: LessonSpec,
+  standards: string[],
+  vocabulary: string[],
+  teacherMoves: string[],
+  promptStyle: string[],
+  tone: string[]
 ): string[] {
-  const vocabulary = take(blueprint.content.vocabulary, 4, ["key vocabulary"])
-  const standards = take(blueprint.content.standards, 2, ["TBD"])
+  const lessonSegments = take(blueprint.structure.lessonSegments, 8, ["Teach", "Practice", "Closure"])
+  const timing = take(blueprint.structure.timing, 8, ["Flexible timing"])
+  const segmentSlides = lessonSegments.map((segment, index) => {
+    const normalized = normalizeSegmentKey(segment)
+    const section = getSectionForSegment(normalized, spec)
+    const timeBlock = timing[index] ?? "Flexible timing"
+    const move = teacherMoves[index % teacherMoves.length] ?? "teacher guidance"
+    const prompt = promptStyle[index % promptStyle.length] ?? "teacher prompt"
+
+    return `Slide ${index + 2}: ${segment} | Timing: ${timeBlock} | Teacher Move: ${move} | Prompt Style: ${prompt} | ${section.steps.join(" | ")}`
+  })
 
   return [
-    `Slide 1: Objective | Target: ${targetLabel} | Standards: ${standards.join(", ")}`,
-    `Slide 2: Launch / Warm-Up | Timing: ${blueprint.structure.timing[0] ?? "Opening"} | Vocabulary: ${vocabulary.join(", ")}`,
-    `Slide 3: Teach | ${spec.teach.steps.join(" | ")}`,
-    `Slide 4: Guided Practice | ${spec.guidedPractice.steps.join(" | ")}`,
-    `Slide 5: Independent Practice | ${spec.independentPractice.steps.join(" | ")}`,
-    `Slide 6: Centers | ${spec.centers.steps.join(" | ")}`,
-    `Slide 7: Closure | ${spec.closure.steps.join(" | ")}`,
+    `Slide 1: Objective | Target: ${targetLabel} | Standards: ${standards.join(", ")} | Tone: ${tone.join(", ")}`,
+    ...segmentSlides,
+    `Slide ${segmentSlides.length + 2}: Teaching Notes | Vocabulary: ${vocabulary.join(", ")} | Teacher Moves: ${teacherMoves.join(", ")} | Prompts: ${promptStyle.join(", ")}`,
   ]
 }
 
@@ -54,7 +78,12 @@ function buildLessonPlan(
   inputs: LessonInputs,
   blueprint: LessonBlueprint,
   spec: LessonSpec,
-  targetLabel: string
+  targetLabel: string,
+  lessonSegments: string[],
+  timing: string[],
+  teacherMoves: string[],
+  promptStyle: string[],
+  tone: string[]
 ): string {
   const sections = [
     "LESSON OVERVIEW",
@@ -78,9 +107,12 @@ function buildLessonPlan(
     `Texts: ${blueprint.content.texts.join(", ") || "None"}`,
     `Practice Ideas: ${blueprint.content.practiceIdeas.join(", ") || "None"}`,
     "",
-    "LESSON STRUCTURE",
-    `Timing: ${blueprint.structure.timing.join(" | ")}`,
-    `Segments: ${blueprint.structure.lessonSegments.join(" -> ")}`,
+    "EXEMPLAR PRESENTATION CUES",
+    `Lesson Flow: ${lessonSegments.join(" -> ")}`,
+    `Timing: ${timing.join(" | ")}`,
+    `Teacher Moves: ${teacherMoves.join(", ")}`,
+    `Prompt Style: ${promptStyle.join(", ")}`,
+    `Tone: ${tone.join(", ")}`,
     "",
     formatSection("TEACH", spec.teach.steps),
     "",
@@ -96,15 +128,12 @@ function buildLessonPlan(
   return sections.join("`n")
 }
 
-function buildRotationPlan(blueprint: LessonBlueprint): string {
-  const segments = blueprint.structure.lessonSegments
-  const timing = blueprint.structure.timing
-
-  if (segments.length === 0) {
+function buildRotationPlan(lessonSegments: string[], timing: string[]): string {
+  if (lessonSegments.length === 0) {
     return "Opening -> Practice -> Closure"
   }
 
-  return segments
+  return lessonSegments
     .map((segment, index) => {
       const timeBlock = timing[index] ?? "Flexible timing"
       return `${segment} (${timeBlock})`
@@ -179,6 +208,43 @@ function buildExports(primary: string, isFullMixed: boolean): string[] {
   }
 
   return ["Slides PDF", "Printable lesson plan", "Center directions"]
+}
+
+function getSectionForSegment(segment: string, spec: LessonSpec) {
+  if (segment === "teach" || segment === "opening") {
+    return spec.teach
+  }
+
+  if (segment === "guided_practice") {
+    return spec.guidedPractice
+  }
+
+  if (segment === "independent_practice") {
+    return spec.independentPractice
+  }
+
+  if (segment === "centers") {
+    return spec.centers
+  }
+
+  if (segment === "closure") {
+    return spec.closure
+  }
+
+  return spec.guidedPractice
+}
+
+function normalizeSegmentKey(segment: string): string {
+  const lower = segment.toLowerCase()
+
+  if (lower.includes("opening")) return "opening"
+  if (lower.includes("teach")) return "teach"
+  if (lower.includes("guided")) return "guided_practice"
+  if (lower.includes("independent")) return "independent_practice"
+  if (lower.includes("center")) return "centers"
+  if (lower.includes("closure") || lower.includes("close")) return "closure"
+
+  return "guided_practice"
 }
 
 function formatTargetLabel(primary: string, secondary: string | null): string {
