@@ -95,12 +95,22 @@ export type BlueprintContent = {
   practiceIdeas: string[]
 }
 
+export type BlueprintTemplateShell = {
+  segmentOrder: string[]
+  slideShell: string[]
+  timingShell: string[]
+  teacherMoveShell: string[]
+  promptShell: string[]
+  toneShell: string[]
+}
+
 export type BlueprintStructure = {
   timing: string[]
   lessonSegments: string[]
   teacherMoves: string[]
   promptStyle: string[]
   tone: string[]
+  templateShell: BlueprintTemplateShell
 }
 
 export type LessonBlueprint = {

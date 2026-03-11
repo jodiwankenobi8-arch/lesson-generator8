@@ -19,27 +19,14 @@ export function buildLessonPackage(
   const vocabulary = take(blueprint.content.vocabulary, 5, ["key vocabulary"])
   const texts = take(blueprint.content.texts, 3, ["teacher-provided text"])
   const wordLists = take(blueprint.content.wordLists, 6, ["teacher-selected examples"])
-  const timing = take(blueprint.structure.timing, 6, ["Mini-lesson", "Practice", "Closure"])
-  const lessonSegments = take(blueprint.structure.lessonSegments, 8, ["Teach", "Practice", "Closure"])
-  const teacherMoves = take(blueprint.structure.teacherMoves, 5, ["teacher model", "guided support"])
-  const promptStyle = take(blueprint.structure.promptStyle, 5, ["teacher prompt"])
-  const tone = take(blueprint.structure.tone, 3, ["clear instructional tone"])
+
+  const shell = resolvePackageShell(blueprint)
 
   return {
-    slides: buildSlides(targetLabel, blueprint, spec, standards, vocabulary, teacherMoves, promptStyle, tone),
-    lessonPlan: buildLessonPlan(
-      inputs,
-      blueprint,
-      spec,
-      targetLabel,
-      lessonSegments,
-      timing,
-      teacherMoves,
-      promptStyle,
-      tone
-    ),
+    slides: buildSlides(targetLabel, spec, standards, vocabulary, shell),
+    lessonPlan: buildLessonPlan(inputs, blueprint, spec, targetLabel, shell),
     centers: spec.centers.steps,
-    rotationPlan: buildRotationPlan(lessonSegments, timing),
+    rotationPlan: buildRotationPlan(shell.lessonSegments, shell.timing),
     interventions: buildInterventions(primary, isFullMixed, vocabulary, wordLists, texts),
     exports: buildExports(primary, isFullMixed),
   }
@@ -47,30 +34,26 @@ export function buildLessonPackage(
 
 function buildSlides(
   targetLabel: string,
-  blueprint: LessonBlueprint,
   spec: LessonSpec,
   standards: string[],
   vocabulary: string[],
-  teacherMoves: string[],
-  promptStyle: string[],
-  tone: string[]
+  shell: ResolvedPackageShell
 ): string[] {
-  const lessonSegments = take(blueprint.structure.lessonSegments, 8, ["Teach", "Practice", "Closure"])
-  const timing = take(blueprint.structure.timing, 8, ["Flexible timing"])
-  const segmentSlides = lessonSegments.map((segment, index) => {
+  const segmentSlides = shell.lessonSegments.map((segment, index) => {
     const normalized = normalizeSegmentKey(segment)
     const section = getSectionForSegment(normalized, spec)
-    const timeBlock = timing[index] ?? "Flexible timing"
-    const move = teacherMoves[index % teacherMoves.length] ?? "teacher guidance"
-    const prompt = promptStyle[index % promptStyle.length] ?? "teacher prompt"
+    const timeBlock = shell.timing[index] ?? "Flexible timing"
+    const move = shell.teacherMoves[index % shell.teacherMoves.length] ?? "teacher guidance"
+    const prompt = shell.promptStyle[index % shell.promptStyle.length] ?? "teacher prompt"
+    const slideLabel = shell.slideShell[index] ?? segment
 
-    return `Slide ${index + 2}: ${segment} | Timing: ${timeBlock} | Teacher Move: ${move} | Prompt Style: ${prompt} | ${section.steps.join(" | ")}`
+    return `Slide ${index + 2}: ${slideLabel} | Timing: ${timeBlock} | Teacher Move: ${move} | Prompt Style: ${prompt} | ${section.steps.join(" | ")}`
   })
 
   return [
-    `Slide 1: Objective | Target: ${targetLabel} | Standards: ${standards.join(", ")} | Tone: ${tone.join(", ")}`,
+    `Slide 1: Objective | Target: ${targetLabel} | Standards: ${standards.join(", ")} | Tone: ${shell.tone.join(", ")}`,
     ...segmentSlides,
-    `Slide ${segmentSlides.length + 2}: Teaching Notes | Vocabulary: ${vocabulary.join(", ")} | Teacher Moves: ${teacherMoves.join(", ")} | Prompts: ${promptStyle.join(", ")}`,
+    `Slide ${segmentSlides.length + 2}: Teaching Notes | Vocabulary: ${vocabulary.join(", ")} | Teacher Moves: ${shell.teacherMoves.join(", ")} | Prompts: ${shell.promptStyle.join(", ")}`,
   ]
 }
 
@@ -79,11 +62,7 @@ function buildLessonPlan(
   blueprint: LessonBlueprint,
   spec: LessonSpec,
   targetLabel: string,
-  lessonSegments: string[],
-  timing: string[],
-  teacherMoves: string[],
-  promptStyle: string[],
-  tone: string[]
+  shell: ResolvedPackageShell
 ): string {
   const sections = [
     "LESSON OVERVIEW",
@@ -108,11 +87,12 @@ function buildLessonPlan(
     `Practice Ideas: ${blueprint.content.practiceIdeas.join(", ") || "None"}`,
     "",
     "EXEMPLAR PRESENTATION CUES",
-    `Lesson Flow: ${lessonSegments.join(" -> ")}`,
-    `Timing: ${timing.join(" | ")}`,
-    `Teacher Moves: ${teacherMoves.join(", ")}`,
-    `Prompt Style: ${promptStyle.join(", ")}`,
-    `Tone: ${tone.join(", ")}`,
+    `Lesson Flow: ${shell.lessonSegments.join(" -> ")}`,
+    `Slide Shell: ${shell.slideShell.join(" -> ")}`,
+    `Timing: ${shell.timing.join(" | ")}`,
+    `Teacher Moves: ${shell.teacherMoves.join(", ")}`,
+    `Prompt Style: ${shell.promptStyle.join(", ")}`,
+    `Tone: ${shell.tone.join(", ")}`,
     "",
     formatSection("TEACH", spec.teach.steps),
     "",
@@ -210,6 +190,55 @@ function buildExports(primary: string, isFullMixed: boolean): string[] {
   return ["Slides PDF", "Printable lesson plan", "Center directions"]
 }
 
+function resolvePackageShell(blueprint: LessonBlueprint): ResolvedPackageShell {
+  const templateShell = blueprint.structure.templateShell
+
+  const lessonSegments = take(
+    templateShell?.segmentOrder ?? blueprint.structure.lessonSegments,
+    8,
+    ["Teach", "Practice", "Closure"]
+  )
+
+  const slideShell = take(
+    templateShell?.slideShell ?? lessonSegments,
+    Math.max(lessonSegments.length, 3),
+    lessonSegments
+  )
+
+  const timing = take(
+    templateShell?.timingShell ?? blueprint.structure.timing,
+    Math.max(lessonSegments.length, 3),
+    ["Mini-lesson", "Practice", "Closure"]
+  )
+
+  const teacherMoves = take(
+    templateShell?.teacherMoveShell ?? blueprint.structure.teacherMoves,
+    5,
+    ["teacher model", "guided support"]
+  )
+
+  const promptStyle = take(
+    templateShell?.promptShell ?? blueprint.structure.promptStyle,
+    5,
+    ["teacher prompt"]
+  )
+
+  const tone = take(
+    templateShell?.toneShell ?? blueprint.structure.tone,
+    3,
+    ["clear instructional tone"]
+  )
+
+  return {
+    lessonSegments,
+    slideShell,
+    timing,
+    teacherMoves,
+    promptStyle,
+    tone,
+  }
+}
+
 function getSectionForSegment(segment: string, spec: LessonSpec) {
   if (segment === "teach" || segment === "opening") {
     return spec.teach
@@ -261,4 +290,13 @@ function take(items: string[], count: number, fallback: string[]): string[] {
   ).slice(0, count)
 
   return cleaned.length ? cleaned : fallback
+}
+
+type ResolvedPackageShell = {
+  lessonSegments: string[]
+  slideShell: string[]
+  timing: string[]
+  teacherMoves: string[]
+  promptStyle: string[]
+  tone: string[]
 }

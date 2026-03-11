@@ -92,6 +92,14 @@ export function buildBlueprint(
       teacherMoves,
       promptStyle,
       tone,
+      templateShell: {
+        segmentOrder: lessonSegments,
+        slideShell: buildSlideShell(lessonSegments),
+        timingShell: timing,
+        teacherMoveShell: teacherMoves,
+        promptShell: promptStyle,
+        toneShell: tone,
+      },
     },
   }
 }
@@ -232,6 +240,10 @@ function buildTone(exemplarAnalyses: ExemplarAnalysis[]): string[] {
   }
 
   return ["clear instructional tone"]
+}
+
+function buildSlideShell(lessonSegments: string[]): string[] {
+  return lessonSegments.map((segment, index) => `Slide ${index + 1}: ${segment}`)
 }
 
 function preferCurriculumValues(
