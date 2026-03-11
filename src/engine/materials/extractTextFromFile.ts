@@ -1,4 +1,6 @@
-﻿import { PDFParse } from "pdf-parse"
+﻿import mammoth from "mammoth"
+import { PDFParse } from "pdf-parse"
+import { parsePptx } from "pptx-parser"
 
 export type ExtractTextInput = {
   fileName: string
@@ -8,7 +10,7 @@ export type ExtractTextInput = {
 
 export type ExtractTextResult = {
   fileName: string
-  fileType: "txt" | "pdf" | "docx" | "pptx" | "unknown"
+  fileType: "txt" | "pdf" | "docx" | "pptx" | "html" | "unknown"
   extractedText: string[]
 }
 
@@ -33,11 +35,26 @@ export async function extractTextFromFile(
       }
 
     case "docx":
+      return {
+        fileName: input.fileName,
+        fileType,
+        extractedText: await extractDocxText(input),
+      }
+
+    case "html":
+      return {
+        fileName: input.fileName,
+        fileType,
+        extractedText: extractHtmlText(
+          input.fileContent ?? decodeArrayBuffer(input.fileBuffer)
+        ),
+      }
+
     case "pptx":
       return {
         fileName: input.fileName,
         fileType,
-        extractedText: buildUnsupportedFormatNotice(fileType, input.fileName),
+        extractedText: await extractPptxText(input),
       }
 
     default:
@@ -51,7 +68,7 @@ export async function extractTextFromFile(
 
 export function detectFileType(
   fileName: string
-): "txt" | "pdf" | "docx" | "pptx" | "unknown" {
+): "txt" | "pdf" | "docx" | "pptx" | "html" | "unknown" {
   const lower = fileName.toLowerCase()
 
   if (lower.endsWith(".txt")) {
@@ -70,6 +87,10 @@ export function detectFileType(
     return "pptx"
   }
 
+  if (lower.endsWith(".html") || lower.endsWith(".htm")) {
+    return "html"
+  }
+
   return "unknown"
 }
 
@@ -78,6 +99,31 @@ export function extractPlainText(content: string): string[] {
     content
       .split(/\r?\n/)
       .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0)
+  )
+}
+
+function extractHtmlText(content: string): string[] {
+  if (!content.trim()) {
+    return ["HTML file was detected, but no HTML content was provided."]
+  }
+
+  const withoutScripts = content
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+
+  const withLineBreaks = withoutScripts.replace(
+    /<\/?(p|div|section|article|main|aside|header|footer|nav|li|ul|ol|h1|h2|h3|h4|h5|h6|br|tr|td|th)[^>]*>/gi,
+    "\n"
+  )
+
+  const noTags = withLineBreaks.replace(/<[^>]+>/g, " ")
+  const decoded = decodeHtmlEntities(noTags)
+
+  return normalizeExtractedText(
+    decoded
+      .split(/\r?\n/)
+      .map((line: string) => line.replace(/\s+/g, " ").trim())
       .filter((line: string) => line.length > 0)
   )
 }
@@ -120,6 +166,88 @@ async function extractPdfText(input: ExtractTextInput): Promise<string[]> {
   }
 }
 
+async function extractDocxText(input: ExtractTextInput): Promise<string[]> {
+  if (!input.fileBuffer) {
+    return [
+      `DOCX file ${input.fileName} was detected, but no fileBuffer was provided.`,
+      "Provide the uploaded DOCX as an ArrayBuffer so real extraction can run.",
+    ]
+  }
+
+  try {
+    const result = await mammoth.extractRawText({
+      arrayBuffer: input.fileBuffer,
+    })
+
+    const warningLines = result.messages
+      .map((message: { message: string }) => message.message.trim())
+      .filter((line: string) => line.length > 0)
+
+    const contentLines = result.value
+      .split(/\r?\n/)
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0)
+
+    return normalizeExtractedText([...contentLines, ...warningLines])
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown DOCX extraction error"
+
+    return [
+      `DOCX extraction failed for ${input.fileName}.`,
+      message,
+    ]
+  }
+}
+
+async function extractPptxText(input: ExtractTextInput): Promise<string[]> {
+  if (!input.fileBuffer) {
+    return [
+      `PPTX file ${input.fileName} was detected, but no fileBuffer was provided.`,
+      "Provide the uploaded PPTX as an ArrayBuffer so real extraction can run.",
+    ]
+  }
+
+  try {
+    const parsed = await parsePptx(new Uint8Array(input.fileBuffer))
+
+    const slideLines = JSON.stringify(parsed)
+      .split(/\r?\n/)
+      .flatMap((line: string) => line.split(/\\n/))
+      .map((line: string) => line.replace(/[\[\]{}",]/g, " ").trim())
+      .map((line: string) => line.replace(/\s+/g, " ").trim())
+      .filter((line: string) => line.length > 0)
+
+    return normalizeExtractedText(slideLines)
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown PPTX extraction error"
+
+    return [
+      `PPTX extraction failed for ${input.fileName}.`,
+      message,
+    ]
+  }
+}
+
+function decodeArrayBuffer(buffer?: ArrayBuffer): string {
+  if (!buffer) {
+    return ""
+  }
+
+  return new TextDecoder("utf-8").decode(new Uint8Array(buffer))
+}
+
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+}
+
 function normalizeExtractedText(lines: string[]): string[] {
   return Array.from(
     new Set(lines.map((line) => line.trim()).filter((line) => line.length > 0))
@@ -127,18 +255,11 @@ function normalizeExtractedText(lines: string[]): string[] {
 }
 
 function buildUnsupportedFormatNotice(
-  fileType: "docx" | "pptx" | "unknown",
+  fileType: "unknown",
   fileName: string
 ): string[] {
-  if (fileType === "unknown") {
-    return [
-      `Unsupported file type for ${fileName}.`,
-      "Supported extraction targets are txt, pdf, docx, and pptx.",
-    ]
-  }
-
   return [
-    `${fileType.toUpperCase()} extraction is not wired yet for ${fileName}.`,
-    `This file passed through the real extraction entry point and now needs a ${fileType.toUpperCase()} parser implementation.`,
+    `Unsupported file type for ${fileName}.`,
+    "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
   ]
 }
