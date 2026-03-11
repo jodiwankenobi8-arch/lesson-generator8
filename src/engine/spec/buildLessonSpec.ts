@@ -10,22 +10,20 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
   const texts = take(blueprint.content.texts, 2, ["teacher-provided text"])
   const practiceIdeas = take(blueprint.content.practiceIdeas, 4, ["guided practice"])
   const standards = take(blueprint.content.standards, 2, ["teacher-selected standard"])
-  const lessonFlow = take(blueprint.structure.lessonSegments, 6, ["Teach", "Practice", "Closure"])
-  const timing = take(blueprint.structure.timing, 6, ["Mini-lesson", "Practice", "Closure"])
-  const teacherMoves = take(blueprint.structure.teacherMoves, 4, ["teacher model", "guided support"])
-  const promptStyle = take(blueprint.structure.promptStyle, 4, ["teacher prompt"])
-  const tone = take(blueprint.structure.tone, 2, ["clear instructional tone"])
 
-  const openingLine = buildOpeningLine(target.primary, target.secondary, standards, tone)
+  const shell = resolveSpecShell(blueprint)
+
+  const openingLine = buildOpeningLine(target.primary, target.secondary, standards, shell.tone)
   const modeledResources = buildModeledResources(primary, wordList, texts)
   const guidedTaskLine = buildGuidedTaskLine(primary, practiceIdeas, standards)
   const independentTaskLine = buildIndependentTaskLine(primary, practiceIdeas, wordList, texts)
   const closureLine = buildClosureLine(primary, vocabulary, wordList)
-  const flowLine = `Follow the exemplar lesson flow: ${lessonFlow.join(" -> ")}.`
-  const timingLine = `Keep pacing aligned to: ${timing.join(" | ")}.`
-  const teacherMoveLine = `Use exemplar-style teacher moves such as: ${teacherMoves.join(", ")}.`
-  const promptLine = `Use prompts and response frames such as: ${promptStyle.join(", ")}.`
-  const toneLine = `Keep the delivery tone aligned to: ${tone.join(", ")}.`
+  const flowLine = `Follow the exemplar lesson flow: ${shell.lessonSegments.join(" -> ")}.`
+  const slideShellLine = `Preserve the exemplar slide shell: ${shell.slideShell.join(" -> ")}.`
+  const timingLine = `Keep pacing aligned to: ${shell.timing.join(" | ")}.`
+  const teacherMoveLine = `Use exemplar-style teacher moves such as: ${shell.teacherMoves.join(", ")}.`
+  const promptLine = `Use prompts and response frames such as: ${shell.promptStyle.join(", ")}.`
+  const toneLine = `Keep the delivery tone aligned to: ${shell.tone.join(", ")}.`
 
   if (isFullMixed) {
     return {
@@ -39,6 +37,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           teacherMoveLine,
           promptLine,
           flowLine,
+          slideShellLine,
         ],
       },
       guidedPractice: {
@@ -92,6 +91,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           "Think aloud while blending, reading, sorting, or encoding target words.",
           teacherMoveLine,
           flowLine,
+          slideShellLine,
         ],
       },
       guidedPractice: {
@@ -144,6 +144,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
           teacherMoveLine,
           flowLine,
+          slideShellLine,
         ],
       },
       guidedPractice: {
@@ -194,6 +195,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         `Teach the lesson vocabulary and focus language: ${vocabulary.join(", ")}.`,
         teacherMoveLine,
         flowLine,
+        slideShellLine,
       ],
     },
     guidedPractice: {
@@ -225,11 +227,60 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       title: "Closure",
       steps: [
         "Review the lesson objective.",
-        `Revisit the lesson flow: ${lessonFlow.join(" -> ")}.`,
+        `Revisit the lesson flow: ${shell.lessonSegments.join(" -> ")}.`,
         closureLine,
         promptLine,
       ],
     },
+  }
+}
+
+function resolveSpecShell(blueprint: LessonBlueprint): ResolvedSpecShell {
+  const templateShell = blueprint.structure.templateShell
+
+  const lessonSegments = take(
+    templateShell?.segmentOrder ?? blueprint.structure.lessonSegments,
+    6,
+    ["Teach", "Practice", "Closure"]
+  )
+
+  const slideShell = take(
+    templateShell?.slideShell ?? lessonSegments,
+    Math.max(lessonSegments.length, 3),
+    lessonSegments
+  )
+
+  const timing = take(
+    templateShell?.timingShell ?? blueprint.structure.timing,
+    6,
+    ["Mini-lesson", "Practice", "Closure"]
+  )
+
+  const teacherMoves = take(
+    templateShell?.teacherMoveShell ?? blueprint.structure.teacherMoves,
+    4,
+    ["teacher model", "guided support"]
+  )
+
+  const promptStyle = take(
+    templateShell?.promptShell ?? blueprint.structure.promptStyle,
+    4,
+    ["teacher prompt"]
+  )
+
+  const tone = take(
+    templateShell?.toneShell ?? blueprint.structure.tone,
+    2,
+    ["clear instructional tone"]
+  )
+
+  return {
+    lessonSegments,
+    slideShell,
+    timing,
+    teacherMoves,
+    promptStyle,
+    tone,
   }
 }
 
@@ -306,4 +357,13 @@ function take(items: string[], count: number, fallback: string[]): string[] {
   ).slice(0, count)
 
   return cleaned.length ? cleaned : fallback
+}
+
+type ResolvedSpecShell = {
+  lessonSegments: string[]
+  slideShell: string[]
+  timing: string[]
+  teacherMoves: string[]
+  promptStyle: string[]
+  tone: string[]
 }
