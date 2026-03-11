@@ -98,6 +98,9 @@ export type BlueprintContent = {
 export type BlueprintStructure = {
   timing: string[]
   lessonSegments: string[]
+  teacherMoves: string[]
+  promptStyle: string[]
+  tone: string[]
 }
 
 export type LessonBlueprint = {

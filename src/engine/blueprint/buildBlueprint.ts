@@ -73,6 +73,9 @@ export function buildBlueprint(
 
   const timing = buildTiming(exemplarAnalyses, target)
   const lessonSegments = buildLessonSegments(exemplarAnalyses, target)
+  const teacherMoves = buildTeacherMoves(exemplarAnalyses, target)
+  const promptStyle = buildPromptStyle(exemplarAnalyses, target)
+  const tone = buildTone(exemplarAnalyses)
 
   return {
     content: {
@@ -86,6 +89,9 @@ export function buildBlueprint(
     structure: {
       timing,
       lessonSegments,
+      teacherMoves,
+      promptStyle,
+      tone,
     },
   }
 }
@@ -168,6 +174,64 @@ function buildLessonSegments(
   }
 
   return ["Teach", "Practice", "Close"]
+}
+
+function buildTeacherMoves(
+  exemplarAnalyses: ExemplarAnalysis[],
+  target: LessonBlueprint["content"]["target"]
+): string[] {
+  const moves = cleanUnique(
+    exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves)
+  )
+
+  if (moves.length > 0) {
+    return moves.slice(0, 6)
+  }
+
+  if (target.primary === "phonics") {
+    return ["Teacher model", "Guided blending", "Prompt students to explain the pattern"]
+  }
+
+  if (target.primary === "comprehension") {
+    return ["Teacher think-aloud", "Prompt for evidence", "Guide partner discussion"]
+  }
+
+  return ["Teacher model", "Guided support"]
+}
+
+function buildPromptStyle(
+  exemplarAnalyses: ExemplarAnalysis[],
+  target: LessonBlueprint["content"]["target"]
+): string[] {
+  const prompts = cleanUnique(
+    exemplarAnalyses.flatMap((analysis) => analysis.promptStyle)
+  )
+
+  if (prompts.length > 0) {
+    return prompts.slice(0, 6)
+  }
+
+  if (target.primary === "phonics") {
+    return ["Say the sound", "Read the word", "Explain the pattern"]
+  }
+
+  if (target.primary === "comprehension") {
+    return ["Turn and talk", "What evidence helps you know?", "Retell the important part"]
+  }
+
+  return ["Teacher prompt", "Partner response"]
+}
+
+function buildTone(exemplarAnalyses: ExemplarAnalysis[]): string[] {
+  const tones = cleanUnique(
+    exemplarAnalyses.flatMap((analysis) => analysis.tone)
+  )
+
+  if (tones.length > 0) {
+    return tones.slice(0, 4)
+  }
+
+  return ["clear instructional tone"]
 }
 
 function preferCurriculumValues(

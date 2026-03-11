@@ -12,14 +12,20 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
   const standards = take(blueprint.content.standards, 2, ["teacher-selected standard"])
   const lessonFlow = take(blueprint.structure.lessonSegments, 6, ["Teach", "Practice", "Closure"])
   const timing = take(blueprint.structure.timing, 6, ["Mini-lesson", "Practice", "Closure"])
+  const teacherMoves = take(blueprint.structure.teacherMoves, 4, ["teacher model", "guided support"])
+  const promptStyle = take(blueprint.structure.promptStyle, 4, ["teacher prompt"])
+  const tone = take(blueprint.structure.tone, 2, ["clear instructional tone"])
 
-  const openingLine = buildOpeningLine(target.primary, target.secondary, standards)
+  const openingLine = buildOpeningLine(target.primary, target.secondary, standards, tone)
   const modeledResources = buildModeledResources(primary, wordList, texts)
   const guidedTaskLine = buildGuidedTaskLine(primary, practiceIdeas, standards)
   const independentTaskLine = buildIndependentTaskLine(primary, practiceIdeas, wordList, texts)
   const closureLine = buildClosureLine(primary, vocabulary, wordList)
   const flowLine = `Follow the exemplar lesson flow: ${lessonFlow.join(" -> ")}.`
   const timingLine = `Keep pacing aligned to: ${timing.join(" | ")}.`
+  const teacherMoveLine = `Use exemplar-style teacher moves such as: ${teacherMoves.join(", ")}.`
+  const promptLine = `Use prompts and response frames such as: ${promptStyle.join(", ")}.`
+  const toneLine = `Keep the delivery tone aligned to: ${tone.join(", ")}.`
 
   if (isFullMixed) {
     return {
@@ -30,6 +36,8 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           `Model the foundational skill first using: ${wordList.join(", ")}.`,
           `Then connect students to meaning and text work using: ${texts.join(", ")}.`,
           `Preteach and revisit vocabulary across both parts: ${vocabulary.join(", ")}.`,
+          teacherMoveLine,
+          promptLine,
           flowLine,
         ],
       },
@@ -39,6 +47,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           `Guide students through two curriculum-aligned practice blocks: ${practiceIdeas.join(", ")}.`,
           `Use modeled examples and text support during teacher guidance: ${wordList.join(", ")}; ${texts.join(", ")}.`,
           `Keep support anchored to the standards: ${standards.join(", ")}.`,
+          promptLine,
           timingLine,
         ],
       },
@@ -48,6 +57,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           `Students complete two aligned independent tasks using: ${practiceIdeas.slice(0, 2).join(", ")}.`,
           `Require students to apply both lesson resources and text support: ${wordList.join(", ")} / ${texts.join(", ")}.`,
           "Check for transfer from teacher-supported work to student-owned work in both lesson parts.",
+          toneLine,
         ],
       },
       centers: {
@@ -64,6 +74,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           "Review what students learned in both parts of the lesson.",
           flowLine,
           timingLine,
+          toneLine,
           "End with a quick check for understanding and identify students needing reteach.",
         ],
       },
@@ -79,6 +90,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           `Model the phonics focus with these curriculum examples: ${wordList.join(", ")}.`,
           `Teach and reinforce the key language students will use: ${vocabulary.join(", ")}.`,
           "Think aloud while blending, reading, sorting, or encoding target words.",
+          teacherMoveLine,
           flowLine,
         ],
       },
@@ -87,7 +99,8 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         steps: [
           guidedTaskLine,
           `Use the lesson word list during support: ${wordList.join(", ")}.`,
-          `Require students to explain or show the target pattern with teacher guidance.`,
+          "Require students to explain or show the target pattern with teacher guidance.",
+          promptLine,
           timingLine,
         ],
       },
@@ -97,6 +110,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           independentTaskLine,
           `Use these words or examples during practice: ${wordList.join(", ")}.`,
           "Check for accurate decoding, sorting, encoding, and pattern application.",
+          toneLine,
         ],
       },
       centers: {
@@ -112,6 +126,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         steps: [
           "Review the target sound, pattern, or decoding skill.",
           closureLine,
+          promptLine,
           "End with a quick oral read, sort, or exit check.",
         ],
       },
@@ -127,6 +142,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           `Model comprehension thinking with these lesson texts: ${texts.join(", ")}.`,
           `Preteach or revisit the lesson vocabulary: ${vocabulary.join(", ")}.`,
           "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
+          teacherMoveLine,
           flowLine,
         ],
       },
@@ -136,6 +152,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           guidedTaskLine,
           `Use the lesson text and prompts during support: ${texts.join(", ")}.`,
           `Anchor the work to the lesson standard: ${standards.join(", ")}.`,
+          promptLine,
           timingLine,
         ],
       },
@@ -145,6 +162,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
           independentTaskLine,
           `Use these texts or prompts during student work: ${texts.join(", ")}.`,
           "Check for understanding, accuracy, and evidence of reasoning.",
+          toneLine,
         ],
       },
       centers: {
@@ -160,6 +178,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         steps: [
           "Review the comprehension objective and key takeaway from the text.",
           closureLine,
+          promptLine,
           "Close with a brief discussion, written response, or oral recap.",
         ],
       },
@@ -173,6 +192,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         openingLine,
         `Model the lesson content using: ${modeledResources}.`,
         `Teach the lesson vocabulary and focus language: ${vocabulary.join(", ")}.`,
+        teacherMoveLine,
         flowLine,
       ],
     },
@@ -181,6 +201,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       steps: [
         guidedTaskLine,
         `Reference standards during support: ${standards.join(", ")}.`,
+        promptLine,
         timingLine,
       ],
     },
@@ -189,6 +210,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       steps: [
         independentTaskLine,
         `Use these lesson resources: ${wordList.join(", ")} / ${texts.join(", ")}.`,
+        toneLine,
       ],
     },
     centers: {
@@ -205,6 +227,7 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
         "Review the lesson objective.",
         `Revisit the lesson flow: ${lessonFlow.join(" -> ")}.`,
         closureLine,
+        promptLine,
       ],
     },
   }
@@ -213,10 +236,11 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
 function buildOpeningLine(
   primary: string,
   secondary: string | null,
-  standards: string[]
+  standards: string[],
+  tone: string[]
 ): string {
   const targetLabel = formatTargetLabel(primary, secondary)
-  return `Introduce the lesson target: ${targetLabel}. Connect the work to: ${standards.join(", ")}.`
+  return `Introduce the lesson target: ${targetLabel}. Connect the work to: ${standards.join(", ")}. Set the tone with: ${tone.join(", ")}.`
 }
 
 function buildModeledResources(primary: string, wordList: string[], texts: string[]): string {
