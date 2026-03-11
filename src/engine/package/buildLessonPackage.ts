@@ -4,6 +4,7 @@
   LessonPackage,
   LessonSpec,
 } from "../types"
+import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonPackage(
   inputs: LessonInputs,
@@ -20,7 +21,13 @@ export function buildLessonPackage(
   const texts = take(blueprint.content.texts, 3, ["teacher-provided text"])
   const wordLists = take(blueprint.content.wordLists, 6, ["teacher-selected examples"])
 
-  const shell = resolvePackageShell(blueprint)
+  const shell = resolveTemplateShell(blueprint, {
+    lessonSegmentsCount: 8,
+    timingCount: 8,
+    teacherMovesCount: 5,
+    promptStyleCount: 5,
+    toneCount: 3,
+  })
 
   return {
     slides: buildSlides(targetLabel, spec, standards, vocabulary, shell),
@@ -37,7 +44,7 @@ function buildSlides(
   spec: LessonSpec,
   standards: string[],
   vocabulary: string[],
-  shell: ResolvedPackageShell
+  shell: ReturnType<typeof resolveTemplateShell>
 ): string[] {
   const segmentSlides = shell.lessonSegments.map((segment, index) => {
     const normalized = normalizeSegmentKey(segment)
@@ -62,7 +69,7 @@ function buildLessonPlan(
   blueprint: LessonBlueprint,
   spec: LessonSpec,
   targetLabel: string,
-  shell: ResolvedPackageShell
+  shell: ReturnType<typeof resolveTemplateShell>
 ): string {
   const sections = [
     "LESSON OVERVIEW",
@@ -190,55 +197,6 @@ function buildExports(primary: string, isFullMixed: boolean): string[] {
   return ["Slides PDF", "Printable lesson plan", "Center directions"]
 }
 
-function resolvePackageShell(blueprint: LessonBlueprint): ResolvedPackageShell {
-  const templateShell = blueprint.structure.templateShell
-
-  const lessonSegments = take(
-    templateShell?.segmentOrder ?? blueprint.structure.lessonSegments,
-    8,
-    ["Teach", "Practice", "Closure"]
-  )
-
-  const slideShell = take(
-    templateShell?.slideShell ?? lessonSegments,
-    Math.max(lessonSegments.length, 3),
-    lessonSegments
-  )
-
-  const timing = take(
-    templateShell?.timingShell ?? blueprint.structure.timing,
-    Math.max(lessonSegments.length, 3),
-    ["Mini-lesson", "Practice", "Closure"]
-  )
-
-  const teacherMoves = take(
-    templateShell?.teacherMoveShell ?? blueprint.structure.teacherMoves,
-    5,
-    ["teacher model", "guided support"]
-  )
-
-  const promptStyle = take(
-    templateShell?.promptShell ?? blueprint.structure.promptStyle,
-    5,
-    ["teacher prompt"]
-  )
-
-  const tone = take(
-    templateShell?.toneShell ?? blueprint.structure.tone,
-    3,
-    ["clear instructional tone"]
-  )
-
-  return {
-    lessonSegments,
-    slideShell,
-    timing,
-    teacherMoves,
-    promptStyle,
-    tone,
-  }
-}
-
 function getSectionForSegment(segment: string, spec: LessonSpec) {
   if (segment === "teach" || segment === "opening") {
     return spec.teach
@@ -290,13 +248,4 @@ function take(items: string[], count: number, fallback: string[]): string[] {
   ).slice(0, count)
 
   return cleaned.length ? cleaned : fallback
-}
-
-type ResolvedPackageShell = {
-  lessonSegments: string[]
-  slideShell: string[]
-  timing: string[]
-  teacherMoves: string[]
-  promptStyle: string[]
-  tone: string[]
 }

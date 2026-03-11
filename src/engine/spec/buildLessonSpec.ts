@@ -1,4 +1,5 @@
 ﻿import { LessonBlueprint, LessonSpec } from "../types"
+import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
   const target = blueprint.content.target
@@ -11,7 +12,12 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
   const practiceIdeas = take(blueprint.content.practiceIdeas, 4, ["guided practice"])
   const standards = take(blueprint.content.standards, 2, ["teacher-selected standard"])
 
-  const shell = resolveSpecShell(blueprint)
+  const shell = resolveTemplateShell(blueprint, {
+    lessonSegmentsCount: 6,
+    teacherMovesCount: 4,
+    promptStyleCount: 4,
+    toneCount: 2,
+  })
 
   const openingLine = buildOpeningLine(target.primary, target.secondary, standards, shell.tone)
   const modeledResources = buildModeledResources(primary, wordList, texts)
@@ -235,55 +241,6 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
   }
 }
 
-function resolveSpecShell(blueprint: LessonBlueprint): ResolvedSpecShell {
-  const templateShell = blueprint.structure.templateShell
-
-  const lessonSegments = take(
-    templateShell?.segmentOrder ?? blueprint.structure.lessonSegments,
-    6,
-    ["Teach", "Practice", "Closure"]
-  )
-
-  const slideShell = take(
-    templateShell?.slideShell ?? lessonSegments,
-    Math.max(lessonSegments.length, 3),
-    lessonSegments
-  )
-
-  const timing = take(
-    templateShell?.timingShell ?? blueprint.structure.timing,
-    6,
-    ["Mini-lesson", "Practice", "Closure"]
-  )
-
-  const teacherMoves = take(
-    templateShell?.teacherMoveShell ?? blueprint.structure.teacherMoves,
-    4,
-    ["teacher model", "guided support"]
-  )
-
-  const promptStyle = take(
-    templateShell?.promptShell ?? blueprint.structure.promptStyle,
-    4,
-    ["teacher prompt"]
-  )
-
-  const tone = take(
-    templateShell?.toneShell ?? blueprint.structure.tone,
-    2,
-    ["clear instructional tone"]
-  )
-
-  return {
-    lessonSegments,
-    slideShell,
-    timing,
-    teacherMoves,
-    promptStyle,
-    tone,
-  }
-}
-
 function buildOpeningLine(
   primary: string,
   secondary: string | null,
@@ -357,13 +314,4 @@ function take(items: string[], count: number, fallback: string[]): string[] {
   ).slice(0, count)
 
   return cleaned.length ? cleaned : fallback
-}
-
-type ResolvedSpecShell = {
-  lessonSegments: string[]
-  slideShell: string[]
-  timing: string[]
-  teacherMoves: string[]
-  promptStyle: string[]
-  tone: string[]
 }
