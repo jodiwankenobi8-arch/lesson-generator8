@@ -1,4 +1,6 @@
-﻿import React, { useRef } from "react"
+﻿import React, { useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { generateLesson } from "../engine/generateLesson"
 import { processMaterial } from "../engine/workflow/processMaterial"
 import { MaterialRole, MaterialStatus } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
@@ -18,6 +20,17 @@ const buttonStyle: React.CSSProperties = {
   cursor: "pointer",
   fontWeight: 600,
 }
+
+const primaryButtonStyle = (disabled: boolean): React.CSSProperties => ({
+  padding: "12px 16px",
+  borderRadius: 12,
+  border: "1px solid #111827",
+  background: disabled ? "#9ca3af" : "#111827",
+  color: "#ffffff",
+  cursor: disabled ? "not-allowed" : "pointer",
+  fontWeight: 700,
+  opacity: disabled ? 0.7 : 1,
+})
 
 const rowStyle: React.CSSProperties = {
   display: "flex",
@@ -40,6 +53,10 @@ const hiddenInputStyle: React.CSSProperties = {
 }
 
 export default function MaterialsPage() {
+  const navigate = useNavigate()
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [generationError, setGenerationError] = useState<string | null>(null)
+
   const materials = useLessonStore((state) => state.materials)
   const addMaterial = useLessonStore((state) => state.addMaterial)
   const setMaterialSource = useLessonStore((state) => state.setMaterialSource)
@@ -47,6 +64,8 @@ export default function MaterialsPage() {
   const counts = useLessonStore((state) => state.getMaterialCounts)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
   const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
+  const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
+  const canGenerate = useLessonStore((state) => state.canGenerate)()
 
   const curriculumInputRef = useRef<HTMLInputElement | null>(null)
   const exemplarInputRef = useRef<HTMLInputElement | null>(null)
@@ -56,6 +75,7 @@ export default function MaterialsPage() {
     event: React.ChangeEvent<HTMLInputElement>
   ) {
     const files = Array.from(event.target.files ?? [])
+    setGenerationError(null)
 
     for (const file of files) {
       const id = addMaterial(role, file.name)
@@ -80,6 +100,25 @@ export default function MaterialsPage() {
     }
 
     event.target.value = ""
+  }
+
+  async function handleGenerateLesson() {
+    if (!canGenerate || isGenerating) {
+      return
+    }
+
+    try {
+      setIsGenerating(true)
+      setGenerationError(null)
+      await generateLesson()
+      navigate("/results")
+    } catch (error) {
+      setGenerationError(
+        error instanceof Error ? error.message : "Unknown lesson generation error"
+      )
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   return (
@@ -167,6 +206,31 @@ export default function MaterialsPage() {
             : hasReadyMaterials
               ? "At least one material is ready. You can continue once your inputs are complete."
               : "Add curriculum or exemplar files to begin analysis."}
+        </div>
+
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+          <button
+            type="button"
+            onClick={handleGenerateLesson}
+            disabled={!canGenerate || isGenerating}
+            style={primaryButtonStyle(!canGenerate || isGenerating)}
+          >
+            {isGenerating ? "Generating Lesson..." : "Generate Lesson"}
+          </button>
+
+          <div style={{ fontSize: 13, color: "#6b7280" }}>
+            {!hasRequiredInputs
+              ? "Complete all lesson inputs before generating."
+              : hasProcessingMaterials
+                ? "Wait until uploaded materials finish processing."
+                : !hasReadyMaterials
+                  ? "At least one curriculum or exemplar material must be ready."
+                  : "Inputs and materials are ready for lesson generation."}
+          </div>
+
+          {generationError && (
+            <div style={{ fontSize: 13, color: "#b91c1c" }}>{generationError}</div>
+          )}
         </div>
       </div>
 

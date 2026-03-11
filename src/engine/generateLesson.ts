@@ -1,13 +1,20 @@
-import { runLessonPipeline } from "./pipeline/runLessonPipeline"
-import { LessonInputs, LessonMode, LessonPackage, MaterialFile } from "./types"
+﻿import { runLessonPipeline } from "./pipeline/runLessonPipeline"
+import { useLessonStore } from "../state/useLessonStore"
 
-export { runLessonPipeline }
-export type { LessonPipelineResult } from "./pipeline/runLessonPipeline"
+export async function generateLesson() {
+  const store = useLessonStore.getState()
 
-export function generateLesson(
-  inputs: LessonInputs,
-  materials: MaterialFile[],
-  selectedMode: LessonMode = "single"
-): LessonPackage {
-  return runLessonPipeline(inputs, materials, selectedMode).lessonPackage
+  if (!store.canGenerate()) {
+    return
+  }
+
+  const result = await runLessonPipeline(
+    store.inputs,
+    store.materials,
+    store.selectedLessonMode
+  )
+
+  store.setBlueprint(result.blueprint)
+  store.setLessonSpec(result.lessonSpec)
+  store.setLessonPackage(result.lessonPackage)
 }
