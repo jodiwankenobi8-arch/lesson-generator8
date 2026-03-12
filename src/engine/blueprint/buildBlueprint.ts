@@ -76,6 +76,14 @@ export function buildBlueprint(
   const teacherMoves = buildTeacherMoves(exemplarAnalyses, target)
   const promptStyle = buildPromptStyle(exemplarAnalyses, target)
   const tone = buildTone(exemplarAnalyses)
+  const templateShell = buildTemplateShell(
+    exemplarAnalyses,
+    lessonSegments,
+    timing,
+    teacherMoves,
+    promptStyle,
+    tone
+  )
 
   return {
     content: {
@@ -92,14 +100,7 @@ export function buildBlueprint(
       teacherMoves,
       promptStyle,
       tone,
-      templateShell: {
-        segmentOrder: lessonSegments,
-        slideShell: buildSlideShell(lessonSegments),
-        timingShell: timing,
-        teacherMoveShell: teacherMoves,
-        promptShell: promptStyle,
-        toneShell: tone,
-      },
+      templateShell,
     },
   }
 }
@@ -147,9 +148,7 @@ function buildTiming(
   exemplarAnalyses: ExemplarAnalysis[],
   target: LessonBlueprint["content"]["target"]
 ): string[] {
-  const exemplarTiming = cleanUnique(
-    exemplarAnalyses.flatMap((analysis) => analysis.pacing)
-  )
+  const exemplarTiming = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.pacing))
 
   if (exemplarTiming.length > 0) {
     return exemplarTiming.slice(0, 6)
@@ -188,9 +187,7 @@ function buildTeacherMoves(
   exemplarAnalyses: ExemplarAnalysis[],
   target: LessonBlueprint["content"]["target"]
 ): string[] {
-  const moves = cleanUnique(
-    exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves)
-  )
+  const moves = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves))
 
   if (moves.length > 0) {
     return moves.slice(0, 6)
@@ -211,9 +208,7 @@ function buildPromptStyle(
   exemplarAnalyses: ExemplarAnalysis[],
   target: LessonBlueprint["content"]["target"]
 ): string[] {
-  const prompts = cleanUnique(
-    exemplarAnalyses.flatMap((analysis) => analysis.promptStyle)
-  )
+  const prompts = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.promptStyle))
 
   if (prompts.length > 0) {
     return prompts.slice(0, 6)
@@ -231,9 +226,7 @@ function buildPromptStyle(
 }
 
 function buildTone(exemplarAnalyses: ExemplarAnalysis[]): string[] {
-  const tones = cleanUnique(
-    exemplarAnalyses.flatMap((analysis) => analysis.tone)
-  )
+  const tones = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.tone))
 
   if (tones.length > 0) {
     return tones.slice(0, 4)
@@ -242,8 +235,82 @@ function buildTone(exemplarAnalyses: ExemplarAnalysis[]): string[] {
   return ["clear instructional tone"]
 }
 
-function buildSlideShell(lessonSegments: string[]): string[] {
-  return lessonSegments.map((segment, index) => `Slide ${index + 1}: ${segment}`)
+function buildTemplateShell(
+  exemplarAnalyses: ExemplarAnalysis[],
+  lessonSegments: string[],
+  timing: string[],
+  teacherMoves: string[],
+  promptStyle: string[],
+  tone: string[]
+) {
+  const reusableSegments = lessonSegments.map(normalizeSegmentLabel).filter((segment) => segment.length > 0)
+
+  const rawSlideCandidates = cleanUnique([
+    ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
+    ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
+    ...lessonSegments,
+  ])
+
+  const slideShell = rawSlideCandidates
+    .map(normalizeSlideShellLabel)
+    .filter((label) => label.length > 0)
+    .slice(0, Math.max(reusableSegments.length, 3))
+
+  return {
+    segmentOrder: reusableSegments.length > 0 ? reusableSegments : ["Teach", "Practice", "Closure"],
+    slideShell: slideShell.length > 0 ? slideShell : buildDefaultSlideShell(reusableSegments),
+    timingShell: alignShellArray(timing, reusableSegments.length, ["Mini-lesson", "Practice", "Closure"]),
+    teacherMoveShell: cleanUnique(teacherMoves).slice(0, 6),
+    promptShell: cleanUnique(promptStyle).slice(0, 6),
+    toneShell: cleanUnique(tone).slice(0, 4),
+  }
+}
+
+function buildDefaultSlideShell(lessonSegments: string[]): string[] {
+  const usableSegments = lessonSegments.length > 0 ? lessonSegments : ["Teach", "Practice", "Closure"]
+
+  return usableSegments.map((segment) => {
+    const normalized = normalizeSegmentLabel(segment)
+
+    if (normalized === "Opening") return "Objective / Opening"
+    if (normalized === "Teach") return "Model / Teach"
+    if (normalized === "Guided Practice") return "Guided Practice"
+    if (normalized === "Independent Practice") return "Independent Practice"
+    if (normalized === "Centers") return "Centers / Rotation"
+    if (normalized === "Closure") return "Closure / Check"
+    return normalized
+  })
+}
+
+function alignShellArray(values: string[], targetLength: number, fallback: string[]): string[] {
+  const cleaned = cleanUnique(values)
+  const usableFallback = cleanUnique(fallback)
+  const desiredLength = Math.max(targetLength, usableFallback.length, 1)
+
+  if (cleaned.length >= desiredLength) {
+    return cleaned.slice(0, desiredLength)
+  }
+
+  const result = [...cleaned]
+
+  while (result.length < desiredLength) {
+    result.push(usableFallback[result.length % usableFallback.length])
+  }
+
+  return result
+}
+
+function normalizeSlideShellLabel(value: string): string {
+  const cleaned = value
+    .replace(/^slide\s*\d+\s*[:\-]?\s*/i, "")
+    .replace(/^\d+\s*[:\-]?\s*/, "")
+    .trim()
+
+  if (cleaned.length === 0) {
+    return ""
+  }
+
+  return normalizeSegmentLabel(cleaned)
 }
 
 function preferCurriculumValues(
