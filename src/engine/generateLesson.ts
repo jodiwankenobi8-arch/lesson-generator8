@@ -1,4 +1,4 @@
-﻿import { runLessonPipeline } from "./pipeline/runLessonPipeline"
+import { runLessonPipeline } from "./pipeline/runLessonPipeline"
 import { useLessonStore } from "../state/useLessonStore"
 
 export async function generateLesson() {
@@ -11,7 +11,8 @@ export async function generateLesson() {
   const result = await runLessonPipeline(
     store.inputs,
     store.materials,
-    store.selectedLessonMode
+    store.selectedLessonMode,
+    store.missingAreaDecisions
   )
 
   store.setBlueprint(result.blueprint)

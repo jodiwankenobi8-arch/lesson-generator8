@@ -3,22 +3,39 @@ import {
   LessonInputs,
   LessonPlanningIdeas,
   LessonSpec,
+  MissingAreaDecisionChoice,
+  PlanningComponentKey,
 } from "../types"
 import { assembleSlideDeck } from "../slides/assembleSlideDeck"
+
+type MissingAreaDecisionMap = Partial<
+  Record<PlanningComponentKey, MissingAreaDecisionChoice>
+>
 
 export function buildPackageOutputs(args: {
   inputs: LessonInputs
   blueprint: LessonBlueprint
   spec: LessonSpec
   planningIdeas?: LessonPlanningIdeas
+  missingAreaDecisions?: MissingAreaDecisionMap
 }) {
-  const { inputs, blueprint, spec, planningIdeas } = args
+  const { inputs, blueprint, spec, planningIdeas, missingAreaDecisions = {} } = args
 
   const slides = buildSlides(blueprint, spec)
-  const lessonPlan = buildLessonPlan(inputs, blueprint, spec, planningIdeas)
-  const centers = buildCenters(spec, planningIdeas)
-  const rotationPlan = buildRotationPlan(centers, planningIdeas)
-  const interventions = buildInterventions(blueprint, planningIdeas)
+  const lessonPlan = buildLessonPlan(
+    inputs,
+    blueprint,
+    spec,
+    planningIdeas,
+    missingAreaDecisions
+  )
+  const centers = buildCenters(spec, planningIdeas, missingAreaDecisions)
+  const rotationPlan = buildRotationPlan(centers, planningIdeas, missingAreaDecisions)
+  const interventions = buildInterventions(
+    blueprint,
+    planningIdeas,
+    missingAreaDecisions
+  )
   const exports = buildExports(inputs)
 
   return {
@@ -59,7 +76,8 @@ function buildLessonPlan(
   inputs: LessonInputs,
   blueprint: LessonBlueprint,
   spec: LessonSpec,
-  planningIdeas?: LessonPlanningIdeas
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string {
   const header = [
     `Grade: ${inputs.grade}`,
@@ -90,16 +108,19 @@ function buildLessonPlan(
     .join("\n\n")
 
   const readinessBlock = buildBlueprintReadinessBlock(blueprint)
-  const coverageBlock = buildCoverageDecisionBlock(planningIdeas)
+  const coverageBlock = buildCoverageDecisionBlock(planningIdeas, missingAreaDecisions)
   const planningBlock = buildPlanningBlock(planningIdeas)
-  const supportBlock = buildSupportBlock(planningIdeas)
+  const supportBlock = buildSupportBlock(planningIdeas, missingAreaDecisions)
 
   return [header, readinessBlock, coverageBlock, body, planningBlock, supportBlock]
     .filter(Boolean)
     .join("\n\n")
 }
 
-function buildCoverageDecisionBlock(planningIdeas?: LessonPlanningIdeas): string {
+function buildCoverageDecisionBlock(
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
+): string {
   if (!planningIdeas) {
     return ""
   }
@@ -115,10 +136,10 @@ function buildCoverageDecisionBlock(planningIdeas?: LessonPlanningIdeas): string
     }) ?? []
 
   const promptLines =
-    planningIdeas.missingAreaPrompts?.map(
-      (prompt) =>
-        `- ${formatCoverageLabel(prompt.component)} (${prompt.importance}): ${prompt.prompt}`
-    ) ?? []
+    planningIdeas.missingAreaPrompts?.map((prompt) => {
+      const currentDecision = missingAreaDecisions[prompt.component] ?? "undecided"
+      return `- ${formatCoverageLabel(prompt.component)} (${prompt.importance}): ${prompt.prompt} Current decision: ${formatDecisionLabel(currentDecision)}.`
+    }) ?? []
 
   if (coverageLines.length === 0 && promptLines.length === 0) {
     return ""
@@ -154,7 +175,10 @@ function buildPlanningBlock(planningIdeas?: LessonPlanningIdeas): string {
   return ["Planning Notes", ...planningLines].join("\n")
 }
 
-function buildSupportBlock(planningIdeas?: LessonPlanningIdeas): string {
+function buildSupportBlock(
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
+): string {
   if (!planningIdeas) {
     return ""
   }
@@ -163,13 +187,19 @@ function buildSupportBlock(planningIdeas?: LessonPlanningIdeas): string {
     (idea) => `- ${idea.title}: ${idea.description}`
   )
 
-  const smallGroup = planningIdeas.smallGroupIdeas.map(
-    (idea) => `- ${idea.title}: ${idea.description}`
-  )
+  const smallGroup =
+    shouldLeaveOut("small_group", missingAreaDecisions)
+      ? []
+      : planningIdeas.smallGroupIdeas.map(
+          (idea) => `- ${idea.title}: ${idea.description}`
+        )
 
-  const interventions = planningIdeas.interventionIdeas.map(
-    (idea) => `- ${idea.title}: ${idea.description}`
-  )
+  const interventions =
+    shouldLeaveOut("intervention", missingAreaDecisions)
+      ? []
+      : planningIdeas.interventionIdeas.map(
+          (idea) => `- ${idea.title}: ${idea.description}`
+        )
 
   const sections: string[] = []
 
@@ -179,10 +209,20 @@ function buildSupportBlock(planningIdeas?: LessonPlanningIdeas): string {
 
   if (smallGroup.length > 0) {
     sections.push("Small Group Ideas", ...smallGroup)
+  } else if (shouldAdd("small_group", missingAreaDecisions)) {
+    sections.push(
+      "Small Group Ideas",
+      "- Teacher Table Support: Add a small-group reteach or extension block based on student need."
+    )
   }
 
   if (interventions.length > 0) {
     sections.push("Intervention Ideas", ...interventions)
+  } else if (shouldAdd("intervention", missingAreaDecisions)) {
+    sections.push(
+      "Intervention Ideas",
+      "- Targeted Reteach: Add an intervention block for students who need extra support with the main lesson skill."
+    )
   }
 
   return sections.length > 0 ? sections.join("\n") : ""
@@ -202,8 +242,13 @@ function buildBlueprintReadinessBlock(blueprint: LessonBlueprint): string {
 
 function buildCenters(
   spec: LessonSpec,
-  planningIdeas?: LessonPlanningIdeas
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string[] {
+  if (shouldLeaveOut("centers", missingAreaDecisions)) {
+    return []
+  }
+
   const planningCenters =
     planningIdeas?.centerIdeas.map(
       (idea) => `${idea.title}: ${idea.description}`
@@ -213,6 +258,14 @@ function buildCenters(
     return planningCenters
   }
 
+  if (shouldAdd("centers", missingAreaDecisions)) {
+    return [
+      "Independent practice center",
+      "Partner practice center",
+      "Teacher support center",
+    ]
+  }
+
   return spec.centers.steps.length > 0
     ? spec.centers.steps
     : ["Independent practice center", "Partner practice center", "Teacher support center"]
@@ -220,16 +273,20 @@ function buildCenters(
 
 function buildRotationPlan(
   centers: string[],
-  planningIdeas?: LessonPlanningIdeas
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string {
   if (centers.length === 0) {
     return "No centers defined."
   }
 
-  const smallGroupLine =
-    planningIdeas?.smallGroupIdeas[0]
+  const smallGroupLine = shouldLeaveOut("small_group", missingAreaDecisions)
+    ? "Teacher Table Focus: No small-group block selected."
+    : planningIdeas?.smallGroupIdeas[0]
       ? `Teacher Table Focus: ${planningIdeas.smallGroupIdeas[0].title} - ${planningIdeas.smallGroupIdeas[0].description}`
-      : "Teacher Table Focus: Targeted reteach or extension based on student need."
+      : shouldAdd("small_group", missingAreaDecisions)
+        ? "Teacher Table Focus: Add a targeted small-group reteach or extension block based on student need."
+        : "Teacher Table Focus: Targeted reteach or extension based on student need."
 
   return [
     ...centers.map((center, index) => `Rotation ${index + 1}: ${center}`),
@@ -239,8 +296,13 @@ function buildRotationPlan(
 
 function buildInterventions(
   blueprint: LessonBlueprint,
-  planningIdeas?: LessonPlanningIdeas
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string[] {
+  if (shouldLeaveOut("intervention", missingAreaDecisions)) {
+    return []
+  }
+
   const plannedInterventions =
     planningIdeas?.interventionIdeas.map(
       (idea) => `${idea.title}: ${idea.description}`
@@ -248,6 +310,13 @@ function buildInterventions(
 
   if (plannedInterventions.length > 0) {
     return plannedInterventions
+  }
+
+  if (shouldAdd("intervention", missingAreaDecisions)) {
+    return [
+      "Provide targeted reteach for the primary lesson need.",
+      "Use a short teacher-led intervention block before independent transfer.",
+    ]
   }
 
   if (blueprint.content.target.primary === "phonics") {
@@ -279,6 +348,32 @@ function buildExports(inputs: LessonInputs): string[] {
   ]
 }
 
+function shouldAdd(
+  component: PlanningComponentKey,
+  missingAreaDecisions: MissingAreaDecisionMap
+): boolean {
+  return missingAreaDecisions[component] === "add"
+}
+
+function shouldLeaveOut(
+  component: PlanningComponentKey,
+  missingAreaDecisions: MissingAreaDecisionMap
+): boolean {
+  return missingAreaDecisions[component] === "leave_out"
+}
+
 function formatCoverageLabel(component: string): string {
   return component.replace(/_/g, " ")
+}
+
+function formatDecisionLabel(choice: MissingAreaDecisionChoice): string {
+  if (choice === "add") {
+    return "Add it"
+  }
+
+  if (choice === "leave_out") {
+    return "Leave it out"
+  }
+
+  return "Decide later"
 }
