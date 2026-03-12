@@ -89,13 +89,52 @@ function buildLessonPlan(
     })
     .join("\n\n")
 
+  const readinessBlock = buildBlueprintReadinessBlock(blueprint)
+  const coverageBlock = buildCoverageDecisionBlock(planningIdeas)
   const planningBlock = buildPlanningBlock(planningIdeas)
   const supportBlock = buildSupportBlock(planningIdeas)
-  const readinessBlock = buildBlueprintReadinessBlock(blueprint)
 
-  return [header, readinessBlock, body, planningBlock, supportBlock]
+  return [header, readinessBlock, coverageBlock, body, planningBlock, supportBlock]
     .filter(Boolean)
     .join("\n\n")
+}
+
+function buildCoverageDecisionBlock(planningIdeas?: LessonPlanningIdeas): string {
+  if (!planningIdeas) {
+    return ""
+  }
+
+  const coverageLines =
+    planningIdeas.componentCoverage?.flatMap((entry) => {
+      const evidence =
+        entry.evidence.length > 0 ? ` Evidence: ${entry.evidence.join(", ")}.` : ""
+
+      return [
+        `- ${formatCoverageLabel(entry.component)}: ${entry.status}. ${entry.rationale}${evidence}`,
+      ]
+    }) ?? []
+
+  const promptLines =
+    planningIdeas.missingAreaPrompts?.map(
+      (prompt) =>
+        `- ${formatCoverageLabel(prompt.component)} (${prompt.importance}): ${prompt.prompt}`
+    ) ?? []
+
+  if (coverageLines.length === 0 && promptLines.length === 0) {
+    return ""
+  }
+
+  const sections: string[] = []
+
+  if (coverageLines.length > 0) {
+    sections.push("Coverage Decisions", ...coverageLines)
+  }
+
+  if (promptLines.length > 0) {
+    sections.push("Missing-Area Prompts", ...promptLines)
+  }
+
+  return sections.join("\n")
 }
 
 function buildPlanningBlock(planningIdeas?: LessonPlanningIdeas): string {
@@ -238,4 +277,8 @@ function buildExports(inputs: LessonInputs): string[] {
     `${safeSubject}-lesson-plan-export-placeholder`,
     `${safeSubject}-printables-export-placeholder`,
   ]
+}
+
+function formatCoverageLabel(component: string): string {
+  return component.replace(/_/g, " ")
 }

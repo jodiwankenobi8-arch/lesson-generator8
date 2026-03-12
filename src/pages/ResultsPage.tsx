@@ -1,6 +1,13 @@
 import React from "react"
 import { Link } from "react-router-dom"
-import { LessonPlanIdea, LessonPlanSectionIdeas, LessonPackage, LessonBlueprint, SlidePlan } from "../engine/types"
+import {
+  LessonPlanIdea,
+  LessonPlanSectionIdeas,
+  LessonPackage,
+  LessonBlueprint,
+  SlidePlan,
+  LessonPlanningIdeas,
+} from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
 const sectionStyle: React.CSSProperties = {
@@ -90,6 +97,8 @@ export default function ResultsPage() {
         />
 
         <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} />
+
+        <CoverageDecisionsSection planningIdeas={planningIdeas} />
 
         <SignalSection
           title="Source Support Signals"
@@ -223,6 +232,74 @@ function TraceabilitySection({
           ) : (
             <div style={{ color: "#4b5563" }}>
               No major blueprint or package warnings were triggered for this lesson.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CoverageDecisionsSection({
+  planningIdeas,
+}: {
+  planningIdeas: LessonPlanningIdeas
+}) {
+  const componentCoverage = planningIdeas.componentCoverage ?? []
+  const missingAreaPrompts = planningIdeas.missingAreaPrompts ?? []
+
+  return (
+    <div style={sectionStyle}>
+      <h3 style={{ marginTop: 0 }}>Coverage and Missing-Area Decisions</h3>
+
+      <div style={{ display: "grid", gap: 12 }}>
+        <div style={subCardStyle}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Major Component Coverage</div>
+          {componentCoverage.length > 0 ? (
+            <div style={{ display: "grid", gap: 8 }}>
+              {componentCoverage.map((entry) => (
+                <div key={entry.component} style={signalCardStyle(mapCoverageTone(entry.status))}>
+                  <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
+                    {entry.component.replace(/_/g, " ")}: {entry.status}
+                  </div>
+                  <div style={{ marginTop: 4 }}>{entry.rationale}</div>
+                  {entry.evidence.length > 0 && (
+                    <div style={{ marginTop: 4, fontSize: 13 }}>
+                      <strong>Evidence:</strong> {entry.evidence.join(", ")}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ color: "#4b5563" }}>
+              No component coverage summary is available for this lesson yet.
+            </div>
+          )}
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Teacher Decision Prompts</div>
+          {missingAreaPrompts.length > 0 ? (
+            <div style={{ display: "grid", gap: 8 }}>
+              {missingAreaPrompts.map((prompt, index) => (
+                <div
+                  key={`${prompt.component}-${index}`}
+                  style={signalCardStyle(prompt.importance === "high" ? "warn" : "neutral")}
+                >
+                  <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
+                    {prompt.component.replace(/_/g, " ")} ({prompt.importance})
+                  </div>
+                  <div style={{ marginTop: 4 }}>{prompt.prompt}</div>
+                  <div style={{ marginTop: 4, fontSize: 13 }}>
+                    <strong>Why:</strong> {prompt.rationale}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ color: "#4b5563" }}>
+              No major missing-area prompts were triggered for this lesson.
             </div>
           )}
         </div>
@@ -479,6 +556,18 @@ function getFallbackUsageLabel(
   }
 
   return "Minimal fallback usage likely."
+}
+
+function mapCoverageTone(status: "covered" | "partial" | "missing"): "good" | "warn" | "neutral" {
+  if (status === "covered") {
+    return "good"
+  }
+
+  if (status === "missing") {
+    return "warn"
+  }
+
+  return "neutral"
 }
 
 function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties {
