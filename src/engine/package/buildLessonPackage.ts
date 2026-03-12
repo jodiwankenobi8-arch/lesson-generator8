@@ -4,6 +4,7 @@
   LessonPackage,
   LessonSpec,
 } from "../types"
+import { assembleSlideDeck } from "../slides/assembleSlideDeck"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonPackage(
@@ -16,7 +17,6 @@ export function buildLessonPackage(
   const isFullMixed = target.isMixedTarget && target.recommendedMode === "full"
 
   const targetLabel = formatTargetLabel(target.primary, target.secondary)
-  const standards = take(blueprint.content.standards, 3, ["TBD"])
   const vocabulary = take(blueprint.content.vocabulary, 5, ["key vocabulary"])
   const texts = take(blueprint.content.texts, 3, ["teacher-provided text"])
   const wordLists = take(blueprint.content.wordLists, 6, ["teacher-selected examples"])
@@ -30,38 +30,13 @@ export function buildLessonPackage(
   })
 
   return {
-    slides: buildSlides(targetLabel, spec, standards, vocabulary, shell),
+    slides: assembleSlideDeck(blueprint, spec),
     lessonPlan: buildLessonPlan(inputs, blueprint, spec, targetLabel, shell),
     centers: spec.centers.steps,
     rotationPlan: buildRotationPlan(shell.lessonSegments, shell.timing),
     interventions: buildInterventions(primary, isFullMixed, vocabulary, wordLists, texts),
     exports: buildExports(primary, isFullMixed),
   }
-}
-
-function buildSlides(
-  targetLabel: string,
-  spec: LessonSpec,
-  standards: string[],
-  vocabulary: string[],
-  shell: ReturnType<typeof resolveTemplateShell>
-): string[] {
-  const segmentSlides = shell.lessonSegments.map((segment, index) => {
-    const normalized = normalizeSegmentKey(segment)
-    const section = getSectionForSegment(normalized, spec)
-    const timeBlock = shell.timing[index] ?? "Flexible timing"
-    const move = shell.teacherMoves[index % shell.teacherMoves.length] ?? "teacher guidance"
-    const prompt = shell.promptStyle[index % shell.promptStyle.length] ?? "teacher prompt"
-    const slideLabel = shell.slideShell[index] ?? segment
-
-    return `Slide ${index + 2}: ${slideLabel} | Timing: ${timeBlock} | Teacher Move: ${move} | Prompt Style: ${prompt} | ${section.steps.join(" | ")}`
-  })
-
-  return [
-    `Slide 1: Objective | Target: ${targetLabel} | Standards: ${standards.join(", ")} | Tone: ${shell.tone.join(", ")}`,
-    ...segmentSlides,
-    `Slide ${segmentSlides.length + 2}: Teaching Notes | Vocabulary: ${vocabulary.join(", ")} | Teacher Moves: ${shell.teacherMoves.join(", ")} | Prompts: ${shell.promptStyle.join(", ")}`,
-  ]
 }
 
 function buildLessonPlan(
@@ -195,43 +170,6 @@ function buildExports(primary: string, isFullMixed: boolean): string[] {
   }
 
   return ["Slides PDF", "Printable lesson plan", "Center directions"]
-}
-
-function getSectionForSegment(segment: string, spec: LessonSpec) {
-  if (segment === "teach" || segment === "opening") {
-    return spec.teach
-  }
-
-  if (segment === "guided_practice") {
-    return spec.guidedPractice
-  }
-
-  if (segment === "independent_practice") {
-    return spec.independentPractice
-  }
-
-  if (segment === "centers") {
-    return spec.centers
-  }
-
-  if (segment === "closure") {
-    return spec.closure
-  }
-
-  return spec.guidedPractice
-}
-
-function normalizeSegmentKey(segment: string): string {
-  const lower = segment.toLowerCase()
-
-  if (lower.includes("opening")) return "opening"
-  if (lower.includes("teach")) return "teach"
-  if (lower.includes("guided")) return "guided_practice"
-  if (lower.includes("independent")) return "independent_practice"
-  if (lower.includes("center")) return "centers"
-  if (lower.includes("closure") || lower.includes("close")) return "closure"
-
-  return "guided_practice"
 }
 
 function formatTargetLabel(primary: string, secondary: string | null): string {
