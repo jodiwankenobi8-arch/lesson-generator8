@@ -1,4 +1,9 @@
-﻿import { LessonBlueprint, LessonPlanningIdeas, LessonPlanIdea } from "../types"
+﻿import {
+  LessonBlueprint,
+  LessonPlanIdea,
+  LessonPlanSectionIdeas,
+  LessonPlanningIdeas,
+} from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonPlanningIdeas(
@@ -17,6 +22,7 @@ export function buildLessonPlanningIdeas(
   const texts = blueprint.content.texts
   const practiceIdeas = blueprint.content.practiceIdeas
   const wordLists = blueprint.content.wordLists
+  const standards = blueprint.content.standards
 
   return {
     slidePlans: shell.slideShell.map((shellLabel, index) => ({
@@ -29,7 +35,21 @@ export function buildLessonPlanningIdeas(
         `Prompt style: ${shell.promptStyle[index % shell.promptStyle.length] ?? "teacher prompt"}`,
       ].join(" | "),
     })),
-    formativeAssessmentIdeas: buildFormativeIdeas(target.primary, vocabulary, practiceIdeas, texts, wordLists),
+    lessonPlanSections: buildLessonPlanSections(
+      target.primary,
+      standards,
+      vocabulary,
+      texts,
+      practiceIdeas,
+      wordLists
+    ),
+    formativeAssessmentIdeas: buildFormativeIdeas(
+      target.primary,
+      vocabulary,
+      practiceIdeas,
+      texts,
+      wordLists
+    ),
     centerIdeas: buildCenterIdeas(target.primary, practiceIdeas, texts, wordLists),
     smallGroupIdeas: buildSmallGroupIdeas(target.primary, vocabulary, texts, wordLists),
     interventionIdeas: buildInterventionIdeas(target.primary, vocabulary, texts, wordLists),
@@ -84,6 +104,170 @@ function inferSlidePurpose(shellLabel: string, primaryTarget: string): string {
   }
 
   return "Carry the exemplar shell forward while swapping in curriculum-aligned content."
+}
+
+function buildLessonPlanSections(
+  primaryTarget: string,
+  standards: string[],
+  vocabulary: string[],
+  texts: string[],
+  practiceIdeas: string[],
+  wordLists: string[]
+): LessonPlanSectionIdeas[] {
+  return [
+    {
+      section: "teach",
+      title: "Teach Plan Ideas",
+      ideas: buildTeachIdeas(primaryTarget, standards, vocabulary, texts, wordLists),
+    },
+    {
+      section: "guided_practice",
+      title: "Guided Practice Plan Ideas",
+      ideas: buildGuidedPracticeIdeas(primaryTarget, standards, practiceIdeas, texts, wordLists),
+    },
+    {
+      section: "independent_practice",
+      title: "Independent Practice Plan Ideas",
+      ideas: buildIndependentPracticeIdeas(primaryTarget, practiceIdeas, texts, wordLists),
+    },
+    {
+      section: "closure",
+      title: "Closure Plan Ideas",
+      ideas: buildClosureIdeas(primaryTarget, vocabulary, texts, wordLists),
+    },
+  ]
+}
+
+function buildTeachIdeas(
+  primaryTarget: string,
+  standards: string[],
+  vocabulary: string[],
+  texts: string[],
+  wordLists: string[]
+): LessonPlanIdea[] {
+  if (primaryTarget === "phonics") {
+    return [
+      {
+        title: "Model the target pattern",
+        description: `Explicitly model the phonics focus using words such as ${wordLists.slice(0, 4).join(", ")}.`,
+        rationale: `Keeps the lesson anchored to curriculum examples and standard(s): ${standards.slice(0, 2).join(", ")}.`,
+      },
+      {
+        title: "Teach key phonics language",
+        description: `Introduce or revisit language such as ${vocabulary.slice(0, 3).join(", ")} before practice begins.`,
+        rationale: "Supports students in naming and explaining what they are learning.",
+      },
+    ]
+  }
+
+  return [
+    {
+      title: "Model thinking with text",
+      description: `Use ${texts.slice(0, 1).join(", ")} to model the target thinking and connect to ${standards.slice(0, 2).join(", ")}.`,
+      rationale: "Turns curriculum text into the centerpiece of the teach phase.",
+    },
+    {
+      title: "Preteach key vocabulary",
+      description: `Frontload vocabulary such as ${vocabulary.slice(0, 3).join(", ")} before guided discussion.`,
+      rationale: "Improves access to the text and task before independent work.",
+    },
+  ]
+}
+
+function buildGuidedPracticeIdeas(
+  primaryTarget: string,
+  standards: string[],
+  practiceIdeas: string[],
+  texts: string[],
+  wordLists: string[]
+): LessonPlanIdea[] {
+  if (primaryTarget === "phonics") {
+    return [
+      {
+        title: "Guided word practice",
+        description: `Use structured support while students practice with ${wordLists.slice(0, 4).join(", ")}.`,
+        rationale: `Bridges teacher modeling into student practice while staying aligned to ${standards.slice(0, 2).join(", ")}.`,
+      },
+      {
+        title: "Supported phonics task",
+        description: `Guide students through curriculum tasks such as ${practiceIdeas.slice(0, 2).join(", ")}.`,
+        rationale: "Keeps guided practice grounded in actual curriculum routines instead of generic drill.",
+      },
+    ]
+  }
+
+  return [
+    {
+      title: "Guided text discussion",
+      description: `Use ${texts.slice(0, 1).join(", ")} and scaffolded prompts tied to ${practiceIdeas.slice(0, 2).join(", ")}.`,
+      rationale: "Supports students before they are expected to respond independently.",
+    },
+    {
+      title: "Standards-aligned support",
+      description: `Keep teacher prompting tied explicitly to ${standards.slice(0, 2).join(", ")} during guided work.`,
+      rationale: "Prevents guided practice from drifting away from the core lesson goal.",
+    },
+  ]
+}
+
+function buildIndependentPracticeIdeas(
+  primaryTarget: string,
+  practiceIdeas: string[],
+  texts: string[],
+  wordLists: string[]
+): LessonPlanIdea[] {
+  if (primaryTarget === "phonics") {
+    return [
+      {
+        title: "Independent phonics application",
+        description: `Students complete practice such as ${practiceIdeas.slice(0, 2).join(", ")} using ${wordLists.slice(0, 4).join(", ")}.`,
+        rationale: "Moves students from supported decoding to independent application.",
+      },
+      {
+        title: "Transfer check",
+        description: "Ask students to apply the pattern in reading, sorting, or writing without immediate teacher support.",
+        rationale: "Shows whether the skill transfers beyond the modeled examples.",
+      },
+    ]
+  }
+
+  return [
+    {
+      title: "Independent text response",
+      description: `Students complete a response task tied to ${texts.slice(0, 1).join(", ")} using ${practiceIdeas.slice(0, 2).join(", ")}.`,
+      rationale: "Creates a direct bridge from guided discussion to student-owned work.",
+    },
+    {
+      title: "Reasoning and evidence application",
+      description: "Require students to show understanding through a written, oral, or partner-based response.",
+      rationale: "Checks whether students can independently apply the comprehension focus.",
+    },
+  ]
+}
+
+function buildClosureIdeas(
+  primaryTarget: string,
+  vocabulary: string[],
+  texts: string[],
+  wordLists: string[]
+): LessonPlanIdea[] {
+  if (primaryTarget === "phonics") {
+    return [
+      {
+        title: "Review the target pattern",
+        description: `Revisit a short set of words such as ${wordLists.slice(0, 3).join(", ")} and restate the lesson focus.`,
+        rationale: "Ends the lesson by reinforcing the exact target students practiced.",
+      },
+    ]
+  }
+
+  return [
+    {
+      title: "Summarize the key understanding",
+      description: `Use ${texts.slice(0, 1).join(", ")} to prompt a final recap with vocabulary such as ${vocabulary.slice(0, 3).join(", ")}.`,
+      rationale: "Closes the lesson by reconnecting students to the text and main objective.",
+    },
+  ]
 }
 
 function buildFormativeIdeas(

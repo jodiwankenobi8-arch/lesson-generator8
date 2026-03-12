@@ -124,6 +124,18 @@ export type LessonPlanIdea = {
   rationale: string
 }
 
+export type LessonPlanSectionKey =
+  | "teach"
+  | "guided_practice"
+  | "independent_practice"
+  | "closure"
+
+export type LessonPlanSectionIdeas = {
+  section: LessonPlanSectionKey
+  title: string
+  ideas: LessonPlanIdea[]
+}
+
 export type SlidePlanAction = "reuse" | "adapt" | "create_new"
 
 export type SlidePlan = {
@@ -135,6 +147,7 @@ export type SlidePlan = {
 
 export type LessonPlanningIdeas = {
   slidePlans: SlidePlan[]
+  lessonPlanSections: LessonPlanSectionIdeas[]
   formativeAssessmentIdeas: LessonPlanIdea[]
   centerIdeas: LessonPlanIdea[]
   smallGroupIdeas: LessonPlanIdea[]

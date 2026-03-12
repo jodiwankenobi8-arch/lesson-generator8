@@ -1,6 +1,10 @@
 ﻿import React from "react"
 import { Link } from "react-router-dom"
-import { LessonPlanIdea, SlidePlan } from "../engine/types"
+import {
+  LessonPlanIdea,
+  LessonPlanSectionIdeas,
+  SlidePlan,
+} from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
 const sectionStyle: React.CSSProperties = {
@@ -154,6 +158,13 @@ export default function ResultsPage() {
           <h3 style={{ marginTop: 0 }}>Slide Planning</h3>
           <SlidePlanList slides={planningIdeas.slidePlans} />
         </div>
+
+        {planningIdeas.lessonPlanSections.map((section) => (
+          <div key={section.section} style={sectionStyle}>
+            <h3 style={{ marginTop: 0 }}>{section.title}</h3>
+            <IdeaList ideas={section.ideas} />
+          </div>
+        ))}
 
         <div style={sectionStyle}>
           <h3 style={{ marginTop: 0 }}>Formative Assessment Ideas</h3>
