@@ -167,6 +167,9 @@ function TraceabilitySection({
       ? "The package appears grounded in the available source materials."
       : "The package appears partially grounded and may rely on more fallback logic."
 
+  const fallbackUsageLabel = getFallbackUsageLabel(blueprint, lessonPackage)
+  const combinedWarnings = [...blueprint.sourceReadiness.warnings, ...lessonPackage.readiness.warnings]
+
   return (
     <div style={sectionStyle}>
       <h3 style={{ marginTop: 0 }}>Why This Lesson Was Generated This Way</h3>
@@ -175,6 +178,7 @@ function TraceabilitySection({
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Content Authority</div>
           <div style={{ color: "#4b5563", marginBottom: 8 }}>{contentSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Curriculum Support:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
             <div><strong>Standards Source:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
             <div><strong>Vocabulary Source:</strong> {joinOrFallback(blueprint.content.vocabulary, "Key vocabulary")}</div>
             <div><strong>Text/Topic Source:</strong> {joinOrFallback(blueprint.content.texts, "Teacher-provided lesson text")}</div>
@@ -186,6 +190,7 @@ function TraceabilitySection({
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Presentation Authority</div>
           <div style={{ color: "#4b5563", marginBottom: 8 }}>{structureSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Exemplar Support:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
             <div><strong>Lesson Flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
             <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
             <div><strong>Teacher Moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
@@ -201,7 +206,25 @@ function TraceabilitySection({
             <div><strong>Content Fit:</strong> {lessonPackage.readiness.contentFit}</div>
             <div><strong>Lesson Shape:</strong> {lessonPackage.readiness.lessonShape}</div>
             <div><strong>Package Density:</strong> {lessonPackage.readiness.density}</div>
+            <div><strong>Fallback Usage:</strong> {fallbackUsageLabel}</div>
           </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Warnings and Fallback Notes</div>
+          {combinedWarnings.length > 0 ? (
+            <div style={{ display: "grid", gap: 8 }}>
+              {combinedWarnings.map((warning) => (
+                <div key={warning} style={warningStyle}>
+                  {warning}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ color: "#4b5563" }}>
+              No major blueprint or package warnings were triggered for this lesson.
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -437,6 +460,25 @@ function BlockedResultsState({
 
 function joinOrFallback(items: string[], fallback: string): string {
   return items.length > 0 ? items.join(", ") : fallback
+}
+
+function getFallbackUsageLabel(
+  blueprint: LessonBlueprint,
+  lessonPackage: LessonPackage,
+): string {
+  const hasLimitedCurriculum = blueprint.sourceReadiness.curriculumSupport === "limited"
+  const hasLimitedExemplar = blueprint.sourceReadiness.exemplarSupport === "limited"
+  const hasLimitedContentFit = lessonPackage.readiness.contentFit === "limited"
+
+  if (hasLimitedContentFit && hasLimitedCurriculum && hasLimitedExemplar) {
+    return "Heavy fallback usage likely."
+  }
+
+  if (hasLimitedContentFit || hasLimitedCurriculum || hasLimitedExemplar) {
+    return "Partial fallback usage likely."
+  }
+
+  return "Minimal fallback usage likely."
 }
 
 function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties {
