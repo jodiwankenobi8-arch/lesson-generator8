@@ -1,9 +1,6 @@
 import React from "react"
 import { Link } from "react-router-dom"
-import {
-  LessonPlanIdea,
-  SlidePlan,
-} from "../engine/types"
+import { LessonPlanIdea, LessonPlanSectionIdeas, LessonPackage, LessonBlueprint, SlidePlan } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
 const sectionStyle: React.CSSProperties = {
@@ -82,75 +79,124 @@ export default function ResultsPage() {
     <div>
       <h2 style={{ marginTop: 0 }}>Results</h2>
       <p style={{ color: "#4b5563", marginBottom: 24 }}>
-        Final lesson package first, with planning details below.
+        Teacher-facing lesson package first. Supporting planning details are available below.
       </p>
 
       <div style={{ display: "grid", gap: 16 }}>
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Package Summary</h3>
-          <div style={heroGridStyle}>
-            <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
-            <SummaryCard label="Centers" value={lessonPackage.centers.length.toString()} />
-            <SummaryCard label="Interventions" value={lessonPackage.interventions.length.toString()} />
+        <PackageSummarySection
+          blueprint={blueprint}
+          lessonPackage={lessonPackage}
+          selectedLessonMode={selectedLessonMode}
+        />
+
+        <SignalSection
+          title="Source Support Signals"
+          signals={blueprint.sourceReadiness.signals}
+          warnings={blueprint.sourceReadiness.warnings}
+        />
+
+        <SignalSection
+          title="Package Quality Signals"
+          signals={lessonPackage.readiness.signals}
+          warnings={lessonPackage.readiness.warnings}
+        />
+
+        <PackageOutputsSection lessonPackage={lessonPackage} />
+
+        <BlueprintDetailsSection blueprint={blueprint} />
+
+        <PlanningDetailsSection
+          slidePlans={planningIdeas.slidePlans}
+          lessonPlanSections={planningIdeas.lessonPlanSections}
+        />
+      </div>
+    </div>
+  )
+}
+
+function PackageSummarySection({
+  blueprint,
+  lessonPackage,
+  selectedLessonMode,
+}: {
+  blueprint: LessonBlueprint
+  lessonPackage: LessonPackage
+  selectedLessonMode: string
+}) {
+  return (
+    <div style={sectionStyle}>
+      <h3 style={{ marginTop: 0 }}>Package Summary</h3>
+      <div style={heroGridStyle}>
+        <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
+        <SummaryCard label="Centers" value={lessonPackage.centers.length.toString()} />
+        <SummaryCard label="Interventions" value={lessonPackage.interventions.length.toString()} />
+      </div>
+
+      <div style={{ marginTop: 16, display: "grid", gap: 8, color: "#4b5563" }}>
+        <div><strong>Primary Target:</strong> {blueprint.content.target.primary}</div>
+        <div><strong>Secondary Target:</strong> {blueprint.content.target.secondary || "None"}</div>
+        <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
+        <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
+        <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
+      </div>
+    </div>
+  )
+}
+
+function SignalSection({
+  title,
+  signals,
+  warnings,
+}: {
+  title: string
+  signals: Array<{ label: string; value: string; note: string; tone: "good" | "warn" | "neutral" }>
+  warnings: string[]
+}) {
+  return (
+    <div style={sectionStyle}>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <div style={{ display: "grid", gap: 10 }}>
+        {signals.map((signal) => (
+          <div key={signal.label} style={signalCardStyle(signal.tone)}>
+            <div style={{ fontWeight: 700 }}>{signal.label}</div>
+            <div style={{ marginTop: 4 }}>{signal.value}</div>
+            <div style={{ marginTop: 4, fontSize: 13 }}>{signal.note}</div>
           </div>
+        ))}
+      </div>
 
-          <div style={{ marginTop: 16, display: "grid", gap: 8, color: "#4b5563" }}>
-            <div><strong>Primary Target:</strong> {blueprint.content.target.primary}</div>
-            <div><strong>Secondary Target:</strong> {blueprint.content.target.secondary || "None"}</div>
-            <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
-            <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
-            <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
-          </div>
+      {warnings.length > 0 && (
+        <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+          {warnings.map((warning) => (
+            <div key={warning} style={warningStyle}>
+              {warning}
+            </div>
+          ))}
         </div>
+      )}
+    </div>
+  )
+}
 
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Slides</h3>
-          <ul style={listStyle}>
-            {lessonPackage.slides.map((slide) => (
-              <li key={slide}>{slide}</li>
-            ))}
-          </ul>
-        </div>
+function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
+  return (
+    <>
+      <SimpleListSection title="Slides" items={lessonPackage.slides} />
+      <PreSection title="Lesson Plan" content={lessonPackage.lessonPlan} />
+      <SimpleListSection title="Centers" items={lessonPackage.centers} />
+      <PreSection title="Rotation Plan" content={lessonPackage.rotationPlan} />
+      <SimpleListSection title="Interventions" items={lessonPackage.interventions} />
+      <SimpleListSection title="Exports" items={lessonPackage.exports} />
+    </>
+  )
+}
 
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Lesson Plan</h3>
-          <pre style={preStyle}>{lessonPackage.lessonPlan}</pre>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Centers</h3>
-          <ul style={listStyle}>
-            {lessonPackage.centers.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Rotation Plan</h3>
-          <pre style={preStyle}>{lessonPackage.rotationPlan}</pre>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Interventions</h3>
-          <ul style={listStyle}>
-            {lessonPackage.interventions.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Exports</h3>
-          <ul style={listStyle}>
-            {lessonPackage.exports.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Blueprint Content</h3>
+function BlueprintDetailsSection({ blueprint }: { blueprint: LessonBlueprint }) {
+  return (
+    <>
+      <details style={sectionStyle}>
+        <summary style={summaryStyle}>Blueprint Content</summary>
+        <div style={{ marginTop: 12 }}>
           <p style={{ marginBottom: 8 }}>
             <strong>Vocabulary:</strong> {blueprint.content.vocabulary.join(", ")}
           </p>
@@ -161,9 +207,11 @@ export default function ResultsPage() {
             <strong>Practice Ideas:</strong> {blueprint.content.practiceIdeas.join(", ")}
           </p>
         </div>
+      </details>
 
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Blueprint Structure</h3>
+      <details style={sectionStyle}>
+        <summary style={summaryStyle}>Blueprint Structure</summary>
+        <div style={{ marginTop: 12 }}>
           <p style={{ marginBottom: 8 }}>
             <strong>Timing:</strong> {blueprint.structure.timing.join(" | ")}
           </p>
@@ -180,19 +228,60 @@ export default function ResultsPage() {
             <strong>Tone:</strong> {blueprint.structure.tone.join(", ")}
           </p>
         </div>
+      </details>
+    </>
+  )
+}
 
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Slide Planning</h3>
-          <SlidePlanList slides={planningIdeas.slidePlans} />
+function PlanningDetailsSection({
+  slidePlans,
+  lessonPlanSections,
+}: {
+  slidePlans: SlidePlan[]
+  lessonPlanSections: LessonPlanSectionIdeas[]
+}) {
+  return (
+    <>
+      <details style={sectionStyle}>
+        <summary style={summaryStyle}>Slide Planning</summary>
+        <div style={{ marginTop: 12 }}>
+          <SlidePlanList slides={slidePlans} />
         </div>
+      </details>
 
-        {planningIdeas.lessonPlanSections.map((section) => (
-          <div key={section.section} style={sectionStyle}>
-            <h3 style={{ marginTop: 0 }}>{section.title}</h3>
-            <IdeaList ideas={section.ideas} />
-          </div>
+      <details style={sectionStyle}>
+        <summary style={summaryStyle}>Lesson Planning Ideas</summary>
+        <div style={{ marginTop: 12, display: "grid", gap: 16 }}>
+          {lessonPlanSections.map((section) => (
+            <div key={section.section}>
+              <h3 style={{ marginTop: 0 }}>{section.title}</h3>
+              <IdeaList ideas={section.ideas} />
+            </div>
+          ))}
+        </div>
+      </details>
+    </>
+  )
+}
+
+function SimpleListSection({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div style={sectionStyle}>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <ul style={listStyle}>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
         ))}
-      </div>
+      </ul>
+    </div>
+  )
+}
+
+function PreSection({ title, content }: { title: string; content: string }) {
+  return (
+    <div style={sectionStyle}>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <pre style={preStyle}>{content}</pre>
     </div>
   )
 }
@@ -281,6 +370,32 @@ function BlockedResultsState({
   )
 }
 
+function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties {
+  const palette =
+    tone === "good"
+      ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
+      : tone === "warn"
+        ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
+        : { background: "#f9fafb", border: "#e5e7eb", color: "#4b5563" }
+
+  return {
+    border: `1px solid ${palette.border}`,
+    background: palette.background,
+    color: palette.color,
+    borderRadius: 12,
+    padding: 12,
+  }
+}
+
+const warningStyle: React.CSSProperties = {
+  border: "1px solid #fed7aa",
+  background: "#fff7ed",
+  color: "#9a3412",
+  borderRadius: 12,
+  padding: 12,
+  fontSize: 14,
+}
+
 const noticeStyle: React.CSSProperties = {
   padding: "12px 14px",
   borderRadius: 12,
@@ -320,4 +435,9 @@ const linkStyle: React.CSSProperties = {
   textDecoration: "none",
   border: "1px solid #d1d5db",
   color: "#111827",
+}
+
+const summaryStyle: React.CSSProperties = {
+  cursor: "pointer",
+  fontWeight: 700,
 }

@@ -1,4 +1,7 @@
-﻿import { detectLessonTargets, resolveLessonMode } from "./detectLessonTargets"
+import { detectLessonTargets, resolveLessonMode } from "./detectLessonTargets"
+import { resolveBlueprintContent } from "./resolveBlueprintContent"
+import { resolveBlueprintStructure } from "./resolveBlueprintStructure"
+import { buildBlueprintSourceReadiness } from "./buildBlueprintSourceReadiness"
 import {
   CurriculumAnalysis,
   ExemplarAnalysis,
@@ -33,75 +36,40 @@ export function buildBlueprint(
   const resolvedMode = resolveLessonMode(selectedMode, rawTarget)
   const target = buildResolvedTarget(rawTarget, resolvedMode)
 
-  const standards = inputs.standard.trim()
-    ? [inputs.standard.trim()]
-    : preferCurriculumValues(
-        curriculumAnalyses.flatMap((analysis) => analysis.standards),
-        extractUniqueTags(curriculumMaterials, "content"),
-        ["teacher-selected standard"]
-      )
+  const content = resolveBlueprintContent({
+    curriculumMaterials,
+    curriculumAnalyses,
+    inputs: {
+      standard: inputs.standard,
+      topic: inputs.topic,
+    },
+    target,
+  })
 
-  const vocabulary = preferCurriculumValues(
-    curriculumAnalyses.flatMap((analysis) => analysis.vocabulary),
-    extractVocabularyFromText(curriculumMaterials, target.primary),
-    primaryVocabularyFallback(target.primary)
-  )
-
-  const wordLists = preferCurriculumValues(
-    [
-      ...curriculumAnalyses.flatMap((analysis) => analysis.wordLists),
-      ...curriculumAnalyses.flatMap((analysis) => analysis.examples),
-    ],
-    extractWordListsFromText(curriculumMaterials, target.primary),
-    ["Teacher-provided practice items"]
-  )
-
-  const texts = preferCurriculumValues(
-    curriculumAnalyses.flatMap((analysis) => analysis.texts),
-    extractTextsFromText(curriculumMaterials, inputs.topic),
-    inputs.topic.trim().length > 0 ? [inputs.topic.trim()] : ["Teacher-provided lesson text"]
-  )
-
-  const practiceIdeas = preferCurriculumValues(
-    [
-      ...curriculumAnalyses.flatMap((analysis) => analysis.practiceTasks),
-      ...curriculumAnalyses.flatMap((analysis) => analysis.instructionalTargets),
-    ],
-    extractPracticeIdeasFromText(curriculumMaterials, target.primary),
-    primaryPracticeFallback(target.primary)
-  )
-
-  const timing = buildTiming(exemplarAnalyses, target)
-  const lessonSegments = buildLessonSegments(exemplarAnalyses, target)
-  const teacherMoves = buildTeacherMoves(exemplarAnalyses, target)
-  const promptStyle = buildPromptStyle(exemplarAnalyses, target)
-  const tone = buildTone(exemplarAnalyses)
-  const templateShell = buildTemplateShell(
+  const structure = resolveBlueprintStructure({
     exemplarAnalyses,
-    lessonSegments,
-    timing,
-    teacherMoves,
-    promptStyle,
-    tone
-  )
+    target,
+  })
+
+  const sourceReadiness = buildBlueprintSourceReadiness({
+    curriculumMaterials,
+    exemplarMaterials,
+    standards: content.standards,
+    vocabulary: content.vocabulary,
+    texts: content.texts,
+    practiceIdeas: content.practiceIdeas,
+    lessonSegments: structure.lessonSegments,
+    teacherMoves: structure.teacherMoves,
+    promptStyle: structure.promptStyle,
+  })
 
   return {
     content: {
       target,
-      standards,
-      vocabulary,
-      wordLists,
-      texts,
-      practiceIdeas,
+      ...content,
     },
-    structure: {
-      timing,
-      lessonSegments,
-      teacherMoves,
-      promptStyle,
-      tone,
-      templateShell,
-    },
+    structure,
+    sourceReadiness,
   }
 }
 
@@ -142,314 +110,4 @@ function buildResolvedTarget(
     ...rawTarget,
     recommendedMode: resolvedMode,
   }
-}
-
-function buildTiming(
-  exemplarAnalyses: ExemplarAnalysis[],
-  target: LessonBlueprint["content"]["target"]
-): string[] {
-  const exemplarTiming = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.pacing))
-
-  if (exemplarTiming.length > 0) {
-    return exemplarTiming.slice(0, 6)
-  }
-
-  if (target.isMixedTarget && target.recommendedMode === "full") {
-    return ["Part 1 - 10 min", "Part 2 - 10 min", "Closure - 5 min"]
-  }
-
-  return ["Mini-lesson", "Practice", "Closure"]
-}
-
-function buildLessonSegments(
-  exemplarAnalyses: ExemplarAnalysis[],
-  target: LessonBlueprint["content"]["target"]
-): string[] {
-  const structureDrivenSegments = cleanUnique([
-    ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
-    ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
-  ])
-    .map(normalizeSegmentLabel)
-    .filter((segment) => segment.length > 0)
-
-  if (structureDrivenSegments.length > 0) {
-    return structureDrivenSegments.slice(0, 8)
-  }
-
-  if (target.isMixedTarget && target.recommendedMode === "full") {
-    return ["Part 1", "Part 2", "Closure"]
-  }
-
-  return ["Teach", "Practice", "Close"]
-}
-
-function buildTeacherMoves(
-  exemplarAnalyses: ExemplarAnalysis[],
-  target: LessonBlueprint["content"]["target"]
-): string[] {
-  const moves = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves))
-
-  if (moves.length > 0) {
-    return moves.slice(0, 6)
-  }
-
-  if (target.primary === "phonics") {
-    return ["Teacher model", "Guided blending", "Prompt students to explain the pattern"]
-  }
-
-  if (target.primary === "comprehension") {
-    return ["Teacher think-aloud", "Prompt for evidence", "Guide partner discussion"]
-  }
-
-  return ["Teacher model", "Guided support"]
-}
-
-function buildPromptStyle(
-  exemplarAnalyses: ExemplarAnalysis[],
-  target: LessonBlueprint["content"]["target"]
-): string[] {
-  const prompts = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.promptStyle))
-
-  if (prompts.length > 0) {
-    return prompts.slice(0, 6)
-  }
-
-  if (target.primary === "phonics") {
-    return ["Say the sound", "Read the word", "Explain the pattern"]
-  }
-
-  if (target.primary === "comprehension") {
-    return ["Turn and talk", "What evidence helps you know?", "Retell the important part"]
-  }
-
-  return ["Teacher prompt", "Partner response"]
-}
-
-function buildTone(exemplarAnalyses: ExemplarAnalysis[]): string[] {
-  const tones = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.tone))
-
-  if (tones.length > 0) {
-    return tones.slice(0, 4)
-  }
-
-  return ["clear instructional tone"]
-}
-
-function buildTemplateShell(
-  exemplarAnalyses: ExemplarAnalysis[],
-  lessonSegments: string[],
-  timing: string[],
-  teacherMoves: string[],
-  promptStyle: string[],
-  tone: string[]
-) {
-  const reusableSegments = lessonSegments.map(normalizeSegmentLabel).filter((segment) => segment.length > 0)
-
-  const rawSlideCandidates = cleanUnique([
-    ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
-    ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
-    ...lessonSegments,
-  ])
-
-  const slideShell = rawSlideCandidates
-    .map(normalizeSlideShellLabel)
-    .filter((label) => label.length > 0)
-    .slice(0, Math.max(reusableSegments.length, 3))
-
-  return {
-    segmentOrder: reusableSegments.length > 0 ? reusableSegments : ["Teach", "Practice", "Closure"],
-    slideShell: slideShell.length > 0 ? slideShell : buildDefaultSlideShell(reusableSegments),
-    timingShell: alignShellArray(timing, reusableSegments.length, ["Mini-lesson", "Practice", "Closure"]),
-    teacherMoveShell: cleanUnique(teacherMoves).slice(0, 6),
-    promptShell: cleanUnique(promptStyle).slice(0, 6),
-    toneShell: cleanUnique(tone).slice(0, 4),
-  }
-}
-
-function buildDefaultSlideShell(lessonSegments: string[]): string[] {
-  const usableSegments = lessonSegments.length > 0 ? lessonSegments : ["Teach", "Practice", "Closure"]
-
-  return usableSegments.map((segment) => {
-    const normalized = normalizeSegmentLabel(segment)
-
-    if (normalized === "Opening") return "Objective / Opening"
-    if (normalized === "Teach") return "Model / Teach"
-    if (normalized === "Guided Practice") return "Guided Practice"
-    if (normalized === "Independent Practice") return "Independent Practice"
-    if (normalized === "Centers") return "Centers / Rotation"
-    if (normalized === "Closure") return "Closure / Check"
-    return normalized
-  })
-}
-
-function alignShellArray(values: string[], targetLength: number, fallback: string[]): string[] {
-  const cleaned = cleanUnique(values)
-  const usableFallback = cleanUnique(fallback)
-  const desiredLength = Math.max(targetLength, usableFallback.length, 1)
-
-  if (cleaned.length >= desiredLength) {
-    return cleaned.slice(0, desiredLength)
-  }
-
-  const result = [...cleaned]
-
-  while (result.length < desiredLength) {
-    result.push(usableFallback[result.length % usableFallback.length])
-  }
-
-  return result
-}
-
-function normalizeSlideShellLabel(value: string): string {
-  const cleaned = value
-    .replace(/^slide\s*\d+\s*[:\-]?\s*/i, "")
-    .replace(/^\d+\s*[:\-]?\s*/, "")
-    .trim()
-
-  if (cleaned.length === 0) {
-    return ""
-  }
-
-  return normalizeSegmentLabel(cleaned)
-}
-
-function preferCurriculumValues(
-  primaryValues: string[],
-  secondaryValues: string[],
-  fallbackValues: string[]
-): string[] {
-  const primary = cleanUnique(primaryValues)
-  if (primary.length > 0) {
-    return primary
-  }
-
-  const secondary = cleanUnique(secondaryValues)
-  if (secondary.length > 0) {
-    return secondary
-  }
-
-  return cleanUnique(fallbackValues)
-}
-
-function extractVocabularyFromText(materials: MaterialFile[], primaryTarget: string): string[] {
-  return uniqueLines(
-    materials.flatMap((material) => material.analysis?.extractedText ?? []),
-    (line) =>
-      primaryTarget === "phonics"
-        ? containsAny(line, ["pattern", "sound", "vowel", "blend", "digraph", "word"])
-        : containsAny(line, ["vocabulary", "character", "theme", "detail", "question", "story"])
-  )
-}
-
-function extractWordListsFromText(materials: MaterialFile[], primaryTarget: string): string[] {
-  return uniqueLines(
-    materials.flatMap((material) => material.analysis?.extractedText ?? []),
-    (line) =>
-      primaryTarget === "phonics"
-        ? containsAny(line, ["word", "list", "sound", "pattern", "decode", "blend"])
-        : containsAny(line, ["question", "detail", "character", "event", "retell"])
-  )
-}
-
-function extractTextsFromText(materials: MaterialFile[], topic: string): string[] {
-  const extracted = uniqueLines(
-    materials.flatMap((material) => material.analysis?.extractedText ?? []),
-    (line) =>
-      containsAny(line, ["passage", "story", "text", "read", "article"]) &&
-      line.trim().length > 0
-  )
-
-  if (extracted.length > 0) {
-    return extracted
-  }
-
-  return topic.trim().length > 0 ? [topic.trim()] : []
-}
-
-function extractPracticeIdeasFromText(materials: MaterialFile[], primaryTarget: string): string[] {
-  const tagIdeas = materials.flatMap((material) => material.analysis?.tags ?? [])
-
-  const textIdeas = uniqueLines(
-    materials.flatMap((material) => material.analysis?.extractedText ?? []),
-    (line) =>
-      primaryTarget === "phonics"
-        ? containsAny(line, ["practice", "read", "sort", "blend", "decode", "word list"])
-        : containsAny(line, ["practice", "discuss", "retell", "answer", "evidence", "partner"])
-  )
-
-  return cleanUnique([...tagIdeas, ...textIdeas])
-}
-
-function primaryVocabularyFallback(primaryTarget: string): string[] {
-  return primaryTarget === "phonics"
-    ? ["phonics pattern", "target words"]
-    : ["key vocabulary", "comprehension language"]
-}
-
-function primaryPracticeFallback(primaryTarget: string): string[] {
-  return primaryTarget === "phonics"
-    ? ["Word reading", "Sound sort", "Partner decoding"]
-    : ["Guided reading", "Partner discussion", "Question practice"]
-}
-
-function extractUniqueTags(materials: MaterialFile[], fallback: string): string[] {
-  const tags = materials.flatMap((material) => material.analysis?.tags ?? [])
-  return cleanUnique(tags).length ? cleanUnique(tags) : [fallback]
-}
-
-function uniqueLines(lines: string[], predicate: (line: string) => boolean): string[] {
-  return cleanUnique(
-    lines
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-      .filter(predicate)
-  )
-}
-
-function cleanUnique(values: string[]): string[] {
-  return Array.from(
-    new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))
-  )
-}
-
-function normalizeSegmentLabel(value: string): string {
-  const lower = value.toLowerCase()
-
-  if (lower.includes("opening") || lower.includes("objective") || lower.includes("warm")) {
-    return "Opening"
-  }
-
-  if (lower.includes("i do") || lower.includes("mini-lesson") || lower.includes("teach")) {
-    return "Teach"
-  }
-
-  if (lower.includes("we do") || lower.includes("guided")) {
-    return "Guided Practice"
-  }
-
-  if (lower.includes("you do") || lower.includes("independent")) {
-    return "Independent Practice"
-  }
-
-  if (lower.includes("center") || lower.includes("rotation")) {
-    return "Centers"
-  }
-
-  if (lower.includes("closure") || lower.includes("close")) {
-    return "Closure"
-  }
-
-  return toTitleCase(value)
-}
-
-function toTitleCase(value: string): string {
-  return value
-    .split(/\s+/)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join(" ")
-}
-
-function containsAny(text: string, terms: string[]): boolean {
-  const lower = text.toLowerCase()
-  return terms.some((term) => lower.includes(term))
 }

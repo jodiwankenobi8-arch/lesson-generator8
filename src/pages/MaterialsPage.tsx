@@ -1,8 +1,8 @@
-﻿import React, { useRef, useState } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { generateLesson } from "../engine/generateLesson"
 import { processMaterial } from "../engine/workflow/processMaterial"
-import { MaterialRole, MaterialStatus } from "../engine/types"
+import { MaterialFile, MaterialRole, MaterialStatus } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
 const cardStyle: React.CSSProperties = {
@@ -69,6 +69,8 @@ export default function MaterialsPage() {
 
   const curriculumInputRef = useRef<HTMLInputElement | null>(null)
   const exemplarInputRef = useRef<HTMLInputElement | null>(null)
+
+  const supportSummary = useMemo(() => buildMaterialSupportSummary(materials), [materials])
 
   async function handleFilesSelected(
     role: MaterialRole,
@@ -181,6 +183,34 @@ export default function MaterialsPage() {
             Upload Exemplar Files
           </button>
         </div>
+      </div>
+
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <h3 style={{ marginTop: 0, marginBottom: 16 }}>Support Summary</h3>
+
+        <div style={summaryGridStyle}>
+          <SummaryCard label="Ready Curriculum" value={supportSummary.readyCurriculum} />
+          <SummaryCard label="Ready Exemplar" value={supportSummary.readyExemplar} />
+          <SummaryCard label="Content Signals" value={supportSummary.contentSignalCount} />
+          <SummaryCard label="Structure Signals" value={supportSummary.structureSignalCount} />
+        </div>
+
+        <div style={supportNoticeStyle(supportSummary.overall)}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>
+            {formatSupportHeading(supportSummary.overall)}
+          </div>
+          <div>{supportSummary.message}</div>
+        </div>
+
+        {supportSummary.guidance.length > 0 && (
+          <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+            {supportSummary.guidance.map((item) => (
+              <div key={item} style={guidanceStyle}>
+                {item}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div style={cardStyle}>
@@ -296,6 +326,104 @@ export default function MaterialsPage() {
   )
 }
 
+type MaterialSupportSummary = {
+  readyCurriculum: number
+  readyExemplar: number
+  contentSignalCount: number
+  structureSignalCount: number
+  overall: "balanced" | "content_heavy" | "structure_heavy" | "limited"
+  message: string
+  guidance: string[]
+}
+
+function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupportSummary {
+  const readyCurriculum = materials.filter(
+    (material) => material.role === "curriculum" && material.status === "ready" && material.analysis?.curriculum
+  )
+
+  const readyExemplar = materials.filter(
+    (material) => material.role === "exemplar" && material.status === "ready" && material.analysis?.exemplar
+  )
+
+  const contentSignalCount = readyCurriculum.reduce((total, material) => {
+    const curriculum = material.analysis?.curriculum
+    if (!curriculum) return total
+
+    return (
+      total +
+      curriculum.standards.length +
+      curriculum.vocabulary.length +
+      curriculum.wordLists.length +
+      curriculum.texts.length +
+      curriculum.practiceTasks.length +
+      curriculum.instructionalTargets.length
+    )
+  }, 0)
+
+  const structureSignalCount = readyExemplar.reduce((total, material) => {
+    const exemplar = material.analysis?.exemplar
+    if (!exemplar) return total
+
+    return (
+      total +
+      exemplar.slideFlow.length +
+      exemplar.pacing.length +
+      exemplar.teacherMoves.length +
+      exemplar.promptStyle.length +
+      exemplar.layoutCues.length +
+      exemplar.reusableStructure.length
+    )
+  }, 0)
+
+  const hasCurriculumSupport = readyCurriculum.length > 0 && contentSignalCount > 0
+  const hasExemplarSupport = readyExemplar.length > 0 && structureSignalCount > 0
+
+  const overall =
+    hasCurriculumSupport && hasExemplarSupport
+      ? "balanced"
+      : hasCurriculumSupport
+        ? "content_heavy"
+        : hasExemplarSupport
+          ? "structure_heavy"
+          : "limited"
+
+  const guidance: string[] = []
+
+  if (!hasCurriculumSupport) {
+    guidance.push("Add at least one strong curriculum file so lesson content is grounded in actual standards, texts, word lists, and tasks.")
+  }
+
+  if (!hasExemplarSupport) {
+    guidance.push("Add at least one strong exemplar file so pacing, slide flow, prompts, and structure are grounded in a real model.")
+  }
+
+  const message =
+    overall === "balanced"
+      ? "You currently have both curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
+      : overall === "content_heavy"
+        ? "You currently have stronger curriculum support than exemplar support. Content should be more grounded than structure."
+        : overall === "structure_heavy"
+          ? "You currently have stronger exemplar support than curriculum support. Structure should be stronger than content grounding."
+          : "Current material support is limited. The lesson may rely more on fallback logic until stronger files are added."
+
+  return {
+    readyCurriculum: readyCurriculum.length,
+    readyExemplar: readyExemplar.length,
+    contentSignalCount,
+    structureSignalCount,
+    overall,
+    message,
+    guidance,
+  }
+}
+
+function formatSupportHeading(overall: MaterialSupportSummary["overall"]): string {
+  if (overall === "balanced") return "Balanced support"
+  if (overall === "content_heavy") return "Content-heavy support"
+  if (overall === "structure_heavy") return "Structure-heavy support"
+  return "Limited support"
+}
+
 function SummaryCard({ label, value }: { label: string; value: number }) {
   return (
     <div
@@ -388,4 +516,30 @@ function noticeStyle(mode: "idle" | "processing" | "ready"): React.CSSProperties
     background: palette.background,
     color: palette.color,
   }
+}
+
+function supportNoticeStyle(mode: MaterialSupportSummary["overall"]): React.CSSProperties {
+  const palette =
+    mode === "balanced"
+      ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
+      : mode === "limited"
+        ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
+        : { background: "#f9fafb", border: "#e5e7eb", color: "#4b5563" }
+
+  return {
+    padding: "12px 14px",
+    borderRadius: 12,
+    border: `1px solid ${palette.border}`,
+    background: palette.background,
+    color: palette.color,
+  }
+}
+
+const guidanceStyle: React.CSSProperties = {
+  border: "1px solid #e5e7eb",
+  background: "#f9fafb",
+  color: "#4b5563",
+  borderRadius: 12,
+  padding: 12,
+  fontSize: 14,
 }

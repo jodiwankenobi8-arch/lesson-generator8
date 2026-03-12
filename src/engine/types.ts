@@ -1,4 +1,4 @@
-﻿export type LessonInputs = {
+export type LessonInputs = {
   grade: string
   subject: string
   standard: string
@@ -113,9 +113,27 @@ export type BlueprintStructure = {
   templateShell: BlueprintTemplateShell
 }
 
+export type BlueprintSourceSignalTone = "good" | "warn" | "neutral"
+
+export type BlueprintSourceSignal = {
+  label: string
+  value: string
+  note: string
+  tone: BlueprintSourceSignalTone
+}
+
+export type BlueprintSourceReadiness = {
+  curriculumSupport: "strong" | "limited"
+  exemplarSupport: "strong" | "limited"
+  overall: "balanced" | "content_heavy" | "structure_heavy" | "limited"
+  warnings: string[]
+  signals: BlueprintSourceSignal[]
+}
+
 export type LessonBlueprint = {
   content: BlueprintContent
   structure: BlueprintStructure
+  sourceReadiness: BlueprintSourceReadiness
 }
 
 export type LessonPlanIdea = {
@@ -167,6 +185,23 @@ export type LessonSpec = {
   closure: LessonSpecSection
 }
 
+export type LessonPackageSignalTone = "good" | "warn" | "neutral"
+
+export type LessonPackageSignal = {
+  label: string
+  value: string
+  note: string
+  tone: LessonPackageSignalTone
+}
+
+export type LessonPackageReadiness = {
+  density: "balanced" | "thin"
+  lessonShape: "single-focus" | "mixed"
+  contentFit: "grounded" | "limited"
+  warnings: string[]
+  signals: LessonPackageSignal[]
+}
+
 export type LessonPackage = {
   slides: string[]
   lessonPlan: string
@@ -174,6 +209,7 @@ export type LessonPackage = {
   rotationPlan: string
   interventions: string[]
   exports: string[]
+  readiness: LessonPackageReadiness
 }
 
 export type LessonGenerationResult = {

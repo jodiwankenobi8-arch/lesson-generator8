@@ -1,4 +1,5 @@
-﻿import { create } from "zustand"
+import { create } from "zustand"
+import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
 import {
   ExemplarStyleSettings,
   LessonBlueprint,
@@ -20,6 +21,14 @@ type MaterialCounts = {
   analyzing: number
   ready: number
   error: number
+}
+
+type TargetPreview = {
+  primary: string
+  secondary: string | null
+  isMixedTarget: boolean
+  recommendedMode: LessonMode
+  message: string
 }
 
 type LessonStore = {
@@ -62,6 +71,7 @@ type LessonStore = {
   hasProcessingMaterials: () => boolean
   canGenerate: () => boolean
   getMaterialCounts: () => MaterialCounts
+  getTargetPreview: () => TargetPreview
 }
 
 const emptyInputs: LessonInputs = {
@@ -115,6 +125,54 @@ function defaultExemplarStyleSettings(): ExemplarStyleSettings {
     mode: "inspiration",
     aspects: [],
     customInstructions: "",
+  }
+}
+
+function buildTargetPreview(
+  inputs: LessonInputs,
+  selectedLessonMode: LessonMode
+): TargetPreview {
+  const detected = detectLessonTargets(inputs, selectedLessonMode)
+
+  if (detected.isMixedTarget) {
+    return {
+      primary: detected.primary === "mixed" ? "phonics" : detected.primary,
+      secondary: detected.secondary,
+      isMixedTarget: true,
+      recommendedMode: detected.recommendedMode,
+      message:
+        selectedLessonMode === "single"
+          ? "Inputs appear mixed. Full mixed lesson is likely the best fit unless you want only one portion."
+          : `Inputs appear mixed. Current selection: ${selectedLessonMode}.`,
+    }
+  }
+
+  if (detected.primary === "phonics") {
+    return {
+      primary: "phonics",
+      secondary: detected.secondary,
+      isMixedTarget: false,
+      recommendedMode: detected.recommendedMode,
+      message: "Inputs currently read mostly as phonics-focused.",
+    }
+  }
+
+  if (detected.primary === "comprehension") {
+    return {
+      primary: "comprehension",
+      secondary: detected.secondary,
+      isMixedTarget: false,
+      recommendedMode: detected.recommendedMode,
+      message: "Inputs currently read mostly as comprehension-focused.",
+    }
+  }
+
+  return {
+    primary: "general",
+    secondary: null,
+    isMixedTarget: false,
+    recommendedMode: detected.recommendedMode,
+    message: "Add more lesson detail or choose a lesson shape manually if needed.",
   }
 }
 
@@ -293,4 +351,9 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   },
 
   getMaterialCounts: () => buildMaterialCounts(get().materials),
+
+  getTargetPreview: () => {
+    const { inputs, selectedLessonMode } = get()
+    return buildTargetPreview(inputs, selectedLessonMode)
+  },
 }))

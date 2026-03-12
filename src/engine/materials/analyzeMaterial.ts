@@ -1,8 +1,7 @@
-ï»¿import {
+import {
   CurriculumAnalysis,
   ExemplarAnalysis,
   MaterialAnalysis,
-  MaterialFile,
   MaterialRole,
 } from "../types"
 
@@ -17,6 +16,9 @@ export type AnalyzeMaterialResult = {
   materialId: string
   analysis: MaterialAnalysis
 }
+
+const MAX_LINES = 220
+const MAX_FIELD_ITEMS = 8
 
 export async function analyzeMaterial(
   input: AnalyzeMaterialInput
@@ -47,13 +49,35 @@ export async function analyzeMaterial(
 }
 
 function sanitizeExtractedText(lines: string[]): string[] {
-  return Array.from(
-    new Set(
-      lines
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0)
-    )
-  ).slice(0, 200)
+  return unique(
+    lines
+      .map(normalizeLine)
+      .filter((line) => line.length > 0)
+      .filter((line) => !isLikelyNoise(line))
+  ).slice(0, MAX_LINES)
+}
+
+function normalizeLine(line: string): string {
+  return line.replace(/\s+/g, " ").trim()
+}
+
+function isLikelyNoise(line: string): boolean {
+  const lower = line.toLowerCase()
+
+  if (!lower) return true
+  if (lower.length <= 1) return true
+  if (/^[\W_]+$/.test(lower)) return true
+  if (/^slide \d+$/i.test(line.trim())) return true
+  if (/^(http|www\.)/.test(lower)) return true
+
+  const alphaCount = (lower.match(/[a-z]/g) || []).length
+  const digitCount = (lower.match(/\d/g) || []).length
+  const symbolCount = (lower.match(/[^a-z0-9\s]/gi) || []).length
+
+  if (alphaCount === 0 && digitCount > 0) return true
+  if (alphaCount > 0 && symbolCount > alphaCount * 1.5) return true
+
+  return false
 }
 
 function buildCurriculumSummary(name: string, lines: string[]): string {
@@ -61,7 +85,12 @@ function buildCurriculumSummary(name: string, lines: string[]): string {
     return `Curriculum material ${name} was analyzed, but little usable text was extracted.`
   }
 
-  return `Curriculum material ${name} analyzed with ${lines.length} extracted content lines.`
+  const standards = findStandards(lines).length
+  const objectives = selectInstructionalTargets(lines).length
+  const vocabulary = selectVocabulary(lines).length
+  const tasks = selectPracticeTasks(lines).length
+
+  return `Curriculum material ${name} analyzed with ${lines.length} usable lines, ${standards} standards signals, ${objectives} target signals, ${vocabulary} vocabulary signals, and ${tasks} practice signals.`
 }
 
 function buildExemplarSummary(name: string, lines: string[]): string {
@@ -69,83 +98,22 @@ function buildExemplarSummary(name: string, lines: string[]): string {
     return `Exemplar material ${name} was analyzed, but little usable text was extracted.`
   }
 
-  return `Exemplar material ${name} analyzed with ${lines.length} extracted style/structure lines.`
+  const flow = selectSlideFlow(lines).length
+  const pacing = selectPacing(lines).length
+  const moves = selectTeacherMoves(lines).length
+  const structure = selectReusableStructure(lines).length
+
+  return `Exemplar material ${name} analyzed with ${lines.length} usable lines, ${flow} slide-flow signals, ${pacing} pacing signals, ${moves} teacher-move signals, and ${structure} reusable structure signals.`
 }
 
 function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
-  const standards = takeMatching(lines, [
-    "rf.",
-    "rl.",
-    "ri.",
-    "w.",
-    "l.",
-    "standard",
-  ], 6)
-
-  const vocabulary = takeMatching(lines, [
-    "vocabulary",
-    "term",
-    "define",
-    "meaning",
-    "academic word",
-    "target vocabulary",
-  ], 8)
-
-  const wordLists = takeMatching(lines, [
-    "word list",
-    "target words",
-    "decode",
-    "blend",
-    "sort",
-    "phonics",
-    "pattern",
-    "syllable",
-    "long a",
-    "short a",
-    "cvc",
-    "cvce",
-  ], 8)
-
-  const texts = takeMatching(lines, [
-    "passage",
-    "story",
-    "text",
-    "article",
-    "selection",
-    "read aloud",
-    "decodable",
-  ], 6)
-
-  const practiceTasks = takeMatching(lines, [
-    "practice",
-    "task",
-    "sort",
-    "read",
-    "write",
-    "respond",
-    "question",
-    "discussion",
-    "partner",
-    "routine",
-    "activity",
-  ], 8)
-
-  const instructionalTargets = takeMatching(lines, [
-    "objective",
-    "target",
-    "goal",
-    "students will",
-    "skill",
-    "focus",
-  ], 6)
-
-  const examples = takeMatching(lines, [
-    "example",
-    "for example",
-    "model",
-    "sample",
-    "teacher example",
-  ], 6)
+  const standards = findStandards(lines)
+  const instructionalTargets = selectInstructionalTargets(lines)
+  const vocabulary = selectVocabulary(lines)
+  const wordLists = selectWordLists(lines)
+  const texts = selectTexts(lines)
+  const practiceTasks = selectPracticeTasks(lines)
+  const examples = selectExamples(lines)
 
   return {
     standards: standards.length ? standards : ["teacher-selected standard"],
@@ -159,72 +127,13 @@ function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
 }
 
 function buildExemplarAnalysis(lines: string[]): ExemplarAnalysis {
-  const slideFlow = takeMatching(lines, [
-    "slide",
-    "opening",
-    "objective",
-    "teach",
-    "guided practice",
-    "independent practice",
-    "closure",
-  ], 10)
-
-  const pacing = takeMatching(lines, [
-    "minute",
-    "minutes",
-    "timing",
-    "pace",
-    "transition",
-  ], 8)
-
-  const teacherMoves = takeMatching(lines, [
-    "teacher says",
-    "teacher prompt",
-    "model",
-    "ask",
-    "say",
-    "guide",
-    "prompt",
-    "turn and talk",
-  ], 8)
-
-  const promptStyle = takeMatching(lines, [
-    "prompt",
-    "question stem",
-    "sentence stem",
-    "turn and talk",
-    "discuss",
-  ], 8)
-
-  const layoutCues = takeMatching(lines, [
-    "layout",
-    "visual",
-    "template",
-    "header",
-    "bullet",
-    "image",
-    "color",
-  ], 8)
-
-  const tone = takeMatching(lines, [
-    "encourage",
-    "celebrate",
-    "scholar",
-    "friendly",
-    "direct",
-    "clear",
-  ], 6)
-
-  const reusableStructure = takeMatching(lines, [
-    "i do",
-    "we do",
-    "you do",
-    "opening",
-    "mini-lesson",
-    "closure",
-    "center",
-    "rotation",
-  ], 8)
+  const slideFlow = selectSlideFlow(lines)
+  const pacing = selectPacing(lines)
+  const teacherMoves = selectTeacherMoves(lines)
+  const promptStyle = selectPromptStyle(lines)
+  const layoutCues = selectLayoutCues(lines)
+  const tone = selectTone(lines)
+  const reusableStructure = selectReusableStructure(lines)
 
   return {
     slideFlow: slideFlow.length ? slideFlow : ["opening", "teach", "guided practice", "closure"],
@@ -238,41 +147,367 @@ function buildExemplarAnalysis(lines: string[]): ExemplarAnalysis {
 }
 
 function deriveCurriculumTags(lines: string[]): string[] {
-  return deriveTags(lines, [
-    "curriculum",
-    "standards",
-    "vocabulary",
-    "word work",
-    "text",
-    "practice",
-    "instruction",
+  const tags = unique([
+    ...tagIfAny(findStandards(lines), "standards"),
+    ...tagIfAny(selectVocabulary(lines), "vocabulary"),
+    ...tagIfAny(selectWordLists(lines), "word work"),
+    ...tagIfAny(selectTexts(lines), "text"),
+    ...tagIfAny(selectPracticeTasks(lines), "practice"),
+    ...tagIfAny(selectInstructionalTargets(lines), "instruction"),
+    ...inferPhonicsTags(lines),
   ])
+
+  return tags.length
+    ? tags.slice(0, 8)
+    : ["curriculum", "standards", "vocabulary", "word work", "text", "practice", "instruction"]
 }
 
 function deriveExemplarTags(lines: string[]): string[] {
-  return deriveTags(lines, [
-    "exemplar",
-    "structure",
-    "pacing",
-    "teacher prompts",
-    "layout",
-    "slide flow",
+  const tags = unique([
+    ...tagIfAny(selectSlideFlow(lines), "slide flow"),
+    ...tagIfAny(selectPacing(lines), "pacing"),
+    ...tagIfAny(selectTeacherMoves(lines), "teacher prompts"),
+    ...tagIfAny(selectLayoutCues(lines), "layout"),
+    ...tagIfAny(selectReusableStructure(lines), "structure"),
+    ...tagIfAny(selectTone(lines), "tone"),
   ])
+
+  return tags.length
+    ? tags.slice(0, 8)
+    : ["exemplar", "structure", "pacing", "teacher prompts", "layout", "slide flow"]
 }
 
-function deriveTags(lines: string[], fallbacks: string[]): string[] {
-  const tags = lines
-    .filter((line) => line.split(" ").length <= 5)
-    .slice(0, 8)
+function findStandards(lines: string[]): string[] {
+  const standardRegexes = [
+    /\b(rf|rl|ri|w|l|sl)\.\d+(\.\d+)*\b/i,
+    /\b(ccss|common core|standard|standards)\b/i,
+  ]
 
-  return Array.from(new Set(tags.length ? tags : fallbacks))
+  return takeBestMatches(
+    lines,
+    (line) => standardRegexes.some((regex) => regex.test(line)),
+    MAX_FIELD_ITEMS
+  )
 }
 
-function takeMatching(lines: string[], terms: string[], limit: number): string[] {
-  return lines.filter((line) => containsAny(line, terms)).slice(0, limit)
+function selectInstructionalTargets(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "objective",
+        "learning target",
+        "target",
+        "goal",
+        "students will",
+        "i can",
+        "skill",
+        "focus",
+      ]),
+    6
+  )
+}
+
+function selectVocabulary(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "vocabulary",
+        "define",
+        "definition",
+        "meaning",
+        "academic word",
+        "target vocabulary",
+        "word meaning",
+      ]) || looksLikeVocabularyLine(line),
+    MAX_FIELD_ITEMS
+  )
+}
+
+function selectWordLists(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "word list",
+        "target words",
+        "heart words",
+        "decodable words",
+        "decode",
+        "blend",
+        "sort",
+        "phonics",
+        "pattern",
+        "syllable",
+        "cvce",
+        "cvc",
+        "digraph",
+        "vowel team",
+        "long a",
+        "short a",
+      ]) || looksLikeWordList(line),
+    MAX_FIELD_ITEMS
+  )
+}
+
+function selectTexts(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "passage",
+        "story",
+        "text",
+        "article",
+        "selection",
+        "read aloud",
+        "decodable",
+        "anchor text",
+      ]),
+    6
+  )
+}
+
+function selectPracticeTasks(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "practice",
+        "task",
+        "activity",
+        "sort",
+        "read",
+        "write",
+        "respond",
+        "discussion",
+        "partner",
+        "turn and talk",
+        "routine",
+        "work time",
+        "independent practice",
+        "guided practice",
+      ]),
+    MAX_FIELD_ITEMS
+  )
+}
+
+function selectExamples(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "example",
+        "for example",
+        "model",
+        "sample",
+        "teacher example",
+        "worked example",
+      ]),
+    6
+  )
+}
+
+function selectSlideFlow(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "opening",
+        "objective",
+        "warm up",
+        "mini lesson",
+        "teach",
+        "guided practice",
+        "independent practice",
+        "closure",
+        "exit ticket",
+        "slide",
+      ]),
+    10
+  )
+}
+
+function selectPacing(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      /\b\d+\s?(minute|minutes|min)\b/i.test(line) ||
+      containsAny(line, ["timing", "pace", "transition", "timer"]),
+    8
+  )
+}
+
+function selectTeacherMoves(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "teacher says",
+        "teacher prompt",
+        "teacher will",
+        "model",
+        "ask",
+        "say",
+        "guide",
+        "prompt",
+        "circulate",
+        "listen for",
+        "turn and talk",
+      ]),
+    8
+  )
+}
+
+function selectPromptStyle(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "prompt",
+        "question stem",
+        "sentence stem",
+        "turn and talk",
+        "discuss",
+        "share with a partner",
+        "what do you notice",
+      ]),
+    8
+  )
+}
+
+function selectLayoutCues(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "layout",
+        "template",
+        "header",
+        "bullet",
+        "image",
+        "icon",
+        "visual",
+        "color",
+        "box",
+        "table",
+      ]),
+    8
+  )
+}
+
+function selectTone(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "encourage",
+        "celebrate",
+        "scholar",
+        "friendly",
+        "direct",
+        "clear",
+        "supportive",
+      ]),
+    6
+  )
+}
+
+function selectReusableStructure(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "i do",
+        "we do",
+        "you do",
+        "opening",
+        "mini lesson",
+        "closure",
+        "center",
+        "rotation",
+        "warm up",
+        "teach",
+        "practice",
+      ]),
+    8
+  )
+}
+
+function takeBestMatches(
+  lines: string[],
+  predicate: (line: string) => boolean,
+  limit: number
+): string[] {
+  return unique(
+    lines
+      .filter(predicate)
+      .sort((a, b) => scoreLine(b) - scoreLine(a))
+  ).slice(0, limit)
+}
+
+function scoreLine(line: string): number {
+  const lower = line.toLowerCase()
+  let score = 0
+
+  if (/\b(rf|rl|ri|w|l|sl)\.\d+(\.\d+)*\b/i.test(line)) score += 5
+  if (/\b\d+\s?(minute|minutes|min)\b/i.test(line)) score += 4
+  if (containsAny(lower, ["objective", "learning target", "students will", "i can"])) score += 4
+  if (containsAny(lower, ["guided practice", "independent practice", "closure", "turn and talk"])) score += 3
+  if (containsAny(lower, ["phonics", "syllable", "cvce", "cvc", "long a", "short a", "vowel team"])) score += 3
+  if (containsAny(lower, ["vocabulary", "define", "meaning", "example", "model"])) score += 2
+
+  const wordCount = lower.split(/\s+/).filter(Boolean).length
+  if (wordCount >= 3 && wordCount <= 18) score += 2
+  if (wordCount > 30) score -= 2
+
+  return score
+}
+
+function looksLikeVocabularyLine(line: string): boolean {
+  const lower = line.toLowerCase()
+  return (
+    /.+\s[-:]\s.+/.test(line) &&
+    !lower.includes("http") &&
+    !lower.includes("www.")
+  )
+}
+
+function looksLikeWordList(line: string): boolean {
+  const parts = line
+    .split(/[,:;•|]/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+
+  if (parts.length < 3) return false
+
+  return parts.every((part) => part.split(/\s+/).length <= 3)
+}
+
+function inferPhonicsTags(lines: string[]): string[] {
+  const joined = lines.join(" ").toLowerCase()
+  const tags: string[] = []
+
+  if (joined.includes("phonics")) tags.push("phonics")
+  if (joined.includes("long a")) tags.push("long a")
+  if (joined.includes("short a")) tags.push("short a")
+  if (joined.includes("cvce")) tags.push("cvce")
+  if (joined.includes("cvc")) tags.push("cvc")
+  if (joined.includes("syllable")) tags.push("syllables")
+
+  return tags
+}
+
+function tagIfAny(items: string[], tag: string): string[] {
+  return items.length ? [tag] : []
 }
 
 function containsAny(text: string, terms: string[]): boolean {
   const lower = text.toLowerCase()
   return terms.some((term) => lower.includes(term))
+}
+
+function unique(items: string[]): string[] {
+  return Array.from(new Set(items))
 }

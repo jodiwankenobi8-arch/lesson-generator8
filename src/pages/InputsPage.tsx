@@ -111,14 +111,13 @@ export default function InputsPage() {
   const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
   const setSelectedLessonMode = useLessonStore((state) => state.setSelectedLessonMode)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
+  const targetPreview = useLessonStore((state) => state.getTargetPreview)()
 
   const updateInput =
     (field: keyof typeof inputs) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       setInputs({ [field]: event.target.value })
     }
-
-  const mixedSignal = detectMixedSignal(inputs.skill, inputs.topic)
 
   return (
     <div style={pageStyle}>
@@ -220,12 +219,12 @@ export default function InputsPage() {
               style={{
                 ...noticeStyle,
                 marginBottom: 12,
-                background: mixedSignal.isMixed ? "#fff7ed" : "#f9fafb",
-                borderColor: mixedSignal.isMixed ? "#fed7aa" : "#e5e7eb",
-                color: mixedSignal.isMixed ? "#9a3412" : "#4b5563",
+                background: targetPreview.isMixedTarget ? "#fff7ed" : "#f9fafb",
+                borderColor: targetPreview.isMixedTarget ? "#fed7aa" : "#e5e7eb",
+                color: targetPreview.isMixedTarget ? "#9a3412" : "#4b5563",
               }}
             >
-              {mixedSignal.message}
+              {targetPreview.message}
             </div>
 
             <LessonModeOption
@@ -324,73 +323,4 @@ function LessonModeOption({
       </div>
     </label>
   )
-}
-
-function detectMixedSignal(skill: string, topic: string): { isMixed: boolean; message: string } {
-  const combined = `${skill} ${topic}`.toLowerCase()
-
-  const phonicsTerms = [
-    "phonics",
-    "long a",
-    "short a",
-    "cvc",
-    "cvce",
-    "blend",
-    "digraph",
-    "decoding",
-    "encoding",
-    "word study",
-    "word work",
-    "spelling",
-    "syllable",
-  ]
-
-  const comprehensionTerms = [
-    "comprehension",
-    "main idea",
-    "theme",
-    "character",
-    "retell",
-    "infer",
-    "inference",
-    "evidence",
-    "text",
-    "passage",
-    "story",
-    "article",
-    "reading response",
-  ]
-
-  const hasPhonics = phonicsTerms.some((term) => combined.includes(term))
-  const hasComprehension = comprehensionTerms.some((term) => combined.includes(term))
-
-  if (hasPhonics && hasComprehension) {
-    return {
-      isMixed: true,
-      message:
-        "Your inputs look mixed. Choose Full mixed lesson to keep both parts, or choose just the portion you want generated.",
-    }
-  }
-
-  if (hasPhonics) {
-    return {
-      isMixed: false,
-      message:
-        "Your inputs currently read mostly as phonics-focused. Stay in Single target auto mode unless you want to force a different output shape.",
-    }
-  }
-
-  if (hasComprehension) {
-    return {
-      isMixed: false,
-      message:
-        "Your inputs currently read mostly as comprehension-focused. Stay in Single target auto mode unless you want to force a different output shape.",
-    }
-  }
-
-  return {
-    isMixed: false,
-    message:
-      "Choose a lesson shape now if you already know what should be generated. Otherwise leave it on Single target auto mode.",
-  }
 }
