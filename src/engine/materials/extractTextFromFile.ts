@@ -251,9 +251,43 @@ function decodeHtmlEntities(text: string): string {
 }
 
 function normalizeExtractedText(lines: string[]): string[] {
-  return Array.from(
-    new Set(lines.map((line) => line.trim()).filter((line) => line.length > 0))
-  ).slice(0, 400)
+  const cleaned: string[] = []
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\s+/g, " ").trim()
+
+    if (!shouldKeepExtractedLine(line)) {
+      continue
+    }
+
+    cleaned.push(line)
+  }
+
+  return Array.from(new Set(cleaned)).slice(0, 400)
+}
+
+function shouldKeepExtractedLine(line: string): boolean {
+  if (!line) {
+    return false
+  }
+
+  if (/^\d+$/.test(line)) {
+    return false
+  }
+
+  if (/^(page|slide)\s*\d+\b[:.-]*$/i.test(line)) {
+    return false
+  }
+
+  if (/^(https?:\/\/|www\.)\S+$/i.test(line)) {
+    return false
+  }
+
+  if (/^[\W_]+$/.test(line)) {
+    return false
+  }
+
+  return true
 }
 
 function buildUnsupportedFormatNotice(
@@ -265,3 +299,4 @@ function buildUnsupportedFormatNotice(
     "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
   ]
 }
+
