@@ -1,7 +1,15 @@
-﻿import { LessonBlueprint, LessonSpec } from "../types"
+﻿import {
+  LessonBlueprint,
+  LessonPlanIdea,
+  LessonPlanningIdeas,
+  LessonSpec,
+} from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
-export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
+export function buildLessonSpec(
+  blueprint: LessonBlueprint,
+  planningIdeas?: LessonPlanningIdeas
+): LessonSpec {
   const target = blueprint.content.target
   const primary = target.primary.toLowerCase()
   const isFullMixed = target.isMixedTarget && target.recommendedMode === "full"
@@ -31,39 +39,47 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
   const promptLine = `Use prompts and response frames such as: ${shell.promptStyle.join(", ")}.`
   const toneLine = `Keep the delivery tone aligned to: ${shell.tone.join(", ")}.`
 
+  const teachPlanLines = planningLines(planningIdeas, "teach")
+  const guidedPlanLines = planningLines(planningIdeas, "guided_practice")
+  const independentPlanLines = planningLines(planningIdeas, "independent_practice")
+  const closurePlanLines = planningLines(planningIdeas, "closure")
+
   if (isFullMixed) {
     return {
       teach: {
         title: "Teach",
-        steps: [
+        steps: compactSteps([
           openingLine,
           `Model the foundational skill first using: ${wordList.join(", ")}.`,
           `Then connect students to meaning and text work using: ${texts.join(", ")}.`,
           `Preteach and revisit vocabulary across both parts: ${vocabulary.join(", ")}.`,
+          ...teachPlanLines,
           teacherMoveLine,
           promptLine,
           flowLine,
           slideShellLine,
-        ],
+        ]),
       },
       guidedPractice: {
         title: "Guided Practice",
-        steps: [
+        steps: compactSteps([
           `Guide students through two curriculum-aligned practice blocks: ${practiceIdeas.join(", ")}.`,
           `Use modeled examples and text support during teacher guidance: ${wordList.join(", ")}; ${texts.join(", ")}.`,
           `Keep support anchored to the standards: ${standards.join(", ")}.`,
+          ...guidedPlanLines,
           promptLine,
           timingLine,
-        ],
+        ]),
       },
       independentPractice: {
         title: "Independent Practice",
-        steps: [
+        steps: compactSteps([
           `Students complete two aligned independent tasks using: ${practiceIdeas.slice(0, 2).join(", ")}.`,
           `Require students to apply both lesson resources and text support: ${wordList.join(", ")} / ${texts.join(", ")}.`,
+          ...independentPlanLines,
           "Check for transfer from teacher-supported work to student-owned work in both lesson parts.",
           toneLine,
-        ],
+        ]),
       },
       centers: {
         title: "Centers",
@@ -75,13 +91,14 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       },
       closure: {
         title: "Closure",
-        steps: [
+        steps: compactSteps([
           "Review what students learned in both parts of the lesson.",
+          ...closurePlanLines,
           flowLine,
           timingLine,
           toneLine,
           "End with a quick check for understanding and identify students needing reteach.",
-        ],
+        ]),
       },
     }
   }
@@ -90,34 +107,37 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
     return {
       teach: {
         title: "Teach",
-        steps: [
+        steps: compactSteps([
           openingLine,
           `Model the phonics focus with these curriculum examples: ${wordList.join(", ")}.`,
           `Teach and reinforce the key language students will use: ${vocabulary.join(", ")}.`,
           "Think aloud while blending, reading, sorting, or encoding target words.",
+          ...teachPlanLines,
           teacherMoveLine,
           flowLine,
           slideShellLine,
-        ],
+        ]),
       },
       guidedPractice: {
         title: "Guided Practice",
-        steps: [
+        steps: compactSteps([
           guidedTaskLine,
           `Use the lesson word list during support: ${wordList.join(", ")}.`,
           "Require students to explain or show the target pattern with teacher guidance.",
+          ...guidedPlanLines,
           promptLine,
           timingLine,
-        ],
+        ]),
       },
       independentPractice: {
         title: "Independent Practice",
-        steps: [
+        steps: compactSteps([
           independentTaskLine,
           `Use these words or examples during practice: ${wordList.join(", ")}.`,
+          ...independentPlanLines,
           "Check for accurate decoding, sorting, encoding, and pattern application.",
           toneLine,
-        ],
+        ]),
       },
       centers: {
         title: "Centers",
@@ -129,12 +149,13 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       },
       closure: {
         title: "Closure",
-        steps: [
+        steps: compactSteps([
           "Review the target sound, pattern, or decoding skill.",
           closureLine,
+          ...closurePlanLines,
           promptLine,
           "End with a quick oral read, sort, or exit check.",
-        ],
+        ]),
       },
     }
   }
@@ -143,34 +164,37 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
     return {
       teach: {
         title: "Teach",
-        steps: [
+        steps: compactSteps([
           openingLine,
           `Model comprehension thinking with these lesson texts: ${texts.join(", ")}.`,
           `Preteach or revisit the lesson vocabulary: ${vocabulary.join(", ")}.`,
           "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
+          ...teachPlanLines,
           teacherMoveLine,
           flowLine,
           slideShellLine,
-        ],
+        ]),
       },
       guidedPractice: {
         title: "Guided Practice",
-        steps: [
+        steps: compactSteps([
           guidedTaskLine,
           `Use the lesson text and prompts during support: ${texts.join(", ")}.`,
           `Anchor the work to the lesson standard: ${standards.join(", ")}.`,
+          ...guidedPlanLines,
           promptLine,
           timingLine,
-        ],
+        ]),
       },
       independentPractice: {
         title: "Independent Practice",
-        steps: [
+        steps: compactSteps([
           independentTaskLine,
           `Use these texts or prompts during student work: ${texts.join(", ")}.`,
+          ...independentPlanLines,
           "Check for understanding, accuracy, and evidence of reasoning.",
           toneLine,
-        ],
+        ]),
       },
       centers: {
         title: "Centers",
@@ -182,12 +206,13 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
       },
       closure: {
         title: "Closure",
-        steps: [
+        steps: compactSteps([
           "Review the comprehension objective and key takeaway from the text.",
           closureLine,
+          ...closurePlanLines,
           promptLine,
           "Close with a brief discussion, written response, or oral recap.",
-        ],
+        ]),
       },
     }
   }
@@ -195,31 +220,34 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
   return {
     teach: {
       title: "Teach",
-      steps: [
+      steps: compactSteps([
         openingLine,
         `Model the lesson content using: ${modeledResources}.`,
         `Teach the lesson vocabulary and focus language: ${vocabulary.join(", ")}.`,
+        ...teachPlanLines,
         teacherMoveLine,
         flowLine,
         slideShellLine,
-      ],
+      ]),
     },
     guidedPractice: {
       title: "Guided Practice",
-      steps: [
+      steps: compactSteps([
         guidedTaskLine,
         `Reference standards during support: ${standards.join(", ")}.`,
+        ...guidedPlanLines,
         promptLine,
         timingLine,
-      ],
+      ]),
     },
     independentPractice: {
       title: "Independent Practice",
-      steps: [
+      steps: compactSteps([
         independentTaskLine,
         `Use these lesson resources: ${wordList.join(", ")} / ${texts.join(", ")}.`,
+        ...independentPlanLines,
         toneLine,
-      ],
+      ]),
     },
     centers: {
       title: "Centers",
@@ -231,14 +259,40 @@ export function buildLessonSpec(blueprint: LessonBlueprint): LessonSpec {
     },
     closure: {
       title: "Closure",
-      steps: [
+      steps: compactSteps([
         "Review the lesson objective.",
         `Revisit the lesson flow: ${shell.lessonSegments.join(" -> ")}.`,
         closureLine,
+        ...closurePlanLines,
         promptLine,
-      ],
+      ]),
     },
   }
+}
+
+function planningLines(
+  planningIdeas: LessonPlanningIdeas | undefined,
+  section:
+    | "teach"
+    | "guided_practice"
+    | "independent_practice"
+    | "closure"
+): string[] {
+  const match = planningIdeas?.lessonPlanSections.find((item) => item.section === section)
+
+  if (!match) {
+    return []
+  }
+
+  return match.ideas.map((idea) => formatPlanningIdea(idea))
+}
+
+function formatPlanningIdea(idea: LessonPlanIdea): string {
+  return `${idea.title}: ${idea.description}`
+}
+
+function compactSteps(steps: string[]): string[] {
+  return Array.from(new Set(steps.map((step) => step.trim()).filter((step) => step.length > 0)))
 }
 
 function buildOpeningLine(
