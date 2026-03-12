@@ -1,4 +1,4 @@
-﻿import { extractTextFromFile } from "../materials/extractTextFromFile"
+import { extractTextFromFile } from "../materials/extractTextFromFile"
 import { analyzeMaterial } from "../materials/analyzeMaterial"
 import { useLessonStore } from "../../state/useLessonStore"
 import { MaterialAnalysis } from "../types"
@@ -30,11 +30,11 @@ export async function processMaterial(id: string) {
     })
 
     const analysis: MaterialAnalysis = {
-      summary: buildSummary(material.role, extraction.extractedText),
+      ...analysisResult.analysis,
+      summary: buildSummary(material.role, extraction.extractedText, analysisResult.analysis.summary),
       extractedText: extraction.extractedText,
-      tags: deriveTags(extraction.extractedText, material.role),
+      tags: deriveTags(extraction.extractedText, material.role, analysisResult.analysis.tags),
       sourceRole: material.role,
-      ...analysisResult,
     }
 
     store.setMaterialAnalysis(id, analysis)
@@ -46,7 +46,15 @@ export async function processMaterial(id: string) {
   }
 }
 
-function buildSummary(role: "curriculum" | "exemplar", extractedText: string[]): string {
+function buildSummary(
+  role: "curriculum" | "exemplar",
+  extractedText: string[],
+  preferredSummary?: string
+): string {
+  if (preferredSummary && preferredSummary.trim().length > 0) {
+    return preferredSummary
+  }
+
   const lineCount = extractedText.length
 
   if (role === "curriculum") {
@@ -60,7 +68,11 @@ function buildSummary(role: "curriculum" | "exemplar", extractedText: string[]):
     : "Exemplar material processed, but no usable text was extracted."
 }
 
-function deriveTags(lines: string[], role: "curriculum" | "exemplar"): string[] {
+function deriveTags(
+  lines: string[],
+  role: "curriculum" | "exemplar",
+  preferredTags: string[] = []
+): string[] {
   const baseTags =
     role === "curriculum"
       ? ["curriculum", "content", "instruction"]
@@ -71,5 +83,5 @@ function deriveTags(lines: string[], role: "curriculum" | "exemplar"): string[] 
     .filter((line) => line.length > 0 && line.split(/\s+/).length <= 5)
     .slice(0, 5)
 
-  return Array.from(new Set([...baseTags, ...shortLines]))
+  return Array.from(new Set([...baseTags, ...preferredTags, ...shortLines]))
 }
