@@ -1,5 +1,6 @@
 ﻿import React from "react"
 import { Link } from "react-router-dom"
+import { LessonPlanIdea, SlidePlan } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
 const sectionStyle: React.CSSProperties = {
@@ -11,6 +12,7 @@ const sectionStyle: React.CSSProperties = {
 
 export default function ResultsPage() {
   const blueprint = useLessonStore((state) => state.blueprint)
+  const planningIdeas = useLessonStore((state) => state.planningIdeas)
   const lessonSpec = useLessonStore((state) => state.lessonSpec)
   const lessonPackage = useLessonStore((state) => state.lessonPackage)
   const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
@@ -55,12 +57,12 @@ export default function ResultsPage() {
     )
   }
 
-  if (!blueprint || !lessonSpec || !lessonPackage) {
+  if (!blueprint || !lessonSpec || !lessonPackage || !planningIdeas) {
     return (
       <BlockedResultsState
         title="Results"
         message="Inputs and materials are ready, but no generated lesson is currently loaded."
-        details="Return to the generation flow to create a blueprint, lesson spec, and lesson package."
+        details="Return to the generation flow to create a blueprint, planning ideas, lesson spec, and lesson package."
         linkTo="/inputs"
         linkLabel="Go to Inputs"
       />
@@ -99,8 +101,11 @@ export default function ResultsPage() {
           <p style={{ margin: "0 0 8px 0" }}>
             <strong>Vocabulary:</strong> {blueprint.content.vocabulary.join(", ")}
           </p>
-          <p style={{ margin: 0 }}>
+          <p style={{ marginBottom: 8 }}>
             <strong>Texts:</strong> {blueprint.content.texts.join(", ")}
+          </p>
+          <p style={{ margin: 0 }}>
+            <strong>Practice Ideas:</strong> {blueprint.content.practiceIdeas.join(", ")}
           </p>
         </div>
 
@@ -109,9 +114,65 @@ export default function ResultsPage() {
           <p style={{ marginBottom: 8 }}>
             <strong>Timing:</strong> {blueprint.structure.timing.join(" | ")}
           </p>
-          <p style={{ margin: 0 }}>
+          <p style={{ marginBottom: 8 }}>
             <strong>Segments:</strong> {blueprint.structure.lessonSegments.join(" -> ")}
           </p>
+          <p style={{ marginBottom: 8 }}>
+            <strong>Teacher Moves:</strong> {blueprint.structure.teacherMoves.join(", ")}
+          </p>
+          <p style={{ marginBottom: 8 }}>
+            <strong>Prompt Style:</strong> {blueprint.structure.promptStyle.join(", ")}
+          </p>
+          <p style={{ margin: 0 }}>
+            <strong>Tone:</strong> {blueprint.structure.tone.join(", ")}
+          </p>
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Template Shell</h3>
+          <p style={{ marginBottom: 8 }}>
+            <strong>Segment Order:</strong> {blueprint.structure.templateShell.segmentOrder.join(" -> ")}
+          </p>
+          <p style={{ marginBottom: 8 }}>
+            <strong>Slide Shell:</strong> {blueprint.structure.templateShell.slideShell.join(" -> ")}
+          </p>
+          <p style={{ marginBottom: 8 }}>
+            <strong>Timing Shell:</strong> {blueprint.structure.templateShell.timingShell.join(" | ")}
+          </p>
+          <p style={{ marginBottom: 8 }}>
+            <strong>Teacher Move Shell:</strong> {blueprint.structure.templateShell.teacherMoveShell.join(", ")}
+          </p>
+          <p style={{ marginBottom: 8 }}>
+            <strong>Prompt Shell:</strong> {blueprint.structure.templateShell.promptShell.join(", ")}
+          </p>
+          <p style={{ margin: 0 }}>
+            <strong>Tone Shell:</strong> {blueprint.structure.templateShell.toneShell.join(", ")}
+          </p>
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Slide Planning</h3>
+          <SlidePlanList slides={planningIdeas.slidePlans} />
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Formative Assessment Ideas</h3>
+          <IdeaList ideas={planningIdeas.formativeAssessmentIdeas} />
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Center Ideas</h3>
+          <IdeaList ideas={planningIdeas.centerIdeas} />
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Small Group Ideas</h3>
+          <IdeaList ideas={planningIdeas.smallGroupIdeas} />
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Intervention Ideas</h3>
+          <IdeaList ideas={planningIdeas.interventionIdeas} />
         </div>
 
         <div style={sectionStyle}>
@@ -209,6 +270,47 @@ export default function ResultsPage() {
   )
 }
 
+function SlidePlanList({ slides }: { slides: SlidePlan[] }) {
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      {slides.map((slide, index) => (
+        <div key={`${slide.shellLabel}-${index}`} style={subCardStyle}>
+          <p style={{ margin: "0 0 6px 0" }}>
+            <strong>{slide.shellLabel}</strong>
+          </p>
+          <p style={{ margin: "0 0 6px 0" }}>
+            <strong>Action:</strong> {slide.action}
+          </p>
+          <p style={{ margin: "0 0 6px 0" }}>
+            <strong>Purpose:</strong> {slide.purpose}
+          </p>
+          <p style={{ margin: 0 }}>
+            <strong>Notes:</strong> {slide.notes}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function IdeaList({ ideas }: { ideas: LessonPlanIdea[] }) {
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      {ideas.map((idea, index) => (
+        <div key={`${idea.title}-${index}`} style={subCardStyle}>
+          <p style={{ margin: "0 0 6px 0" }}>
+            <strong>{idea.title}</strong>
+          </p>
+          <p style={{ margin: "0 0 6px 0" }}>{idea.description}</p>
+          <p style={{ margin: 0, color: "#4b5563" }}>
+            <strong>Why:</strong> {idea.rationale}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function BlockedResultsState({
   title,
   message,
@@ -261,6 +363,13 @@ const preStyle: React.CSSProperties = {
   fontFamily: "inherit",
 }
 
+const subCardStyle: React.CSSProperties = {
+  border: "1px solid #e5e7eb",
+  borderRadius: 12,
+  padding: 12,
+  background: "#f9fafb",
+}
+
 const linkStyle: React.CSSProperties = {
   display: "inline-block",
   padding: "10px 14px",
@@ -269,4 +378,3 @@ const linkStyle: React.CSSProperties = {
   border: "1px solid #d1d5db",
   color: "#111827",
 }
-

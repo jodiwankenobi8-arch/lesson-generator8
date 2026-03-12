@@ -15,6 +15,7 @@ export async function generateLesson() {
   )
 
   store.setBlueprint(result.blueprint)
+  store.setPlanningIdeas(result.planningIdeas)
   store.setLessonSpec(result.lessonSpec)
   store.setLessonPackage(result.lessonPackage)
 }

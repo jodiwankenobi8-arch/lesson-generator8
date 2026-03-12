@@ -5,6 +5,7 @@ import {
   LessonInputs,
   LessonMode,
   LessonPackage,
+  LessonPlanningIdeas,
   LessonSpec,
   MaterialAnalysis,
   MaterialFile,
@@ -26,6 +27,7 @@ type LessonStore = {
   materials: MaterialFile[]
   selectedLessonMode: LessonMode
   blueprint: LessonBlueprint | null
+  planningIdeas: LessonPlanningIdeas | null
   lessonSpec: LessonSpec | null
   lessonPackage: LessonPackage | null
 
@@ -50,6 +52,7 @@ type LessonStore = {
   beginMaterialAnalysis: (id: string) => void
 
   setBlueprint: (blueprint: LessonBlueprint | null) => void
+  setPlanningIdeas: (planningIdeas: LessonPlanningIdeas | null) => void
   setLessonSpec: (spec: LessonSpec | null) => void
   setLessonPackage: (pkg: LessonPackage | null) => void
   resetGeneratedContent: () => void
@@ -73,6 +76,7 @@ const emptyInputs: LessonInputs = {
 function clearedGeneratedState() {
   return {
     blueprint: null,
+    planningIdeas: null,
     lessonSpec: null,
     lessonPackage: null,
   }
@@ -119,6 +123,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   materials: [],
   selectedLessonMode: "single",
   blueprint: null,
+  planningIdeas: null,
   lessonSpec: null,
   lessonPackage: null,
 
@@ -245,6 +250,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   },
 
   setBlueprint: (blueprint) => set({ blueprint }),
+  setPlanningIdeas: (planningIdeas) => set({ planningIdeas }),
   setLessonSpec: (lessonSpec) => set({ lessonSpec }),
   setLessonPackage: (lessonPackage) => set({ lessonPackage }),
 
