@@ -7,6 +7,8 @@ import {
   LessonBlueprint,
   SlidePlan,
   LessonPlanningIdeas,
+  MissingAreaDecisionChoice,
+  PlanningComponentKey,
 } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
@@ -29,6 +31,8 @@ export default function ResultsPage() {
   const lessonSpec = useLessonStore((state) => state.lessonSpec)
   const lessonPackage = useLessonStore((state) => state.lessonPackage)
   const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
+  const missingAreaDecisions = useLessonStore((state) => state.missingAreaDecisions)
+  const setMissingAreaDecision = useLessonStore((state) => state.setMissingAreaDecision)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
@@ -98,7 +102,11 @@ export default function ResultsPage() {
 
         <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} />
 
-        <CoverageDecisionsSection planningIdeas={planningIdeas} />
+        <CoverageDecisionsSection
+          planningIdeas={planningIdeas}
+          decisions={missingAreaDecisions}
+          onSetDecision={setMissingAreaDecision}
+        />
 
         <SignalSection
           title="Source Support Signals"
@@ -242,8 +250,12 @@ function TraceabilitySection({
 
 function CoverageDecisionsSection({
   planningIdeas,
+  decisions,
+  onSetDecision,
 }: {
   planningIdeas: LessonPlanningIdeas
+  decisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
+  onSetDecision: (component: PlanningComponentKey, choice: MissingAreaDecisionChoice) => void
 }) {
   const componentCoverage = planningIdeas.componentCoverage ?? []
   const missingAreaPrompts = planningIdeas.missingAreaPrompts ?? []
@@ -281,21 +293,47 @@ function CoverageDecisionsSection({
         <div style={subCardStyle}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Teacher Decision Prompts</div>
           {missingAreaPrompts.length > 0 ? (
-            <div style={{ display: "grid", gap: 8 }}>
-              {missingAreaPrompts.map((prompt, index) => (
-                <div
-                  key={`${prompt.component}-${index}`}
-                  style={signalCardStyle(prompt.importance === "high" ? "warn" : "neutral")}
-                >
-                  <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
-                    {prompt.component.replace(/_/g, " ")} ({prompt.importance})
+            <div style={{ display: "grid", gap: 12 }}>
+              {missingAreaPrompts.map((prompt, index) => {
+                const currentChoice = decisions[prompt.component] ?? "undecided"
+
+                return (
+                  <div
+                    key={`${prompt.component}-${index}`}
+                    style={signalCardStyle(prompt.importance === "high" ? "warn" : "neutral")}
+                  >
+                    <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
+                      {prompt.component.replace(/_/g, " ")} ({prompt.importance})
+                    </div>
+                    <div style={{ marginTop: 4 }}>{prompt.prompt}</div>
+                    <div style={{ marginTop: 4, fontSize: 13 }}>
+                      <strong>Why:</strong> {prompt.rationale}
+                    </div>
+
+                    <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <DecisionButton
+                        label="Add it"
+                        active={currentChoice === "add"}
+                        onClick={() => onSetDecision(prompt.component, "add")}
+                      />
+                      <DecisionButton
+                        label="Leave it out"
+                        active={currentChoice === "leave_out"}
+                        onClick={() => onSetDecision(prompt.component, "leave_out")}
+                      />
+                      <DecisionButton
+                        label="Decide later"
+                        active={currentChoice === "undecided"}
+                        onClick={() => onSetDecision(prompt.component, "undecided")}
+                      />
+                    </div>
+
+                    <div style={{ marginTop: 8, fontSize: 13 }}>
+                      <strong>Current decision:</strong> {formatDecisionChoice(currentChoice)}
+                    </div>
                   </div>
-                  <div style={{ marginTop: 4 }}>{prompt.prompt}</div>
-                  <div style={{ marginTop: 4, fontSize: 13 }}>
-                    <strong>Why:</strong> {prompt.rationale}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div style={{ color: "#4b5563" }}>
@@ -508,6 +546,35 @@ function IdeaList({ ideas }: { ideas: LessonPlanIdea[] }) {
   )
 }
 
+function DecisionButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: "8px 10px",
+        borderRadius: 10,
+        border: active ? "1px solid #111827" : "1px solid #d1d5db",
+        background: active ? "#111827" : "#ffffff",
+        color: active ? "#ffffff" : "#111827",
+        cursor: "pointer",
+        fontSize: 12,
+        fontWeight: 600,
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
 function BlockedResultsState({
   title,
   message,
@@ -556,6 +623,18 @@ function getFallbackUsageLabel(
   }
 
   return "Minimal fallback usage likely."
+}
+
+function formatDecisionChoice(choice: MissingAreaDecisionChoice): string {
+  if (choice === "add") {
+    return "Add it"
+  }
+
+  if (choice === "leave_out") {
+    return "Leave it out"
+  }
+
+  return "Decide later"
 }
 
 function mapCoverageTone(status: "covered" | "partial" | "missing"): "good" | "warn" | "neutral" {

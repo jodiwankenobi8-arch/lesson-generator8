@@ -12,6 +12,8 @@ import {
   MaterialFile,
   MaterialRole,
   MaterialStatus,
+  MissingAreaDecisionChoice,
+  PlanningComponentKey,
 } from "../engine/types"
 
 type MaterialCounts = {
@@ -39,6 +41,7 @@ type LessonStore = {
   planningIdeas: LessonPlanningIdeas | null
   lessonSpec: LessonSpec | null
   lessonPackage: LessonPackage | null
+  missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
 
   setInputs: (updates: Partial<LessonInputs>) => void
   setSelectedLessonMode: (mode: LessonMode) => void
@@ -64,6 +67,11 @@ type LessonStore = {
   setPlanningIdeas: (planningIdeas: LessonPlanningIdeas | null) => void
   setLessonSpec: (spec: LessonSpec | null) => void
   setLessonPackage: (pkg: LessonPackage | null) => void
+  setMissingAreaDecision: (
+    component: PlanningComponentKey,
+    choice: MissingAreaDecisionChoice
+  ) => void
+  clearMissingAreaDecisions: () => void
   resetGeneratedContent: () => void
 
   hasRequiredInputs: () => boolean
@@ -89,6 +97,7 @@ function clearedGeneratedState() {
     planningIdeas: null,
     lessonSpec: null,
     lessonPackage: null,
+    missingAreaDecisions: {},
   }
 }
 
@@ -184,6 +193,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   planningIdeas: null,
   lessonSpec: null,
   lessonPackage: null,
+  missingAreaDecisions: {},
 
   setInputs: (updates) =>
     set((state) => ({
@@ -311,6 +321,16 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   setPlanningIdeas: (planningIdeas) => set({ planningIdeas }),
   setLessonSpec: (lessonSpec) => set({ lessonSpec }),
   setLessonPackage: (lessonPackage) => set({ lessonPackage }),
+
+  setMissingAreaDecision: (component, choice) =>
+    set((state) => ({
+      missingAreaDecisions: {
+        ...state.missingAreaDecisions,
+        [component]: choice,
+      },
+    })),
+
+  clearMissingAreaDecisions: () => set({ missingAreaDecisions: {} }),
 
   resetGeneratedContent: () => set(clearedGeneratedState()),
 

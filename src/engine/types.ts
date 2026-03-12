@@ -202,6 +202,13 @@ export type MissingAreaPromptCandidate = {
   rationale: string
 }
 
+export type MissingAreaDecisionChoice = "undecided" | "add" | "leave_out"
+
+export type MissingAreaDecision = {
+  component: PlanningComponentKey
+  choice: MissingAreaDecisionChoice
+}
+
 export type LessonPlanningIdeas = {
   slidePlans: SlidePlan[]
   lessonPlanSections: LessonPlanSectionIdeas[]
