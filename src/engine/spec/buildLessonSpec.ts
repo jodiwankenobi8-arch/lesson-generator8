@@ -1,4 +1,4 @@
-﻿import {
+import {
   LessonBlueprint,
   LessonPlanIdea,
   LessonPlanningIdeas,
@@ -43,6 +43,10 @@ export function buildLessonSpec(
   const guidedPlanLines = planningLines(planningIdeas, "guided_practice")
   const independentPlanLines = planningLines(planningIdeas, "independent_practice")
   const closurePlanLines = planningLines(planningIdeas, "closure")
+  const centerPlanLines = ideaLines(planningIdeas?.centerIdeas)
+  const smallGroupPlanLines = ideaLines(planningIdeas?.smallGroupIdeas)
+  const interventionPlanLines = ideaLines(planningIdeas?.interventionIdeas)
+  const formativePlanLines = ideaLines(planningIdeas?.formativeAssessmentIdeas)
 
   if (isFullMixed) {
     return {
@@ -67,6 +71,7 @@ export function buildLessonSpec(
           `Use modeled examples and text support during teacher guidance: ${wordList.join(", ")}; ${texts.join(", ")}.`,
           `Keep support anchored to the standards: ${standards.join(", ")}.`,
           ...guidedPlanLines,
+          ...takeLines(formativePlanLines, 1),
           promptLine,
           timingLine,
         ]),
@@ -78,22 +83,27 @@ export function buildLessonSpec(
           `Require students to apply both lesson resources and text support: ${wordList.join(", ")} / ${texts.join(", ")}.`,
           ...independentPlanLines,
           "Check for transfer from teacher-supported work to student-owned work in both lesson parts.",
+          ...takeLines(formativePlanLines, 1, 1),
           toneLine,
         ]),
       },
       centers: {
         title: "Centers",
-        steps: [
+        steps: compactSteps([
+          ...centerPlanLines,
+          ...takeLines(smallGroupPlanLines, 1),
+          ...takeLines(interventionPlanLines, 1),
           "Phonics / word work center",
           "Reading or response center",
           "Teacher-led support / reteach center",
-        ],
+        ]),
       },
       closure: {
         title: "Closure",
         steps: compactSteps([
           "Review what students learned in both parts of the lesson.",
           ...closurePlanLines,
+          ...takeLines(formativePlanLines, 1),
           flowLine,
           timingLine,
           toneLine,
@@ -125,6 +135,7 @@ export function buildLessonSpec(
           `Use the lesson word list during support: ${wordList.join(", ")}.`,
           "Require students to explain or show the target pattern with teacher guidance.",
           ...guidedPlanLines,
+          ...takeLines(formativePlanLines, 1),
           promptLine,
           timingLine,
         ]),
@@ -135,17 +146,21 @@ export function buildLessonSpec(
           independentTaskLine,
           `Use these words or examples during practice: ${wordList.join(", ")}.`,
           ...independentPlanLines,
+          ...takeLines(formativePlanLines, 1, 1),
           "Check for accurate decoding, sorting, encoding, and pattern application.",
           toneLine,
         ]),
       },
       centers: {
         title: "Centers",
-        steps: [
+        steps: compactSteps([
+          ...centerPlanLines,
+          ...takeLines(smallGroupPlanLines, 1),
+          ...takeLines(interventionPlanLines, 1),
           "Word work / phonics center",
           "Partner reading or decoding center",
           "Teacher table for intervention or extension",
-        ],
+        ]),
       },
       closure: {
         title: "Closure",
@@ -182,6 +197,7 @@ export function buildLessonSpec(
           `Use the lesson text and prompts during support: ${texts.join(", ")}.`,
           `Anchor the work to the lesson standard: ${standards.join(", ")}.`,
           ...guidedPlanLines,
+          ...takeLines(formativePlanLines, 1),
           promptLine,
           timingLine,
         ]),
@@ -192,17 +208,21 @@ export function buildLessonSpec(
           independentTaskLine,
           `Use these texts or prompts during student work: ${texts.join(", ")}.`,
           ...independentPlanLines,
+          ...takeLines(formativePlanLines, 1, 1),
           "Check for understanding, accuracy, and evidence of reasoning.",
           toneLine,
         ]),
       },
       centers: {
         title: "Centers",
-        steps: [
+        steps: compactSteps([
+          ...centerPlanLines,
+          ...takeLines(smallGroupPlanLines, 1),
+          ...takeLines(interventionPlanLines, 1),
           "Reading response center",
           "Partner discussion / retell center",
           "Teacher table for guided comprehension support",
-        ],
+        ]),
       },
       closure: {
         title: "Closure",
@@ -236,6 +256,7 @@ export function buildLessonSpec(
         guidedTaskLine,
         `Reference standards during support: ${standards.join(", ")}.`,
         ...guidedPlanLines,
+        ...takeLines(formativePlanLines, 1),
         promptLine,
         timingLine,
       ]),
@@ -246,16 +267,20 @@ export function buildLessonSpec(
         independentTaskLine,
         `Use these lesson resources: ${wordList.join(", ")} / ${texts.join(", ")}.`,
         ...independentPlanLines,
+        ...takeLines(formativePlanLines, 1, 1),
         toneLine,
       ]),
     },
     centers: {
       title: "Centers",
-      steps: [
+      steps: compactSteps([
+        ...centerPlanLines,
+        ...takeLines(smallGroupPlanLines, 1),
+        ...takeLines(interventionPlanLines, 1),
         "Independent practice center",
         "Partner application center",
         "Teacher support center",
-      ],
+      ]),
     },
     closure: {
       title: "Closure",
@@ -285,6 +310,18 @@ function planningLines(
   }
 
   return match.ideas.map((idea) => formatPlanningIdea(idea))
+}
+
+function ideaLines(ideas: LessonPlanIdea[] | undefined): string[] {
+  if (!ideas?.length) {
+    return []
+  }
+
+  return ideas.map((idea) => formatPlanningIdea(idea))
+}
+
+function takeLines(lines: string[], count: number, start = 0): string[] {
+  return lines.slice(start, start + count)
 }
 
 function formatPlanningIdea(idea: LessonPlanIdea): string {

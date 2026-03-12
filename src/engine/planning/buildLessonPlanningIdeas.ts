@@ -1,9 +1,4 @@
-ï»¿import {
-  LessonBlueprint,
-  LessonPlanIdea,
-  LessonPlanSectionIdeas,
-  LessonPlanningIdeas,
-} from "../types"
+import { LessonBlueprint, LessonPlanIdea, LessonPlanSectionIdeas, LessonPlanningIdeas } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonPlanningIdeas(
@@ -23,20 +18,30 @@ export function buildLessonPlanningIdeas(
   const practiceIdeas = blueprint.content.practiceIdeas
   const wordLists = blueprint.content.wordLists
   const standards = blueprint.content.standards
+  const lessonSegments = blueprint.structure.lessonSegments
 
   return {
-    slidePlans: shell.slideShell.map((shellLabel, index) => ({
-      shellLabel,
-      action: inferSlideAction(shellLabel),
-      purpose: inferSlidePurpose(shellLabel, target.primary),
-      notes: [
-        `Timing: ${shell.timing[index] ?? "Flexible timing"}`,
-        `Teacher move: ${shell.teacherMoves[index % shell.teacherMoves.length] ?? "teacher guidance"}`,
-        `Prompt style: ${shell.promptStyle[index % shell.promptStyle.length] ?? "teacher prompt"}`,
-      ].join(" | "),
-    })),
+    slidePlans: shell.slideShell.map((shellLabel, index) => {
+      const segmentLabel =
+        lessonSegments[index] ??
+        blueprint.structure.templateShell.segmentOrder[index] ??
+        shellLabel
+
+      return {
+        shellLabel,
+        action: inferSlideAction(shellLabel),
+        purpose: inferSlidePurpose(segmentLabel, shellLabel, blueprint),
+        notes: buildSlideNotes({
+          index,
+          shellLabel,
+          segmentLabel,
+          shell,
+          blueprint,
+        }),
+      }
+    }),
     lessonPlanSections: buildLessonPlanSections(
-      target.primary,
+      blueprint,
       standards,
       vocabulary,
       texts,
@@ -44,15 +49,15 @@ export function buildLessonPlanningIdeas(
       wordLists
     ),
     formativeAssessmentIdeas: buildFormativeIdeas(
-      target.primary,
+      blueprint,
       vocabulary,
       practiceIdeas,
       texts,
       wordLists
     ),
-    centerIdeas: buildCenterIdeas(target.primary, practiceIdeas, texts, wordLists),
-    smallGroupIdeas: buildSmallGroupIdeas(target.primary, vocabulary, texts, wordLists),
-    interventionIdeas: buildInterventionIdeas(target.primary, vocabulary, texts, wordLists),
+    centerIdeas: buildCenterIdeas(blueprint, practiceIdeas, texts, wordLists),
+    smallGroupIdeas: buildSmallGroupIdeas(blueprint, vocabulary, texts, wordLists),
+    interventionIdeas: buildInterventionIdeas(blueprint, vocabulary, texts, wordLists),
   }
 }
 
@@ -74,78 +79,156 @@ function inferSlideAction(shellLabel: string): "reuse" | "adapt" | "create_new" 
   return "reuse"
 }
 
-function inferSlidePurpose(shellLabel: string, primaryTarget: string): string {
-  const lower = shellLabel.toLowerCase()
+function inferSlidePurpose(
+  segmentLabel: string,
+  shellLabel: string,
+  blueprint: LessonBlueprint
+): string {
+  const target = blueprint.content.target
+  const lowerSegment = segmentLabel.toLowerCase()
+  const lowerShell = shellLabel.toLowerCase()
 
-  if (lower.includes("opening") || lower.includes("objective")) {
-    return "Introduce the lesson goal and frame the learning."
+  if (lowerSegment.includes("opening") || lowerShell.includes("objective")) {
+    return target.isMixedTarget
+      ? "Introduce the combined lesson focus and preview both parts of the lesson."
+      : "Introduce the lesson goal and frame the learning."
   }
 
-  if (lower.includes("teach")) {
-    return primaryTarget === "phonics"
-      ? "Model the target phonics pattern or decoding move."
-      : "Model the key comprehension or content thinking."
+  if (lowerSegment.includes("teach")) {
+    return target.primary === "phonics"
+      ? "Model the target phonics pattern or decoding move with curriculum-aligned examples."
+      : "Model the key comprehension or content thinking with curriculum-aligned text."
   }
 
-  if (lower.includes("guided")) {
-    return "Support students through scaffolded practice with teacher prompting."
+  if (lowerSegment.includes("guided")) {
+    return "Support students through scaffolded practice using the exemplar’s structure and prompts."
   }
 
-  if (lower.includes("independent")) {
-    return "Move students into independent application of the target skill."
+  if (lowerSegment.includes("independent")) {
+    return "Move students into independent application of the target skill with curriculum-grounded tasks."
   }
 
-  if (lower.includes("center")) {
-    return "Set up rotation or station expectations and task options."
+  if (lowerSegment.includes("center")) {
+    return "Set up center or rotation tasks that continue the lesson target with clear expectations."
   }
 
-  if (lower.includes("closure")) {
-    return "Wrap up the lesson and check understanding."
+  if (lowerSegment.includes("closure")) {
+    return target.isMixedTarget
+      ? "Close the lesson by reconnecting both parts and checking what students retained."
+      : "Wrap up the lesson and check understanding."
   }
 
   return "Carry the exemplar shell forward while swapping in curriculum-aligned content."
 }
 
+function buildSlideNotes(args: {
+  index: number
+  shellLabel: string
+  segmentLabel: string
+  shell: ReturnType<typeof resolveTemplateShell>
+  blueprint: LessonBlueprint
+}): string {
+  const { index, shellLabel, segmentLabel, shell, blueprint } = args
+
+  const timing = shell.timing[index] ?? "Flexible timing"
+  const teacherMove = shell.teacherMoves[index % shell.teacherMoves.length] ?? "teacher guidance"
+  const prompt = shell.promptStyle[index % shell.promptStyle.length] ?? "teacher prompt"
+  const tone = shell.tone[index % shell.tone.length] ?? "clear instructional tone"
+  const contentAnchor = selectSlideContentAnchor(segmentLabel, blueprint)
+
+  return [
+    `Segment: ${segmentLabel || shellLabel}`,
+    `Timing: ${timing}`,
+    `Teacher move: ${teacherMove}`,
+    `Prompt style: ${prompt}`,
+    `Content anchor: ${contentAnchor}`,
+    `Tone: ${tone}`,
+  ].join(" | ")
+}
+
+function selectSlideContentAnchor(
+  segmentLabel: string,
+  blueprint: LessonBlueprint
+): string {
+  const lower = segmentLabel.toLowerCase()
+  const primaryTarget = blueprint.content.target.primary
+
+  if (lower.includes("teach")) {
+    return primaryTarget === "phonics"
+      ? blueprint.content.wordLists.slice(0, 3).join(", ") || "target word examples"
+      : blueprint.content.texts.slice(0, 1).join(", ") || "lesson text"
+  }
+
+  if (lower.includes("guided") || lower.includes("independent") || lower.includes("center")) {
+    return blueprint.content.practiceIdeas.slice(0, 2).join(", ") || "curriculum practice task"
+  }
+
+  if (lower.includes("closure")) {
+    return primaryTarget === "phonics"
+      ? blueprint.content.wordLists.slice(0, 2).join(", ") || "target words"
+      : blueprint.content.vocabulary.slice(0, 2).join(", ") || "key vocabulary"
+  }
+
+  return blueprint.content.standards.slice(0, 1).join(", ") || "lesson objective"
+}
+
 function buildLessonPlanSections(
-  primaryTarget: string,
+  blueprint: LessonBlueprint,
   standards: string[],
   vocabulary: string[],
   texts: string[],
   practiceIdeas: string[],
   wordLists: string[]
 ): LessonPlanSectionIdeas[] {
+  const target = blueprint.content.target
+
   return [
     {
       section: "teach",
       title: "Teach Plan Ideas",
-      ideas: buildTeachIdeas(primaryTarget, standards, vocabulary, texts, wordLists),
+      ideas: buildTeachIdeas(target, standards, vocabulary, texts, wordLists),
     },
     {
       section: "guided_practice",
       title: "Guided Practice Plan Ideas",
-      ideas: buildGuidedPracticeIdeas(primaryTarget, standards, practiceIdeas, texts, wordLists),
+      ideas: buildGuidedPracticeIdeas(target, standards, practiceIdeas, texts, wordLists),
     },
     {
       section: "independent_practice",
       title: "Independent Practice Plan Ideas",
-      ideas: buildIndependentPracticeIdeas(primaryTarget, practiceIdeas, texts, wordLists),
+      ideas: buildIndependentPracticeIdeas(target, practiceIdeas, texts, wordLists),
     },
     {
       section: "closure",
       title: "Closure Plan Ideas",
-      ideas: buildClosureIdeas(primaryTarget, vocabulary, texts, wordLists),
+      ideas: buildClosureIdeas(target, vocabulary, texts, wordLists),
     },
   ]
 }
 
 function buildTeachIdeas(
-  primaryTarget: string,
+  target: LessonBlueprint["content"]["target"],
   standards: string[],
   vocabulary: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (primaryTarget === "phonics") {
+  if (target.isMixedTarget && target.recommendedMode === "full") {
+    return [
+      {
+        title: "Teach Part 1 explicitly",
+        description: `Open with the first lesson target and model it clearly using ${wordLists.slice(0, 3).join(", ") || texts.slice(0, 1).join(", ")}.`,
+        rationale: "Mixed lessons work better when the first part is taught explicitly instead of blending everything together immediately.",
+      },
+      {
+        title: "Bridge into Part 2 intentionally",
+        description: `After the first model, transition into the second target using ${texts.slice(0, 1).join(", ") || vocabulary.slice(0, 3).join(", ")} so students feel the lesson connection.`,
+        rationale: "Creates a true two-part lesson instead of a muddled mixed block.",
+      },
+    ]
+  }
+
+  if (target.primary === "phonics") {
     return [
       {
         title: "Model the target pattern",
@@ -175,13 +258,28 @@ function buildTeachIdeas(
 }
 
 function buildGuidedPracticeIdeas(
-  primaryTarget: string,
+  target: LessonBlueprint["content"]["target"],
   standards: string[],
   practiceIdeas: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (primaryTarget === "phonics") {
+  if (target.isMixedTarget && target.recommendedMode === "full") {
+    return [
+      {
+        title: "Guide practice for Part 1 first",
+        description: "Provide scaffolded support with the first target before asking students to integrate it with the second part of the lesson.",
+        rationale: "Reduces overload in mixed lessons.",
+      },
+      {
+        title: "Then connect both parts",
+        description: `Use tasks such as ${practiceIdeas.slice(0, 2).join(", ")} to help students move from one target into the next.`,
+        rationale: "Keeps the lesson coherent while still respecting both targets.",
+      },
+    ]
+  }
+
+  if (target.primary === "phonics") {
     return [
       {
         title: "Guided word practice",
@@ -211,12 +309,27 @@ function buildGuidedPracticeIdeas(
 }
 
 function buildIndependentPracticeIdeas(
-  primaryTarget: string,
+  target: LessonBlueprint["content"]["target"],
   practiceIdeas: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (primaryTarget === "phonics") {
+  if (target.isMixedTarget && target.recommendedMode === "full") {
+    return [
+      {
+        title: "Independent Part 1 application",
+        description: "Let students first apply the first target with manageable support and materials.",
+        rationale: "Builds independence without collapsing both targets into one unclear task.",
+      },
+      {
+        title: "Integrated final application",
+        description: `Then ask students to complete a second task tied to ${practiceIdeas.slice(0, 2).join(", ")} that reflects the full lesson.`,
+        rationale: "Allows the lesson to culminate in a fuller combined task once each part has been supported.",
+      },
+    ]
+  }
+
+  if (target.primary === "phonics") {
     return [
       {
         title: "Independent phonics application",
@@ -246,12 +359,22 @@ function buildIndependentPracticeIdeas(
 }
 
 function buildClosureIdeas(
-  primaryTarget: string,
+  target: LessonBlueprint["content"]["target"],
   vocabulary: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (primaryTarget === "phonics") {
+  if (target.isMixedTarget && target.recommendedMode === "full") {
+    return [
+      {
+        title: "Reconnect both lesson parts",
+        description: "Close by naming what students learned in each part of the lesson and how the two targets connected.",
+        rationale: "Prevents mixed lessons from feeling like two unrelated mini-lessons.",
+      },
+    ]
+  }
+
+  if (target.primary === "phonics") {
     return [
       {
         title: "Review the target pattern",
@@ -271,13 +394,30 @@ function buildClosureIdeas(
 }
 
 function buildFormativeIdeas(
-  primaryTarget: string,
+  blueprint: LessonBlueprint,
   vocabulary: string[],
   practiceIdeas: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (primaryTarget === "phonics") {
+  const target = blueprint.content.target
+
+  if (target.isMixedTarget && target.recommendedMode === "full") {
+    return [
+      {
+        title: "Part 1 checkpoint",
+        description: "Pause after the first lesson part and quickly check whether students can do the first target before moving on.",
+        rationale: "Prevents the second lesson part from piling onto an unstable foundation.",
+      },
+      {
+        title: "End-of-lesson integration check",
+        description: `Use a short task tied to ${practiceIdeas.slice(0, 2).join(", ")} to see whether students can bring both targets together.`,
+        rationale: "Shows whether the two-part lesson held together instructionally.",
+      },
+    ]
+  }
+
+  if (target.primary === "phonics") {
     return [
       {
         title: "Mid-lesson decoding check",
@@ -307,12 +447,29 @@ function buildFormativeIdeas(
 }
 
 function buildCenterIdeas(
-  primaryTarget: string,
+  blueprint: LessonBlueprint,
   practiceIdeas: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (primaryTarget === "phonics") {
+  const target = blueprint.content.target
+
+  if (target.isMixedTarget && target.recommendedMode === "full") {
+    return [
+      {
+        title: "Part 1 practice center",
+        description: "Create one center that isolates the first lesson target for repeated supported practice.",
+        rationale: "Keeps center work focused instead of overloading students with both targets at once.",
+      },
+      {
+        title: "Part 2 application center",
+        description: `Create a second center tied to ${texts.slice(0, 1).join(", ") || practiceIdeas.slice(0, 2).join(", ")} for applying the second target.`,
+        rationale: "Preserves the two-part lesson structure during rotation work.",
+      },
+    ]
+  }
+
+  if (target.primary === "phonics") {
     return [
       {
         title: "Word work center",
@@ -342,12 +499,29 @@ function buildCenterIdeas(
 }
 
 function buildSmallGroupIdeas(
-  primaryTarget: string,
+  blueprint: LessonBlueprint,
   vocabulary: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (primaryTarget === "phonics") {
+  const target = blueprint.content.target
+
+  if (target.isMixedTarget && target.recommendedMode === "full") {
+    return [
+      {
+        title: "Part-specific reteach group",
+        description: "Pull students for reteach on whichever lesson part broke down first rather than reteaching the entire lesson at once.",
+        rationale: "Makes mixed-lesson support more precise and manageable.",
+      },
+      {
+        title: "Part-integration extension group",
+        description: "Meet with students who are ready to connect both targets in a more complex way.",
+        rationale: "Provides extension without making the whole class lesson more complicated.",
+      },
+    ]
+  }
+
+  if (target.primary === "phonics") {
     return [
       {
         title: "Targeted pattern reteach group",
@@ -377,12 +551,24 @@ function buildSmallGroupIdeas(
 }
 
 function buildInterventionIdeas(
-  primaryTarget: string,
+  blueprint: LessonBlueprint,
   vocabulary: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (primaryTarget === "phonics") {
+  const target = blueprint.content.target
+
+  if (target.isMixedTarget && target.recommendedMode === "full") {
+    return [
+      {
+        title: "Intervene on the first broken step",
+        description: "Identify which part of the two-part lesson caused difficulty first and intervene there before reteaching everything.",
+        rationale: "Makes mixed-lesson intervention cleaner and more targeted.",
+      },
+    ]
+  }
+
+  if (target.primary === "phonics") {
     return [
       {
         title: "Immediate phonics reteach",
