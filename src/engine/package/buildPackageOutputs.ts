@@ -4,6 +4,7 @@ import {
   LessonPlanningIdeas,
   LessonSpec,
 } from "../types"
+import { assembleSlideDeck } from "../slides/assembleSlideDeck"
 
 export function buildPackageOutputs(args: {
   inputs: LessonInputs
@@ -13,10 +14,10 @@ export function buildPackageOutputs(args: {
 }) {
   const { inputs, blueprint, spec, planningIdeas } = args
 
-  const slides = buildSlides(blueprint, planningIdeas)
+  const slides = buildSlides(blueprint, spec)
   const lessonPlan = buildLessonPlan(inputs, blueprint, spec, planningIdeas)
   const centers = buildCenters(spec, planningIdeas)
-  const rotationPlan = buildRotationPlan(centers)
+  const rotationPlan = buildRotationPlan(centers, planningIdeas)
   const interventions = buildInterventions(blueprint, planningIdeas)
   const exports = buildExports(inputs)
 
@@ -32,26 +33,22 @@ export function buildPackageOutputs(args: {
 
 function buildSlides(
   blueprint: LessonBlueprint,
-  planningIdeas?: LessonPlanningIdeas
+  spec: LessonSpec
 ): string[] {
-  const plannedSlides =
-    planningIdeas?.slidePlans.map(
-      (slide, index) =>
-        `Slide ${index + 1}: ${slide.shellLabel} (${slide.action}) - ${slide.purpose}`
-    ) ?? []
+  const assembled = assembleSlideDeck(blueprint, spec)
 
-  if (plannedSlides.length > 0) {
-    return plannedSlides
+  if (assembled.length > 0) {
+    return assembled
   }
 
   const shell = blueprint.structure.templateShell.slideShell
 
   if (shell.length === 0) {
     return [
-      "Slide 1: Opening",
-      "Slide 2: Teach",
-      "Slide 3: Practice",
-      "Slide 4: Closure",
+      "Slide 1: Opening - Introduce the lesson target and objective.",
+      "Slide 2: Teach - Model the focus skill with curriculum-aligned content.",
+      "Slide 3: Practice - Guide students into supported application.",
+      "Slide 4: Closure - Review learning and check understanding.",
     ]
   }
 
@@ -74,6 +71,7 @@ function buildLessonPlan(
     `Primary Target: ${blueprint.content.target.primary}`,
     `Secondary Target: ${blueprint.content.target.secondary ?? "None"}`,
     `Mixed Target: ${blueprint.content.target.isMixedTarget ? "Yes" : "No"}`,
+    `Source Balance: ${blueprint.sourceReadiness.overall}`,
   ].join("\n")
 
   const sections = [
@@ -92,8 +90,12 @@ function buildLessonPlan(
     .join("\n\n")
 
   const planningBlock = buildPlanningBlock(planningIdeas)
+  const supportBlock = buildSupportBlock(planningIdeas)
+  const readinessBlock = buildBlueprintReadinessBlock(blueprint)
 
-  return [header, body, planningBlock].filter(Boolean).join("\n\n")
+  return [header, readinessBlock, body, planningBlock, supportBlock]
+    .filter(Boolean)
+    .join("\n\n")
 }
 
 function buildPlanningBlock(planningIdeas?: LessonPlanningIdeas): string {
@@ -111,6 +113,52 @@ function buildPlanningBlock(planningIdeas?: LessonPlanningIdeas): string {
   }
 
   return ["Planning Notes", ...planningLines].join("\n")
+}
+
+function buildSupportBlock(planningIdeas?: LessonPlanningIdeas): string {
+  if (!planningIdeas) {
+    return ""
+  }
+
+  const formative = planningIdeas.formativeAssessmentIdeas.map(
+    (idea) => `- ${idea.title}: ${idea.description}`
+  )
+
+  const smallGroup = planningIdeas.smallGroupIdeas.map(
+    (idea) => `- ${idea.title}: ${idea.description}`
+  )
+
+  const interventions = planningIdeas.interventionIdeas.map(
+    (idea) => `- ${idea.title}: ${idea.description}`
+  )
+
+  const sections: string[] = []
+
+  if (formative.length > 0) {
+    sections.push("Formative Assessment Ideas", ...formative)
+  }
+
+  if (smallGroup.length > 0) {
+    sections.push("Small Group Ideas", ...smallGroup)
+  }
+
+  if (interventions.length > 0) {
+    sections.push("Intervention Ideas", ...interventions)
+  }
+
+  return sections.length > 0 ? sections.join("\n") : ""
+}
+
+function buildBlueprintReadinessBlock(blueprint: LessonBlueprint): string {
+  const warnings = blueprint.sourceReadiness.warnings.map((warning) => `- ${warning}`)
+
+  return [
+    "Blueprint Readiness",
+    `- Curriculum Support: ${blueprint.sourceReadiness.curriculumSupport}`,
+    `- Exemplar Support: ${blueprint.sourceReadiness.exemplarSupport}`,
+    `- Overall Balance: ${blueprint.sourceReadiness.overall}`,
+    ...warnings,
+  ].join("\n")
 }
 
 function buildCenters(
@@ -131,14 +179,23 @@ function buildCenters(
     : ["Independent practice center", "Partner practice center", "Teacher support center"]
 }
 
-function buildRotationPlan(centers: string[]): string {
+function buildRotationPlan(
+  centers: string[],
+  planningIdeas?: LessonPlanningIdeas
+): string {
   if (centers.length === 0) {
     return "No centers defined."
   }
 
-  return centers
-    .map((center, index) => `Rotation ${index + 1}: ${center}`)
-    .join("\n")
+  const smallGroupLine =
+    planningIdeas?.smallGroupIdeas[0]
+      ? `Teacher Table Focus: ${planningIdeas.smallGroupIdeas[0].title} - ${planningIdeas.smallGroupIdeas[0].description}`
+      : "Teacher Table Focus: Targeted reteach or extension based on student need."
+
+  return [
+    ...centers.map((center, index) => `Rotation ${index + 1}: ${center}`),
+    smallGroupLine,
+  ].join("\n")
 }
 
 function buildInterventions(

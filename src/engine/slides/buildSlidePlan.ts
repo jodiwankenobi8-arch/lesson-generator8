@@ -1,4 +1,4 @@
-﻿import { LessonBlueprint, LessonSpec } from "../types"
+import { LessonBlueprint, LessonSpec } from "../types"
 import { SlideAction, SlideKind, SlideOutline } from "./slideTypes"
 
 export function buildSlidePlan(
@@ -8,7 +8,11 @@ export function buildSlidePlan(
   const shell = blueprint.structure.templateShell
   const segmentOrder = take(shell.segmentOrder, 8, ["Teach", "Practice", "Closure"])
   const slideShell = take(shell.slideShell, Math.max(segmentOrder.length, 3), segmentOrder)
-  const timingShell = take(shell.timingShell, Math.max(segmentOrder.length, 3), ["Mini-lesson", "Practice", "Closure"])
+  const timingShell = take(
+    shell.timingShell,
+    Math.max(segmentOrder.length, 3),
+    ["Mini-lesson", "Practice", "Closure"]
+  )
   const teacherMoveShell = take(shell.teacherMoveShell, 5, ["teacher model", "guided support"])
   const promptShell = take(shell.promptShell, 5, ["teacher prompt"])
   const toneShell = take(shell.toneShell, 3, ["clear instructional tone"])
@@ -23,12 +27,17 @@ export function buildSlidePlan(
       title: shellLabel,
       kind,
       action: inferSlideAction(shellLabel, kind),
-      purpose: inferPurpose(kind, blueprint.content.target.primary),
+      purpose: inferPurpose(kind, blueprint.content.target.primary, blueprint.content.target.isMixedTarget),
       timing: timingShell[index] ?? "Flexible timing",
       teacherMove: teacherMoveShell[index % teacherMoveShell.length] ?? "teacher guidance",
       promptStyle: promptShell[index % promptShell.length] ?? "teacher prompt",
       tone: toneShell[index % toneShell.length] ?? "clear instructional tone",
-      body: section.steps,
+      body: buildSlideBody({
+        kind,
+        blueprint,
+        spec,
+        sectionSteps: section.steps,
+      }),
     }
   })
 
@@ -43,10 +52,11 @@ export function buildSlidePlan(
       teacherMove: blueprint.structure.teacherMoves[0] ?? "teacher guidance",
       promptStyle: blueprint.structure.promptStyle[0] ?? "teacher prompt",
       tone: blueprint.structure.tone[0] ?? "clear instructional tone",
-      body: [
+      body: compact([
         `Target: ${formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary)}`,
         `Standards: ${blueprint.content.standards.join(", ") || "TBD"}`,
-      ],
+        `Focus Vocabulary: ${blueprint.content.vocabulary.slice(0, 3).join(", ") || "TBD"}`,
+      ]),
     },
     ...contentSlides,
     {
@@ -59,13 +69,84 @@ export function buildSlidePlan(
       teacherMove: blueprint.structure.teacherMoves.join(", "),
       promptStyle: blueprint.structure.promptStyle.join(", "),
       tone: blueprint.structure.tone.join(", "),
-      body: [
+      body: compact([
         `Vocabulary: ${blueprint.content.vocabulary.join(", ") || "None"}`,
         `Teacher Moves: ${blueprint.structure.teacherMoves.join(", ") || "None"}`,
         `Prompts: ${blueprint.structure.promptStyle.join(", ") || "None"}`,
-      ],
+        `Source Balance: ${blueprint.sourceReadiness.overall}`,
+      ]),
     },
   ]
+}
+
+function buildSlideBody(args: {
+  kind: SlideKind
+  blueprint: LessonBlueprint
+  spec: LessonSpec
+  sectionSteps: string[]
+}): string[] {
+  const { kind, blueprint, spec, sectionSteps } = args
+  const primary = blueprint.content.target.primary.toLowerCase()
+  const isMixed = blueprint.content.target.isMixedTarget
+
+  if (kind === "opening") {
+    return compact([
+      `Lesson Focus: ${formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary)}`,
+      `Standards: ${blueprint.content.standards.slice(0, 2).join(", ")}`,
+      `Vocabulary: ${blueprint.content.vocabulary.slice(0, 3).join(", ")}`,
+      ...take(sectionSteps, 2, []),
+    ])
+  }
+
+  if (kind === "teach") {
+    return compact([
+      primary === "phonics"
+        ? `Model Words: ${blueprint.content.wordLists.slice(0, 4).join(", ")}`
+        : `Model Text: ${blueprint.content.texts.slice(0, 1).join(", ")}`,
+      `Teacher Move Focus: ${blueprint.structure.teacherMoves.slice(0, 2).join(", ")}`,
+      ...take(sectionSteps, isMixed ? 3 : 2, []),
+    ])
+  }
+
+  if (kind === "guided_practice") {
+    return compact([
+      `Practice Anchor: ${blueprint.content.practiceIdeas.slice(0, 2).join(", ")}`,
+      primary === "phonics"
+        ? `Word Support: ${blueprint.content.wordLists.slice(0, 3).join(", ")}`
+        : `Text Support: ${blueprint.content.texts.slice(0, 1).join(", ")}`,
+      ...take(sectionSteps, isMixed ? 3 : 2, []),
+    ])
+  }
+
+  if (kind === "independent_practice") {
+    return compact([
+      `Independent Task: ${blueprint.content.practiceIdeas.slice(0, 2).join(", ")}`,
+      primary === "phonics"
+        ? `Students Apply: ${blueprint.content.wordLists.slice(0, 3).join(", ")}`
+        : `Students Reference: ${blueprint.content.texts.slice(0, 1).join(", ")}`,
+      ...take(sectionSteps, 2, []),
+    ])
+  }
+
+  if (kind === "centers") {
+    return compact([
+      ...take(spec.centers.steps, 3, []),
+    ])
+  }
+
+  if (kind === "closure") {
+    return compact([
+      primary === "phonics"
+        ? `Review Words: ${blueprint.content.wordLists.slice(0, 3).join(", ")}`
+        : `Review Vocabulary: ${blueprint.content.vocabulary.slice(0, 3).join(", ")}`,
+      isMixed
+        ? "Reconnect both lesson parts before the final check."
+        : "Close with a short understanding check.",
+      ...take(sectionSteps, 2, []),
+    ])
+  }
+
+  return compact(take(sectionSteps, 3, []))
 }
 
 function normalizeSlideKind(value: string): SlideKind {
@@ -106,13 +187,15 @@ function inferSlideAction(shellLabel: string, kind: SlideKind): SlideAction {
   return "reuse"
 }
 
-function inferPurpose(kind: SlideKind, primaryTarget: string): string {
+function inferPurpose(kind: SlideKind, primaryTarget: string, isMixedTarget: boolean): string {
   if (kind === "objective") {
     return "Introduce the lesson goal and frame the learning."
   }
 
   if (kind === "opening") {
-    return "Warmly launch the lesson and establish the target."
+    return isMixedTarget
+      ? "Launch the two-part lesson and preview both focuses."
+      : "Warmly launch the lesson and establish the target."
   }
 
   if (kind === "teach") {
@@ -134,7 +217,9 @@ function inferPurpose(kind: SlideKind, primaryTarget: string): string {
   }
 
   if (kind === "closure") {
-    return "Wrap up the lesson and check understanding."
+    return isMixedTarget
+      ? "Wrap up both lesson parts and check whether students connected them."
+      : "Wrap up the lesson and check understanding."
   }
 
   return "Support teacher delivery and implementation."
@@ -160,4 +245,8 @@ function take(items: string[], count: number, fallback: string[]): string[] {
   ).slice(0, count)
 
   return cleaned.length ? cleaned : fallback
+}
+
+function compact(items: string[]): string[] {
+  return Array.from(new Set(items.map((item) => item.trim()).filter((item) => item.length > 0)))
 }
