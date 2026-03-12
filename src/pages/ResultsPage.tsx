@@ -1,8 +1,7 @@
-﻿import React from "react"
+import React from "react"
 import { Link } from "react-router-dom"
 import {
   LessonPlanIdea,
-  LessonPlanSectionIdeas,
   SlidePlan,
 } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
@@ -12,6 +11,12 @@ const sectionStyle: React.CSSProperties = {
   borderRadius: 16,
   padding: 16,
   background: "#ffffff",
+}
+
+const heroGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  gap: 12,
 }
 
 export default function ResultsPage() {
@@ -77,32 +82,76 @@ export default function ResultsPage() {
     <div>
       <h2 style={{ marginTop: 0 }}>Results</h2>
       <p style={{ color: "#4b5563", marginBottom: 24 }}>
-        Generated lesson pipeline outputs.
+        Final lesson package first, with planning details below.
       </p>
 
       <div style={{ display: "grid", gap: 16 }}>
         <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Target Analysis</h3>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Primary:</strong> {blueprint.content.target.primary}
-          </p>
-          <p style={{ margin: "0 0 8px 0" }}>
-            <strong>Secondary:</strong> {blueprint.content.target.secondary || "None"}
-          </p>
-          <p style={{ margin: "0 0 8px 0" }}>
-            <strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}
-          </p>
-          <p style={{ margin: 0 }}>
-            <strong>Selected Mode:</strong> {selectedLessonMode}
-          </p>
+          <h3 style={{ marginTop: 0 }}>Package Summary</h3>
+          <div style={heroGridStyle}>
+            <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
+            <SummaryCard label="Centers" value={lessonPackage.centers.length.toString()} />
+            <SummaryCard label="Interventions" value={lessonPackage.interventions.length.toString()} />
+          </div>
+
+          <div style={{ marginTop: 16, display: "grid", gap: 8, color: "#4b5563" }}>
+            <div><strong>Primary Target:</strong> {blueprint.content.target.primary}</div>
+            <div><strong>Secondary Target:</strong> {blueprint.content.target.secondary || "None"}</div>
+            <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
+            <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
+            <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
+          </div>
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Slides</h3>
+          <ul style={listStyle}>
+            {lessonPackage.slides.map((slide) => (
+              <li key={slide}>{slide}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Lesson Plan</h3>
+          <pre style={preStyle}>{lessonPackage.lessonPlan}</pre>
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Centers</h3>
+          <ul style={listStyle}>
+            {lessonPackage.centers.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Rotation Plan</h3>
+          <pre style={preStyle}>{lessonPackage.rotationPlan}</pre>
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Interventions</h3>
+          <ul style={listStyle}>
+            {lessonPackage.interventions.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div style={sectionStyle}>
+          <h3 style={{ marginTop: 0 }}>Exports</h3>
+          <ul style={listStyle}>
+            {lessonPackage.exports.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </div>
 
         <div style={sectionStyle}>
           <h3 style={{ marginTop: 0 }}>Blueprint Content</h3>
           <p style={{ marginBottom: 8 }}>
-            <strong>Standards:</strong> {blueprint.content.standards.join(", ")}
-          </p>
-          <p style={{ margin: "0 0 8px 0" }}>
             <strong>Vocabulary:</strong> {blueprint.content.vocabulary.join(", ")}
           </p>
           <p style={{ marginBottom: 8 }}>
@@ -133,28 +182,6 @@ export default function ResultsPage() {
         </div>
 
         <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Template Shell</h3>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Segment Order:</strong> {blueprint.structure.templateShell.segmentOrder.join(" -> ")}
-          </p>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Slide Shell:</strong> {blueprint.structure.templateShell.slideShell.join(" -> ")}
-          </p>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Timing Shell:</strong> {blueprint.structure.templateShell.timingShell.join(" | ")}
-          </p>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Teacher Move Shell:</strong> {blueprint.structure.templateShell.teacherMoveShell.join(", ")}
-          </p>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Prompt Shell:</strong> {blueprint.structure.templateShell.promptShell.join(", ")}
-          </p>
-          <p style={{ margin: 0 }}>
-            <strong>Tone Shell:</strong> {blueprint.structure.templateShell.toneShell.join(", ")}
-          </p>
-        </div>
-
-        <div style={sectionStyle}>
           <h3 style={{ marginTop: 0 }}>Slide Planning</h3>
           <SlidePlanList slides={planningIdeas.slidePlans} />
         </div>
@@ -165,118 +192,23 @@ export default function ResultsPage() {
             <IdeaList ideas={section.ideas} />
           </div>
         ))}
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Formative Assessment Ideas</h3>
-          <IdeaList ideas={planningIdeas.formativeAssessmentIdeas} />
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Center Ideas</h3>
-          <IdeaList ideas={planningIdeas.centerIdeas} />
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Small Group Ideas</h3>
-          <IdeaList ideas={planningIdeas.smallGroupIdeas} />
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Intervention Ideas</h3>
-          <IdeaList ideas={planningIdeas.interventionIdeas} />
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>{lessonSpec.teach.title}</h3>
-          <ul style={listStyle}>
-            {lessonSpec.teach.steps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>{lessonSpec.guidedPractice.title}</h3>
-          <ul style={listStyle}>
-            {lessonSpec.guidedPractice.steps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>{lessonSpec.independentPractice.title}</h3>
-          <ul style={listStyle}>
-            {lessonSpec.independentPractice.steps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>{lessonSpec.centers.title}</h3>
-          <ul style={listStyle}>
-            {lessonSpec.centers.steps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>{lessonSpec.closure.title}</h3>
-          <ul style={listStyle}>
-            {lessonSpec.closure.steps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Slides</h3>
-          <ul style={listStyle}>
-            {lessonPackage.slides.map((slide) => (
-              <li key={slide}>{slide}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Lesson Plan</h3>
-          <pre style={preStyle}>{lessonPackage.lessonPlan}</pre>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Centers</h3>
-          <ul style={listStyle}>
-            {lessonPackage.centers.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Rotation Plan</h3>
-          <p style={{ marginBottom: 0 }}>{lessonPackage.rotationPlan}</p>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Intervention</h3>
-          <ul style={listStyle}>
-            {lessonPackage.interventions.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div style={sectionStyle}>
-          <h3 style={{ marginTop: 0 }}>Exports</h3>
-          <ul style={listStyle}>
-            {lessonPackage.exports.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
       </div>
+    </div>
+  )
+}
+
+function SummaryCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        border: "1px solid #f3f4f6",
+        borderRadius: 12,
+        padding: 12,
+        background: "#fafafa",
+      }}
+    >
+      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 700 }}>{value}</div>
     </div>
   )
 }

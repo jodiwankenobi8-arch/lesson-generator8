@@ -1,189 +1,124 @@
-﻿import {
+import {
   LessonBlueprint,
   LessonInputs,
   LessonPackage,
   LessonSpec,
 } from "../types"
-import { assembleSlideDeck } from "../slides/assembleSlideDeck"
-import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonPackage(
   inputs: LessonInputs,
   blueprint: LessonBlueprint,
   spec: LessonSpec
 ): LessonPackage {
-  const target = blueprint.content.target
-  const primary = target.primary.toLowerCase()
-  const isFullMixed = target.isMixedTarget && target.recommendedMode === "full"
-
-  const targetLabel = formatTargetLabel(target.primary, target.secondary)
-  const vocabulary = take(blueprint.content.vocabulary, 5, ["key vocabulary"])
-  const texts = take(blueprint.content.texts, 3, ["teacher-provided text"])
-  const wordLists = take(blueprint.content.wordLists, 6, ["teacher-selected examples"])
-
-  const shell = resolveTemplateShell(blueprint, {
-    lessonSegmentsCount: 8,
-    timingCount: 8,
-    teacherMovesCount: 5,
-    promptStyleCount: 5,
-    toneCount: 3,
-  })
+  const slides = buildSlides(blueprint)
+  const lessonPlan = buildLessonPlan(inputs, blueprint, spec)
+  const centers = buildCenters(spec)
+  const rotationPlan = buildRotationPlan(centers)
+  const interventions = buildInterventions(blueprint)
+  const exports = buildExports(inputs)
 
   return {
-    slides: assembleSlideDeck(blueprint, spec),
-    lessonPlan: buildLessonPlan(inputs, blueprint, spec, targetLabel, shell),
-    centers: spec.centers.steps,
-    rotationPlan: buildRotationPlan(shell.lessonSegments, shell.timing),
-    interventions: buildInterventions(primary, isFullMixed, vocabulary, wordLists, texts),
-    exports: buildExports(primary, isFullMixed),
+    slides,
+    lessonPlan,
+    centers,
+    rotationPlan,
+    interventions,
+    exports,
   }
+}
+
+function buildSlides(blueprint: LessonBlueprint): string[] {
+  const shell = blueprint.structure.templateShell.slideShell
+
+  if (shell.length === 0) {
+    return [
+      "Slide 1: Opening",
+      "Slide 2: Teach",
+      "Slide 3: Practice",
+      "Slide 4: Closure",
+    ]
+  }
+
+  return shell.map((label, index) => `Slide ${index + 1}: ${label}`)
 }
 
 function buildLessonPlan(
   inputs: LessonInputs,
   blueprint: LessonBlueprint,
-  spec: LessonSpec,
-  targetLabel: string,
-  shell: ReturnType<typeof resolveTemplateShell>
+  spec: LessonSpec
 ): string {
-  const sections = [
-    "LESSON OVERVIEW",
-    `Grade: ${inputs.grade || "TBD"}`,
-    `Subject: ${inputs.subject || "TBD"}`,
-    `Standard(s): ${blueprint.content.standards.join(", ") || "TBD"}`,
-    `Skill: ${inputs.skill || "TBD"}`,
-    `Topic: ${inputs.topic || "TBD"}`,
-    `Duration: ${inputs.duration || "TBD"}`,
-    "",
-    "TARGET SUMMARY",
+  const header = [
+    `Grade: ${inputs.grade}`,
+    `Subject: ${inputs.subject}`,
+    `Standard: ${inputs.standard}`,
+    `Skill: ${inputs.skill}`,
+    `Topic: ${inputs.topic}`,
+    `Duration: ${inputs.duration}`,
     `Primary Target: ${blueprint.content.target.primary}`,
-    `Secondary Target: ${blueprint.content.target.secondary || "None"}`,
+    `Secondary Target: ${blueprint.content.target.secondary ?? "None"}`,
     `Mixed Target: ${blueprint.content.target.isMixedTarget ? "Yes" : "No"}`,
-    `Selected Mode: ${blueprint.content.target.recommendedMode}`,
-    `Combined Target Label: ${targetLabel}`,
-    "",
-    "CONTENT RESOURCES",
-    `Vocabulary: ${blueprint.content.vocabulary.join(", ") || "None"}`,
-    `Word / Practice Items: ${blueprint.content.wordLists.join(", ") || "None"}`,
-    `Texts: ${blueprint.content.texts.join(", ") || "None"}`,
-    `Practice Ideas: ${blueprint.content.practiceIdeas.join(", ") || "None"}`,
-    "",
-    "EXEMPLAR PRESENTATION CUES",
-    `Lesson Flow: ${shell.lessonSegments.join(" -> ")}`,
-    `Slide Shell: ${shell.slideShell.join(" -> ")}`,
-    `Timing: ${shell.timing.join(" | ")}`,
-    `Teacher Moves: ${shell.teacherMoves.join(", ")}`,
-    `Prompt Style: ${shell.promptStyle.join(", ")}`,
-    `Tone: ${shell.tone.join(", ")}`,
-    "",
-    formatSection("TEACH", spec.teach.steps),
-    "",
-    formatSection("GUIDED PRACTICE", spec.guidedPractice.steps),
-    "",
-    formatSection("INDEPENDENT PRACTICE", spec.independentPractice.steps),
-    "",
-    formatSection("CENTERS", spec.centers.steps),
-    "",
-    formatSection("CLOSURE", spec.closure.steps),
+  ].join("\n")
+
+  const sections = [
+    spec.teach,
+    spec.guidedPractice,
+    spec.independentPractice,
+    spec.centers,
+    spec.closure,
   ]
 
-  return sections.join("`n")
-}
-
-function buildRotationPlan(lessonSegments: string[], timing: string[]): string {
-  if (lessonSegments.length === 0) {
-    return "Opening -> Practice -> Closure"
-  }
-
-  return lessonSegments
-    .map((segment, index) => {
-      const timeBlock = timing[index] ?? "Flexible timing"
-      return `${segment} (${timeBlock})`
+  const body = sections
+    .map((section) => {
+      const steps = section.steps.map((step) => `- ${step}`).join("\n")
+      return `${section.title}\n${steps}`
     })
-    .join(" -> ")
+    .join("\n\n")
+
+  return `${header}\n\n${body}`
 }
 
-function buildInterventions(
-  primary: string,
-  isFullMixed: boolean,
-  vocabulary: string[],
-  wordLists: string[],
-  texts: string[]
-): string[] {
-  if (isFullMixed) {
+function buildCenters(spec: LessonSpec): string[] {
+  return spec.centers.steps.length > 0
+    ? spec.centers.steps
+    : ["Independent practice center", "Partner practice center", "Teacher support center"]
+}
+
+function buildRotationPlan(centers: string[]): string {
+  if (centers.length === 0) {
+    return "No centers defined."
+  }
+
+  return centers
+    .map((center, index) => `Rotation ${index + 1}: ${center}`)
+    .join("\n")
+}
+
+function buildInterventions(blueprint: LessonBlueprint): string[] {
+  if (blueprint.content.target.primary === "phonics") {
     return [
-      "Reteach the foundational skill in a small group before returning to the full task.",
-      `Use a reduced word set and guided text support: ${wordLists.slice(0, 3).join(", ")} / ${texts.slice(0, 1).join(", ")}.`,
-      `Preteach critical vocabulary before independent work: ${vocabulary.slice(0, 3).join(", ")}.`,
+      "Reteach the target phonics pattern with a reduced word set.",
+      "Provide extra guided decoding and blending practice.",
     ]
   }
 
-  if (primary === "phonics") {
+  if (blueprint.content.target.primary === "comprehension") {
     return [
-      "Provide additional teacher modeling with a smaller set of target words.",
-      `Use repeated decoding and sorting with: ${wordLists.slice(0, 4).join(", ")}.`,
-      `Review the key language of the pattern or sound: ${vocabulary.slice(0, 3).join(", ")}.`,
-    ]
-  }
-
-  if (primary === "comprehension") {
-    return [
-      "Provide guided rereading and teacher prompting before independent response.",
-      `Use a shortened text chunk or supported passage: ${texts.slice(0, 2).join(", ")}.`,
-      `Preteach and revisit comprehension vocabulary: ${vocabulary.slice(0, 3).join(", ")}.`,
+      "Reread a shorter chunk of text with guided prompting.",
+      "Support vocabulary and evidence-based responses in a small group.",
     ]
   }
 
   return [
-    "Provide reteach with teacher modeling.",
-    "Reduce task complexity and increase guided support.",
-    `Support key vocabulary during practice: ${vocabulary.slice(0, 2).join(", ")}.`,
+    "Provide targeted reteach for the primary lesson need.",
+    "Use small-group support before independent transfer.",
   ]
 }
 
-function buildExports(primary: string, isFullMixed: boolean): string[] {
-  if (isFullMixed) {
-    return [
-      "Slides PDF",
-      "Two-part lesson plan",
-      "Center directions",
-      "Reteach support sheet",
-    ]
-  }
-
-  if (primary === "phonics") {
-    return [
-      "Slides PDF",
-      "Printable lesson plan",
-      "Word work directions",
-      "Phonics practice sheet",
-    ]
-  }
-
-  if (primary === "comprehension") {
-    return [
-      "Slides PDF",
-      "Printable lesson plan",
-      "Response directions",
-      "Comprehension task sheet",
-    ]
-  }
-
-  return ["Slides PDF", "Printable lesson plan", "Center directions"]
-}
-
-function formatTargetLabel(primary: string, secondary: string | null): string {
-  return secondary ? `${primary} + ${secondary}` : primary
-}
-
-function formatSection(title: string, steps: string[]): string {
-  return [title, ...steps.map((step, index) => `${index + 1}. ${step}`)].join("`n")
-}
-
-function take(items: string[], count: number, fallback: string[]): string[] {
-  const cleaned = Array.from(
-    new Set(items.map((item) => item.trim()).filter((item) => item.length > 0))
-  ).slice(0, count)
-
-  return cleaned.length ? cleaned : fallback
+function buildExports(inputs: LessonInputs): string[] {
+  const safeSubject = inputs.subject.trim() || "lesson"
+  return [
+    `${safeSubject}-slides-export-placeholder`,
+    `${safeSubject}-lesson-plan-export-placeholder`,
+    `${safeSubject}-printables-export-placeholder`,
+  ]
 }

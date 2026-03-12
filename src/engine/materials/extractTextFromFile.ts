@@ -1,7 +1,3 @@
-﻿import mammoth from "mammoth"
-import { PDFParse } from "pdf-parse"
-import { parsePptx } from "pptx-parser"
-
 export type ExtractTextInput = {
   fileName: string
   fileContent?: string
@@ -136,9 +132,12 @@ async function extractPdfText(input: ExtractTextInput): Promise<string[]> {
     ]
   }
 
-  let parser: PDFParse | null = null
+  let parser: { getText: () => Promise<{ text: string }>; destroy: () => Promise<void> } | null = null
 
   try {
+    const pdfModule = await import("pdf-parse")
+    const PDFParse = pdfModule.PDFParse
+
     parser = new PDFParse({
       data: new Uint8Array(input.fileBuffer),
     })
@@ -175,7 +174,9 @@ async function extractDocxText(input: ExtractTextInput): Promise<string[]> {
   }
 
   try {
-    const result = await mammoth.extractRawText({
+    const mammothModule = await import("mammoth")
+
+    const result = await mammothModule.extractRawText({
       arrayBuffer: input.fileBuffer,
     })
 
@@ -209,7 +210,8 @@ async function extractPptxText(input: ExtractTextInput): Promise<string[]> {
   }
 
   try {
-    const parsed = await parsePptx(new Uint8Array(input.fileBuffer))
+    const pptxModule = await import("pptx-parser")
+    const parsed = await pptxModule.parsePptx(new Uint8Array(input.fileBuffer))
 
     const slideLines = JSON.stringify(parsed)
       .split(/\r?\n/)
