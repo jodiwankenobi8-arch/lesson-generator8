@@ -1,33 +1,29 @@
-import { buildBlueprint } from "../blueprint/buildBlueprint"
+﻿import { buildBlueprint } from "../blueprint/buildBlueprint"
 import { buildLessonPackage } from "../package/buildLessonPackage"
+import { buildLessonPlanningIdeas } from "../planning/buildLessonPlanningIdeas"
 import { buildLessonSpec } from "../spec/buildLessonSpec"
 import {
-  LessonBlueprint,
+  LessonGenerationResult,
   LessonInputs,
   LessonMode,
-  LessonPackage,
-  LessonSpec,
   MaterialFile,
 } from "../types"
-
-export type LessonPipelineResult = {
-  blueprint: LessonBlueprint
-  lessonSpec: LessonSpec
-  lessonPackage: LessonPackage
-}
 
 export function runLessonPipeline(
   inputs: LessonInputs,
   materials: MaterialFile[],
   selectedMode: LessonMode
-): LessonPipelineResult {
+): LessonGenerationResult {
   const blueprint = buildBlueprint(inputs, materials, selectedMode)
-  const lessonSpec = buildLessonSpec(blueprint)
-  const lessonPackage = buildLessonPackage(inputs, blueprint, lessonSpec)
+  const planningIdeas = buildLessonPlanningIdeas(blueprint)
+  const spec = buildLessonSpec(blueprint)
+  const lessonPackage = buildLessonPackage(inputs, blueprint, spec)
 
   return {
     blueprint,
-    lessonSpec,
+    planningIdeas,
+    spec,
+    lessonSpec: spec,
     lessonPackage,
   }
 }

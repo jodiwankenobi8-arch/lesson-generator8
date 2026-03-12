@@ -118,6 +118,29 @@ export type LessonBlueprint = {
   structure: BlueprintStructure
 }
 
+export type LessonPlanIdea = {
+  title: string
+  description: string
+  rationale: string
+}
+
+export type SlidePlanAction = "reuse" | "adapt" | "create_new"
+
+export type SlidePlan = {
+  shellLabel: string
+  action: SlidePlanAction
+  purpose: string
+  notes: string
+}
+
+export type LessonPlanningIdeas = {
+  slidePlans: SlidePlan[]
+  formativeAssessmentIdeas: LessonPlanIdea[]
+  centerIdeas: LessonPlanIdea[]
+  smallGroupIdeas: LessonPlanIdea[]
+  interventionIdeas: LessonPlanIdea[]
+}
+
 export type LessonSpecSection = {
   title: string
   steps: string[]
@@ -138,4 +161,12 @@ export type LessonPackage = {
   rotationPlan: string
   interventions: string[]
   exports: string[]
+}
+
+export type LessonGenerationResult = {
+  blueprint: LessonBlueprint
+  planningIdeas: LessonPlanningIdeas
+  spec: LessonSpec
+  lessonSpec: LessonSpec
+  lessonPackage: LessonPackage
 }
