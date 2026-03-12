@@ -89,6 +89,8 @@ export default function ResultsPage() {
           selectedLessonMode={selectedLessonMode}
         />
 
+        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} />
+
         <SignalSection
           title="Source Support Signals"
           signals={blueprint.sourceReadiness.signals}
@@ -138,6 +140,69 @@ function PackageSummarySection({
         <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
         <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
+      </div>
+    </div>
+  )
+}
+
+function TraceabilitySection({
+  blueprint,
+  lessonPackage,
+}: {
+  blueprint: LessonBlueprint
+  lessonPackage: LessonPackage
+}) {
+  const contentSourceLabel =
+    blueprint.sourceReadiness.curriculumSupport === "strong"
+      ? "Curriculum materials strongly influenced the lesson content."
+      : "Curriculum support is limited, so some content may rely on fallback lesson logic."
+
+  const structureSourceLabel =
+    blueprint.sourceReadiness.exemplarSupport === "strong"
+      ? "Exemplar materials strongly influenced pacing, flow, and teacher-facing structure."
+      : "Exemplar support is limited, so structure may rely on fallback lesson organization."
+
+  const packageConfidenceLabel =
+    lessonPackage.readiness.contentFit === "grounded"
+      ? "The package appears grounded in the available source materials."
+      : "The package appears partially grounded and may rely on more fallback logic."
+
+  return (
+    <div style={sectionStyle}>
+      <h3 style={{ marginTop: 0 }}>Why This Lesson Was Generated This Way</h3>
+      <div style={{ display: "grid", gap: 12 }}>
+        <div style={subCardStyle}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Content Authority</div>
+          <div style={{ color: "#4b5563", marginBottom: 8 }}>{contentSourceLabel}</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Standards Source:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
+            <div><strong>Vocabulary Source:</strong> {joinOrFallback(blueprint.content.vocabulary, "Key vocabulary")}</div>
+            <div><strong>Text/Topic Source:</strong> {joinOrFallback(blueprint.content.texts, "Teacher-provided lesson text")}</div>
+            <div><strong>Practice Source:</strong> {joinOrFallback(blueprint.content.practiceIdeas, "Curriculum-aligned practice task")}</div>
+          </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Presentation Authority</div>
+          <div style={{ color: "#4b5563", marginBottom: 8 }}>{structureSourceLabel}</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Lesson Flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
+            <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
+            <div><strong>Teacher Moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
+            <div><strong>Prompt Style:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher prompt")}</div>
+          </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Package Confidence</div>
+          <div style={{ color: "#4b5563", marginBottom: 8 }}>{packageConfidenceLabel}</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Source Balance:</strong> {blueprint.sourceReadiness.overall}</div>
+            <div><strong>Content Fit:</strong> {lessonPackage.readiness.contentFit}</div>
+            <div><strong>Lesson Shape:</strong> {lessonPackage.readiness.lessonShape}</div>
+            <div><strong>Package Density:</strong> {lessonPackage.readiness.density}</div>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -368,6 +433,10 @@ function BlockedResultsState({
       </div>
     </div>
   )
+}
+
+function joinOrFallback(items: string[], fallback: string): string {
+  return items.length > 0 ? items.join(", ") : fallback
 }
 
 function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties {
