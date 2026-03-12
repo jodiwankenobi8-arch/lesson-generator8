@@ -1,4 +1,13 @@
-import { LessonBlueprint, LessonPlanIdea, LessonPlanSectionIdeas, LessonPlanningIdeas } from "../types"
+import {
+  LessonBlueprint,
+  LessonPlanIdea,
+  LessonPlanSectionIdeas,
+  LessonPlanningIdeas,
+  MissingAreaPromptCandidate,
+  PlanningComponentCoverage,
+  PlanningComponentKey,
+  PlanningCoverageStatus,
+} from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonPlanningIdeas(
@@ -20,6 +29,34 @@ export function buildLessonPlanningIdeas(
   const standards = blueprint.content.standards
   const lessonSegments = blueprint.structure.lessonSegments
 
+  const lessonPlanSections = buildLessonPlanSections(
+    blueprint,
+    standards,
+    vocabulary,
+    texts,
+    practiceIdeas,
+    wordLists
+  )
+  const formativeAssessmentIdeas = buildFormativeIdeas(
+    blueprint,
+    vocabulary,
+    practiceIdeas,
+    texts,
+    wordLists
+  )
+  const centerIdeas = buildCenterIdeas(blueprint, practiceIdeas, texts, wordLists)
+  const smallGroupIdeas = buildSmallGroupIdeas(blueprint, vocabulary, texts, wordLists)
+  const interventionIdeas = buildInterventionIdeas(blueprint, vocabulary, texts, wordLists)
+
+  const componentCoverage = buildComponentCoverage({
+    blueprint,
+    lessonPlanSections,
+    formativeAssessmentIdeas,
+    centerIdeas,
+    smallGroupIdeas,
+    interventionIdeas,
+  })
+
   return {
     slidePlans: shell.slideShell.map((shellLabel, index) => {
       const segmentLabel =
@@ -40,24 +77,13 @@ export function buildLessonPlanningIdeas(
         }),
       }
     }),
-    lessonPlanSections: buildLessonPlanSections(
-      blueprint,
-      standards,
-      vocabulary,
-      texts,
-      practiceIdeas,
-      wordLists
-    ),
-    formativeAssessmentIdeas: buildFormativeIdeas(
-      blueprint,
-      vocabulary,
-      practiceIdeas,
-      texts,
-      wordLists
-    ),
-    centerIdeas: buildCenterIdeas(blueprint, practiceIdeas, texts, wordLists),
-    smallGroupIdeas: buildSmallGroupIdeas(blueprint, vocabulary, texts, wordLists),
-    interventionIdeas: buildInterventionIdeas(blueprint, vocabulary, texts, wordLists),
+    lessonPlanSections,
+    formativeAssessmentIdeas,
+    centerIdeas,
+    smallGroupIdeas,
+    interventionIdeas,
+    componentCoverage,
+    missingAreaPrompts: buildMissingAreaPromptCandidates(blueprint, componentCoverage),
   }
 }
 
@@ -585,4 +611,248 @@ function buildInterventionIdeas(
       rationale: "Reduces complexity while preserving the lesson objective.",
     },
   ]
+}
+
+function buildComponentCoverage(args: {
+  blueprint: LessonBlueprint
+  lessonPlanSections: LessonPlanSectionIdeas[]
+  formativeAssessmentIdeas: LessonPlanIdea[]
+  centerIdeas: LessonPlanIdea[]
+  smallGroupIdeas: LessonPlanIdea[]
+  interventionIdeas: LessonPlanIdea[]
+}): PlanningComponentCoverage[] {
+  const {
+    blueprint,
+    lessonPlanSections,
+    formativeAssessmentIdeas,
+    centerIdeas,
+    smallGroupIdeas,
+    interventionIdeas,
+  } = args
+
+  const practiceIdeas = blueprint.content.practiceIdeas
+  const texts = blueprint.content.texts
+  const wordLists = blueprint.content.wordLists
+  const vocabulary = blueprint.content.vocabulary
+  const lessonSegments = blueprint.structure.lessonSegments
+  const isMixedFull =
+    blueprint.content.target.isMixedTarget &&
+    blueprint.content.target.recommendedMode === "full"
+
+  const sectionMap = new Map(
+    lessonPlanSections.map((section) => [section.section, section.ideas] as const)
+  )
+
+  return [
+    buildCoverageEntry(
+      "teach",
+      sectionMap.get("teach") ?? [],
+      collectSignals({
+        lessonSegments,
+        signalTerms: ["teach", "model", "mini-lesson", "instruction"],
+        contentAnchors: [vocabulary, wordLists, texts],
+      }),
+      "Core instruction should be clearly present so the system does not silently invent the lesson focus."
+    ),
+    buildCoverageEntry(
+      "guided_practice",
+      sectionMap.get("guided_practice") ?? [],
+      collectSignals({
+        lessonSegments,
+        signalTerms: ["guided", "practice", "we do", "scaffold"],
+        contentAnchors: [practiceIdeas, wordLists, texts],
+      }),
+      "Guided practice is a major instructional component and should be checked before adding more support."
+    ),
+    buildCoverageEntry(
+      "independent_practice",
+      sectionMap.get("independent_practice") ?? [],
+      collectSignals({
+        lessonSegments,
+        signalTerms: ["independent", "practice", "you do", "application"],
+        contentAnchors: [practiceIdeas, texts, wordLists],
+      }),
+      "Independent work should be identified explicitly so the engine can avoid duplicating student tasks."
+    ),
+    buildCoverageEntry(
+      "closure",
+      sectionMap.get("closure") ?? [],
+      collectSignals({
+        lessonSegments,
+        signalTerms: ["closure", "wrap", "exit", "review", "recap"],
+        contentAnchors: [vocabulary, wordLists, texts],
+      }),
+      "Closure is instructionally meaningful enough to ask about when it seems missing."
+    ),
+    buildCoverageEntry(
+      "formative_assessment",
+      formativeAssessmentIdeas,
+      collectSignals({
+        lessonSegments,
+        signalTerms: ["check", "formative", "assessment", "exit", "monitor"],
+        contentAnchors: [practiceIdeas, wordLists, texts],
+      }),
+      "A formative check helps determine whether the lesson should add or skip extra support."
+    ),
+    buildCoverageEntry(
+      "centers",
+      centerIdeas,
+      collectSignals({
+        lessonSegments,
+        signalTerms: ["center", "rotation", "station"],
+        contentAnchors: [practiceIdeas, texts, wordLists],
+      }),
+      "Centers are optional in some lessons, but they are important enough to flag when the lesson shape suggests them."
+    ),
+    buildCoverageEntry(
+      "small_group",
+      smallGroupIdeas,
+      collectSignals({
+        lessonSegments,
+        signalTerms: ["small group", "teacher table", "guided group", "reteach group"],
+        contentAnchors: [practiceIdeas, texts, wordLists],
+      }),
+      "Small-group support should be visible when the system is planning differentiated follow-through."
+    ),
+    buildCoverageEntry(
+      "intervention",
+      interventionIdeas,
+      collectSignals({
+        lessonSegments,
+        signalTerms: ["intervention", "reteach", "support", "reteaching"],
+        contentAnchors: [practiceIdeas, wordLists, texts],
+      }),
+      isMixedFull
+        ? "Mixed lessons especially benefit from explicit intervention planning when one part breaks down."
+        : "Intervention should be tracked separately from core instruction to keep support targeted."
+    ),
+  ]
+}
+
+function buildCoverageEntry(
+  component: PlanningComponentKey,
+  ideas: LessonPlanIdea[],
+  evidence: string[],
+  rationale: string
+): PlanningComponentCoverage {
+  const status = inferCoverageStatus(ideas, evidence)
+
+  return {
+    component,
+    status,
+    evidence: evidence.slice(0, 4),
+    rationale,
+  }
+}
+
+function inferCoverageStatus(
+  ideas: LessonPlanIdea[],
+  evidence: string[]
+): PlanningCoverageStatus {
+  if (ideas.length >= 2 || evidence.length >= 3) {
+    return "covered"
+  }
+
+  if (ideas.length >= 1 || evidence.length >= 1) {
+    return "partial"
+  }
+
+  return "missing"
+}
+
+function collectSignals(args: {
+  lessonSegments: string[]
+  signalTerms: string[]
+  contentAnchors: string[][]
+}): string[] {
+  const { lessonSegments, signalTerms, contentAnchors } = args
+
+  const segmentSignals = lessonSegments.filter((segment) =>
+    signalTerms.some((term) => segment.toLowerCase().includes(term))
+  )
+
+  const contentSignals = contentAnchors.flatMap((items) => items.slice(0, 2))
+
+  return Array.from(
+    new Set(
+      [...segmentSignals, ...contentSignals]
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+    )
+  )
+}
+
+function buildMissingAreaPromptCandidates(
+  blueprint: LessonBlueprint,
+  componentCoverage: PlanningComponentCoverage[]
+): MissingAreaPromptCandidate[] {
+  const target = blueprint.content.target
+  const isMixedFull = target.isMixedTarget && target.recommendedMode === "full"
+  const prompts: MissingAreaPromptCandidate[] = []
+
+  const byComponent = new Map(
+    componentCoverage.map((entry) => [entry.component, entry] as const)
+  )
+
+  addPromptIfMissing(prompts, byComponent, "guided_practice", {
+    importance: "high",
+    prompt: "I did not detect strong guided practice. Add a scaffolded guided-practice block?",
+    rationale: "Guided practice is a core lesson component and should usually be explicit before independent work.",
+  })
+
+  addPromptIfMissing(prompts, byComponent, "independent_practice", {
+    importance: "high",
+    prompt: "I did not detect clear independent practice. Add an independent application task?",
+    rationale: "Independent practice is important for transfer and should not be silently skipped in most lessons.",
+  })
+
+  addPromptIfMissing(prompts, byComponent, "closure", {
+    importance: "medium",
+    prompt: "I did not detect a clear closure. Add a short recap or exit check?",
+    rationale: "Closure is instructionally meaningful and worth asking about when it seems absent.",
+  })
+
+  addPromptIfMissing(prompts, byComponent, "formative_assessment", {
+    importance: "high",
+    prompt: "I did not detect a formative check. Add a quick understanding check?",
+    rationale: "A formative check helps the lesson stay teacher-friendly and trustworthy.",
+  })
+
+  if (isMixedFull) {
+    addPromptIfMissing(prompts, byComponent, "centers", {
+      importance: "medium",
+      prompt: "This looks like a two-part lesson with limited center support. Add targeted centers or rotation work?",
+      rationale: "Mixed lessons often benefit from clearer downstream practice structures.",
+    })
+  }
+
+  addPromptIfMissing(prompts, byComponent, "small_group", {
+    importance: "medium",
+    prompt: "I did not detect a clear small-group support plan. Add one?",
+    rationale: "Small-group follow-through is often important when the lesson includes differentiation or reteach needs.",
+  })
+
+  addPromptIfMissing(prompts, byComponent, "intervention", {
+    importance: "medium",
+    prompt: "I did not detect a clear intervention or reteach plan. Add one?",
+    rationale: "Intervention planning helps the lesson avoid stopping at whole-group instruction only.",
+  })
+
+  return prompts
+}
+
+function addPromptIfMissing(
+  prompts: MissingAreaPromptCandidate[],
+  byComponent: Map<PlanningComponentKey, PlanningComponentCoverage>,
+  component: PlanningComponentKey,
+  candidate: Omit<MissingAreaPromptCandidate, "component">
+): void {
+  const coverage = byComponent.get(component)
+
+  if (!coverage || coverage.status === "missing") {
+    prompts.push({
+      component,
+      ...candidate,
+    })
+  }
 }

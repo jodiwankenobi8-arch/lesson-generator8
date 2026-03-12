@@ -56,7 +56,7 @@ export type CurriculumAnalysis = {
   practiceTasks: string[]
   instructionalTargets: string[]
   examples: string[]
-  coverage: CurriculumCoverage
+  coverage?: CurriculumCoverage
 }
 
 export type ExemplarAnalysis = {
@@ -176,6 +176,32 @@ export type SlidePlan = {
   notes: string
 }
 
+export type PlanningComponentKey =
+  | "teach"
+  | "guided_practice"
+  | "independent_practice"
+  | "closure"
+  | "formative_assessment"
+  | "centers"
+  | "small_group"
+  | "intervention"
+
+export type PlanningCoverageStatus = "covered" | "partial" | "missing"
+
+export type PlanningComponentCoverage = {
+  component: PlanningComponentKey
+  status: PlanningCoverageStatus
+  evidence: string[]
+  rationale: string
+}
+
+export type MissingAreaPromptCandidate = {
+  component: PlanningComponentKey
+  importance: "high" | "medium"
+  prompt: string
+  rationale: string
+}
+
 export type LessonPlanningIdeas = {
   slidePlans: SlidePlan[]
   lessonPlanSections: LessonPlanSectionIdeas[]
@@ -183,6 +209,8 @@ export type LessonPlanningIdeas = {
   centerIdeas: LessonPlanIdea[]
   smallGroupIdeas: LessonPlanIdea[]
   interventionIdeas: LessonPlanIdea[]
+  componentCoverage?: PlanningComponentCoverage[]
+  missingAreaPrompts?: MissingAreaPromptCandidate[]
 }
 
 export type LessonSpecSection = {

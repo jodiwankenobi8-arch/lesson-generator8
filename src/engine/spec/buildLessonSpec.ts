@@ -3,6 +3,8 @@ import {
   LessonPlanIdea,
   LessonPlanningIdeas,
   LessonSpec,
+  MissingAreaPromptCandidate,
+  PlanningComponentKey,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
@@ -48,6 +50,15 @@ export function buildLessonSpec(
   const interventionPlanLines = ideaLines(planningIdeas?.interventionIdeas)
   const formativePlanLines = ideaLines(planningIdeas?.formativeAssessmentIdeas)
 
+  const guidedDecisionLines = decisionLinesFor(planningIdeas, ["guided_practice"])
+  const independentDecisionLines = decisionLinesFor(planningIdeas, ["independent_practice"])
+  const closureDecisionLines = decisionLinesFor(planningIdeas, ["closure", "formative_assessment"])
+  const centerDecisionLines = decisionLinesFor(planningIdeas, [
+    "centers",
+    "small_group",
+    "intervention",
+  ])
+
   if (isFullMixed) {
     return {
       teach: {
@@ -67,6 +78,7 @@ export function buildLessonSpec(
       guidedPractice: {
         title: "Guided Practice",
         steps: compactSteps([
+          ...guidedDecisionLines,
           `Guide students through two curriculum-aligned practice blocks: ${practiceIdeas.join(", ")}.`,
           `Use modeled examples and text support during teacher guidance: ${wordList.join(", ")}; ${texts.join(", ")}.`,
           `Keep support anchored to the standards: ${standards.join(", ")}.`,
@@ -79,6 +91,7 @@ export function buildLessonSpec(
       independentPractice: {
         title: "Independent Practice",
         steps: compactSteps([
+          ...independentDecisionLines,
           `Students complete two aligned independent tasks using: ${practiceIdeas.slice(0, 2).join(", ")}.`,
           `Require students to apply both lesson resources and text support: ${wordList.join(", ")} / ${texts.join(", ")}.`,
           ...independentPlanLines,
@@ -90,6 +103,7 @@ export function buildLessonSpec(
       centers: {
         title: "Centers",
         steps: compactSteps([
+          ...centerDecisionLines,
           ...centerPlanLines,
           ...takeLines(smallGroupPlanLines, 1),
           ...takeLines(interventionPlanLines, 1),
@@ -101,6 +115,7 @@ export function buildLessonSpec(
       closure: {
         title: "Closure",
         steps: compactSteps([
+          ...closureDecisionLines,
           "Review what students learned in both parts of the lesson.",
           ...closurePlanLines,
           ...takeLines(formativePlanLines, 1),
@@ -131,6 +146,7 @@ export function buildLessonSpec(
       guidedPractice: {
         title: "Guided Practice",
         steps: compactSteps([
+          ...guidedDecisionLines,
           guidedTaskLine,
           `Use the lesson word list during support: ${wordList.join(", ")}.`,
           "Require students to explain or show the target pattern with teacher guidance.",
@@ -143,6 +159,7 @@ export function buildLessonSpec(
       independentPractice: {
         title: "Independent Practice",
         steps: compactSteps([
+          ...independentDecisionLines,
           independentTaskLine,
           `Use these words or examples during practice: ${wordList.join(", ")}.`,
           ...independentPlanLines,
@@ -154,6 +171,7 @@ export function buildLessonSpec(
       centers: {
         title: "Centers",
         steps: compactSteps([
+          ...centerDecisionLines,
           ...centerPlanLines,
           ...takeLines(smallGroupPlanLines, 1),
           ...takeLines(interventionPlanLines, 1),
@@ -165,6 +183,7 @@ export function buildLessonSpec(
       closure: {
         title: "Closure",
         steps: compactSteps([
+          ...closureDecisionLines,
           "Review the target sound, pattern, or decoding skill.",
           closureLine,
           ...closurePlanLines,
@@ -193,6 +212,7 @@ export function buildLessonSpec(
       guidedPractice: {
         title: "Guided Practice",
         steps: compactSteps([
+          ...guidedDecisionLines,
           guidedTaskLine,
           `Use the lesson text and prompts during support: ${texts.join(", ")}.`,
           `Anchor the work to the lesson standard: ${standards.join(", ")}.`,
@@ -205,6 +225,7 @@ export function buildLessonSpec(
       independentPractice: {
         title: "Independent Practice",
         steps: compactSteps([
+          ...independentDecisionLines,
           independentTaskLine,
           `Use these texts or prompts during student work: ${texts.join(", ")}.`,
           ...independentPlanLines,
@@ -216,6 +237,7 @@ export function buildLessonSpec(
       centers: {
         title: "Centers",
         steps: compactSteps([
+          ...centerDecisionLines,
           ...centerPlanLines,
           ...takeLines(smallGroupPlanLines, 1),
           ...takeLines(interventionPlanLines, 1),
@@ -227,6 +249,7 @@ export function buildLessonSpec(
       closure: {
         title: "Closure",
         steps: compactSteps([
+          ...closureDecisionLines,
           "Review the comprehension objective and key takeaway from the text.",
           closureLine,
           ...closurePlanLines,
@@ -253,6 +276,7 @@ export function buildLessonSpec(
     guidedPractice: {
       title: "Guided Practice",
       steps: compactSteps([
+        ...guidedDecisionLines,
         guidedTaskLine,
         `Reference standards during support: ${standards.join(", ")}.`,
         ...guidedPlanLines,
@@ -264,6 +288,7 @@ export function buildLessonSpec(
     independentPractice: {
       title: "Independent Practice",
       steps: compactSteps([
+        ...independentDecisionLines,
         independentTaskLine,
         `Use these lesson resources: ${wordList.join(", ")} / ${texts.join(", ")}.`,
         ...independentPlanLines,
@@ -274,6 +299,7 @@ export function buildLessonSpec(
     centers: {
       title: "Centers",
       steps: compactSteps([
+        ...centerDecisionLines,
         ...centerPlanLines,
         ...takeLines(smallGroupPlanLines, 1),
         ...takeLines(interventionPlanLines, 1),
@@ -285,6 +311,7 @@ export function buildLessonSpec(
     closure: {
       title: "Closure",
       steps: compactSteps([
+        ...closureDecisionLines,
         "Review the lesson objective.",
         `Revisit the lesson flow: ${shell.lessonSegments.join(" -> ")}.`,
         closureLine,
@@ -320,12 +347,30 @@ function ideaLines(ideas: LessonPlanIdea[] | undefined): string[] {
   return ideas.map((idea) => formatPlanningIdea(idea))
 }
 
+function decisionLinesFor(
+  planningIdeas: LessonPlanningIdeas | undefined,
+  components: PlanningComponentKey[]
+): string[] {
+  if (!planningIdeas?.missingAreaPrompts?.length) {
+    return []
+  }
+
+  return planningIdeas.missingAreaPrompts
+    .filter((candidate) => components.includes(candidate.component))
+    .map((candidate) => formatDecisionPrompt(candidate))
+}
+
 function takeLines(lines: string[], count: number, start = 0): string[] {
   return lines.slice(start, start + count)
 }
 
 function formatPlanningIdea(idea: LessonPlanIdea): string {
   return `${idea.title}: ${idea.description}`
+}
+
+function formatDecisionPrompt(candidate: MissingAreaPromptCandidate): string {
+  const importanceLabel = candidate.importance === "high" ? "High-priority decision" : "Decision"
+  return `${importanceLabel}: ${candidate.prompt}`
 }
 
 function compactSteps(steps: string[]): string[] {
