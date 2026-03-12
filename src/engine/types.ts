@@ -36,6 +36,18 @@ export type ExemplarStyleSettings = {
   customInstructions: string
 }
 
+export type CurriculumCoverage = {
+  standards: string[]
+  instructionalTargets: string[]
+  foundationalSkills: string[]
+  sightWords: string[]
+  vocabulary: string[]
+  wordLists: string[]
+  texts: string[]
+  practiceTasks: string[]
+  lessonSegments: string[]
+}
+
 export type CurriculumAnalysis = {
   standards: string[]
   vocabulary: string[]
@@ -44,6 +56,7 @@ export type CurriculumAnalysis = {
   practiceTasks: string[]
   instructionalTargets: string[]
   examples: string[]
+  coverage: CurriculumCoverage
 }
 
 export type ExemplarAnalysis = {

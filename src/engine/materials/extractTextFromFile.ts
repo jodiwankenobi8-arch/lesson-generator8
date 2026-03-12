@@ -212,13 +212,14 @@ async function extractPptxText(input: ExtractTextInput): Promise<string[]> {
   try {
     const pptxModule = await import("pptx-parser")
     const parsed = await pptxModule.parsePptx(new Uint8Array(input.fileBuffer))
+    const slideLines = collectMeaningfulText(parsed)
 
-    const slideLines = JSON.stringify(parsed)
-      .split(/\r?\n/)
-      .flatMap((line: string) => line.split(/\\n/))
-      .map((line: string) => line.replace(/[\[\]{}",]/g, " ").trim())
-      .map((line: string) => line.replace(/\s+/g, " ").trim())
-      .filter((line: string) => line.length > 0)
+    if (slideLines.length === 0) {
+      return [
+        `PPTX extraction produced no readable text for ${input.fileName}.`,
+        "The slide deck may be image-based or use an unsupported internal structure.",
+      ]
+    }
 
     return normalizeExtractedText(slideLines)
   } catch (error) {
@@ -230,6 +231,51 @@ async function extractPptxText(input: ExtractTextInput): Promise<string[]> {
       message,
     ]
   }
+}
+
+function collectMeaningfulText(value: unknown): string[] {
+  const collected: string[] = []
+  const visited = new WeakSet<object>()
+
+  function walk(current: unknown): void {
+    if (typeof current === "string") {
+      const normalized = current.replace(/\s+/g, " ").trim()
+
+      if (normalized.length > 0) {
+        collected.push(normalized)
+      }
+
+      return
+    }
+
+    if (typeof current === "number" || typeof current === "boolean" || current == null) {
+      return
+    }
+
+    if (Array.isArray(current)) {
+      for (const item of current) {
+        walk(item)
+      }
+
+      return
+    }
+
+    if (typeof current === "object") {
+      if (visited.has(current)) {
+        return
+      }
+
+      visited.add(current)
+
+      for (const value of Object.values(current as Record<string, unknown>)) {
+        walk(value)
+      }
+    }
+  }
+
+  walk(value)
+
+  return collected
 }
 
 function decodeArrayBuffer(buffer?: ArrayBuffer): string {
@@ -299,4 +345,3 @@ function buildUnsupportedFormatNotice(
     "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
   ]
 }
-

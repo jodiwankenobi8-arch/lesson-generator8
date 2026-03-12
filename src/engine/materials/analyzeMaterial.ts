@@ -114,6 +114,9 @@ function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
   const texts = selectTexts(lines)
   const practiceTasks = selectPracticeTasks(lines)
   const examples = selectExamples(lines)
+  const foundationalSkills = selectFoundationalSkills(lines)
+  const sightWords = selectSightWords(lines)
+  const lessonSegments = selectCoveredLessonSegments(lines)
 
   return {
     standards: standards.length ? standards : ["teacher-selected standard"],
@@ -123,6 +126,17 @@ function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
     practiceTasks: practiceTasks.length ? practiceTasks : ["curriculum-aligned practice task"],
     instructionalTargets: instructionalTargets.length ? instructionalTargets : ["lesson target"],
     examples: examples.length ? examples : ["modeled example"],
+    coverage: {
+      standards,
+      instructionalTargets,
+      foundationalSkills,
+      sightWords,
+      vocabulary,
+      wordLists,
+      texts,
+      practiceTasks,
+      lessonSegments,
+    },
   }
 }
 
@@ -148,14 +162,16 @@ function buildExemplarAnalysis(lines: string[]): ExemplarAnalysis {
 
 function deriveCurriculumTags(lines: string[]): string[] {
   const tags = unique([
+    ...inferPhonicsTags(lines),
+    ...inferComprehensionTags(lines),
     ...tagIfAny(findStandards(lines), "standards"),
     ...tagIfAny(selectVocabulary(lines), "vocabulary"),
     ...tagIfAny(selectWordLists(lines), "word work"),
-    ...tagIfAny(selectTexts(lines), "text"),
     ...tagIfAny(selectPracticeTasks(lines), "practice"),
     ...tagIfAny(selectInstructionalTargets(lines), "instruction"),
-    ...inferPhonicsTags(lines),
-    ...inferComprehensionTags(lines),
+    ...tagIfAny(selectSightWords(lines), "sight words"),
+    ...tagIfAny(selectFoundationalSkills(lines), "foundational skills"),
+    ...tagIfAny(selectTexts(lines), "text"),
   ])
 
   return tags.length
@@ -320,6 +336,85 @@ function selectExamples(lines: string[]): string[] {
         "worked example",
       ]) || startsWithAny(line, ["example", "teacher example", "model"]),
     6
+  )
+}
+
+function selectFoundationalSkills(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "phonemic awareness",
+        "phoneme",
+        "segment",
+        "blend",
+        "blending",
+        "decode",
+        "decodable",
+        "phonics",
+        "letter sound",
+        "sound-spelling",
+        "sound spelling",
+        "word work",
+        "syllable",
+        "cvc",
+        "cvce",
+        "digraph",
+        "vowel team",
+        "silent e",
+        "long a",
+        "short a",
+        "high frequency word",
+        "heart word",
+        "sight word",
+        "fluency",
+      ]),
+    MAX_FIELD_ITEMS
+  )
+}
+
+function selectSightWords(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "sight word",
+        "sight words",
+        "high frequency word",
+        "high-frequency word",
+        "heart word",
+        "heart words",
+        "tricky word",
+        "tricky words",
+        "irregular word",
+        "irregular words",
+      ]),
+    MAX_FIELD_ITEMS
+  )
+}
+
+function selectCoveredLessonSegments(lines: string[]): string[] {
+  return takeBestMatches(
+    lines,
+    (line) =>
+      containsAny(line, [
+        "opening",
+        "warm up",
+        "warm-up",
+        "mini lesson",
+        "teach",
+        "guided practice",
+        "independent practice",
+        "closure",
+        "exit ticket",
+        "small group",
+        "intervention",
+        "center",
+        "rotation",
+        "fluency",
+        "read aloud",
+      ]),
+    MAX_FIELD_ITEMS
   )
 }
 
@@ -556,14 +651,18 @@ function inferComprehensionTags(lines: string[]): string[] {
     containsAny(joined, [
       "comprehension",
       "main idea",
+      "key details",
       "details",
       "character",
       "theme",
       "retell",
-      "passage",
-      "story",
-      "article",
+      "summarize",
+      "summary",
       "text evidence",
+      "infer",
+      "inference",
+      "ask and answer",
+      "respond to text",
     ])
   ) {
     tags.push("comprehension")
@@ -589,5 +688,4 @@ function startsWithAny(text: string, prefixes: string[]): boolean {
 function unique(items: string[]): string[] {
   return Array.from(new Set(items))
 }
-
 

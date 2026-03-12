@@ -40,7 +40,10 @@ function resolveStandards(
   }
 
   const analyzedStandards = cleanUnique(
-    curriculumAnalyses.flatMap((analysis) => analysis.standards)
+    curriculumAnalyses.flatMap((analysis) => {
+      const coverage = getCoverage(analysis)
+      return [...coverage.standards, ...analysis.standards]
+    })
   ).filter((value) => !isWeakFallbackValue(value))
 
   if (analyzedStandards.length > 0) {
@@ -56,7 +59,10 @@ function resolveVocabulary(
   primaryTarget: string
 ): string[] {
   const analyzedVocabulary = cleanUnique(
-    curriculumAnalyses.flatMap((analysis) => analysis.vocabulary)
+    curriculumAnalyses.flatMap((analysis) => {
+      const coverage = getCoverage(analysis)
+      return [...coverage.vocabulary, ...analysis.vocabulary]
+    })
   ).filter((value) => !isWeakFallbackValue(value))
 
   if (analyzedVocabulary.length > 0) {
@@ -75,6 +81,8 @@ function resolveVocabulary(
             "digraph",
             "syllable",
             "phoneme",
+            "sight word",
+            "heart word",
           ])
         : containsAny(line, [
             "vocabulary",
@@ -103,7 +111,10 @@ function resolveWordLists(
   primaryTarget: string
 ): string[] {
   const analyzedWordLists = cleanUnique(
-    curriculumAnalyses.flatMap((analysis) => analysis.wordLists)
+    curriculumAnalyses.flatMap((analysis) => {
+      const coverage = getCoverage(analysis)
+      return [...coverage.wordLists, ...analysis.wordLists, ...coverage.sightWords]
+    })
   ).filter((value) => !isWeakFallbackValue(value))
 
   if (analyzedWordLists.length > 0) {
@@ -118,6 +129,11 @@ function resolveWordLists(
             "word list",
             "target words",
             "heart words",
+            "heart word",
+            "sight words",
+            "sight word",
+            "high frequency word",
+            "high-frequency word",
             "decodable words",
             "sound",
             "pattern",
@@ -154,7 +170,10 @@ function resolveTexts(
   topic: string
 ): string[] {
   const analyzedTexts = cleanUnique(
-    curriculumAnalyses.flatMap((analysis) => analysis.texts)
+    curriculumAnalyses.flatMap((analysis) => {
+      const coverage = getCoverage(analysis)
+      return [...coverage.texts, ...analysis.texts]
+    })
   ).filter((value) => !isWeakFallbackValue(value))
 
   if (analyzedTexts.length > 0) {
@@ -194,7 +213,10 @@ function resolvePracticeIdeas(
   primaryTarget: string
 ): string[] {
   const analyzedPracticeTasks = cleanUnique(
-    curriculumAnalyses.flatMap((analysis) => analysis.practiceTasks)
+    curriculumAnalyses.flatMap((analysis) => {
+      const coverage = getCoverage(analysis)
+      return [...coverage.practiceTasks, ...analysis.practiceTasks, ...coverage.lessonSegments]
+    })
   ).filter((value) => !isWeakFallbackValue(value))
 
   if (analyzedPracticeTasks.length > 0) {
@@ -214,6 +236,8 @@ function resolvePracticeIdeas(
             "word list",
             "dictation",
             "map the sounds",
+            "sight word",
+            "heart word",
           ])
         : containsAny(line, [
             "practice",
@@ -232,7 +256,10 @@ function resolvePracticeIdeas(
   }
 
   const analyzedTargets = cleanUnique(
-    curriculumAnalyses.flatMap((analysis) => analysis.instructionalTargets)
+    curriculumAnalyses.flatMap((analysis) => {
+      const coverage = getCoverage(analysis)
+      return [...coverage.instructionalTargets, ...analysis.instructionalTargets]
+    })
   ).filter((value) => !isWeakFallbackValue(value))
 
   if (analyzedTargets.length > 0) {
@@ -242,6 +269,22 @@ function resolvePracticeIdeas(
   return primaryTarget === "phonics"
     ? ["Word reading", "Sound sort", "Partner decoding"]
     : ["Guided reading", "Partner discussion", "Question practice"]
+}
+
+function getCoverage(analysis: CurriculumAnalysis) {
+  return (
+    analysis.coverage ?? {
+      standards: [],
+      instructionalTargets: [],
+      foundationalSkills: [],
+      sightWords: [],
+      vocabulary: [],
+      wordLists: [],
+      texts: [],
+      practiceTasks: [],
+      lessonSegments: [],
+    }
+  )
 }
 
 function uniqueLines(lines: string[], predicate: (line: string) => boolean): string[] {
