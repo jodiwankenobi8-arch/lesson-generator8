@@ -1,5 +1,6 @@
-import React from "react"
+import React, { useState } from "react"
 import { Link } from "react-router-dom"
+import { generateLesson } from "../engine/generateLesson"
 import {
   LessonPlanIdea,
   LessonPlanSectionIdeas,
@@ -37,6 +38,29 @@ export default function ResultsPage() {
   const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
   const counts = useLessonStore((state) => state.getMaterialCounts)()
+  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [regenerationError, setRegenerationError] = useState<string | null>(null)
+
+  async function handleMissingAreaDecision(
+    component: PlanningComponentKey,
+    choice: MissingAreaDecisionChoice
+  ) {
+    setMissingAreaDecision(component, choice)
+    setRegenerationError(null)
+    setIsRegenerating(true)
+
+    try {
+      await generateLesson()
+    } catch (error) {
+      setRegenerationError(
+        error instanceof Error
+          ? error.message
+          : "The lesson could not be regenerated after updating the teacher decision."
+      )
+    } finally {
+      setIsRegenerating(false)
+    }
+  }
 
   if (hasProcessingMaterials) {
     return (
@@ -93,6 +117,22 @@ export default function ResultsPage() {
         Teacher-facing lesson package first. Supporting planning details are available below.
       </p>
 
+      {(isRegenerating || regenerationError) && (
+        <div style={{ marginBottom: 16, display: "grid", gap: 8 }}>
+          {isRegenerating && (
+            <div style={noticeStyle}>
+              Updating the lesson package to reflect the latest teacher decision.
+            </div>
+          )}
+
+          {regenerationError && (
+            <div style={warningStyle}>
+              {regenerationError}
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={{ display: "grid", gap: 16 }}>
         <PackageSummarySection
           blueprint={blueprint}
@@ -105,7 +145,8 @@ export default function ResultsPage() {
         <CoverageDecisionsSection
           planningIdeas={planningIdeas}
           decisions={missingAreaDecisions}
-          onSetDecision={setMissingAreaDecision}
+          onSetDecision={handleMissingAreaDecision}
+          isRegenerating={isRegenerating}
         />
 
         <SignalSection
@@ -252,10 +293,12 @@ function CoverageDecisionsSection({
   planningIdeas,
   decisions,
   onSetDecision,
+  isRegenerating,
 }: {
   planningIdeas: LessonPlanningIdeas
   decisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
-  onSetDecision: (component: PlanningComponentKey, choice: MissingAreaDecisionChoice) => void
+  onSetDecision: (component: PlanningComponentKey, choice: MissingAreaDecisionChoice) => Promise<void>
+  isRegenerating: boolean
 }) {
   const componentCoverage = planningIdeas.componentCoverage ?? []
   const missingAreaPrompts = planningIdeas.missingAreaPrompts ?? []
@@ -314,16 +357,19 @@ function CoverageDecisionsSection({
                       <DecisionButton
                         label="Add it"
                         active={currentChoice === "add"}
+                        disabled={isRegenerating}
                         onClick={() => onSetDecision(prompt.component, "add")}
                       />
                       <DecisionButton
                         label="Leave it out"
                         active={currentChoice === "leave_out"}
+                        disabled={isRegenerating}
                         onClick={() => onSetDecision(prompt.component, "leave_out")}
                       />
                       <DecisionButton
                         label="Decide later"
                         active={currentChoice === "undecided"}
+                        disabled={isRegenerating}
                         onClick={() => onSetDecision(prompt.component, "undecided")}
                       />
                     </div>
@@ -549,23 +595,27 @@ function IdeaList({ ideas }: { ideas: LessonPlanIdea[] }) {
 function DecisionButton({
   label,
   active,
+  disabled,
   onClick,
 }: {
   label: string
   active: boolean
+  disabled?: boolean
   onClick: () => void
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       style={{
         padding: "8px 10px",
         borderRadius: 10,
         border: active ? "1px solid #111827" : "1px solid #d1d5db",
         background: active ? "#111827" : "#ffffff",
         color: active ? "#ffffff" : "#111827",
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
         fontSize: 12,
         fontWeight: 600,
       }}
