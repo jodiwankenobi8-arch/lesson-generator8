@@ -155,6 +155,7 @@ function deriveCurriculumTags(lines: string[]): string[] {
     ...tagIfAny(selectPracticeTasks(lines), "practice"),
     ...tagIfAny(selectInstructionalTargets(lines), "instruction"),
     ...inferPhonicsTags(lines),
+    ...inferComprehensionTags(lines),
   ])
 
   return tags.length
@@ -194,15 +195,22 @@ function selectInstructionalTargets(lines: string[]): string[] {
   return takeBestMatches(
     lines,
     (line) =>
-      containsAny(line, [
+      startsWithAny(line, [
         "objective",
         "learning target",
         "target",
         "goal",
+        "focus",
+        "skill",
         "students will",
         "i can",
-        "skill",
-        "focus",
+      ]) ||
+      containsAny(line, [
+        "objective",
+        "learning target",
+        "students will",
+        "i can",
+        "today we will",
       ]),
     6
   )
@@ -235,6 +243,7 @@ function selectWordLists(lines: string[]): string[] {
         "heart words",
         "decodable words",
         "decode",
+        "blending",
         "blend",
         "sort",
         "phonics",
@@ -244,6 +253,7 @@ function selectWordLists(lines: string[]): string[] {
         "cvc",
         "digraph",
         "vowel team",
+        "silent e",
         "long a",
         "short a",
       ]) || looksLikeWordList(line),
@@ -273,21 +283,25 @@ function selectPracticeTasks(lines: string[]): string[] {
   return takeBestMatches(
     lines,
     (line) =>
-      containsAny(line, [
+      startsWithAny(line, [
+        "guided practice",
+        "independent practice",
         "practice",
         "task",
         "activity",
-        "sort",
-        "read",
-        "write",
+      ]) ||
+      containsAny(line, [
+        "guided practice",
+        "independent practice",
+        "partner practice",
+        "turn and talk",
+        "work time",
+        "read the word list",
+        "write a sentence",
+        "sort the words",
         "respond",
         "discussion",
         "partner",
-        "turn and talk",
-        "routine",
-        "work time",
-        "independent practice",
-        "guided practice",
       ]),
     MAX_FIELD_ITEMS
   )
@@ -304,7 +318,7 @@ function selectExamples(lines: string[]): string[] {
         "sample",
         "teacher example",
         "worked example",
-      ]),
+      ]) || startsWithAny(line, ["example", "teacher example", "model"]),
     6
   )
 }
@@ -334,7 +348,7 @@ function selectPacing(lines: string[]): string[] {
     lines,
     (line) =>
       /\b\d+\s?(minute|minutes|min)\b/i.test(line) ||
-      containsAny(line, ["timing", "pace", "transition", "timer"]),
+      containsAny(line, ["timing", "pace", "transition", "timer", "launch", "warm up"]),
     8
   )
 }
@@ -343,15 +357,23 @@ function selectTeacherMoves(lines: string[]): string[] {
   return takeBestMatches(
     lines,
     (line) =>
-      containsAny(line, [
+      startsWithAny(line, [
         "teacher says",
-        "teacher prompt",
         "teacher will",
         "model",
+        "guide",
         "ask",
         "say",
+        "show students",
+        "explain",
+        "turn and talk",
+      ]) ||
+      containsAny(line, [
+        "teacher says",
+        "teacher will",
+        "model",
+        "think aloud",
         "guide",
-        "prompt",
         "circulate",
         "listen for",
         "turn and talk",
@@ -364,8 +386,14 @@ function selectPromptStyle(lines: string[]): string[] {
   return takeBestMatches(
     lines,
     (line) =>
-      containsAny(line, [
+      startsWithAny(line, [
         "prompt",
+        "question stem",
+        "sentence stem",
+        "turn and talk",
+      ]) ||
+      containsAny(line, [
+        "prompt students",
         "question stem",
         "sentence stem",
         "turn and talk",
@@ -392,6 +420,7 @@ function selectLayoutCues(lines: string[]): string[] {
         "color",
         "box",
         "table",
+        "card",
       ]),
     8
   )
@@ -453,9 +482,9 @@ function scoreLine(line: string): number {
 
   if (/\b(rf|rl|ri|w|l|sl)\.\d+(\.\d+)*\b/i.test(line)) score += 5
   if (/\b\d+\s?(minute|minutes|min)\b/i.test(line)) score += 4
-  if (containsAny(lower, ["objective", "learning target", "students will", "i can"])) score += 4
+  if (containsAny(lower, ["objective", "learning target", "students will", "i can", "today we will"])) score += 4
   if (containsAny(lower, ["guided practice", "independent practice", "closure", "turn and talk"])) score += 3
-  if (containsAny(lower, ["phonics", "syllable", "cvce", "cvc", "long a", "short a", "vowel team"])) score += 3
+  if (containsAny(lower, ["phonics", "syllable", "cvce", "cvc", "long a", "short a", "vowel team", "silent e", "decode"])) score += 3
   if (containsAny(lower, ["vocabulary", "define", "meaning", "example", "model"])) score += 2
 
   const wordCount = lower.split(/\s+/).filter(Boolean).length
@@ -489,12 +518,56 @@ function inferPhonicsTags(lines: string[]): string[] {
   const joined = lines.join(" ").toLowerCase()
   const tags: string[] = []
 
-  if (joined.includes("phonics")) tags.push("phonics")
+  if (
+    containsAny(joined, [
+      "phonics",
+      "decode",
+      "decodable",
+      "blending",
+      "blend",
+      "word list",
+      "silent e",
+      "vowel team",
+      "cvce",
+      "cvc",
+      "digraph",
+      "syllable",
+      "long a",
+      "short a",
+    ])
+  ) {
+    tags.push("phonics")
+  }
+
   if (joined.includes("long a")) tags.push("long a")
   if (joined.includes("short a")) tags.push("short a")
   if (joined.includes("cvce")) tags.push("cvce")
   if (joined.includes("cvc")) tags.push("cvc")
   if (joined.includes("syllable")) tags.push("syllables")
+
+  return tags
+}
+
+function inferComprehensionTags(lines: string[]): string[] {
+  const joined = lines.join(" ").toLowerCase()
+  const tags: string[] = []
+
+  if (
+    containsAny(joined, [
+      "comprehension",
+      "main idea",
+      "details",
+      "character",
+      "theme",
+      "retell",
+      "passage",
+      "story",
+      "article",
+      "text evidence",
+    ])
+  ) {
+    tags.push("comprehension")
+  }
 
   return tags
 }
@@ -508,6 +581,13 @@ function containsAny(text: string, terms: string[]): boolean {
   return terms.some((term) => lower.includes(term))
 }
 
+function startsWithAny(text: string, prefixes: string[]): boolean {
+  const lower = text.toLowerCase()
+  return prefixes.some((prefix) => lower.startsWith(prefix))
+}
+
 function unique(items: string[]): string[] {
   return Array.from(new Set(items))
 }
+
+
