@@ -97,6 +97,16 @@ describe("extraction contract", () => {
     ])
   })
 
+  it("returns a clear message when pdf is missing a file buffer", async () => {
+    const result = await extractTextFromFile({
+      fileName: "curriculum.pdf",
+    })
+
+    expect(result.fileType).toBe("pdf")
+    expect(result.extractedText[0]).toContain("PDF file curriculum.pdf was detected")
+    expect(result.extractedText[1]).toContain("ArrayBuffer")
+  })
+
   it("returns a clear message when docx is missing a file buffer", async () => {
     const result = await extractTextFromFile({
       fileName: "curriculum.docx",
