@@ -3,15 +3,128 @@ import {
   LessonPlanIdea,
   LessonPlanningIdeas,
   LessonSpec,
+  LessonSpecSection,
   MissingAreaPromptCandidate,
   PlanningComponentKey,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
+type LessonSpecSectionKey =
+  | "teach"
+  | "guidedPractice"
+  | "independentPractice"
+  | "centers"
+  | "closure"
+
+type LessonSpecContext = {
+  target: LessonBlueprint["content"]["target"]
+  primary: string
+  isFullMixed: boolean
+  vocabulary: string[]
+  wordList: string[]
+  texts: string[]
+  practiceIdeas: string[]
+  standards: string[]
+  shell: ReturnType<typeof resolveTemplateShell>
+  openingLine: string
+  modeledResources: string
+  guidedTaskLine: string
+  independentTaskLine: string
+  closureLine: string
+  flowLine: string
+  slideShellLine: string
+  timingLine: string
+  teacherMoveLine: string
+  promptLine: string
+  toneLine: string
+  teachPlanLines: string[]
+  guidedPlanLines: string[]
+  independentPlanLines: string[]
+  closurePlanLines: string[]
+  centerPlanLines: string[]
+  smallGroupPlanLines: string[]
+  interventionPlanLines: string[]
+  formativePlanLines: string[]
+  guidedDecisionLines: string[]
+  independentDecisionLines: string[]
+  closureDecisionLines: string[]
+  centerDecisionLines: string[]
+}
+
 export function buildLessonSpec(
   blueprint: LessonBlueprint,
   planningIdeas?: LessonPlanningIdeas
 ): LessonSpec {
+  const context = buildLessonSpecContext(blueprint, planningIdeas)
+  const { primary, isFullMixed } = context
+
+  if (isFullMixed) {
+    return {
+      teach: createSection("Teach", buildMixedTeachSteps(context)),
+      guidedPractice: createSection(
+        "Guided Practice",
+        buildMixedGuidedPracticeSteps(context)
+      ),
+      independentPractice: createSection(
+        "Independent Practice",
+        buildMixedIndependentPracticeSteps(context)
+      ),
+      centers: createSection("Centers", buildMixedCentersSteps(context)),
+      closure: createSection("Closure", buildMixedClosureSteps(context)),
+    }
+  }
+
+  if (primary === "phonics") {
+    return {
+      teach: createSection("Teach", buildPhonicsTeachSteps(context)),
+      guidedPractice: createSection(
+        "Guided Practice",
+        buildPhonicsGuidedPracticeSteps(context)
+      ),
+      independentPractice: createSection(
+        "Independent Practice",
+        buildPhonicsIndependentPracticeSteps(context)
+      ),
+      centers: createSection("Centers", buildPhonicsCentersSteps(context)),
+      closure: createSection("Closure", buildPhonicsClosureSteps(context)),
+    }
+  }
+
+  if (primary === "comprehension") {
+    return {
+      teach: createSection("Teach", buildComprehensionTeachSteps(context)),
+      guidedPractice: createSection(
+        "Guided Practice",
+        buildComprehensionGuidedPracticeSteps(context)
+      ),
+      independentPractice: createSection(
+        "Independent Practice",
+        buildComprehensionIndependentPracticeSteps(context)
+      ),
+      centers: createSection("Centers", buildComprehensionCentersSteps(context)),
+      closure: createSection("Closure", buildComprehensionClosureSteps(context)),
+    }
+  }
+
+  return {
+    teach: createSection("Teach", buildGenericTeachSteps(context)),
+    guidedPractice: createSection(
+      "Guided Practice",
+      buildGenericGuidedPracticeSteps(context)
+    ),
+    independentPractice: createSection(
+      "Independent Practice",
+      buildGenericIndependentPracticeSteps(context)
+    ),
+    centers: createSection("Centers", buildGenericCentersSteps(context)),
+    closure: createSection("Closure", buildGenericClosureSteps(context)),
+  }
+}
+
+function buildLessonSpecContext(
+  blueprint: LessonBlueprint,
+  planningIdeas?: LessonPlanningIdeas
+): LessonSpecContext {
   const target = blueprint.content.target
   const primary = target.primary.toLowerCase()
   const isFullMixed = target.isMixedTarget && target.recommendedMode === "full"
@@ -41,294 +154,305 @@ export function buildLessonSpec(
   const promptLine = `Use prompts and response frames such as: ${shell.promptStyle.join(", ")}.`
   const toneLine = `Keep the delivery tone aligned to: ${shell.tone.join(", ")}.`
 
-  const teachPlanLines = planningLines(planningIdeas, "teach")
-  const guidedPlanLines = planningLines(planningIdeas, "guided_practice")
-  const independentPlanLines = planningLines(planningIdeas, "independent_practice")
-  const closurePlanLines = planningLines(planningIdeas, "closure")
-  const centerPlanLines = ideaLines(planningIdeas?.centerIdeas)
-  const smallGroupPlanLines = ideaLines(planningIdeas?.smallGroupIdeas)
-  const interventionPlanLines = ideaLines(planningIdeas?.interventionIdeas)
-  const formativePlanLines = ideaLines(planningIdeas?.formativeAssessmentIdeas)
-
-  const guidedDecisionLines = decisionLinesFor(planningIdeas, ["guided_practice"])
-  const independentDecisionLines = decisionLinesFor(planningIdeas, ["independent_practice"])
-  const closureDecisionLines = decisionLinesFor(planningIdeas, ["closure", "formative_assessment"])
-  const centerDecisionLines = decisionLinesFor(planningIdeas, [
-    "centers",
-    "small_group",
-    "intervention",
-  ])
-
-  if (isFullMixed) {
-    return {
-      teach: {
-        title: "Teach",
-        steps: compactSteps([
-          openingLine,
-          `Model the foundational skill first using: ${wordList.join(", ")}.`,
-          `Then connect students to meaning and text work using: ${texts.join(", ")}.`,
-          `Preteach and revisit vocabulary across both parts: ${vocabulary.join(", ")}.`,
-          ...teachPlanLines,
-          teacherMoveLine,
-          promptLine,
-          flowLine,
-          slideShellLine,
-        ]),
-      },
-      guidedPractice: {
-        title: "Guided Practice",
-        steps: compactSteps([
-          ...guidedDecisionLines,
-          `Guide students through two curriculum-aligned practice blocks: ${practiceIdeas.join(", ")}.`,
-          `Use modeled examples and text support during teacher guidance: ${wordList.join(", ")}; ${texts.join(", ")}.`,
-          `Keep support anchored to the standards: ${standards.join(", ")}.`,
-          ...guidedPlanLines,
-          ...takeLines(formativePlanLines, 1),
-          promptLine,
-          timingLine,
-        ]),
-      },
-      independentPractice: {
-        title: "Independent Practice",
-        steps: compactSteps([
-          ...independentDecisionLines,
-          `Students complete two aligned independent tasks using: ${practiceIdeas.slice(0, 2).join(", ")}.`,
-          `Require students to apply both lesson resources and text support: ${wordList.join(", ")} / ${texts.join(", ")}.`,
-          ...independentPlanLines,
-          "Check for transfer from teacher-supported work to student-owned work in both lesson parts.",
-          ...takeLines(formativePlanLines, 1, 1),
-          toneLine,
-        ]),
-      },
-      centers: {
-        title: "Centers",
-        steps: compactSteps([
-          ...centerDecisionLines,
-          ...centerPlanLines,
-          ...takeLines(smallGroupPlanLines, 1),
-          ...takeLines(interventionPlanLines, 1),
-          "Phonics / word work center",
-          "Reading or response center",
-          "Teacher-led support / reteach center",
-        ]),
-      },
-      closure: {
-        title: "Closure",
-        steps: compactSteps([
-          ...closureDecisionLines,
-          "Review what students learned in both parts of the lesson.",
-          ...closurePlanLines,
-          ...takeLines(formativePlanLines, 1),
-          flowLine,
-          timingLine,
-          toneLine,
-          "End with a quick check for understanding and identify students needing reteach.",
-        ]),
-      },
-    }
-  }
-
-  if (primary === "phonics") {
-    return {
-      teach: {
-        title: "Teach",
-        steps: compactSteps([
-          openingLine,
-          `Model the phonics focus with these curriculum examples: ${wordList.join(", ")}.`,
-          `Teach and reinforce the key language students will use: ${vocabulary.join(", ")}.`,
-          "Think aloud while blending, reading, sorting, or encoding target words.",
-          ...teachPlanLines,
-          teacherMoveLine,
-          flowLine,
-          slideShellLine,
-        ]),
-      },
-      guidedPractice: {
-        title: "Guided Practice",
-        steps: compactSteps([
-          ...guidedDecisionLines,
-          guidedTaskLine,
-          `Use the lesson word list during support: ${wordList.join(", ")}.`,
-          "Require students to explain or show the target pattern with teacher guidance.",
-          ...guidedPlanLines,
-          ...takeLines(formativePlanLines, 1),
-          promptLine,
-          timingLine,
-        ]),
-      },
-      independentPractice: {
-        title: "Independent Practice",
-        steps: compactSteps([
-          ...independentDecisionLines,
-          independentTaskLine,
-          `Use these words or examples during practice: ${wordList.join(", ")}.`,
-          ...independentPlanLines,
-          ...takeLines(formativePlanLines, 1, 1),
-          "Check for accurate decoding, sorting, encoding, and pattern application.",
-          toneLine,
-        ]),
-      },
-      centers: {
-        title: "Centers",
-        steps: compactSteps([
-          ...centerDecisionLines,
-          ...centerPlanLines,
-          ...takeLines(smallGroupPlanLines, 1),
-          ...takeLines(interventionPlanLines, 1),
-          "Word work / phonics center",
-          "Partner reading or decoding center",
-          "Teacher table for intervention or extension",
-        ]),
-      },
-      closure: {
-        title: "Closure",
-        steps: compactSteps([
-          ...closureDecisionLines,
-          "Review the target sound, pattern, or decoding skill.",
-          closureLine,
-          ...closurePlanLines,
-          promptLine,
-          "End with a quick oral read, sort, or exit check.",
-        ]),
-      },
-    }
-  }
-
-  if (primary === "comprehension") {
-    return {
-      teach: {
-        title: "Teach",
-        steps: compactSteps([
-          openingLine,
-          `Model comprehension thinking with these lesson texts: ${texts.join(", ")}.`,
-          `Preteach or revisit the lesson vocabulary: ${vocabulary.join(", ")}.`,
-          "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
-          ...teachPlanLines,
-          teacherMoveLine,
-          flowLine,
-          slideShellLine,
-        ]),
-      },
-      guidedPractice: {
-        title: "Guided Practice",
-        steps: compactSteps([
-          ...guidedDecisionLines,
-          guidedTaskLine,
-          `Use the lesson text and prompts during support: ${texts.join(", ")}.`,
-          `Anchor the work to the lesson standard: ${standards.join(", ")}.`,
-          ...guidedPlanLines,
-          ...takeLines(formativePlanLines, 1),
-          promptLine,
-          timingLine,
-        ]),
-      },
-      independentPractice: {
-        title: "Independent Practice",
-        steps: compactSteps([
-          ...independentDecisionLines,
-          independentTaskLine,
-          `Use these texts or prompts during student work: ${texts.join(", ")}.`,
-          ...independentPlanLines,
-          ...takeLines(formativePlanLines, 1, 1),
-          "Check for understanding, accuracy, and evidence of reasoning.",
-          toneLine,
-        ]),
-      },
-      centers: {
-        title: "Centers",
-        steps: compactSteps([
-          ...centerDecisionLines,
-          ...centerPlanLines,
-          ...takeLines(smallGroupPlanLines, 1),
-          ...takeLines(interventionPlanLines, 1),
-          "Reading response center",
-          "Partner discussion / retell center",
-          "Teacher table for guided comprehension support",
-        ]),
-      },
-      closure: {
-        title: "Closure",
-        steps: compactSteps([
-          ...closureDecisionLines,
-          "Review the comprehension objective and key takeaway from the text.",
-          closureLine,
-          ...closurePlanLines,
-          promptLine,
-          "Close with a brief discussion, written response, or oral recap.",
-        ]),
-      },
-    }
-  }
-
   return {
-    teach: {
-      title: "Teach",
-      steps: compactSteps([
-        openingLine,
-        `Model the lesson content using: ${modeledResources}.`,
-        `Teach the lesson vocabulary and focus language: ${vocabulary.join(", ")}.`,
-        ...teachPlanLines,
-        teacherMoveLine,
-        flowLine,
-        slideShellLine,
-      ]),
-    },
-    guidedPractice: {
-      title: "Guided Practice",
-      steps: compactSteps([
-        ...guidedDecisionLines,
-        guidedTaskLine,
-        `Reference standards during support: ${standards.join(", ")}.`,
-        ...guidedPlanLines,
-        ...takeLines(formativePlanLines, 1),
-        promptLine,
-        timingLine,
-      ]),
-    },
-    independentPractice: {
-      title: "Independent Practice",
-      steps: compactSteps([
-        ...independentDecisionLines,
-        independentTaskLine,
-        `Use these lesson resources: ${wordList.join(", ")} / ${texts.join(", ")}.`,
-        ...independentPlanLines,
-        ...takeLines(formativePlanLines, 1, 1),
-        toneLine,
-      ]),
-    },
-    centers: {
-      title: "Centers",
-      steps: compactSteps([
-        ...centerDecisionLines,
-        ...centerPlanLines,
-        ...takeLines(smallGroupPlanLines, 1),
-        ...takeLines(interventionPlanLines, 1),
-        "Independent practice center",
-        "Partner application center",
-        "Teacher support center",
-      ]),
-    },
-    closure: {
-      title: "Closure",
-      steps: compactSteps([
-        ...closureDecisionLines,
-        "Review the lesson objective.",
-        `Revisit the lesson flow: ${shell.lessonSegments.join(" -> ")}.`,
-        closureLine,
-        ...closurePlanLines,
-        promptLine,
-      ]),
-    },
+    target,
+    primary,
+    isFullMixed,
+    vocabulary,
+    wordList,
+    texts,
+    practiceIdeas,
+    standards,
+    shell,
+    openingLine,
+    modeledResources,
+    guidedTaskLine,
+    independentTaskLine,
+    closureLine,
+    flowLine,
+    slideShellLine,
+    timingLine,
+    teacherMoveLine,
+    promptLine,
+    toneLine,
+    teachPlanLines: planningLines(planningIdeas, "teach"),
+    guidedPlanLines: planningLines(planningIdeas, "guided_practice"),
+    independentPlanLines: planningLines(planningIdeas, "independent_practice"),
+    closurePlanLines: planningLines(planningIdeas, "closure"),
+    centerPlanLines: ideaLines(planningIdeas?.centerIdeas),
+    smallGroupPlanLines: ideaLines(planningIdeas?.smallGroupIdeas),
+    interventionPlanLines: ideaLines(planningIdeas?.interventionIdeas),
+    formativePlanLines: ideaLines(planningIdeas?.formativeAssessmentIdeas),
+    guidedDecisionLines: decisionLinesFor(planningIdeas, ["guided_practice"]),
+    independentDecisionLines: decisionLinesFor(planningIdeas, ["independent_practice"]),
+    closureDecisionLines: decisionLinesFor(planningIdeas, [
+      "closure",
+      "formative_assessment",
+    ]),
+    centerDecisionLines: decisionLinesFor(planningIdeas, [
+      "centers",
+      "small_group",
+      "intervention",
+    ]),
   }
+}
+
+function createSection(title: string, steps: string[]): LessonSpecSection {
+  return {
+    title,
+    steps: compactSteps(steps),
+  }
+}
+
+function buildMixedTeachSteps(context: LessonSpecContext): string[] {
+  return [
+    context.openingLine,
+    `Model the foundational skill first using: ${context.wordList.join(", ")}.`,
+    `Then connect students to meaning and text work using: ${context.texts.join(", ")}.`,
+    `Preteach and revisit vocabulary across both parts: ${context.vocabulary.join(", ")}.`,
+    ...context.teachPlanLines,
+    context.teacherMoveLine,
+    context.promptLine,
+    context.flowLine,
+    context.slideShellLine,
+  ]
+}
+
+function buildMixedGuidedPracticeSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.guidedDecisionLines,
+    `Guide students through two curriculum-aligned practice blocks: ${context.practiceIdeas.join(", ")}.`,
+    `Use modeled examples and text support during teacher guidance: ${context.wordList.join(", ")}; ${context.texts.join(", ")}.`,
+    `Keep support anchored to the standards: ${context.standards.join(", ")}.`,
+    ...context.guidedPlanLines,
+    ...takeLines(context.formativePlanLines, 1),
+    context.promptLine,
+    context.timingLine,
+  ]
+}
+
+function buildMixedIndependentPracticeSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.independentDecisionLines,
+    `Students complete two aligned independent tasks using: ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+    `Require students to apply both lesson resources and text support: ${context.wordList.join(", ")} / ${context.texts.join(", ")}.`,
+    ...context.independentPlanLines,
+    "Check for transfer from teacher-supported work to student-owned work in both lesson parts.",
+    ...takeLines(context.formativePlanLines, 1, 1),
+    context.toneLine,
+  ]
+}
+
+function buildMixedCentersSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.centerDecisionLines,
+    ...context.centerPlanLines,
+    ...takeLines(context.smallGroupPlanLines, 1),
+    ...takeLines(context.interventionPlanLines, 1),
+    "Phonics / word work center",
+    "Reading or response center",
+    "Teacher-led support / reteach center",
+  ]
+}
+
+function buildMixedClosureSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.closureDecisionLines,
+    "Review what students learned in both parts of the lesson.",
+    ...context.closurePlanLines,
+    ...takeLines(context.formativePlanLines, 1),
+    context.flowLine,
+    context.timingLine,
+    context.toneLine,
+    "End with a quick check for understanding and identify students needing reteach.",
+  ]
+}
+
+function buildPhonicsTeachSteps(context: LessonSpecContext): string[] {
+  return [
+    context.openingLine,
+    `Model the phonics focus with these curriculum examples: ${context.wordList.join(", ")}.`,
+    `Teach and reinforce the key language students will use: ${context.vocabulary.join(", ")}.`,
+    "Think aloud while blending, reading, sorting, or encoding target words.",
+    ...context.teachPlanLines,
+    context.teacherMoveLine,
+    context.flowLine,
+    context.slideShellLine,
+  ]
+}
+
+function buildPhonicsGuidedPracticeSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.guidedDecisionLines,
+    context.guidedTaskLine,
+    `Use the lesson word list during support: ${context.wordList.join(", ")}.`,
+    "Require students to explain or show the target pattern with teacher guidance.",
+    ...context.guidedPlanLines,
+    ...takeLines(context.formativePlanLines, 1),
+    context.promptLine,
+    context.timingLine,
+  ]
+}
+
+function buildPhonicsIndependentPracticeSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.independentDecisionLines,
+    context.independentTaskLine,
+    `Use these words or examples during practice: ${context.wordList.join(", ")}.`,
+    ...context.independentPlanLines,
+    ...takeLines(context.formativePlanLines, 1, 1),
+    "Check for accurate decoding, sorting, encoding, and pattern application.",
+    context.toneLine,
+  ]
+}
+
+function buildPhonicsCentersSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.centerDecisionLines,
+    ...context.centerPlanLines,
+    ...takeLines(context.smallGroupPlanLines, 1),
+    ...takeLines(context.interventionPlanLines, 1),
+    "Word work / phonics center",
+    "Partner reading or decoding center",
+    "Teacher table for intervention or extension",
+  ]
+}
+
+function buildPhonicsClosureSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.closureDecisionLines,
+    "Review the target sound, pattern, or decoding skill.",
+    context.closureLine,
+    ...context.closurePlanLines,
+    context.promptLine,
+    "End with a quick oral read, sort, or exit check.",
+  ]
+}
+
+function buildComprehensionTeachSteps(context: LessonSpecContext): string[] {
+  return [
+    context.openingLine,
+    `Model comprehension thinking with these lesson texts: ${context.texts.join(", ")}.`,
+    `Preteach or revisit the lesson vocabulary: ${context.vocabulary.join(", ")}.`,
+    "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
+    ...context.teachPlanLines,
+    context.teacherMoveLine,
+    context.flowLine,
+    context.slideShellLine,
+  ]
+}
+
+function buildComprehensionGuidedPracticeSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.guidedDecisionLines,
+    context.guidedTaskLine,
+    `Use the lesson text and prompts during support: ${context.texts.join(", ")}.`,
+    `Anchor the work to the lesson standard: ${context.standards.join(", ")}.`,
+    ...context.guidedPlanLines,
+    ...takeLines(context.formativePlanLines, 1),
+    context.promptLine,
+    context.timingLine,
+  ]
+}
+
+function buildComprehensionIndependentPracticeSteps(
+  context: LessonSpecContext
+): string[] {
+  return [
+    ...context.independentDecisionLines,
+    context.independentTaskLine,
+    `Use these texts or prompts during student work: ${context.texts.join(", ")}.`,
+    ...context.independentPlanLines,
+    ...takeLines(context.formativePlanLines, 1, 1),
+    "Check for understanding, accuracy, and evidence of reasoning.",
+    context.toneLine,
+  ]
+}
+
+function buildComprehensionCentersSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.centerDecisionLines,
+    ...context.centerPlanLines,
+    ...takeLines(context.smallGroupPlanLines, 1),
+    ...takeLines(context.interventionPlanLines, 1),
+    "Reading response center",
+    "Partner discussion / retell center",
+    "Teacher table for guided comprehension support",
+  ]
+}
+
+function buildComprehensionClosureSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.closureDecisionLines,
+    "Review the comprehension objective and key takeaway from the text.",
+    context.closureLine,
+    ...context.closurePlanLines,
+    context.promptLine,
+    "Close with a brief discussion, written response, or oral recap.",
+  ]
+}
+
+function buildGenericTeachSteps(context: LessonSpecContext): string[] {
+  return [
+    context.openingLine,
+    `Model the lesson content using: ${context.modeledResources}.`,
+    `Teach the lesson vocabulary and focus language: ${context.vocabulary.join(", ")}.`,
+    ...context.teachPlanLines,
+    context.teacherMoveLine,
+    context.flowLine,
+    context.slideShellLine,
+  ]
+}
+
+function buildGenericGuidedPracticeSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.guidedDecisionLines,
+    context.guidedTaskLine,
+    `Reference standards during support: ${context.standards.join(", ")}.`,
+    ...context.guidedPlanLines,
+    ...takeLines(context.formativePlanLines, 1),
+    context.promptLine,
+    context.timingLine,
+  ]
+}
+
+function buildGenericIndependentPracticeSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.independentDecisionLines,
+    context.independentTaskLine,
+    `Use these lesson resources: ${context.wordList.join(", ")} / ${context.texts.join(", ")}.`,
+    ...context.independentPlanLines,
+    ...takeLines(context.formativePlanLines, 1, 1),
+    context.toneLine,
+  ]
+}
+
+function buildGenericCentersSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.centerDecisionLines,
+    ...context.centerPlanLines,
+    ...takeLines(context.smallGroupPlanLines, 1),
+    ...takeLines(context.interventionPlanLines, 1),
+    "Independent practice center",
+    "Partner application center",
+    "Teacher support center",
+  ]
+}
+
+function buildGenericClosureSteps(context: LessonSpecContext): string[] {
+  return [
+    ...context.closureDecisionLines,
+    "Review the lesson objective.",
+    `Revisit the lesson flow: ${context.shell.lessonSegments.join(" -> ")}.`,
+    context.closureLine,
+    ...context.closurePlanLines,
+    context.promptLine,
+  ]
 }
 
 function planningLines(
   planningIdeas: LessonPlanningIdeas | undefined,
-  section:
-    | "teach"
-    | "guided_practice"
-    | "independent_practice"
-    | "closure"
+  section: "teach" | "guided_practice" | "independent_practice" | "closure"
 ): string[] {
   const match = planningIdeas?.lessonPlanSections.find((item) => item.section === section)
 
