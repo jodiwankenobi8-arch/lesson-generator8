@@ -12,6 +12,14 @@ type MissingAreaDecisionMap = Partial<
   Record<PlanningComponentKey, MissingAreaDecisionChoice>
 >
 
+type DecisionAwareListOptions = {
+  component: PlanningComponentKey
+  plannedItems?: string[]
+  missingAreaDecisions?: MissingAreaDecisionMap
+  addFallbackItems?: string[]
+  defaultItems?: string[]
+}
+
 export function buildPackageOutputs(args: {
   inputs: LessonInputs
   blueprint: LessonBlueprint
@@ -48,10 +56,7 @@ export function buildPackageOutputs(args: {
   }
 }
 
-function buildSlides(
-  blueprint: LessonBlueprint,
-  spec: LessonSpec
-): string[] {
+function buildSlides(blueprint: LessonBlueprint, spec: LessonSpec): string[] {
   const assembled = assembleSlideDeck(blueprint, spec)
 
   if (assembled.length > 0) {
@@ -187,19 +192,27 @@ function buildSupportBlock(
     (idea) => `- ${idea.title}: ${idea.description}`
   )
 
-  const smallGroup =
-    shouldLeaveOut("small_group", missingAreaDecisions)
-      ? []
-      : planningIdeas.smallGroupIdeas.map(
-          (idea) => `- ${idea.title}: ${idea.description}`
-        )
+  const smallGroup = resolveDecisionAwareList({
+    component: "small_group",
+    plannedItems: planningIdeas.smallGroupIdeas.map(
+      (idea) => `- ${idea.title}: ${idea.description}`
+    ),
+    missingAreaDecisions,
+    addFallbackItems: [
+      "- Teacher Table Support: Add a small-group reteach or extension block based on student need.",
+    ],
+  })
 
-  const interventions =
-    shouldLeaveOut("intervention", missingAreaDecisions)
-      ? []
-      : planningIdeas.interventionIdeas.map(
-          (idea) => `- ${idea.title}: ${idea.description}`
-        )
+  const interventions = resolveDecisionAwareList({
+    component: "intervention",
+    plannedItems: planningIdeas.interventionIdeas.map(
+      (idea) => `- ${idea.title}: ${idea.description}`
+    ),
+    missingAreaDecisions,
+    addFallbackItems: [
+      "- Targeted Reteach: Add an intervention block for students who need extra support with the main lesson skill.",
+    ],
+  })
 
   const sections: string[] = []
 
@@ -209,20 +222,10 @@ function buildSupportBlock(
 
   if (smallGroup.length > 0) {
     sections.push("Small Group Ideas", ...smallGroup)
-  } else if (shouldAdd("small_group", missingAreaDecisions)) {
-    sections.push(
-      "Small Group Ideas",
-      "- Teacher Table Support: Add a small-group reteach or extension block based on student need."
-    )
   }
 
   if (interventions.length > 0) {
     sections.push("Intervention Ideas", ...interventions)
-  } else if (shouldAdd("intervention", missingAreaDecisions)) {
-    sections.push(
-      "Intervention Ideas",
-      "- Targeted Reteach: Add an intervention block for students who need extra support with the main lesson skill."
-    )
   }
 
   return sections.length > 0 ? sections.join("\n") : ""
@@ -245,30 +248,25 @@ function buildCenters(
   planningIdeas?: LessonPlanningIdeas,
   missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string[] {
-  if (shouldLeaveOut("centers", missingAreaDecisions)) {
-    return []
-  }
-
-  const planningCenters =
-    planningIdeas?.centerIdeas.map(
-      (idea) => `${idea.title}: ${idea.description}`
-    ) ?? []
-
-  if (planningCenters.length > 0) {
-    return planningCenters
-  }
-
-  if (shouldAdd("centers", missingAreaDecisions)) {
-    return [
+  return resolveDecisionAwareList({
+    component: "centers",
+    plannedItems:
+      planningIdeas?.centerIdeas.map((idea) => `${idea.title}: ${idea.description}`) ?? [],
+    missingAreaDecisions,
+    addFallbackItems: [
       "Independent practice center",
       "Partner practice center",
       "Teacher support center",
-    ]
-  }
-
-  return spec.centers.steps.length > 0
-    ? spec.centers.steps
-    : ["Independent practice center", "Partner practice center", "Teacher support center"]
+    ],
+    defaultItems:
+      spec.centers.steps.length > 0
+        ? spec.centers.steps
+        : [
+            "Independent practice center",
+            "Partner practice center",
+            "Teacher support center",
+          ],
+  })
 }
 
 function buildRotationPlan(
@@ -280,13 +278,7 @@ function buildRotationPlan(
     return "No centers defined."
   }
 
-  const smallGroupLine = shouldLeaveOut("small_group", missingAreaDecisions)
-    ? "Teacher Table Focus: No small-group block selected."
-    : planningIdeas?.smallGroupIdeas[0]
-      ? `Teacher Table Focus: ${planningIdeas.smallGroupIdeas[0].title} - ${planningIdeas.smallGroupIdeas[0].description}`
-      : shouldAdd("small_group", missingAreaDecisions)
-        ? "Teacher Table Focus: Add a targeted small-group reteach or extension block based on student need."
-        : "Teacher Table Focus: Targeted reteach or extension based on student need."
+  const smallGroupLine = resolveTeacherTableLine(planningIdeas, missingAreaDecisions)
 
   return [
     ...centers.map((center, index) => `Rotation ${index + 1}: ${center}`),
@@ -299,26 +291,22 @@ function buildInterventions(
   planningIdeas?: LessonPlanningIdeas,
   missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string[] {
-  if (shouldLeaveOut("intervention", missingAreaDecisions)) {
-    return []
-  }
-
-  const plannedInterventions =
-    planningIdeas?.interventionIdeas.map(
-      (idea) => `${idea.title}: ${idea.description}`
-    ) ?? []
-
-  if (plannedInterventions.length > 0) {
-    return plannedInterventions
-  }
-
-  if (shouldAdd("intervention", missingAreaDecisions)) {
-    return [
+  return resolveDecisionAwareList({
+    component: "intervention",
+    plannedItems:
+      planningIdeas?.interventionIdeas.map(
+        (idea) => `${idea.title}: ${idea.description}`
+      ) ?? [],
+    missingAreaDecisions,
+    addFallbackItems: [
       "Provide targeted reteach for the primary lesson need.",
       "Use a short teacher-led intervention block before independent transfer.",
-    ]
-  }
+    ],
+    defaultItems: buildDefaultInterventions(blueprint),
+  })
+}
 
+function buildDefaultInterventions(blueprint: LessonBlueprint): string[] {
   if (blueprint.content.target.primary === "phonics") {
     return [
       "Reteach the target phonics pattern with a reduced word set.",
@@ -346,6 +334,51 @@ function buildExports(inputs: LessonInputs): string[] {
     `${safeSubject}-lesson-plan-export-placeholder`,
     `${safeSubject}-printables-export-placeholder`,
   ]
+}
+
+function resolveDecisionAwareList(options: DecisionAwareListOptions): string[] {
+  const {
+    component,
+    plannedItems = [],
+    missingAreaDecisions = {},
+    addFallbackItems = [],
+    defaultItems = [],
+  } = options
+
+  if (shouldLeaveOut(component, missingAreaDecisions)) {
+    return []
+  }
+
+  if (plannedItems.length > 0) {
+    return plannedItems
+  }
+
+  if (shouldAdd(component, missingAreaDecisions)) {
+    return addFallbackItems
+  }
+
+  return defaultItems
+}
+
+function resolveTeacherTableLine(
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
+): string {
+  if (shouldLeaveOut("small_group", missingAreaDecisions)) {
+    return "Teacher Table Focus: No small-group block selected."
+  }
+
+  const firstSmallGroupIdea = planningIdeas?.smallGroupIdeas[0]
+
+  if (firstSmallGroupIdea) {
+    return `Teacher Table Focus: ${firstSmallGroupIdea.title} - ${firstSmallGroupIdea.description}`
+  }
+
+  if (shouldAdd("small_group", missingAreaDecisions)) {
+    return "Teacher Table Focus: Add a targeted small-group reteach or extension block based on student need."
+  }
+
+  return "Teacher Table Focus: Targeted reteach or extension based on student need."
 }
 
 function shouldAdd(
