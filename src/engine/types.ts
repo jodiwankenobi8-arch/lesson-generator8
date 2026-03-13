@@ -45,6 +45,8 @@ export type ExtractionMetadata = {
   quality: ExtractionQuality
   confidence: number
   notes: string[]
+  ocrCandidate: boolean
+  ocrReason: string | null
 }
 
 export type CurriculumCoverage = {

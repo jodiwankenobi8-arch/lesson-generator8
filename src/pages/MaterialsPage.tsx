@@ -348,6 +348,9 @@ export default function MaterialsPage() {
                         <span style={qualityBadgeStyle(material.analysis.extractionMetadata.quality)}>
                           {formatExtractionQuality(material.analysis.extractionMetadata.quality)}
                         </span>
+                        {material.analysis.extractionMetadata.ocrCandidate && (
+                          <span style={ocrCandidateBadgeStyle}>OCR candidate</span>
+                        )}
                       </>
                     )}
                   </div>
@@ -359,6 +362,11 @@ export default function MaterialsPage() {
                         <div style={{ fontSize: 13 }}>
                           <strong>Confidence:</strong> {formatExtractionConfidence(material.analysis.extractionMetadata.confidence)}
                         </div>
+                        {material.analysis.extractionMetadata.ocrReason && (
+                          <div style={{ marginTop: 4, fontSize: 13 }}>
+                            <strong>OCR reason:</strong> {material.analysis.extractionMetadata.ocrReason}
+                          </div>
+                        )}
                         {material.analysis.extractionMetadata.notes.length > 0 && (
                           <div style={{ marginTop: 4, fontSize: 13 }}>
                             <strong>Notes:</strong> {material.analysis.extractionMetadata.notes.join(" ")}
@@ -625,6 +633,16 @@ function qualityBadgeStyle(quality: "high" | "medium" | "low"): React.CSSPropert
     background: palette.background,
     color: palette.color,
   }
+}
+
+const ocrCandidateBadgeStyle: React.CSSProperties = {
+  display: "inline-block",
+  padding: "6px 10px",
+  borderRadius: 999,
+  fontSize: 12,
+  fontWeight: 700,
+  background: "#fff7ed",
+  color: "#9a3412",
 }
 
 function formatExtractionMethod(method: "parser" | "ocr" | "mixed" | "fallback_notice"): string {

@@ -414,6 +414,8 @@ function buildExtractionMetadata({
   extractedText: string[]
 }): ExtractionMetadata {
   if (method === "fallback_notice") {
+    const ocrCandidate = fileType === "pdf" || fileType === "pptx"
+
     return {
       method,
       quality: "low",
@@ -422,6 +424,10 @@ function buildExtractionMetadata({
         `Extraction returned fallback notice output for ${fileType}.`,
         "OCR or alternative recovery may be needed later.",
       ],
+      ocrCandidate,
+      ocrReason: ocrCandidate
+        ? "Parser did not recover usable text from a file type that may contain image-based content."
+        : null,
     }
   }
 
@@ -446,6 +452,19 @@ function buildExtractionMetadata({
         : 0.28 + signals.alphaCharacterRatio * 0.2
   )
 
+  const ocrEligibleFileType = fileType === "pdf" || fileType === "pptx"
+  const ocrCandidate =
+    ocrEligibleFileType &&
+    quality === "low" &&
+    (signals.lineCount <= 6 ||
+      signals.averageLineLength < 14 ||
+      signals.alphaCharacterRatio < 0.55 ||
+      signals.longLineCount === 0)
+
+  const ocrReason = ocrCandidate
+    ? "Parser output looks thin or image-based, so OCR recovery is likely worth trying."
+    : null
+
   const notes = [
     `Primary extraction used ${method} for ${fileType}.`,
     `Usable extracted lines: ${signals.lineCount}.`,
@@ -457,11 +476,17 @@ function buildExtractionMetadata({
     notes.push("No longer-form lines were detected, which may indicate thin extraction quality.")
   }
 
+  if (ocrReason) {
+    notes.push(ocrReason)
+  }
+
   return {
     method,
     quality,
     confidence,
     notes,
+    ocrCandidate,
+    ocrReason,
   }
 }
 
