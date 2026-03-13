@@ -367,13 +367,24 @@ export type LessonPackageReadiness = {
   signals: LessonPackageSignal[]
 }
 
+export type ExportArtifactKind = "slides" | "lesson_plan" | "printables"
+
+export type ExportArtifactStatus = "placeholder"
+
+export type ExportArtifact = {
+  kind: ExportArtifactKind
+  label: string
+  fileName: string
+  status: ExportArtifactStatus
+}
+
 export type LessonPackage = {
   slides: string[]
   lessonPlan: string
   centers: string[]
   rotationPlan: string
   interventions: string[]
-  exports: string[]
+  exports: ExportArtifact[]
   readiness: LessonPackageReadiness
 }
 

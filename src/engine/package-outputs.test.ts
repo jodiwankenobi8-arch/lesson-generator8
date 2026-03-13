@@ -149,9 +149,24 @@ describe("buildPackageOutputs", () => {
     expect(result.rotationPlan).toContain("Teacher Table Focus: Targeted Blending - Reteach blending with a reduced list.")
     expect(result.interventions).toEqual(["Phonics Reteach: Practice decoding with teacher support."])
     expect(result.exports).toEqual([
-      "ELA-slides-export-placeholder",
-      "ELA-lesson-plan-export-placeholder",
-      "ELA-printables-export-placeholder",
+      {
+        kind: "slides",
+        label: "Slides Export",
+        fileName: "ELA-slides-export-placeholder",
+        status: "placeholder",
+      },
+      {
+        kind: "lesson_plan",
+        label: "Lesson Plan Export",
+        fileName: "ELA-lesson-plan-export-placeholder",
+        status: "placeholder",
+      },
+      {
+        kind: "printables",
+        label: "Printables Export",
+        fileName: "ELA-printables-export-placeholder",
+        status: "placeholder",
+      },
     ])
   })
 

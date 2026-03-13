@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import { generateLesson } from "../engine/generateLesson"
 import {
+  ExportArtifact,
   LessonPlanIdea,
   LessonPlanSectionIdeas,
   LessonPackage,
@@ -595,14 +596,24 @@ function PlanningDetailsSection({
   )
 }
 
-function SimpleListSection({ title, items }: { title: string; items: string[] }) {
+function SimpleListSection({
+  title,
+  items,
+}: {
+  title: string
+  items: Array<string | ExportArtifact>
+}) {
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>{title}</h3>
       <ul style={listStyle}>
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
+        {items.map((item) => {
+          const key = typeof item === "string" ? item : `${item.kind}-${item.fileName}`
+          const label =
+            typeof item === "string" ? item : `${item.label} (${item.fileName})`
+
+          return <li key={key}>{label}</li>
+        })}
       </ul>
     </div>
   )

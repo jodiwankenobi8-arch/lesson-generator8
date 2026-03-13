@@ -1,4 +1,5 @@
 import {
+  ExportArtifact,
   LessonBlueprint,
   LessonInputs,
   LessonPlanningIdeas,
@@ -327,12 +328,28 @@ function buildDefaultInterventions(blueprint: LessonBlueprint): string[] {
   ]
 }
 
-function buildExports(inputs: LessonInputs): string[] {
+function buildExports(inputs: LessonInputs): ExportArtifact[] {
   const safeSubject = inputs.subject.trim() || "lesson"
+
   return [
-    `${safeSubject}-slides-export-placeholder`,
-    `${safeSubject}-lesson-plan-export-placeholder`,
-    `${safeSubject}-printables-export-placeholder`,
+    {
+      kind: "slides",
+      label: "Slides Export",
+      fileName: `${safeSubject}-slides-export-placeholder`,
+      status: "placeholder",
+    },
+    {
+      kind: "lesson_plan",
+      label: "Lesson Plan Export",
+      fileName: `${safeSubject}-lesson-plan-export-placeholder`,
+      status: "placeholder",
+    },
+    {
+      kind: "printables",
+      label: "Printables Export",
+      fileName: `${safeSubject}-printables-export-placeholder`,
+      status: "placeholder",
+    },
   ]
 }
 
