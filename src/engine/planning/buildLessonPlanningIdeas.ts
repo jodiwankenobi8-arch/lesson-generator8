@@ -1,4 +1,5 @@
 import {
+  BlueprintContentCoverage,
   LessonBlueprint,
   LessonPlanIdea,
   LessonPlanSectionIdeas,
@@ -631,11 +632,7 @@ function buildComponentCoverage(args: {
     interventionIdeas,
   } = args
 
-  const practiceIdeas = blueprint.content.practiceIdeas
-  const texts = blueprint.content.texts
-  const wordLists = blueprint.content.wordLists
-  const vocabulary = blueprint.content.vocabulary
-  const lessonSegments = blueprint.structure.lessonSegments
+  const coverage = getBlueprintContentCoverage(blueprint)
   const isMixedFull =
     blueprint.content.target.isMixedTarget &&
     blueprint.content.target.recommendedMode === "full"
@@ -648,80 +645,84 @@ function buildComponentCoverage(args: {
     buildCoverageEntry(
       "teach",
       sectionMap.get("teach") ?? [],
-      collectSignals({
-        lessonSegments,
-        signalTerms: ["teach", "model", "mini-lesson", "instruction"],
-        contentAnchors: [vocabulary, wordLists, texts],
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["teach", "model", "mini-lesson", "instruction"],
+        coverageKeys: [
+          "instructionalTargets",
+          "standards",
+          "foundationalSkills",
+          "sightWords",
+          "vocabulary",
+          "wordLists",
+          "texts",
+        ],
       }),
       "Core instruction should be clearly present so the system does not silently invent the lesson focus."
     ),
     buildCoverageEntry(
       "guided_practice",
       sectionMap.get("guided_practice") ?? [],
-      collectSignals({
-        lessonSegments,
-        signalTerms: ["guided", "practice", "we do", "scaffold"],
-        contentAnchors: [practiceIdeas, wordLists, texts],
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["guided", "practice", "we do", "scaffold"],
+        coverageKeys: ["practiceIdeas", "wordLists", "texts"],
       }),
       "Guided practice is a major instructional component and should be checked before adding more support."
     ),
     buildCoverageEntry(
       "independent_practice",
       sectionMap.get("independent_practice") ?? [],
-      collectSignals({
-        lessonSegments,
-        signalTerms: ["independent", "practice", "you do", "application"],
-        contentAnchors: [practiceIdeas, texts, wordLists],
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["independent", "practice", "you do", "application"],
+        coverageKeys: ["practiceIdeas", "texts", "wordLists"],
       }),
       "Independent work should be identified explicitly so the engine can avoid duplicating student tasks."
     ),
     buildCoverageEntry(
       "closure",
       sectionMap.get("closure") ?? [],
-      collectSignals({
-        lessonSegments,
-        signalTerms: ["closure", "wrap", "exit", "review", "recap"],
-        contentAnchors: [vocabulary, wordLists, texts],
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["closure", "wrap", "exit", "review", "recap"],
+        coverageKeys: ["vocabulary", "wordLists", "texts"],
       }),
       "Closure is instructionally meaningful enough to ask about when it seems missing."
     ),
     buildCoverageEntry(
       "formative_assessment",
       formativeAssessmentIdeas,
-      collectSignals({
-        lessonSegments,
-        signalTerms: ["check", "formative", "assessment", "exit", "monitor"],
-        contentAnchors: [practiceIdeas, wordLists, texts],
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["check", "formative", "assessment", "exit", "monitor"],
       }),
       "A formative check helps determine whether the lesson should add or skip extra support."
     ),
     buildCoverageEntry(
       "centers",
       centerIdeas,
-      collectSignals({
-        lessonSegments,
-        signalTerms: ["center", "rotation", "station"],
-        contentAnchors: [practiceIdeas, texts, wordLists],
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["center", "rotation", "station"],
       }),
       "Centers are optional in some lessons, but they are important enough to flag when the lesson shape suggests them."
     ),
     buildCoverageEntry(
       "small_group",
       smallGroupIdeas,
-      collectSignals({
-        lessonSegments,
-        signalTerms: ["small group", "teacher table", "guided group", "reteach group"],
-        contentAnchors: [practiceIdeas, texts, wordLists],
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["small group", "teacher table", "guided group", "reteach group"],
       }),
       "Small-group support should be visible when the system is planning differentiated follow-through."
     ),
     buildCoverageEntry(
       "intervention",
       interventionIdeas,
-      collectSignals({
-        lessonSegments,
-        signalTerms: ["intervention", "reteach", "support", "reteaching"],
-        contentAnchors: [practiceIdeas, wordLists, texts],
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["intervention", "reteach", "support", "reteaching"],
       }),
       isMixedFull
         ? "Mixed lessons especially benefit from explicit intervention planning when one part breaks down."
@@ -840,20 +841,41 @@ function combineCoverageStatus(
   return "missing"
 }
 
-function collectSignals(args: {
-  lessonSegments: string[]
-  signalTerms: string[]
-  contentAnchors: string[][]
-}): string[] {
-  const { lessonSegments, signalTerms, contentAnchors } = args
-
-  const segmentSignals = lessonSegments.filter((segment) =>
-    signalTerms.some((term) => segment.toLowerCase().includes(term))
+function getBlueprintContentCoverage(
+  blueprint: LessonBlueprint
+): BlueprintContentCoverage {
+  return (
+    blueprint.content.coverage ?? {
+      standards: blueprint.content.standards,
+      vocabulary: blueprint.content.vocabulary,
+      wordLists: blueprint.content.wordLists,
+      texts: blueprint.content.texts,
+      practiceIdeas: blueprint.content.practiceIdeas,
+      instructionalTargets: [],
+      sightWords: [],
+      foundationalSkills: [],
+      lessonSegments: blueprint.structure.lessonSegments,
+    }
   )
+}
 
-  const contentSignals = contentAnchors.flatMap((items) => items.slice(0, 2))
+function collectCoverageSignals(args: {
+  coverage: BlueprintContentCoverage
+  lessonSegmentTerms?: string[]
+  coverageKeys?: Array<keyof BlueprintContentCoverage>
+}): string[] {
+  const { coverage, lessonSegmentTerms = [], coverageKeys = [] } = args
 
-  return uniqueStrings([...segmentSignals, ...contentSignals])
+  const lessonSegmentSignals =
+    lessonSegmentTerms.length === 0
+      ? []
+      : coverage.lessonSegments.filter((segment) =>
+          lessonSegmentTerms.some((term) => segment.toLowerCase().includes(term))
+        )
+
+  const coverageSignals = coverageKeys.flatMap((key) => coverage[key].slice(0, 2))
+
+  return uniqueStrings([...lessonSegmentSignals, ...coverageSignals])
 }
 
 function buildMissingAreaPromptCandidates(

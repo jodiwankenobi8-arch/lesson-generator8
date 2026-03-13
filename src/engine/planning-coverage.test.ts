@@ -16,6 +16,17 @@ function makeBlueprint(overrides: Partial<LessonBlueprint> = {}): LessonBlueprin
       wordLists: ["cake, game, same, late"],
       texts: ["Jake made a cake at the lake."],
       practiceIdeas: ["Read the word list aloud", "Write a sentence with a long a word"],
+      coverage: {
+        standards: ["RF.1.3"],
+        vocabulary: ["long a", "silent e"],
+        wordLists: ["cake, game, same, late"],
+        texts: ["Jake made a cake at the lake."],
+        practiceIdeas: ["Read the word list aloud", "Write a sentence with a long a word"],
+        instructionalTargets: ["Decode words with long a and silent e"],
+        sightWords: [],
+        foundationalSkills: ["long vowel patterns"],
+        lessonSegments: ["Opening", "Teach", "Guided Practice", "Independent Practice", "Closure"],
+      },
       ...overrides.content,
     },
     structure: {
@@ -75,6 +86,70 @@ describe("planning coverage and missing-area prompts", () => {
     )
   })
 
+  it("uses blueprint content coverage as the source-coverage handoff even when structure is thin", () => {
+    const planning = buildLessonPlanningIdeas(
+      makeBlueprint({
+        content: {
+          target: {
+            primary: "phonics",
+            secondary: null,
+            isMixedTarget: false,
+            recommendedMode: "single",
+          },
+          standards: ["RF.1.3"],
+          vocabulary: ["long a", "silent e"],
+          wordLists: ["cake, game, same, late"],
+          texts: ["Jake made a cake at the lake."],
+          practiceIdeas: ["Read the word list aloud", "Write a sentence with a long a word"],
+          coverage: {
+            standards: ["RF.1.3"],
+            vocabulary: ["long a", "silent e"],
+            wordLists: ["cake, game, same, late"],
+            texts: ["Jake made a cake at the lake."],
+            practiceIdeas: ["Read the word list aloud", "Write a sentence with a long a word"],
+            instructionalTargets: ["Decode words with long a and silent e"],
+            sightWords: [],
+            foundationalSkills: ["long vowel patterns"],
+            lessonSegments: ["Teach", "Guided Practice", "Independent Practice", "Closure"],
+          },
+        },
+        structure: {
+          timing: ["Mini-lesson"],
+          lessonSegments: ["Opening"],
+          teacherMoves: ["Teacher model"],
+          promptStyle: ["Teacher prompt"],
+          tone: ["clear instructional tone"],
+          templateShell: {
+            segmentOrder: ["Opening"],
+            slideShell: ["Objective / Opening"],
+            timingShell: ["Mini-lesson"],
+            teacherMoveShell: ["Teacher model"],
+            promptShell: ["Teacher prompt"],
+            toneShell: ["clear instructional tone"],
+          },
+        },
+      })
+    )
+
+    const coverage = planning.componentCoverage ?? []
+    const byComponent = new Map(
+      coverage.map((entry) => [entry.component, entry] as const)
+    )
+
+    expect(byComponent.get("teach")?.sourceCoverage?.status).toBe("covered")
+    expect(byComponent.get("guided_practice")?.sourceCoverage?.status).toBe("covered")
+    expect(byComponent.get("independent_practice")?.sourceCoverage?.status).toBe("covered")
+    expect(byComponent.get("closure")?.sourceCoverage?.status).toBe("covered")
+
+    expect(planning.missingAreaPrompts ?? []).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ component: "guided_practice" }),
+        expect.objectContaining({ component: "independent_practice" }),
+        expect.objectContaining({ component: "closure" }),
+      ])
+    )
+  })
+
   it("still produces structured planning output when blueprint structure is thin", () => {
     const planning = buildLessonPlanningIdeas(
       makeBlueprint({
@@ -90,6 +165,17 @@ describe("planning coverage and missing-area prompts", () => {
           wordLists: [],
           texts: [],
           practiceIdeas: [],
+          coverage: {
+            standards: ["RF.1.3"],
+            vocabulary: [],
+            wordLists: [],
+            texts: [],
+            practiceIdeas: [],
+            instructionalTargets: [],
+            sightWords: [],
+            foundationalSkills: [],
+            lessonSegments: ["Teach"],
+          },
         },
         structure: {
           timing: ["Mini-lesson", "Practice", "Closure"],
@@ -155,6 +241,17 @@ describe("planning coverage and missing-area prompts", () => {
           wordLists: ["cake, game"],
           texts: ["Jake made a cake."],
           practiceIdeas: ["Read the word list aloud"],
+          coverage: {
+            standards: ["RF.1.3", "RL.1.1"],
+            vocabulary: ["long a"],
+            wordLists: ["cake, game"],
+            texts: ["Jake made a cake."],
+            practiceIdeas: ["Read the word list aloud"],
+            instructionalTargets: ["Decode long a words", "Connect decoding to text meaning"],
+            sightWords: [],
+            foundationalSkills: ["long vowel patterns"],
+            lessonSegments: ["Part 1", "Part 2", "Closure"],
+          },
         },
         structure: {
           timing: ["Part 1 - 10 min", "Part 2 - 10 min", "Closure - 5 min"],
