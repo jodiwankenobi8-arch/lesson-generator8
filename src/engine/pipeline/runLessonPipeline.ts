@@ -28,10 +28,35 @@ export function runLessonPipeline(
     missingAreaDecisions
   )
 
+  const trace = {
+    selectedMode,
+    materialCounts: {
+      total: materials.length,
+      curriculum: materials.filter((material) => material.role === "curriculum").length,
+      exemplar: materials.filter((material) => material.role === "exemplar").length,
+    },
+    target: {
+      primary: blueprint.content.target.primary,
+      secondary: blueprint.content.target.secondary,
+      isMixedTarget: blueprint.content.target.isMixedTarget,
+      recommendedMode: blueprint.content.target.recommendedMode,
+    },
+    blueprintWarnings: blueprint.sourceReadiness.warnings,
+    missingAreaPromptComponents:
+      planningIdeas.missingAreaPrompts?.map((prompt) => prompt.component) ?? [],
+    package: {
+      density: lessonPackage.readiness.density,
+      lessonShape: lessonPackage.readiness.lessonShape,
+      contentFit: lessonPackage.readiness.contentFit,
+      warningCount: lessonPackage.readiness.warnings.length,
+    },
+  }
+
   return {
     blueprint,
     planningIdeas,
     lessonSpec,
     lessonPackage,
+    trace,
   }
 }
