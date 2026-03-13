@@ -28,6 +28,7 @@ export async function generateLesson() {
     store.setPlanningIdeas(result.planningIdeas)
     store.setLessonSpec(result.lessonSpec)
     store.setLessonPackage(result.lessonPackage)
+    store.setLessonTrace(result.trace)
   } finally {
     isGeneratingLesson = false
   }

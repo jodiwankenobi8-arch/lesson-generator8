@@ -7,6 +7,7 @@ import {
   LessonMode,
   LessonPackage,
   LessonPlanningIdeas,
+  LessonPipelineTrace,
   LessonSpec,
   MaterialAnalysis,
   MaterialFile,
@@ -41,6 +42,7 @@ type LessonStore = {
   planningIdeas: LessonPlanningIdeas | null
   lessonSpec: LessonSpec | null
   lessonPackage: LessonPackage | null
+  lessonTrace: LessonPipelineTrace | null
   missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
 
   setInputs: (updates: Partial<LessonInputs>) => void
@@ -67,6 +69,7 @@ type LessonStore = {
   setPlanningIdeas: (planningIdeas: LessonPlanningIdeas | null) => void
   setLessonSpec: (spec: LessonSpec | null) => void
   setLessonPackage: (pkg: LessonPackage | null) => void
+  setLessonTrace: (trace: LessonPipelineTrace | null) => void
   setMissingAreaDecision: (
     component: PlanningComponentKey,
     choice: MissingAreaDecisionChoice
@@ -97,6 +100,7 @@ function clearedGeneratedState() {
     planningIdeas: null,
     lessonSpec: null,
     lessonPackage: null,
+    lessonTrace: null,
     missingAreaDecisions: {},
   }
 }
@@ -193,6 +197,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   planningIdeas: null,
   lessonSpec: null,
   lessonPackage: null,
+  lessonTrace: null,
   missingAreaDecisions: {},
 
   setInputs: (updates) =>
@@ -321,6 +326,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   setPlanningIdeas: (planningIdeas) => set({ planningIdeas }),
   setLessonSpec: (lessonSpec) => set({ lessonSpec }),
   setLessonPackage: (lessonPackage) => set({ lessonPackage }),
+  setLessonTrace: (lessonTrace) => set({ lessonTrace }),
 
   setMissingAreaDecision: (component, choice) =>
     set((state) => ({
