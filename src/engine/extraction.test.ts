@@ -4,6 +4,7 @@ const pdfGetTextMock = vi.fn()
 const pdfDestroyMock = vi.fn()
 const mammothExtractRawTextMock = vi.fn()
 const parsePptxMock = vi.fn()
+const extractPdfTextWithOcrFallbackMock = vi.fn()
 
 vi.mock("pdf-parse", () => ({
   PDFParse: class {
@@ -27,6 +28,11 @@ vi.mock("pptx-parser", () => ({
   parsePptx: (...args: unknown[]) => parsePptxMock(...args),
 }))
 
+vi.mock("./materials/extractPdfOcr", () => ({
+  extractPdfTextWithOcrFallback: (...args: unknown[]) =>
+    extractPdfTextWithOcrFallbackMock(...args),
+}))
+
 import {
   detectFileType,
   extractPlainText,
@@ -39,11 +45,18 @@ describe("extraction contract", () => {
     pdfDestroyMock.mockReset()
     mammothExtractRawTextMock.mockReset()
     parsePptxMock.mockReset()
+    extractPdfTextWithOcrFallbackMock.mockReset()
 
     pdfDestroyMock.mockResolvedValue(undefined)
     mammothExtractRawTextMock.mockResolvedValue({
       value: "",
       messages: [],
+    })
+    extractPdfTextWithOcrFallbackMock.mockResolvedValue({
+      pages: [],
+      combinedLines: [],
+      averageConfidence: 0,
+      notes: ["OCR fallback mock returned no extra text."],
     })
   })
 
@@ -157,6 +170,7 @@ describe("extraction contract", () => {
     expect(result.extractionMetadata.quality).toBe("low")
     expect(result.extractionMetadata.ocrCandidate).toBe(true)
     expect(result.extractionMetadata.ocrReason).toContain("Parser did not recover usable text")
+    expect(extractPdfTextWithOcrFallbackMock).not.toHaveBeenCalled()
   })
 
   it("does not mark fallback docx output as an OCR candidate", async () => {
@@ -224,6 +238,7 @@ describe("extraction contract", () => {
     expect(result.extractionMetadata.ocrCandidate).toBe(true)
     expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
     expect(pdfDestroyMock).toHaveBeenCalledTimes(1)
+    expect(extractPdfTextWithOcrFallbackMock).toHaveBeenCalledTimes(1)
   })
 
   it("does not mark strong parsed pdf text as an OCR candidate", async () => {
@@ -244,14 +259,12 @@ describe("extraction contract", () => {
     expect(result.extractionMetadata.ocrCandidate).toBe(false)
     expect(result.extractionMetadata.ocrReason).toBeNull()
     expect(pdfDestroyMock).toHaveBeenCalledTimes(1)
+    expect(extractPdfTextWithOcrFallbackMock).not.toHaveBeenCalled()
   })
 
   it("marks thin parsed pptx text as an OCR candidate", async () => {
     parsePptxMock.mockResolvedValue({
-      slides: [
-        { text: "A" },
-        { text: "B" },
-      ],
+      slides: [{ text: "A" }, { text: "B" }],
     })
 
     const result = await extractTextFromFile({
@@ -264,5 +277,107 @@ describe("extraction contract", () => {
     expect(result.extractionMetadata.quality).toBe("low")
     expect(result.extractionMetadata.ocrCandidate).toBe(true)
     expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
+  })
+
+  it("keeps parser output when OCR adds too little new text", async () => {
+    pdfGetTextMock.mockResolvedValue({
+      text: `
+        Scan
+        1
+        2
+      `,
+    })
+
+    extractPdfTextWithOcrFallbackMock.mockResolvedValue({
+      pages: [
+        {
+          pageNumber: 1,
+          text: "Scan",
+          confidence: 0.62,
+        },
+      ],
+      combinedLines: ["Scan"],
+      averageConfidence: 0.62,
+      notes: ["OCR processed 1 page."],
+    })
+
+    const result = await extractTextFromFile({
+      fileName: "thin-scan.pdf",
+      fileBuffer: new TextEncoder().encode("fake-pdf").buffer,
+    })
+
+    expect(result.extractedText).toEqual(["Scan"])
+    expect(result.extractionMetadata.method).toBe("parser")
+    expect(result.extractionMetadata.notes.join(" ")).toContain(
+      "OCR fallback did not add enough new readable text"
+    )
+  })
+
+  it("upgrades pdf extraction to mixed when OCR adds enough useful text", async () => {
+    pdfGetTextMock.mockResolvedValue({
+      text: `
+        Scan
+        1
+        2
+      `,
+    })
+
+    extractPdfTextWithOcrFallbackMock.mockResolvedValue({
+      pages: [
+        {
+          pageNumber: 1,
+          text: "Teacher models blending the long a pattern.",
+          confidence: 0.88,
+        },
+      ],
+      combinedLines: [
+        "Teacher models blending the long a pattern.",
+        "Students read the word list aloud.",
+        "Partners complete guided decoding practice.",
+      ],
+      averageConfidence: 0.88,
+      notes: ["OCR processed 1 page.", "Average OCR confidence: 88%."],
+    })
+
+    const result = await extractTextFromFile({
+      fileName: "rescued-scan.pdf",
+      fileBuffer: new TextEncoder().encode("fake-pdf").buffer,
+    })
+
+    expect(result.extractionMetadata.method).toBe("mixed")
+    expect(result.extractionMetadata.notes.join(" ")).toContain(
+      "OCR fallback added"
+    )
+    expect(result.extractedText).toEqual([
+      "Scan",
+      "Teacher models blending the long a pattern.",
+      "Students read the word list aloud.",
+      "Partners complete guided decoding practice.",
+    ])
+  })
+
+  it("falls back gracefully when OCR throws", async () => {
+    pdfGetTextMock.mockResolvedValue({
+      text: `
+        Scan
+        1
+        2
+      `,
+    })
+
+    extractPdfTextWithOcrFallbackMock.mockRejectedValue(
+      new Error("OCR worker crashed")
+    )
+
+    const result = await extractTextFromFile({
+      fileName: "ocr-failure.pdf",
+      fileBuffer: new TextEncoder().encode("fake-pdf").buffer,
+    })
+
+    expect(result.extractedText).toEqual(["Scan"])
+    expect(result.extractionMetadata.method).toBe("parser")
+    expect(result.extractionMetadata.notes.join(" ")).toContain(
+      "OCR fallback attempt failed: OCR worker crashed"
+    )
   })
 })
