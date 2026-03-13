@@ -460,6 +460,10 @@ const fileSize = (file.size / (1024 * 1024)).toFixed(2) + " MB"
                 >
                   <div style={{ textAlign: "right", color: "var(--text-secondary)", fontSize: 13 }}>
                     {getStatusExplanation(material.status)}
+
+<div style={{ marginTop: 6, fontSize: 12, color: "var(--text-secondary)" }}>
+  {renderProcessingPipeline(material.status)}
+</div>
                   </div>
 
                   <button
@@ -598,6 +602,20 @@ function shouldCapturePlainText(fileName: string): boolean {
   return normalized.endsWith(".txt") || normalized.endsWith(".html") || normalized.endsWith(".htm")
 }
 
+
+function renderProcessingPipeline(status: MaterialStatus) {
+  const order = ["uploaded","extracting","analyzing","ready"]
+
+  const currentIndex = order.indexOf(status === "error" ? "ready" : status)
+
+  return order
+    .map((step, index) => {
+      const active = index <= currentIndex
+      const label = step.charAt(0).toUpperCase() + step.slice(1)
+      return `${active ? "?" : "?"} ${label}`
+    })
+    .join(" ? ")
+}
 function formatStatus(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
@@ -813,6 +831,8 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
+
+
 
 
 
