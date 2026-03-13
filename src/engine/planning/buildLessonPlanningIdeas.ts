@@ -6,6 +6,7 @@ import {
   MissingAreaPromptCandidate,
   PlanningComponentCoverage,
   PlanningComponentKey,
+  PlanningCoverageDetail,
   PlanningCoverageStatus,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
@@ -732,28 +733,107 @@ function buildComponentCoverage(args: {
 function buildCoverageEntry(
   component: PlanningComponentKey,
   ideas: LessonPlanIdea[],
-  evidence: string[],
+  sourceEvidence: string[],
   rationale: string
 ): PlanningComponentCoverage {
-  const status = inferCoverageStatus(ideas, evidence)
+  const sourceCoverage = buildSourceCoverageDetail(component, sourceEvidence, rationale)
+  const generatedCoverage = buildGeneratedCoverageDetail(component, ideas, rationale)
 
   return {
     component,
-    status,
-    evidence: evidence.slice(0, 4),
+    status: combineCoverageStatus(sourceCoverage.status, generatedCoverage.status),
+    evidence: uniqueStrings([
+      ...sourceCoverage.evidence,
+      ...generatedCoverage.evidence,
+    ]).slice(0, 4),
     rationale,
+    sourceCoverage,
+    generatedCoverage,
   }
 }
 
-function inferCoverageStatus(
+function buildSourceCoverageDetail(
+  component: PlanningComponentKey,
+  evidence: string[],
+  rationale: string
+): PlanningCoverageDetail {
+  return {
+    status: inferSourceCoverageStatus(component, evidence),
+    evidence: evidence.slice(0, 4),
+    rationale,
+    source: "source_signals",
+  }
+}
+
+function buildGeneratedCoverageDetail(
+  component: PlanningComponentKey,
   ideas: LessonPlanIdea[],
+  rationale: string
+): PlanningCoverageDetail {
+  return {
+    status: inferGeneratedCoverageStatus(ideas),
+    evidence: ideas.map((idea) => idea.title).slice(0, 4),
+    rationale,
+    source: "generated_support",
+  }
+}
+
+function inferSourceCoverageStatus(
+  component: PlanningComponentKey,
   evidence: string[]
 ): PlanningCoverageStatus {
-  if (ideas.length >= 2 || evidence.length >= 3) {
+  const count = evidence.length
+
+  if (component === "teach") {
+    if (count >= 2) return "covered"
+    if (count >= 1) return "partial"
+    return "missing"
+  }
+
+  if (component === "guided_practice" || component === "independent_practice") {
+    if (count >= 3) return "covered"
+    if (count >= 1) return "partial"
+    return "missing"
+  }
+
+  if (component === "closure" || component === "formative_assessment") {
+    if (count >= 2) return "covered"
+    if (count >= 1) return "partial"
+    return "missing"
+  }
+
+  if (component === "centers" || component === "small_group" || component === "intervention") {
+    if (count >= 2) return "covered"
+    if (count >= 1) return "partial"
+    return "missing"
+  }
+
+  return "missing"
+}
+
+function inferGeneratedCoverageStatus(
+  ideas: LessonPlanIdea[]
+): PlanningCoverageStatus {
+  if (ideas.length >= 2) {
     return "covered"
   }
 
-  if (ideas.length >= 1 || evidence.length >= 1) {
+  if (ideas.length >= 1) {
+    return "partial"
+  }
+
+  return "missing"
+}
+
+function combineCoverageStatus(
+  sourceStatus: PlanningCoverageStatus,
+  generatedStatus: PlanningCoverageStatus
+): PlanningCoverageStatus {
+  if (sourceStatus === "covered" || generatedStatus === "covered") {
+    return "covered"
+  }
+
+  if (sourceStatus === "partial" || generatedStatus === "partial") {
     return "partial"
   }
 
@@ -773,13 +853,7 @@ function collectSignals(args: {
 
   const contentSignals = contentAnchors.flatMap((items) => items.slice(0, 2))
 
-  return Array.from(
-    new Set(
-      [...segmentSignals, ...contentSignals]
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0)
-    )
-  )
+  return uniqueStrings([...segmentSignals, ...contentSignals])
 }
 
 function buildMissingAreaPromptCandidates(
@@ -794,65 +868,72 @@ function buildMissingAreaPromptCandidates(
     componentCoverage.map((entry) => [entry.component, entry] as const)
   )
 
-  addPromptIfMissing(prompts, byComponent, "guided_practice", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, "guided_practice", {
     importance: "high",
-    prompt: "I did not detect strong guided practice. Add a scaffolded guided-practice block?",
+    prompt: "I did not detect strong guided practice in the source materials. Add a scaffolded guided-practice block?",
     rationale: "Guided practice is a core lesson component and should usually be explicit before independent work.",
   })
 
-  addPromptIfMissing(prompts, byComponent, "independent_practice", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, "independent_practice", {
     importance: "high",
-    prompt: "I did not detect clear independent practice. Add an independent application task?",
+    prompt: "I did not detect clear independent practice in the source materials. Add an independent application task?",
     rationale: "Independent practice is important for transfer and should not be silently skipped in most lessons.",
   })
 
-  addPromptIfMissing(prompts, byComponent, "closure", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, "closure", {
     importance: "medium",
-    prompt: "I did not detect a clear closure. Add a short recap or exit check?",
+    prompt: "I did not detect a clear closure in the source materials. Add a short recap or exit check?",
     rationale: "Closure is instructionally meaningful and worth asking about when it seems absent.",
   })
 
-  addPromptIfMissing(prompts, byComponent, "formative_assessment", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, "formative_assessment", {
     importance: "high",
-    prompt: "I did not detect a formative check. Add a quick understanding check?",
+    prompt: "I did not detect a formative check in the source materials. Add a quick understanding check?",
     rationale: "A formative check helps the lesson stay teacher-friendly and trustworthy.",
   })
 
   if (isMixedFull) {
-    addPromptIfMissing(prompts, byComponent, "centers", {
+    addPromptIfSourceCoverageMissing(prompts, byComponent, "centers", {
       importance: "medium",
-      prompt: "This looks like a two-part lesson with limited center support. Add targeted centers or rotation work?",
+      prompt: "This looks like a two-part lesson with limited center support in the source materials. Add targeted centers or rotation work?",
       rationale: "Mixed lessons often benefit from clearer downstream practice structures.",
     })
   }
 
-  addPromptIfMissing(prompts, byComponent, "small_group", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, "small_group", {
     importance: "medium",
-    prompt: "I did not detect a clear small-group support plan. Add one?",
+    prompt: "I did not detect a clear small-group support plan in the source materials. Add one?",
     rationale: "Small-group follow-through is often important when the lesson includes differentiation or reteach needs.",
   })
 
-  addPromptIfMissing(prompts, byComponent, "intervention", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, "intervention", {
     importance: "medium",
-    prompt: "I did not detect a clear intervention or reteach plan. Add one?",
+    prompt: "I did not detect a clear intervention or reteach plan in the source materials. Add one?",
     rationale: "Intervention planning helps the lesson avoid stopping at whole-group instruction only.",
   })
 
   return prompts
 }
 
-function addPromptIfMissing(
+function addPromptIfSourceCoverageMissing(
   prompts: MissingAreaPromptCandidate[],
   byComponent: Map<PlanningComponentKey, PlanningComponentCoverage>,
   component: PlanningComponentKey,
   candidate: Omit<MissingAreaPromptCandidate, "component">
 ): void {
   const coverage = byComponent.get(component)
+  const sourceStatus = coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
 
-  if (!coverage || coverage.status === "missing") {
+  if (sourceStatus === "missing") {
     prompts.push({
       component,
       ...candidate,
     })
   }
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return Array.from(
+    new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))
+  )
 }

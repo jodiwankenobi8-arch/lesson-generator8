@@ -281,11 +281,22 @@ export type PlanningComponentKey =
 
 export type PlanningCoverageStatus = "covered" | "partial" | "missing"
 
+export type PlanningCoverageSource = "source_signals" | "generated_support" | "combined"
+
+export type PlanningCoverageDetail = {
+  status: PlanningCoverageStatus
+  evidence: string[]
+  rationale: string
+  source: PlanningCoverageSource
+}
+
 export type PlanningComponentCoverage = {
   component: PlanningComponentKey
   status: PlanningCoverageStatus
   evidence: string[]
   rationale: string
+  sourceCoverage?: PlanningCoverageDetail
+  generatedCoverage?: PlanningCoverageDetail
 }
 
 export type MissingAreaPromptCandidate = {
