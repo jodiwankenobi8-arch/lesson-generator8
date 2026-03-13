@@ -78,6 +78,37 @@ const rowStyle: React.CSSProperties = {
   gap: "var(--space-md)",
 }
 
+const progressTrackStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+  gap: 8,
+  marginTop: 10,
+}
+
+function progressStepStyle(
+  state: "complete" | "current" | "upcoming" | "error"
+): React.CSSProperties {
+  const palette =
+    state === "complete"
+      ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
+      : state === "current"
+        ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
+        : state === "error"
+          ? { background: "#fef2f2", border: "#fecaca", color: "#b91c1c" }
+          : { background: "#fcfbf8", border: "var(--border-soft)", color: "var(--text-secondary)" }
+
+  return {
+    border: `1px solid ${palette.border}`,
+    background: palette.background,
+    color: palette.color,
+    borderRadius: "var(--radius-sm)",
+    padding: "8px 10px",
+    fontSize: 12,
+    fontWeight: 700,
+    textAlign: "center",
+  }
+}
+
 const summaryGridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
@@ -124,6 +155,17 @@ export default function MaterialsPage() {
     setGenerationError(null)
 
     for (const file of files) {
+      const normalizedName = file.name.trim().toLowerCase()
+      const duplicateExists = materials.some(
+        (material) =>
+          material.role === role && material.name.trim().toLowerCase() === normalizedName
+      )
+
+      if (duplicateExists) {
+        setGenerationError(`"${file.name}" is already uploaded in ${role} materials.`)
+        continue
+      }
+
       const id = addMaterial(role, file.name)
 
       try {
@@ -355,6 +397,21 @@ export default function MaterialsPage() {
                     )}
                   </div>
 
+                  <div style={progressTrackStyle}>
+                    <div style={progressStepStyle(getProgressStepState(material.status, "uploaded"))}>
+                      Uploaded
+                    </div>
+                    <div style={progressStepStyle(getProgressStepState(material.status, "extracting"))}>
+                      Extracting
+                    </div>
+                    <div style={progressStepStyle(getProgressStepState(material.status, "analyzing"))}>
+                      Analyzing
+                    </div>
+                    <div style={progressStepStyle(getProgressStepState(material.status, "ready"))}>
+                      Ready
+                    </div>
+                  </div>
+
                   {material.analysis?.extractionMetadata && (
                     <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
                       <div style={metadataPanelStyle}>
@@ -550,6 +607,35 @@ function getStatusExplanation(status: MaterialStatus): string {
   return "Needs attention"
 }
 
+function getProgressStepState(
+  status: MaterialStatus,
+  step: "uploaded" | "extracting" | "analyzing" | "ready"
+): "complete" | "current" | "upcoming" | "error" {
+  if (status === "error") {
+    return step === "ready" ? "error" : "complete"
+  }
+
+  const order: Array<"uploaded" | "extracting" | "analyzing" | "ready"> = [
+    "uploaded",
+    "extracting",
+    "analyzing",
+    "ready",
+  ]
+
+  const currentIndex = order.indexOf(status)
+  const stepIndex = order.indexOf(step)
+
+  if (stepIndex < currentIndex) {
+    return "complete"
+  }
+
+  if (stepIndex === currentIndex) {
+    return "current"
+  }
+
+  return "upcoming"
+}
+
 function miniTagStyle(role: MaterialRole): React.CSSProperties {
   return {
     display: "inline-block",
@@ -724,3 +810,7 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
+
+
+
+
