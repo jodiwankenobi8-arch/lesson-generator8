@@ -35,6 +35,7 @@ export async function processMaterial(id: string) {
       extractedText: extraction.extractedText,
       tags: deriveTags(extraction.extractedText, material.role, analysisResult.analysis.tags),
       sourceRole: material.role,
+      extractionMetadata: extraction.extractionMetadata,
     }
 
     store.setMaterialAnalysis(id, analysis)

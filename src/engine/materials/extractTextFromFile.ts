@@ -1,3 +1,5 @@
+import { ExtractionMetadata } from "../types"
+
 export type ExtractTextInput = {
   fileName: string
   fileContent?: string
@@ -8,6 +10,7 @@ export type ExtractTextResult = {
   fileName: string
   fileType: "txt" | "pdf" | "docx" | "pptx" | "html" | "unknown"
   extractedText: string[]
+  extractionMetadata: ExtractionMetadata
 }
 
 export async function extractTextFromFile(
@@ -16,49 +19,97 @@ export async function extractTextFromFile(
   const fileType = detectFileType(input.fileName)
 
   switch (fileType) {
-    case "txt":
+    case "txt": {
+      const extractedText = extractPlainText(input.fileContent ?? "")
+
       return {
         fileName: input.fileName,
         fileType,
-        extractedText: extractPlainText(input.fileContent ?? ""),
+        extractedText,
+        extractionMetadata: buildExtractionMetadata({
+          method: "parser",
+          fileType,
+          extractedText,
+        }),
       }
+    }
 
-    case "pdf":
+    case "pdf": {
+      const extractedText = await extractPdfText(input)
+
       return {
         fileName: input.fileName,
         fileType,
-        extractedText: await extractPdfText(input),
+        extractedText,
+        extractionMetadata: buildExtractionMetadata({
+          method: isFallbackNoticeResult(extractedText) ? "fallback_notice" : "parser",
+          fileType,
+          extractedText,
+        }),
       }
+    }
 
-    case "docx":
+    case "docx": {
+      const extractedText = await extractDocxText(input)
+
       return {
         fileName: input.fileName,
         fileType,
-        extractedText: await extractDocxText(input),
+        extractedText,
+        extractionMetadata: buildExtractionMetadata({
+          method: isFallbackNoticeResult(extractedText) ? "fallback_notice" : "parser",
+          fileType,
+          extractedText,
+        }),
       }
+    }
 
-    case "html":
+    case "html": {
+      const extractedText = extractHtmlText(
+        input.fileContent ?? decodeArrayBuffer(input.fileBuffer)
+      )
+
       return {
         fileName: input.fileName,
         fileType,
-        extractedText: extractHtmlText(
-          input.fileContent ?? decodeArrayBuffer(input.fileBuffer)
-        ),
+        extractedText,
+        extractionMetadata: buildExtractionMetadata({
+          method: "parser",
+          fileType,
+          extractedText,
+        }),
       }
+    }
 
-    case "pptx":
+    case "pptx": {
+      const extractedText = await extractPptxText(input)
+
       return {
         fileName: input.fileName,
         fileType,
-        extractedText: await extractPptxText(input),
+        extractedText,
+        extractionMetadata: buildExtractionMetadata({
+          method: isFallbackNoticeResult(extractedText) ? "fallback_notice" : "parser",
+          fileType,
+          extractedText,
+        }),
       }
+    }
 
-    default:
+    default: {
+      const extractedText = buildUnsupportedFormatNotice("unknown", input.fileName)
+
       return {
         fileName: input.fileName,
         fileType: "unknown",
-        extractedText: buildUnsupportedFormatNotice("unknown", input.fileName),
+        extractedText,
+        extractionMetadata: buildExtractionMetadata({
+          method: "fallback_notice",
+          fileType: "unknown",
+          extractedText,
+        }),
       }
+    }
   }
 }
 
@@ -154,10 +205,7 @@ async function extractPdfText(input: ExtractTextInput): Promise<string[]> {
     const message =
       error instanceof Error ? error.message : "Unknown PDF extraction error"
 
-    return [
-      `PDF extraction failed for ${input.fileName}.`,
-      message,
-    ]
+    return [`PDF extraction failed for ${input.fileName}.`, message]
   } finally {
     if (parser) {
       await parser.destroy()
@@ -194,10 +242,7 @@ async function extractDocxText(input: ExtractTextInput): Promise<string[]> {
     const message =
       error instanceof Error ? error.message : "Unknown DOCX extraction error"
 
-    return [
-      `DOCX extraction failed for ${input.fileName}.`,
-      message,
-    ]
+    return [`DOCX extraction failed for ${input.fileName}.`, message]
   }
 }
 
@@ -226,10 +271,7 @@ async function extractPptxText(input: ExtractTextInput): Promise<string[]> {
     const message =
       error instanceof Error ? error.message : "Unknown PPTX extraction error"
 
-    return [
-      `PPTX extraction failed for ${input.fileName}.`,
-      message,
-    ]
+    return [`PPTX extraction failed for ${input.fileName}.`, message]
   }
 }
 
@@ -344,4 +386,116 @@ function buildUnsupportedFormatNotice(
     `Unsupported file type for ${fileName}.`,
     "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
   ]
+}
+
+function isFallbackNoticeResult(lines: string[]): boolean {
+  if (lines.length === 0) {
+    return true
+  }
+
+  const joined = lines.join(" ").toLowerCase()
+
+  return (
+    joined.includes("no filebuffer was provided") ||
+    joined.includes("unsupported file type") ||
+    joined.includes("extraction failed") ||
+    joined.includes("produced no readable text") ||
+    joined.includes("no html content was provided")
+  )
+}
+
+function buildExtractionMetadata({
+  method,
+  fileType,
+  extractedText,
+}: {
+  method: ExtractionMetadata["method"]
+  fileType: ExtractTextResult["fileType"]
+  extractedText: string[]
+}): ExtractionMetadata {
+  if (method === "fallback_notice") {
+    return {
+      method,
+      quality: "low",
+      confidence: 0.2,
+      notes: [
+        `Extraction returned fallback notice output for ${fileType}.`,
+        "OCR or alternative recovery may be needed later.",
+      ],
+    }
+  }
+
+  const signals = computeExtractionSignals(extractedText)
+
+  const quality =
+    signals.lineCount >= 25 &&
+    signals.averageLineLength >= 18 &&
+    signals.alphaCharacterRatio >= 0.65
+      ? "high"
+      : signals.lineCount >= 8 &&
+          signals.averageLineLength >= 10 &&
+          signals.alphaCharacterRatio >= 0.45
+        ? "medium"
+        : "low"
+
+  const confidence = clampConfidence(
+    quality === "high"
+      ? 0.82 + signals.alphaCharacterRatio * 0.12
+      : quality === "medium"
+        ? 0.56 + signals.alphaCharacterRatio * 0.18
+        : 0.28 + signals.alphaCharacterRatio * 0.2
+  )
+
+  const notes = [
+    `Primary extraction used ${method} for ${fileType}.`,
+    `Usable extracted lines: ${signals.lineCount}.`,
+    `Average line length: ${signals.averageLineLength.toFixed(1)} characters.`,
+    `Alpha character ratio: ${Math.round(signals.alphaCharacterRatio * 100)}%.`,
+  ]
+
+  if (signals.longLineCount === 0 && signals.lineCount > 0) {
+    notes.push("No longer-form lines were detected, which may indicate thin extraction quality.")
+  }
+
+  return {
+    method,
+    quality,
+    confidence,
+    notes,
+  }
+}
+
+function computeExtractionSignals(lines: string[]) {
+  const lineCount = lines.length
+
+  if (lineCount === 0) {
+    return {
+      lineCount: 0,
+      averageLineLength: 0,
+      alphaCharacterRatio: 0,
+      longLineCount: 0,
+    }
+  }
+
+  const totalCharacters = lines.reduce((sum, line) => sum + line.length, 0)
+  const averageLineLength = totalCharacters / lineCount
+  const joined = lines.join(" ")
+  const nonWhitespaceCharacters = joined.replace(/\s/g, "")
+  const alphaCharacters = (nonWhitespaceCharacters.match(/[A-Za-z]/g) || []).length
+  const alphaCharacterRatio =
+    nonWhitespaceCharacters.length > 0
+      ? alphaCharacters / nonWhitespaceCharacters.length
+      : 0
+  const longLineCount = lines.filter((line) => line.length >= 40).length
+
+  return {
+    lineCount,
+    averageLineLength,
+    alphaCharacterRatio,
+    longLineCount,
+  }
+}
+
+function clampConfidence(value: number): number {
+  return Math.max(0.05, Math.min(0.98, Number(value.toFixed(2))))
 }

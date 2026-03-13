@@ -340,7 +340,33 @@ export default function MaterialsPage() {
                     <span style={statusBadgeStyle(material.status)}>
                       {formatStatus(material.status)}
                     </span>
+                    {material.analysis?.extractionMetadata && (
+                      <>
+                        <span style={methodBadgeStyle(material.analysis.extractionMetadata.method)}>
+                          {formatExtractionMethod(material.analysis.extractionMetadata.method)}
+                        </span>
+                        <span style={qualityBadgeStyle(material.analysis.extractionMetadata.quality)}>
+                          {formatExtractionQuality(material.analysis.extractionMetadata.quality)}
+                        </span>
+                      </>
+                    )}
                   </div>
+
+                  {material.analysis?.extractionMetadata && (
+                    <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                      <div style={metadataPanelStyle}>
+                        <div style={{ fontWeight: 700, marginBottom: 4 }}>Extraction Trace</div>
+                        <div style={{ fontSize: 13 }}>
+                          <strong>Confidence:</strong> {formatExtractionConfidence(material.analysis.extractionMetadata.confidence)}
+                        </div>
+                        {material.analysis.extractionMetadata.notes.length > 0 && (
+                          <div style={{ marginTop: 4, fontSize: 13 }}>
+                            <strong>Notes:</strong> {material.analysis.extractionMetadata.notes.join(" ")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {material.analysis && (
                     <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
@@ -561,6 +587,61 @@ function statusBadgeStyle(status: MaterialStatus): React.CSSProperties {
   }
 }
 
+function methodBadgeStyle(method: "parser" | "ocr" | "mixed" | "fallback_notice"): React.CSSProperties {
+  const palette =
+    method === "parser"
+      ? { background: "#eff6ff", color: "#1d4ed8" }
+      : method === "ocr"
+        ? { background: "#f5f3ff", color: "#6d28d9" }
+        : method === "mixed"
+          ? { background: "#ecfeff", color: "#0f766e" }
+          : { background: "#fff7ed", color: "#c2410c" }
+
+  return {
+    display: "inline-block",
+    padding: "6px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    background: palette.background,
+    color: palette.color,
+  }
+}
+
+function qualityBadgeStyle(quality: "high" | "medium" | "low"): React.CSSProperties {
+  const palette =
+    quality === "high"
+      ? { background: "#ecfdf5", color: "#047857" }
+      : quality === "medium"
+        ? { background: "#fffbeb", color: "#b45309" }
+        : { background: "#fef2f2", color: "#b91c1c" }
+
+  return {
+    display: "inline-block",
+    padding: "6px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    background: palette.background,
+    color: palette.color,
+  }
+}
+
+function formatExtractionMethod(method: "parser" | "ocr" | "mixed" | "fallback_notice"): string {
+  if (method === "parser") return "Parser"
+  if (method === "ocr") return "OCR"
+  if (method === "mixed") return "Mixed"
+  return "Fallback notice"
+}
+
+function formatExtractionQuality(quality: "high" | "medium" | "low"): string {
+  return `${quality.charAt(0).toUpperCase()}${quality.slice(1)} quality`
+}
+
+function formatExtractionConfidence(confidence: number): string {
+  return `${Math.round(confidence * 100)}%`
+}
+
 function secondaryButtonStyle(): React.CSSProperties {
   return {
     padding: "8px 10px",
@@ -615,4 +696,13 @@ const guidanceStyle: React.CSSProperties = {
   borderRadius: "var(--radius-md)",
   padding: 12,
   fontSize: 14,
+}
+
+const metadataPanelStyle: React.CSSProperties = {
+  border: "1px solid #e6ebf2",
+  background: "#f8fafc",
+  color: "var(--text-secondary)",
+  borderRadius: "var(--radius-md)",
+  padding: 10,
+  fontSize: 13,
 }

@@ -36,6 +36,17 @@ export type ExemplarStyleSettings = {
   customInstructions: string
 }
 
+export type ExtractionMethod = "parser" | "ocr" | "mixed" | "fallback_notice"
+
+export type ExtractionQuality = "high" | "medium" | "low"
+
+export type ExtractionMetadata = {
+  method: ExtractionMethod
+  quality: ExtractionQuality
+  confidence: number
+  notes: string[]
+}
+
 export type CurriculumCoverage = {
   standards: string[]
   instructionalTargets: string[]
@@ -74,6 +85,7 @@ export type MaterialAnalysis = {
   extractedText: string[]
   tags: string[]
   sourceRole: MaterialRole
+  extractionMetadata?: ExtractionMetadata
   curriculum?: CurriculumAnalysis
   exemplar?: ExemplarAnalysis
 }
