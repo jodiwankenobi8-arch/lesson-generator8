@@ -1,3 +1,4 @@
+import { extractPdfTextWithOcrFallback } from "./extractPdfOcr"
 import { ExtractionMetadata } from "../types"
 
 export type ExtractTextInput = {
@@ -35,17 +36,25 @@ export async function extractTextFromFile(
     }
 
     case "pdf": {
-      const extractedText = await extractPdfText(input)
+      const parserText = await extractPdfText(input)
+      const parserMethod = isFallbackNoticeResult(parserText) ? "fallback_notice" : "parser"
+      const parserMetadata = buildExtractionMetadata({
+        method: parserMethod,
+        fileType,
+        extractedText: parserText,
+      })
+
+      const upgradedPdfResult = await maybeApplyPdfOcrFallback({
+        input,
+        parserText,
+        parserMetadata,
+      })
 
       return {
         fileName: input.fileName,
         fileType,
-        extractedText,
-        extractionMetadata: buildExtractionMetadata({
-          method: isFallbackNoticeResult(extractedText) ? "fallback_notice" : "parser",
-          fileType,
-          extractedText,
-        }),
+        extractedText: upgradedPdfResult.extractedText,
+        extractionMetadata: upgradedPdfResult.extractionMetadata,
       }
     }
 
@@ -209,6 +218,90 @@ async function extractPdfText(input: ExtractTextInput): Promise<string[]> {
   } finally {
     if (parser) {
       await parser.destroy()
+    }
+  }
+}
+
+async function maybeApplyPdfOcrFallback({
+  input,
+  parserText,
+  parserMetadata,
+}: {
+  input: ExtractTextInput
+  parserText: string[]
+  parserMetadata: ExtractionMetadata
+}): Promise<{ extractedText: string[]; extractionMetadata: ExtractionMetadata }> {
+  if (
+    !input.fileBuffer ||
+    parserMetadata.method !== "parser" ||
+    !parserMetadata.ocrCandidate
+  ) {
+    return {
+      extractedText: parserText,
+      extractionMetadata: parserMetadata,
+    }
+  }
+
+  try {
+    const ocrResult = await extractPdfTextWithOcrFallback(input.fileBuffer, {
+      maxPages: 3,
+      language: "eng",
+      scale: 2,
+    })
+
+    const mergedText = normalizeExtractedText([
+      ...parserText,
+      ...ocrResult.combinedLines,
+    ])
+
+    const gainedEnoughText =
+      ocrResult.combinedLines.length >= 3 &&
+      mergedText.length > parserText.length
+
+    if (!gainedEnoughText) {
+      return {
+        extractedText: parserText,
+        extractionMetadata: {
+          ...parserMetadata,
+          notes: [
+            ...parserMetadata.notes,
+            ...ocrResult.notes,
+            "OCR fallback did not add enough new readable text, so parser output was kept.",
+          ],
+        },
+      }
+    }
+
+    const mixedMetadata = buildExtractionMetadata({
+      method: "mixed",
+      fileType: "pdf",
+      extractedText: mergedText,
+    })
+
+    return {
+      extractedText: mergedText,
+      extractionMetadata: {
+        ...mixedMetadata,
+        notes: [
+          ...mixedMetadata.notes,
+          ...ocrResult.notes,
+          `OCR fallback added ${mergedText.length - parserText.length} additional normalized line(s).`,
+        ],
+      },
+    }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown OCR fallback error"
+
+    return {
+      extractedText: parserText,
+      extractionMetadata: {
+        ...parserMetadata,
+        notes: [
+          ...parserMetadata.notes,
+          `OCR fallback attempt failed: ${message}`,
+        ],
+      },
     }
   }
 }
