@@ -192,6 +192,18 @@ export type LessonTargetInfo = {
   recommendedMode: LessonMode
 }
 
+export type BlueprintContentCoverage = {
+  standards: string[]
+  vocabulary: string[]
+  wordLists: string[]
+  texts: string[]
+  practiceIdeas: string[]
+  instructionalTargets: string[]
+  sightWords: string[]
+  foundationalSkills: string[]
+  lessonSegments: string[]
+}
+
 export type BlueprintContent = {
   target: LessonTargetInfo
   standards: string[]
@@ -199,6 +211,7 @@ export type BlueprintContent = {
   wordLists: string[]
   texts: string[]
   practiceIdeas: string[]
+  coverage?: BlueprintContentCoverage
 }
 
 export type BlueprintTemplateShell = {

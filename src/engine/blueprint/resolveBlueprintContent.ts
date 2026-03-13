@@ -1,4 +1,5 @@
 import {
+  BlueprintContentCoverage,
   CurriculumAnalysis,
   LessonBlueprint,
   MaterialFile,
@@ -20,6 +21,7 @@ export function resolveBlueprintContent(args: {
   const wordLists = resolveWordLists(curriculumMaterials, curriculumAnalyses, target.primary)
   const texts = resolveTexts(curriculumMaterials, curriculumAnalyses, inputs.topic)
   const practiceIdeas = resolvePracticeIdeas(curriculumMaterials, curriculumAnalyses, target.primary)
+  const coverage = resolveBlueprintContentCoverage(curriculumAnalyses)
 
   return {
     standards,
@@ -27,6 +29,68 @@ export function resolveBlueprintContent(args: {
     wordLists,
     texts,
     practiceIdeas,
+    coverage,
+  }
+}
+
+function resolveBlueprintContentCoverage(
+  curriculumAnalyses: CurriculumAnalysis[]
+): BlueprintContentCoverage {
+  return {
+    standards: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return [...coverage.standards, ...analysis.standards]
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
+    vocabulary: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return [...coverage.vocabulary, ...analysis.vocabulary]
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
+    wordLists: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return [...coverage.wordLists, ...analysis.wordLists]
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
+    texts: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return [...coverage.texts, ...analysis.texts]
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
+    practiceIdeas: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return [...coverage.practiceTasks, ...analysis.practiceTasks]
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
+    instructionalTargets: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return [...coverage.instructionalTargets, ...analysis.instructionalTargets]
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
+    sightWords: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return coverage.sightWords
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
+    foundationalSkills: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return coverage.foundationalSkills
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
+    lessonSegments: cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return coverage.lessonSegments
+      })
+    ).filter((value) => !isWeakFallbackValue(value)),
   }
 }
 
