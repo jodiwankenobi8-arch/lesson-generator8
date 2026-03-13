@@ -42,11 +42,14 @@ describe("extraction contract", () => {
   it("extractTextFromFile extracts normalized txt content", async () => {
     const result = await extractTextFromFile({
       fileName: "notes.txt",
-      fileContent: " Alpha  \n\nBeta\nAlpha\nGamma "
+      fileContent: " Alpha  \n\nBeta\nAlpha\nGamma ",
     })
 
     expect(result.fileType).toBe("txt")
     expect(result.extractedText).toEqual(["Alpha", "Beta", "Gamma"])
+    expect(result.extractionMetadata.quality).toBe("low")
+    expect(result.extractionMetadata.ocrCandidate).toBe(false)
+    expect(result.extractionMetadata.ocrReason).toBeNull()
   })
 
   it("extractTextFromFile extracts readable html content and strips scripts/styles", async () => {
@@ -72,6 +75,8 @@ describe("extraction contract", () => {
     expect(result.extractedText).toContain("Short vowel a")
     expect(result.extractedText).toContain("Teacher prompt & modeling")
     expect(result.extractedText.join(" ")).not.toMatch(/ignore me|display:none/)
+    expect(result.extractionMetadata.ocrCandidate).toBe(false)
+    expect(result.extractionMetadata.ocrReason).toBeNull()
   })
 
   it("extractTextFromFile normalizes noisy html into analysis-ready lines", async () => {
@@ -95,9 +100,11 @@ describe("extraction contract", () => {
       "Long A Lesson",
       "Teacher says: Today we will read long a words.",
     ])
+    expect(result.extractionMetadata.ocrCandidate).toBe(false)
+    expect(result.extractionMetadata.ocrReason).toBeNull()
   })
 
-  it("returns a clear message when pdf is missing a file buffer", async () => {
+  it("marks fallback pdf output as an OCR candidate", async () => {
     const result = await extractTextFromFile({
       fileName: "curriculum.pdf",
     })
@@ -105,9 +112,13 @@ describe("extraction contract", () => {
     expect(result.fileType).toBe("pdf")
     expect(result.extractedText[0]).toContain("PDF file curriculum.pdf was detected")
     expect(result.extractedText[1]).toContain("ArrayBuffer")
+    expect(result.extractionMetadata.method).toBe("fallback_notice")
+    expect(result.extractionMetadata.quality).toBe("low")
+    expect(result.extractionMetadata.ocrCandidate).toBe(true)
+    expect(result.extractionMetadata.ocrReason).toContain("Parser did not recover usable text")
   })
 
-  it("returns a clear message when docx is missing a file buffer", async () => {
+  it("does not mark fallback docx output as an OCR candidate", async () => {
     const result = await extractTextFromFile({
       fileName: "curriculum.docx",
     })
@@ -115,9 +126,13 @@ describe("extraction contract", () => {
     expect(result.fileType).toBe("docx")
     expect(result.extractedText[0]).toContain("DOCX file curriculum.docx was detected")
     expect(result.extractedText[1]).toContain("ArrayBuffer")
+    expect(result.extractionMetadata.method).toBe("fallback_notice")
+    expect(result.extractionMetadata.quality).toBe("low")
+    expect(result.extractionMetadata.ocrCandidate).toBe(false)
+    expect(result.extractionMetadata.ocrReason).toBeNull()
   })
 
-  it("returns a clear message when pptx is missing a file buffer", async () => {
+  it("marks fallback pptx output as an OCR candidate", async () => {
     const result = await extractTextFromFile({
       fileName: "slides.pptx",
     })
@@ -125,9 +140,13 @@ describe("extraction contract", () => {
     expect(result.fileType).toBe("pptx")
     expect(result.extractedText[0]).toContain("PPTX file slides.pptx was detected")
     expect(result.extractedText[1]).toContain("ArrayBuffer")
+    expect(result.extractionMetadata.method).toBe("fallback_notice")
+    expect(result.extractionMetadata.quality).toBe("low")
+    expect(result.extractionMetadata.ocrCandidate).toBe(true)
+    expect(result.extractionMetadata.ocrReason).toContain("Parser did not recover usable text")
   })
 
-  it("returns a clear unsupported message for unknown file types", async () => {
+  it("does not mark unknown fallback output as an OCR candidate", async () => {
     const result = await extractTextFromFile({
       fileName: "materials.csv",
       fileContent: "a,b,c",
@@ -138,5 +157,9 @@ describe("extraction contract", () => {
       "Unsupported file type for materials.csv.",
       "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
     ])
+    expect(result.extractionMetadata.method).toBe("fallback_notice")
+    expect(result.extractionMetadata.quality).toBe("low")
+    expect(result.extractionMetadata.ocrCandidate).toBe(false)
+    expect(result.extractionMetadata.ocrReason).toBeNull()
   })
 })
