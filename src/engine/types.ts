@@ -380,7 +380,6 @@ export type LessonPackage = {
 export type LessonGenerationResult = {
   blueprint: LessonBlueprint
   planningIdeas: LessonPlanningIdeas
-  spec: LessonSpec
   lessonSpec: LessonSpec
   lessonPackage: LessonPackage
 }

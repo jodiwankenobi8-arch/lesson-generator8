@@ -80,7 +80,7 @@ function makeExemplarMaterial(lines: string[]): MaterialFile {
 }
 
 describe("runLessonPipeline", () => {
-  it("builds blueprint, planning, spec, and package end to end", () => {
+  it("builds blueprint, planning, lesson spec, and package end to end", () => {
     const inputs = makeInputs()
     const materials = [
       makeCurriculumMaterial([
@@ -104,6 +104,17 @@ describe("runLessonPipeline", () => {
     expect(result.lessonPackage).toBeTruthy()
     expect(result.lessonPackage.slides.length).toBeGreaterThan(0)
     expect(result.lessonPackage.lessonPlan.length).toBeGreaterThan(0)
+  })
+
+  it("does not expose a duplicate spec alias on the pipeline result", () => {
+    const result = runLessonPipeline(
+      makeInputs(),
+      [makeCurriculumMaterial(["Long A patterns ai and ay"])],
+      "single"
+    )
+
+    expect("spec" in result).toBe(false)
+    expect(result.lessonSpec).toBeTruthy()
   })
 
   it("keeps a clear phonics lesson single-target instead of overfiring mixed mode", () => {

@@ -19,11 +19,11 @@ export function runLessonPipeline(
 ): LessonGenerationResult {
   const blueprint = buildBlueprint(inputs, materials, selectedMode)
   const planningIdeas = buildLessonPlanningIdeas(blueprint)
-  const spec = buildLessonSpec(blueprint, planningIdeas)
+  const lessonSpec = buildLessonSpec(blueprint, planningIdeas)
   const lessonPackage = buildLessonPackage(
     inputs,
     blueprint,
-    spec,
+    lessonSpec,
     planningIdeas,
     missingAreaDecisions
   )
@@ -31,8 +31,7 @@ export function runLessonPipeline(
   return {
     blueprint,
     planningIdeas,
-    spec,
-    lessonSpec: spec,
+    lessonSpec,
     lessonPackage,
   }
 }
