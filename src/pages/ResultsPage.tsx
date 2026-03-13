@@ -619,6 +619,30 @@ function SimpleListSection({
   )
 }
 
+function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
+  return (
+    <div style={sectionStyle}>
+      <h3 style={sectionHeadingStyle}>Exports</h3>
+      <div style={{ display: "grid", gap: 10 }}>
+        {exports.map((artifact) => (
+          <div
+            key={`${artifact.kind}-${artifact.fileName}`}
+            style={signalCardStyle("neutral")}
+          >
+            <div style={{ fontWeight: 700 }}>{artifact.label}</div>
+            <div style={{ marginTop: 4, fontSize: 13 }}>
+              <strong>Status:</strong> {artifact.status === "placeholder" ? "Placeholder" : artifact.status}
+            </div>
+            <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+              Export generation is not fully implemented yet for this artifact.
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function PreSection({ title, content }: { title: string; content: string }) {
   return (
     <div style={sectionStyle}>
@@ -886,4 +910,5 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
 
