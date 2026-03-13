@@ -1,4 +1,32 @@
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+const pdfGetTextMock = vi.fn()
+const pdfDestroyMock = vi.fn()
+const mammothExtractRawTextMock = vi.fn()
+const parsePptxMock = vi.fn()
+
+vi.mock("pdf-parse", () => ({
+  PDFParse: class {
+    constructor(_options: unknown) {}
+
+    getText() {
+      return pdfGetTextMock()
+    }
+
+    destroy() {
+      return pdfDestroyMock()
+    }
+  },
+}))
+
+vi.mock("mammoth", () => ({
+  extractRawText: (...args: unknown[]) => mammothExtractRawTextMock(...args),
+}))
+
+vi.mock("pptx-parser", () => ({
+  parsePptx: (...args: unknown[]) => parsePptxMock(...args),
+}))
+
 import {
   detectFileType,
   extractPlainText,
@@ -6,6 +34,19 @@ import {
 } from "./materials/extractTextFromFile"
 
 describe("extraction contract", () => {
+  beforeEach(() => {
+    pdfGetTextMock.mockReset()
+    pdfDestroyMock.mockReset()
+    mammothExtractRawTextMock.mockReset()
+    parsePptxMock.mockReset()
+
+    pdfDestroyMock.mockResolvedValue(undefined)
+    mammothExtractRawTextMock.mockResolvedValue({
+      value: "",
+      messages: [],
+    })
+  })
+
   it("detectFileType recognizes supported formats", () => {
     expect(detectFileType("lesson.TXT")).toBe("txt")
     expect(detectFileType("curriculum.Pdf")).toBe("pdf")
@@ -161,5 +202,67 @@ describe("extraction contract", () => {
     expect(result.extractionMetadata.quality).toBe("low")
     expect(result.extractionMetadata.ocrCandidate).toBe(false)
     expect(result.extractionMetadata.ocrReason).toBeNull()
+  })
+
+  it("marks thin parsed pdf text as an OCR candidate", async () => {
+    pdfGetTextMock.mockResolvedValue({
+      text: `
+        Scan
+        1
+        2
+      `,
+    })
+
+    const result = await extractTextFromFile({
+      fileName: "scan.pdf",
+      fileBuffer: new TextEncoder().encode("fake-pdf").buffer,
+    })
+
+    expect(result.fileType).toBe("pdf")
+    expect(result.extractionMetadata.method).toBe("parser")
+    expect(result.extractionMetadata.quality).toBe("low")
+    expect(result.extractionMetadata.ocrCandidate).toBe(true)
+    expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
+    expect(pdfDestroyMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not mark strong parsed pdf text as an OCR candidate", async () => {
+    pdfGetTextMock.mockResolvedValue({
+      text: Array.from({ length: 25 }, (_, index) =>
+        `This is a readable lesson line number ${index} with phonics practice and teacher guidance.`
+      ).join("\n"),
+    })
+
+    const result = await extractTextFromFile({
+      fileName: "readable.pdf",
+      fileBuffer: new TextEncoder().encode("fake-pdf").buffer,
+    })
+
+    expect(result.fileType).toBe("pdf")
+    expect(result.extractionMetadata.method).toBe("parser")
+    expect(result.extractionMetadata.quality).toBe("high")
+    expect(result.extractionMetadata.ocrCandidate).toBe(false)
+    expect(result.extractionMetadata.ocrReason).toBeNull()
+    expect(pdfDestroyMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("marks thin parsed pptx text as an OCR candidate", async () => {
+    parsePptxMock.mockResolvedValue({
+      slides: [
+        { text: "A" },
+        { text: "B" },
+      ],
+    })
+
+    const result = await extractTextFromFile({
+      fileName: "thin-deck.pptx",
+      fileBuffer: new TextEncoder().encode("fake-pptx").buffer,
+    })
+
+    expect(result.fileType).toBe("pptx")
+    expect(result.extractionMetadata.method).toBe("parser")
+    expect(result.extractionMetadata.quality).toBe("low")
+    expect(result.extractionMetadata.ocrCandidate).toBe(true)
+    expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
   })
 })
