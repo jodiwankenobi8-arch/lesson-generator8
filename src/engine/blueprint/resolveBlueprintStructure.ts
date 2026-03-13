@@ -1,5 +1,7 @@
 import {
   ExemplarAnalysis,
+  ExemplarDetectedFeature,
+  ExemplarDetectedFeatureKey,
   LessonBlueprint,
 } from "../types"
 
@@ -38,9 +40,14 @@ function buildTiming(
   target: LessonBlueprint["content"]["target"]
 ): string[] {
   const exemplarTiming = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.pacing))
+  const features = getDetectedFeatures(exemplarAnalyses)
 
   if (exemplarTiming.length > 0) {
     return exemplarTiming.slice(0, 6)
+  }
+
+  if (hasFeature(features, "timers") || hasFeature(features, "pacing_markers")) {
+    return ["Launch - 5 min", "Teach - 10 min", "Practice - 10 min", "Closure - 5 min"]
   }
 
   if (target.isMixedTarget && target.recommendedMode === "full") {
@@ -57,6 +64,7 @@ function buildLessonSegments(
   const structureDrivenSegments = cleanUnique([
     ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
     ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
+    ...buildSegmentsFromDetectedFeatures(exemplarAnalyses),
   ])
     .map(normalizeSegmentLabel)
     .filter((segment) => segment.length > 0)
@@ -76,7 +84,11 @@ function buildTeacherMoves(
   exemplarAnalyses: ExemplarAnalysis[],
   target: LessonBlueprint["content"]["target"]
 ): string[] {
-  const moves = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves))
+  const features = getDetectedFeatures(exemplarAnalyses)
+  const moves = cleanUnique([
+    ...exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves),
+    ...buildTeacherMovesFromFeatures(features),
+  ])
 
   if (moves.length > 0) {
     return moves.slice(0, 6)
@@ -97,7 +109,11 @@ function buildPromptStyle(
   exemplarAnalyses: ExemplarAnalysis[],
   target: LessonBlueprint["content"]["target"]
 ): string[] {
-  const prompts = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.promptStyle))
+  const features = getDetectedFeatures(exemplarAnalyses)
+  const prompts = cleanUnique([
+    ...exemplarAnalyses.flatMap((analysis) => analysis.promptStyle),
+    ...buildPromptStyleFromFeatures(features),
+  ])
 
   if (prompts.length > 0) {
     return prompts.slice(0, 6)
@@ -139,6 +155,7 @@ function buildTemplateShell(
   const rawSlideCandidates = cleanUnique([
     ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
     ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
+    ...buildTemplateShellSignalsFromFeatures(exemplarAnalyses),
     ...lessonSegments,
   ])
 
@@ -171,6 +188,146 @@ function buildDefaultSlideShell(lessonSegments: string[]): string[] {
     if (normalized === "Closure") return "Closure / Check"
     return normalized
   })
+}
+
+function buildSegmentsFromDetectedFeatures(exemplarAnalyses: ExemplarAnalysis[]): string[] {
+  const features = getDetectedFeatures(exemplarAnalyses)
+  const segments: string[] = []
+
+  if (hasFeature(features, "objective_slide") || hasFeature(features, "warm_up")) {
+    segments.push("Opening")
+  }
+
+  if (hasFeature(features, "mini_lesson")) {
+    segments.push("Teach")
+  }
+
+  if (hasFeature(features, "guided_practice")) {
+    segments.push("Guided Practice")
+  }
+
+  if (hasFeature(features, "independent_practice")) {
+    segments.push("Independent Practice")
+  }
+
+  if (hasFeature(features, "centers")) {
+    segments.push("Centers")
+  }
+
+  if (hasFeature(features, "closure") || hasFeature(features, "exit_ticket")) {
+    segments.push("Closure")
+  }
+
+  return cleanUnique(segments)
+}
+
+function buildTeacherMovesFromFeatures(features: ExemplarDetectedFeature[]): string[] {
+  const moves: string[] = []
+
+  if (hasFeature(features, "teacher_scripts")) {
+    moves.push("Teacher scripting")
+  }
+
+  if (hasFeature(features, "teacher_prompt_blocks")) {
+    moves.push("Teacher-led prompting")
+  }
+
+  if (hasFeature(features, "turn_and_talk")) {
+    moves.push("Turn and talk facilitation")
+  }
+
+  if (hasFeature(features, "call_and_response")) {
+    moves.push("Call and response")
+  }
+
+  if (hasFeature(features, "interactive_checkpoints")) {
+    moves.push("Interactive checkpoint")
+  }
+
+  return cleanUnique(moves)
+}
+
+function buildPromptStyleFromFeatures(features: ExemplarDetectedFeature[]): string[] {
+  const prompts: string[] = []
+
+  if (hasFeature(features, "teacher_prompt_blocks")) {
+    prompts.push("Teacher prompt block")
+  }
+
+  if (hasFeature(features, "turn_and_talk")) {
+    prompts.push("Turn and talk")
+  }
+
+  if (hasFeature(features, "call_and_response")) {
+    prompts.push("Call and response")
+  }
+
+  if (hasFeature(features, "interactive_checkpoints")) {
+    prompts.push("Quick check")
+  }
+
+  return cleanUnique(prompts)
+}
+
+function buildTemplateShellSignalsFromFeatures(exemplarAnalyses: ExemplarAnalysis[]): string[] {
+  const features = getDetectedFeatures(exemplarAnalyses)
+  const shellSignals: string[] = []
+
+  if (hasFeature(features, "objective_slide")) {
+    shellSignals.push("Objective / Opening")
+  }
+
+  if (hasFeature(features, "word_list_slots")) {
+    shellSignals.push("Word List / Practice")
+  }
+
+  if (hasFeature(features, "passage_slots")) {
+    shellSignals.push("Passage / Text")
+  }
+
+  if (hasFeature(features, "practice_task_slots")) {
+    shellSignals.push("Practice Task")
+  }
+
+  if (hasFeature(features, "image_slots")) {
+    shellSignals.push("Visual / Image")
+  }
+
+  if (hasFeature(features, "table_layout")) {
+    shellSignals.push("Table / Sort")
+  }
+
+  if (hasFeature(features, "split_layout")) {
+    shellSignals.push("Compare / Split View")
+  }
+
+  if (hasFeature(features, "exit_ticket")) {
+    shellSignals.push("Closure / Check")
+  }
+
+  return cleanUnique(shellSignals)
+}
+
+function getDetectedFeatures(exemplarAnalyses: ExemplarAnalysis[]): ExemplarDetectedFeature[] {
+  const all = exemplarAnalyses.flatMap((analysis) => analysis.detectedFeatures?.items ?? [])
+  const byKey = new Map<ExemplarDetectedFeatureKey, ExemplarDetectedFeature>()
+
+  for (const feature of all) {
+    const existing = byKey.get(feature.key)
+
+    if (!existing || feature.confidence > existing.confidence) {
+      byKey.set(feature.key, feature)
+    }
+  }
+
+  return Array.from(byKey.values())
+}
+
+function hasFeature(
+  features: ExemplarDetectedFeature[],
+  key: ExemplarDetectedFeatureKey
+): boolean {
+  return features.some((feature) => feature.key === key)
 }
 
 function alignShellArray(values: string[], targetLength: number, fallback: string[]): string[] {
@@ -227,7 +384,7 @@ function normalizeSegmentLabel(value: string): string {
     return "Centers"
   }
 
-  if (lower.includes("closure") || lower.includes("close")) {
+  if (lower.includes("closure") || lower.includes("close") || lower.includes("exit ticket")) {
     return "Closure"
   }
 

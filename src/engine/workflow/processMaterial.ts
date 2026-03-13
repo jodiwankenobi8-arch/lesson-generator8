@@ -31,10 +31,6 @@ export async function processMaterial(id: string) {
 
     const analysis: MaterialAnalysis = {
       ...analysisResult.analysis,
-      summary: buildSummary(material.role, extraction.extractedText, analysisResult.analysis.summary),
-      extractedText: extraction.extractedText,
-      tags: deriveTags(extraction.extractedText, material.role, analysisResult.analysis.tags),
-      sourceRole: material.role,
       extractionMetadata: extraction.extractionMetadata,
     }
 
@@ -45,44 +41,4 @@ export async function processMaterial(id: string) {
 
     store.setMaterialError(id, message)
   }
-}
-
-function buildSummary(
-  role: "curriculum" | "exemplar",
-  extractedText: string[],
-  preferredSummary?: string
-): string {
-  if (preferredSummary && preferredSummary.trim().length > 0) {
-    return preferredSummary
-  }
-
-  const lineCount = extractedText.length
-
-  if (role === "curriculum") {
-    return lineCount > 0
-      ? `Curriculum material processed with ${lineCount} extracted text lines.`
-      : "Curriculum material processed, but no usable text was extracted."
-  }
-
-  return lineCount > 0
-    ? `Exemplar material processed with ${lineCount} extracted text lines.`
-    : "Exemplar material processed, but no usable text was extracted."
-}
-
-function deriveTags(
-  lines: string[],
-  role: "curriculum" | "exemplar",
-  preferredTags: string[] = []
-): string[] {
-  const baseTags =
-    role === "curriculum"
-      ? ["curriculum", "content", "instruction"]
-      : ["exemplar", "structure", "presentation"]
-
-  const shortLines = lines
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0 && line.split(/\s+/).length <= 5)
-    .slice(0, 5)
-
-  return Array.from(new Set([...baseTags, ...preferredTags, ...shortLines]))
 }

@@ -36,6 +36,83 @@ export type ExemplarStyleSettings = {
   customInstructions: string
 }
 
+export type ExemplarDetectedFeatureKey =
+  | "guideposts"
+  | "toc"
+  | "interactive_checkpoints"
+  | "teacher_prompt_blocks"
+  | "teacher_scripts"
+  | "call_and_response"
+  | "turn_and_talk"
+  | "section_headers"
+  | "agenda"
+  | "objective_slide"
+  | "warm_up"
+  | "mini_lesson"
+  | "guided_practice"
+  | "independent_practice"
+  | "closure"
+  | "exit_ticket"
+  | "small_group"
+  | "centers"
+  | "timers"
+  | "pacing_markers"
+  | "slide_numbering"
+  | "icon_system"
+  | "hero_image_slot"
+  | "image_slots"
+  | "example_non_example"
+  | "anchor_chart_layout"
+  | "table_layout"
+  | "split_layout"
+  | "color_theme"
+  | "font_theme"
+  | "visual_theme"
+  | "animation_cues"
+  | "curriculum_slide_slots"
+  | "word_list_slots"
+  | "passage_slots"
+  | "practice_task_slots"
+
+export type ExemplarDetectedFeatureCategory =
+  | "structure"
+  | "interaction"
+  | "instructional_flow"
+  | "pacing"
+  | "visual_layout"
+  | "theme_style"
+  | "content_slots"
+
+export type ExemplarDetectedFeature = {
+  key: ExemplarDetectedFeatureKey
+  label: string
+  description: string
+  evidence: string[]
+  confidence: number
+  category: ExemplarDetectedFeatureCategory
+}
+
+export type ExemplarDetectedFeatures = {
+  items: ExemplarDetectedFeature[]
+  warnings: string[]
+}
+
+export type ExemplarTransformationMode =
+  | "keep_mostly_same"
+  | "use_selected_features"
+  | "use_as_inspiration"
+  | "custom"
+
+export type ExemplarTransformationRequest = {
+  mode: ExemplarTransformationMode
+  keepFeatures: ExemplarDetectedFeatureKey[]
+  removeFeatures: ExemplarDetectedFeatureKey[]
+  replaceContent: string[]
+  addFeatures: string[]
+  restyleInstructions: string
+  customInstructions: string
+}
+
 export type ExtractionMethod = "parser" | "ocr" | "mixed" | "fallback_notice"
 
 export type ExtractionQuality = "high" | "medium" | "low"
@@ -80,6 +157,7 @@ export type ExemplarAnalysis = {
   layoutCues: string[]
   tone: string[]
   reusableStructure: string[]
+  detectedFeatures?: ExemplarDetectedFeatures
 }
 
 export type MaterialAnalysis = {
@@ -100,6 +178,7 @@ export type MaterialFile = {
   analysis: MaterialAnalysis | null
   errorMessage: string | null
   styleSettings?: ExemplarStyleSettings | null
+  transformationRequest?: ExemplarTransformationRequest | null
   fileBuffer: ArrayBuffer | null
   fileContent: string | null
 }

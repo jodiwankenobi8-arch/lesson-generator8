@@ -1,6 +1,9 @@
 import {
   CurriculumAnalysis,
   ExemplarAnalysis,
+  ExemplarDetectedFeature,
+  ExemplarDetectedFeatureCategory,
+  ExemplarDetectedFeatureKey,
   MaterialAnalysis,
   MaterialRole,
 } from "../types"
@@ -27,24 +30,38 @@ export async function analyzeMaterial(
 
   const analysis: MaterialAnalysis =
     input.role === "curriculum"
-      ? {
-          summary: buildCurriculumSummary(input.name, cleanedText),
-          extractedText: cleanedText,
-          tags: deriveCurriculumTags(cleanedText),
-          sourceRole: "curriculum",
-          curriculum: buildCurriculumAnalysis(cleanedText),
-        }
-      : {
-          summary: buildExemplarSummary(input.name, cleanedText),
-          extractedText: cleanedText,
-          tags: deriveExemplarTags(cleanedText),
-          sourceRole: "exemplar",
-          exemplar: buildExemplarAnalysis(cleanedText),
-        }
+      ? buildCurriculumMaterialAnalysis(input.name, cleanedText)
+      : buildExemplarMaterialAnalysis(input.name, cleanedText)
 
   return {
     materialId: input.materialId,
     analysis,
+  }
+}
+
+function buildCurriculumMaterialAnalysis(
+  name: string,
+  lines: string[]
+): MaterialAnalysis {
+  return {
+    summary: buildCurriculumSummary(name, lines),
+    extractedText: lines,
+    tags: deriveCurriculumTags(lines),
+    sourceRole: "curriculum",
+    curriculum: buildCurriculumAnalysis(lines),
+  }
+}
+
+function buildExemplarMaterialAnalysis(
+  name: string,
+  lines: string[]
+): MaterialAnalysis {
+  return {
+    summary: buildExemplarSummary(name, lines),
+    extractedText: lines,
+    tags: deriveExemplarTags(lines),
+    sourceRole: "exemplar",
+    exemplar: buildExemplarAnalysis(lines),
   }
 }
 
@@ -102,8 +119,9 @@ function buildExemplarSummary(name: string, lines: string[]): string {
   const pacing = selectPacing(lines).length
   const moves = selectTeacherMoves(lines).length
   const structure = selectReusableStructure(lines).length
+  const detectedFeatureCount = detectExemplarFeatures(lines).items.length
 
-  return `Exemplar material ${name} analyzed with ${lines.length} usable lines, ${flow} slide-flow signals, ${pacing} pacing signals, ${moves} teacher-move signals, and ${structure} reusable structure signals.`
+  return `Exemplar material ${name} analyzed with ${lines.length} usable lines, ${flow} slide-flow signals, ${pacing} pacing signals, ${moves} teacher-move signals, ${structure} reusable structure signals, and ${detectedFeatureCount} detected exemplar features.`
 }
 
 function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
@@ -148,6 +166,7 @@ function buildExemplarAnalysis(lines: string[]): ExemplarAnalysis {
   const layoutCues = selectLayoutCues(lines)
   const tone = selectTone(lines)
   const reusableStructure = selectReusableStructure(lines)
+  const detectedFeatures = detectExemplarFeatures(lines)
 
   return {
     slideFlow: slideFlow.length ? slideFlow : ["opening", "teach", "guided practice", "closure"],
@@ -157,7 +176,334 @@ function buildExemplarAnalysis(lines: string[]): ExemplarAnalysis {
     layoutCues: layoutCues.length ? layoutCues : ["presentation structure cue"],
     tone: tone.length ? tone : ["clear instructional tone"],
     reusableStructure: reusableStructure.length ? reusableStructure : ["opening", "teach", "practice", "closure"],
+    detectedFeatures,
   }
+}
+
+function detectExemplarFeatures(lines: string[]) {
+  const items: ExemplarDetectedFeature[] = []
+
+  pushFeatureIfAny(items, {
+    key: "turn_and_talk",
+    label: "Turn and Talk",
+    description: "Includes partner discussion prompts or turn-and-talk moments.",
+    category: "interaction",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["turn and talk", "share with a partner", "talk to your partner"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "teacher_prompt_blocks",
+    label: "Teacher Prompt Blocks",
+    description: "Contains teacher-facing prompt language or facilitation prompts.",
+    category: "interaction",
+    evidence: takeBestMatches(
+      lines,
+      (line) =>
+        startsWithAny(line, ["prompt", "question stem", "sentence stem"]) ||
+        containsAny(line, ["prompt students", "question stem", "sentence stem", "what do you notice"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "teacher_scripts",
+    label: "Teacher Scripts",
+    description: "Contains explicit teacher scripting or teacher-say language.",
+    category: "interaction",
+    evidence: takeBestMatches(
+      lines,
+      (line) =>
+        startsWithAny(line, ["teacher says", "teacher will", "say", "model", "explain"]) ||
+        containsAny(line, ["teacher says", "teacher will", "think aloud", "show students"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "objective_slide",
+    label: "Objective Slide",
+    description: "Includes a lesson objective or learning target slide pattern.",
+    category: "instructional_flow",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["objective", "learning target", "i can", "students will"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "warm_up",
+    label: "Warm-Up",
+    description: "Includes an opening warm-up or launch section.",
+    category: "instructional_flow",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["warm up", "warm-up", "launch"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "guided_practice",
+    label: "Guided Practice",
+    description: "Includes guided-practice structure or guided work time.",
+    category: "instructional_flow",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["guided practice", "we do", "guided support"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "independent_practice",
+    label: "Independent Practice",
+    description: "Includes independent-practice structure or independent work time.",
+    category: "instructional_flow",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["independent practice", "you do", "independent work"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "closure",
+    label: "Closure",
+    description: "Includes a closing or wrap-up lesson segment.",
+    category: "instructional_flow",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["closure", "wrap up", "wrap-up"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "exit_ticket",
+    label: "Exit Ticket",
+    description: "Includes an exit ticket or end-of-lesson check.",
+    category: "instructional_flow",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["exit ticket", "final check", "before you leave"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "centers",
+    label: "Centers",
+    description: "Includes centers or rotation-based instructional structure.",
+    category: "instructional_flow",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["center", "centers", "rotation", "stations"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "timers",
+    label: "Timers",
+    description: "Includes explicit time boxes or timer cues.",
+    category: "pacing",
+    evidence: takeBestMatches(
+      lines,
+      (line) =>
+        /\b\d+\s?(minute|minutes|min)\b/i.test(line) ||
+        containsAny(line, ["timer", "timing"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "pacing_markers",
+    label: "Pacing Markers",
+    description: "Includes transition or pacing language that structures lesson flow.",
+    category: "pacing",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["transition", "pace", "timing", "next", "then"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "slide_numbering",
+    label: "Slide Numbering",
+    description: "Includes explicit slide numbering cues.",
+    category: "structure",
+    evidence: takeBestMatches(lines, (line) => /^slide \d+$/i.test(line.trim()), 3),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "image_slots",
+    label: "Image Slots",
+    description: "Includes image placeholders or image-based layout cues.",
+    category: "visual_layout",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["image", "photo", "picture", "illustration"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "table_layout",
+    label: "Table Layout",
+    description: "Includes table-based layout or grid structure cues.",
+    category: "visual_layout",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["table", "chart", "grid"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "split_layout",
+    label: "Split Layout",
+    description: "Includes side-by-side or split-screen layout cues.",
+    category: "visual_layout",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["left side", "right side", "side by side", "two column", "split"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "color_theme",
+    label: "Color Theme",
+    description: "Includes repeated color or theme styling cues.",
+    category: "theme_style",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["color", "theme", "highlight", "shade"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "visual_theme",
+    label: "Visual Theme",
+    description: "Includes recurring visual styling or thematic presentation cues.",
+    category: "theme_style",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["visual", "style", "theme", "icon", "layout"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "word_list_slots",
+    label: "Word List Slots",
+    description: "Includes places where word-list content appears to be slotted in.",
+    category: "content_slots",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["word list", "target words", "heart words", "decodable words"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "passage_slots",
+    label: "Passage Slots",
+    description: "Includes places where passage or text content appears to be slotted in.",
+    category: "content_slots",
+    evidence: takeBestMatches(
+      lines,
+      (line) => containsAny(line, ["passage", "story", "text", "article", "selection"]),
+      3
+    ),
+  })
+
+  pushFeatureIfAny(items, {
+    key: "practice_task_slots",
+    label: "Practice Task Slots",
+    description: "Includes places where practice tasks appear to be slotted in.",
+    category: "content_slots",
+    evidence: takeBestMatches(
+      lines,
+      (line) =>
+        containsAny(line, [
+          "guided practice",
+          "independent practice",
+          "practice",
+          "task",
+          "activity",
+          "work time",
+        ]),
+      3
+    ),
+  })
+
+  return {
+    items: items.slice(0, MAX_FIELD_ITEMS * 2),
+    warnings: buildExemplarFeatureWarnings(lines, items),
+  }
+}
+
+function buildExemplarFeatureWarnings(
+  lines: string[],
+  items: ExemplarDetectedFeature[]
+): string[] {
+  const warnings: string[] = []
+
+  if (!lines.length) {
+    warnings.push("Little usable exemplar text was available for feature detection.")
+  }
+
+  if (!items.length && lines.length > 0) {
+    warnings.push("No strong exemplar features were confidently detected from extracted text.")
+  }
+
+  const visualCueCount = items.filter((item) =>
+    item.category === "visual_layout" || item.category === "theme_style"
+  ).length
+
+  if (visualCueCount === 0 && lines.length > 0) {
+    warnings.push("Visual/style features may be under-detected when extraction is mostly text-only.")
+  }
+
+  return warnings
+}
+
+function pushFeatureIfAny(
+  items: ExemplarDetectedFeature[],
+  input: {
+    key: ExemplarDetectedFeatureKey
+    label: string
+    description: string
+    evidence: string[]
+    category: ExemplarDetectedFeatureCategory
+  }
+) {
+  if (!input.evidence.length) {
+    return
+  }
+
+  items.push({
+    key: input.key,
+    label: input.label,
+    description: input.description,
+    evidence: input.evidence,
+    confidence: calculateFeatureConfidence(input.evidence),
+    category: input.category,
+  })
+}
+
+function calculateFeatureConfidence(evidence: string[]): number {
+  if (evidence.length >= 3) return 0.9
+  if (evidence.length === 2) return 0.75
+  return 0.6
 }
 
 function deriveCurriculumTags(lines: string[]): string[] {
@@ -688,4 +1034,3 @@ function startsWithAny(text: string, prefixes: string[]): boolean {
 function unique(items: string[]): string[] {
   return Array.from(new Set(items))
 }
-
