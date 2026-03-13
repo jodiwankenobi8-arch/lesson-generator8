@@ -4,51 +4,70 @@ import { LessonMode } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
 const pageStyle: React.CSSProperties = {
-  maxWidth: 900,
+  maxWidth: 920,
   margin: "0 auto",
 }
 
 const introStyle: React.CSSProperties = {
-  color: "#4b5563",
-  marginBottom: 24,
+  color: "var(--text-secondary)",
+  marginBottom: "var(--space-lg)",
+  fontSize: 16,
+  maxWidth: 720,
 }
 
 const cardStyle: React.CSSProperties = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 16,
-  padding: 20,
-  background: "#ffffff",
+  border: "1px solid var(--border-soft)",
+  borderRadius: "var(--radius-lg)",
+  padding: "var(--space-xl)",
+  background: "var(--paper-white)",
+  boxShadow: "var(--shadow-card)",
 }
 
 const gridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-  gap: 16,
+  gap: "var(--space-md)",
 }
 
 const fullWidthStyle: React.CSSProperties = {
   gridColumn: "1 / -1",
 }
 
+const sectionLabelStyle: React.CSSProperties = {
+  display: "inline-block",
+  padding: "6px 12px",
+  marginBottom: "var(--space-sm)",
+  borderRadius: "999px",
+  background: "rgba(230, 201, 143, 0.28)",
+  color: "var(--warm-brown)",
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.3,
+  textTransform: "uppercase",
+}
+
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontWeight: 600,
+  fontWeight: 700,
   marginBottom: 6,
+  color: "var(--orchard-green)",
 }
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  padding: "10px 12px",
-  borderRadius: 10,
-  border: "1px solid #d1d5db",
+  padding: "12px 14px",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--border-soft)",
   fontSize: 14,
   boxSizing: "border-box",
+  background: "#fffdfa",
+  color: "var(--text-primary)",
 }
 
 const helpStyle: React.CSSProperties = {
   marginTop: 4,
   fontSize: 12,
-  color: "#6b7280",
+  color: "var(--text-secondary)",
   fontWeight: 400,
 }
 
@@ -56,50 +75,52 @@ const buttonRowStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  marginTop: 24,
-  gap: 12,
+  marginTop: "var(--space-xl)",
+  gap: "var(--space-md)",
   flexWrap: "wrap",
 }
 
 const buttonStyle: React.CSSProperties = {
-  padding: "12px 14px",
-  borderRadius: 12,
-  border: "1px solid #111827",
-  background: "#111827",
-  color: "#ffffff",
+  padding: "12px 16px",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--orchard-green)",
+  background: "var(--orchard-green)",
+  color: "var(--paper-white)",
   cursor: "pointer",
-  fontWeight: 600,
+  fontWeight: 700,
+  boxShadow: "var(--shadow-soft)",
 }
 
 const disabledButtonStyle: React.CSSProperties = {
   ...buttonStyle,
-  border: "1px solid #d1d5db",
+  border: "1px solid var(--border-soft)",
   background: "#e5e7eb",
-  color: "#6b7280",
+  color: "var(--text-secondary)",
   cursor: "not-allowed",
+  boxShadow: "none",
 }
 
 const noticeStyle: React.CSSProperties = {
   padding: "12px 14px",
-  borderRadius: 12,
-  border: "1px solid #e5e7eb",
-  background: "#f9fafb",
-  color: "#4b5563",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--border-soft)",
+  background: "#fcfbf8",
+  color: "var(--text-secondary)",
   fontSize: 14,
 }
 
 const modeCardStyle: React.CSSProperties = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 14,
-  padding: 14,
-  background: "#fafaf9",
+  border: "1px solid var(--border-soft)",
+  borderRadius: "var(--radius-lg)",
+  padding: "var(--space-lg)",
+  background: "#fcfbf8",
 }
 
 const modeOptionStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "flex-start",
   gap: 10,
-  padding: "10px 0",
+  padding: "12px 0",
   borderTop: "1px solid #ece7df",
 }
 
@@ -121,7 +142,18 @@ export default function InputsPage() {
 
   return (
     <div style={pageStyle}>
-      <h2 style={{ marginTop: 0 }}>Inputs</h2>
+      <div style={sectionLabelStyle}>Lesson Setup</div>
+      <h2
+        style={{
+          marginTop: 0,
+          marginBottom: "var(--space-sm)",
+          fontFamily: "var(--font-heading)",
+          fontSize: 32,
+          color: "var(--orchard-green)",
+        }}
+      >
+        Inputs
+      </h2>
       <p style={introStyle}>
         Define the lesson intent before adding curriculum and exemplar materials.
       </p>
@@ -203,15 +235,17 @@ export default function InputsPage() {
               value={inputs.topic}
               onChange={updateInput("topic")}
               placeholder="Reading long A words in connected text"
-              style={{ ...inputStyle, minHeight: 110, resize: "vertical" }}
+              style={{ ...inputStyle, minHeight: 120, resize: "vertical" }}
             />
           </div>
         </div>
 
-        <div style={{ marginTop: 20 }}>
+        <div style={{ marginTop: "var(--space-xl)" }}>
           <div style={modeCardStyle}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Lesson shape</div>
-            <div style={{ color: "#4b5563", fontSize: 14, marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
+              Lesson shape
+            </div>
+            <div style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 8 }}>
               Choose whether to generate one lesson focus or a fuller mixed lesson.
             </div>
 
@@ -219,9 +253,9 @@ export default function InputsPage() {
               style={{
                 ...noticeStyle,
                 marginBottom: 12,
-                background: targetPreview.isMixedTarget ? "#fff7ed" : "#f9fafb",
-                borderColor: targetPreview.isMixedTarget ? "#fed7aa" : "#e5e7eb",
-                color: targetPreview.isMixedTarget ? "#9a3412" : "#4b5563",
+                background: targetPreview.isMixedTarget ? "#fff7ed" : "#fcfbf8",
+                borderColor: targetPreview.isMixedTarget ? "#fed7aa" : "var(--border-soft)",
+                color: targetPreview.isMixedTarget ? "#9a3412" : "var(--text-secondary)",
               }}
             >
               {targetPreview.message}
@@ -262,14 +296,20 @@ export default function InputsPage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 20 }}>
+        <div style={{ marginTop: "var(--space-lg)" }}>
           <div style={noticeStyle}>
             Required before Results can generate: grade, subject, standard, skill focus, lesson topic, and duration.
           </div>
         </div>
 
         <div style={buttonRowStyle}>
-          <div style={{ color: hasRequiredInputs ? "#047857" : "#6b7280", fontSize: 14, fontWeight: 600 }}>
+          <div
+            style={{
+              color: hasRequiredInputs ? "#047857" : "var(--text-secondary)",
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
             {hasRequiredInputs ? "Inputs complete" : "Complete all required lesson fields"}
           </div>
 
@@ -318,8 +358,8 @@ function LessonModeOption({
         style={{ marginTop: 3 }}
       />
       <div>
-        <div style={{ fontWeight: 600, color: "#111827" }}>{title}</div>
-        <div style={{ color: "#4b5563", fontSize: 14, marginTop: 2 }}>{description}</div>
+        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
+        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>{description}</div>
       </div>
     </label>
   )

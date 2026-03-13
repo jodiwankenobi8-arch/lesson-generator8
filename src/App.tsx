@@ -1,4 +1,4 @@
-﻿import React from "react"
+import React from "react"
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom"
 import InputsPage from "./pages/InputsPage"
 import MaterialsPage from "./pages/MaterialsPage"
@@ -20,20 +20,33 @@ function StepNav() {
   })
 
   const linkStyle = (path: string, disabled = false): React.CSSProperties => ({
-    padding: "10px 14px",
+    padding: "10px 16px",
     borderRadius: "999px",
     textDecoration: "none",
-    border: "1px solid #d1d5db",
-    background: location.pathname === path ? "#111827" : "#ffffff",
-    color: disabled ? "#9ca3af" : location.pathname === path ? "#ffffff" : "#111827",
+    border: `1px solid ${disabled ? "var(--border-soft)" : "var(--moss-green)"}`,
+    background: location.pathname === path ? "var(--orchard-green)" : "var(--paper-white)",
+    color: disabled
+      ? "var(--text-secondary)"
+      : location.pathname === path
+        ? "var(--paper-white)"
+        : "var(--orchard-green)",
     fontWeight: 600,
     pointerEvents: disabled ? "none" : "auto",
     opacity: disabled ? 0.65 : 1,
+    boxShadow: "var(--shadow-soft)",
+    transition: "all 0.15s ease",
   })
 
   return (
-    <div style={{ marginBottom: 24 }}>
-      <nav style={{ display: "flex", gap: 12, marginBottom: resultsBlockedReason ? 10 : 0 }}>
+    <div style={{ marginBottom: "var(--space-xl)" }}>
+      <nav
+        style={{
+          display: "flex",
+          gap: "var(--space-sm)",
+          flexWrap: "wrap",
+          marginBottom: resultsBlockedReason ? "var(--space-sm)" : 0,
+        }}
+      >
         <Link to="/inputs" style={linkStyle("/inputs")}>
           Inputs
         </Link>
@@ -48,12 +61,13 @@ function StepNav() {
       {resultsBlockedReason && (
         <div
           style={{
-            padding: "10px 12px",
-            borderRadius: 12,
-            border: "1px solid #e5e7eb",
-            background: "#f9fafb",
-            color: "#4b5563",
+            padding: "12px 14px",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--border-soft)",
+            background: "var(--paper-white)",
+            color: "var(--text-secondary)",
             fontSize: 14,
+            boxShadow: "var(--shadow-soft)",
           }}
         >
           {resultsBlockedReason}
@@ -68,35 +82,86 @@ export default function App() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#f8f5ef",
         padding: "32px 20px",
-        fontFamily: "Arial, sans-serif",
       }}
     >
       <div
         style={{
-          maxWidth: 1000,
+          maxWidth: 1080,
           margin: "0 auto",
-          background: "#fffdf8",
-          border: "1px solid #e5e7eb",
-          borderRadius: 20,
-          padding: 24,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
         }}
       >
-        <h1 style={{ marginTop: 0, marginBottom: 8 }}>Lesson Generator 8</h1>
-        <p style={{ marginTop: 0, marginBottom: 24, color: "#4b5563" }}>
-          Teacher-facing lesson package generator
-        </p>
+        <div
+          style={{
+            marginBottom: "var(--space-lg)",
+            padding: "var(--space-lg)",
+            borderRadius: "var(--radius-lg)",
+            background: "linear-gradient(135deg, var(--paper-white), #fdfaf3)",
+            border: "1px solid var(--border-soft)",
+            boxShadow: "var(--shadow-card)",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-block",
+              padding: "6px 12px",
+              marginBottom: "var(--space-sm)",
+              borderRadius: "999px",
+              background: "rgba(230, 201, 143, 0.28)",
+              color: "var(--warm-brown)",
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: 0.3,
+              textTransform: "uppercase",
+            }}
+          >
+            Teacher Planning Studio
+          </div>
 
-        <StepNav />
+          <h1
+            style={{
+              marginTop: 0,
+              marginBottom: "var(--space-xs)",
+              fontFamily: "var(--font-heading)",
+              fontSize: 40,
+              lineHeight: 1.1,
+              color: "var(--orchard-green)",
+            }}
+          >
+            Lesson Generator 8
+          </h1>
 
-        <Routes>
-          <Route path="/" element={<Navigate to="/inputs" replace />} />
-          <Route path="/inputs" element={<InputsPage />} />
-          <Route path="/materials" element={<MaterialsPage />} />
-          <Route path="/results" element={<ResultsPage />} />
-        </Routes>
+          <p
+            style={{
+              marginTop: 0,
+              marginBottom: 0,
+              color: "var(--text-secondary)",
+              fontSize: 16,
+              maxWidth: 720,
+            }}
+          >
+            Build teacher-friendly lesson packages from lesson inputs, curriculum materials, and exemplar materials with clear traceability.
+          </p>
+        </div>
+
+        <div
+          style={{
+            background: "var(--paper-white)",
+            border: "1px solid var(--border-soft)",
+            borderRadius: 24,
+            boxShadow: "var(--shadow-card)",
+            padding: "var(--space-xl)",
+          }}
+        >
+          <StepNav />
+
+          <Routes>
+            <Route path="/" element={<Navigate to="/inputs" replace />} />
+            <Route path="/inputs" element={<InputsPage />} />
+            <Route path="/materials" element={<MaterialsPage />} />
+            <Route path="/results" element={<ResultsPage />} />
+          </Routes>
+        </div>
       </div>
     </div>
   )

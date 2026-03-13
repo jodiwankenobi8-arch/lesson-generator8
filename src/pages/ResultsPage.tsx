@@ -13,17 +13,43 @@ import {
 } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
+const pageStyle: React.CSSProperties = {
+  maxWidth: 980,
+  margin: "0 auto",
+}
+
 const sectionStyle: React.CSSProperties = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 16,
-  padding: 16,
-  background: "#ffffff",
+  border: "1px solid var(--border-soft)",
+  borderRadius: "var(--radius-lg)",
+  padding: "var(--space-lg)",
+  background: "var(--paper-white)",
+  boxShadow: "var(--shadow-card)",
+}
+
+const subCardStyle: React.CSSProperties = {
+  border: "1px solid var(--border-soft)",
+  borderRadius: "var(--radius-md)",
+  padding: 12,
+  background: "#fcfbf8",
 }
 
 const heroGridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-  gap: 12,
+  gap: "var(--space-sm)",
+}
+
+const sectionLabelStyle: React.CSSProperties = {
+  display: "inline-block",
+  padding: "6px 12px",
+  marginBottom: "var(--space-sm)",
+  borderRadius: "999px",
+  background: "rgba(230, 201, 143, 0.28)",
+  color: "var(--warm-brown)",
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.3,
+  textTransform: "uppercase",
 }
 
 export default function ResultsPage() {
@@ -111,14 +137,25 @@ export default function ResultsPage() {
   }
 
   return (
-    <div>
-      <h2 style={{ marginTop: 0 }}>Results</h2>
-      <p style={{ color: "#4b5563", marginBottom: 24 }}>
+    <div style={pageStyle}>
+      <div style={sectionLabelStyle}>Generated Lesson</div>
+      <h2
+        style={{
+          marginTop: 0,
+          marginBottom: "var(--space-sm)",
+          fontFamily: "var(--font-heading)",
+          fontSize: 32,
+          color: "var(--orchard-green)",
+        }}
+      >
+        Results
+      </h2>
+      <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-lg)", fontSize: 16 }}>
         Teacher-facing lesson package first. Supporting planning details are available below.
       </p>
 
       {(isRegenerating || regenerationError) && (
-        <div style={{ marginBottom: 16, display: "grid", gap: 8 }}>
+        <div style={{ marginBottom: "var(--space-md)", display: "grid", gap: 8 }}>
           {isRegenerating && (
             <div style={noticeStyle}>
               Updating the lesson package to reflect the latest teacher decision.
@@ -133,7 +170,7 @@ export default function ResultsPage() {
         </div>
       )}
 
-      <div style={{ display: "grid", gap: 16 }}>
+      <div style={{ display: "grid", gap: "var(--space-md)" }}>
         <PackageSummarySection
           blueprint={blueprint}
           lessonPackage={lessonPackage}
@@ -185,14 +222,14 @@ function PackageSummarySection({
 }) {
   return (
     <div style={sectionStyle}>
-      <h3 style={{ marginTop: 0 }}>Package Summary</h3>
+      <h3 style={sectionHeadingStyle}>Package Summary</h3>
       <div style={heroGridStyle}>
         <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
         <SummaryCard label="Centers" value={lessonPackage.centers.length.toString()} />
         <SummaryCard label="Interventions" value={lessonPackage.interventions.length.toString()} />
       </div>
 
-      <div style={{ marginTop: 16, display: "grid", gap: 8, color: "#4b5563" }}>
+      <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 8, color: "var(--text-secondary)" }}>
         <div><strong>Primary Target:</strong> {blueprint.content.target.primary}</div>
         <div><strong>Secondary Target:</strong> {blueprint.content.target.secondary || "None"}</div>
         <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
@@ -230,11 +267,11 @@ function TraceabilitySection({
 
   return (
     <div style={sectionStyle}>
-      <h3 style={{ marginTop: 0 }}>Why This Lesson Was Generated This Way</h3>
+      <h3 style={sectionHeadingStyle}>Why This Lesson Was Generated This Way</h3>
       <div style={{ display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>Content Authority</div>
-          <div style={{ color: "#4b5563", marginBottom: 8 }}>{contentSourceLabel}</div>
+          <div style={subHeadingStyle}>Content Authority</div>
+          <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{contentSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Curriculum Support:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
             <div><strong>Standards Source:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
@@ -245,8 +282,8 @@ function TraceabilitySection({
         </div>
 
         <div style={subCardStyle}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>Presentation Authority</div>
-          <div style={{ color: "#4b5563", marginBottom: 8 }}>{structureSourceLabel}</div>
+          <div style={subHeadingStyle}>Presentation Authority</div>
+          <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{structureSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Exemplar Support:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
             <div><strong>Lesson Flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
@@ -257,8 +294,8 @@ function TraceabilitySection({
         </div>
 
         <div style={subCardStyle}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>Package Confidence</div>
-          <div style={{ color: "#4b5563", marginBottom: 8 }}>{packageConfidenceLabel}</div>
+          <div style={subHeadingStyle}>Package Confidence</div>
+          <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{packageConfidenceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Source Balance:</strong> {blueprint.sourceReadiness.overall}</div>
             <div><strong>Content Fit:</strong> {lessonPackage.readiness.contentFit}</div>
@@ -269,7 +306,7 @@ function TraceabilitySection({
         </div>
 
         <div style={subCardStyle}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>Warnings and Fallback Notes</div>
+          <div style={subHeadingStyle}>Warnings and Fallback Notes</div>
           {combinedWarnings.length > 0 ? (
             <div style={{ display: "grid", gap: 8 }}>
               {combinedWarnings.map((warning) => (
@@ -279,7 +316,7 @@ function TraceabilitySection({
               ))}
             </div>
           ) : (
-            <div style={{ color: "#4b5563" }}>
+            <div style={{ color: "var(--text-secondary)" }}>
               No major blueprint or package warnings were triggered for this lesson.
             </div>
           )}
@@ -305,11 +342,11 @@ function CoverageDecisionsSection({
 
   return (
     <div style={sectionStyle}>
-      <h3 style={{ marginTop: 0 }}>Coverage and Missing-Area Decisions</h3>
+      <h3 style={sectionHeadingStyle}>Coverage and Missing-Area Decisions</h3>
 
       <div style={{ display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Major Component Coverage</div>
+          <div style={subHeadingStyle}>Major Component Coverage</div>
           {componentCoverage.length > 0 ? (
             <div style={{ display: "grid", gap: 8 }}>
               {componentCoverage.map((entry) => (
@@ -327,14 +364,14 @@ function CoverageDecisionsSection({
               ))}
             </div>
           ) : (
-            <div style={{ color: "#4b5563" }}>
+            <div style={{ color: "var(--text-secondary)" }}>
               No component coverage summary is available for this lesson yet.
             </div>
           )}
         </div>
 
         <div style={subCardStyle}>
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Teacher Decision Prompts</div>
+          <div style={subHeadingStyle}>Teacher Decision Prompts</div>
           {missingAreaPrompts.length > 0 ? (
             <div style={{ display: "grid", gap: 12 }}>
               {missingAreaPrompts.map((prompt, index) => {
@@ -382,7 +419,7 @@ function CoverageDecisionsSection({
               })}
             </div>
           ) : (
-            <div style={{ color: "#4b5563" }}>
+            <div style={{ color: "var(--text-secondary)" }}>
               No major missing-area prompts were triggered for this lesson.
             </div>
           )}
@@ -403,7 +440,7 @@ function SignalSection({
 }) {
   return (
     <div style={sectionStyle}>
-      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <h3 style={sectionHeadingStyle}>{title}</h3>
       <div style={{ display: "grid", gap: 10 }}>
         {signals.map((signal) => (
           <div key={signal.label} style={signalCardStyle(signal.tone)}>
@@ -445,7 +482,7 @@ function BlueprintDetailsSection({ blueprint }: { blueprint: LessonBlueprint }) 
     <>
       <details style={sectionStyle}>
         <summary style={summaryStyle}>Blueprint Content</summary>
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
           <p style={{ marginBottom: 8 }}>
             <strong>Vocabulary:</strong> {blueprint.content.vocabulary.join(", ")}
           </p>
@@ -460,7 +497,7 @@ function BlueprintDetailsSection({ blueprint }: { blueprint: LessonBlueprint }) 
 
       <details style={sectionStyle}>
         <summary style={summaryStyle}>Blueprint Structure</summary>
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
           <p style={{ marginBottom: 8 }}>
             <strong>Timing:</strong> {blueprint.structure.timing.join(" | ")}
           </p>
@@ -503,7 +540,7 @@ function PlanningDetailsSection({
         <div style={{ marginTop: 12, display: "grid", gap: 16 }}>
           {lessonPlanSections.map((section) => (
             <div key={section.section}>
-              <h3 style={{ marginTop: 0 }}>{section.title}</h3>
+              <h3 style={{ marginTop: 0, color: "var(--orchard-green)" }}>{section.title}</h3>
               <IdeaList ideas={section.ideas} />
             </div>
           ))}
@@ -516,7 +553,7 @@ function PlanningDetailsSection({
 function SimpleListSection({ title, items }: { title: string; items: string[] }) {
   return (
     <div style={sectionStyle}>
-      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <h3 style={sectionHeadingStyle}>{title}</h3>
       <ul style={listStyle}>
         {items.map((item) => (
           <li key={item}>{item}</li>
@@ -529,7 +566,7 @@ function SimpleListSection({ title, items }: { title: string; items: string[] })
 function PreSection({ title, content }: { title: string; content: string }) {
   return (
     <div style={sectionStyle}>
-      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <h3 style={sectionHeadingStyle}>{title}</h3>
       <pre style={preStyle}>{content}</pre>
     </div>
   )
@@ -539,14 +576,14 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div
       style={{
-        border: "1px solid #f3f4f6",
-        borderRadius: 12,
+        border: "1px solid #f3efe6",
+        borderRadius: "var(--radius-md)",
         padding: 12,
-        background: "#fafafa",
+        background: "#fcfbf8",
       }}
     >
-      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 700 }}>{value}</div>
+      <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: "var(--orchard-green)" }}>{value}</div>
     </div>
   )
 }
@@ -583,7 +620,7 @@ function IdeaList({ ideas }: { ideas: LessonPlanIdea[] }) {
             <strong>{idea.title}</strong>
           </p>
           <p style={{ margin: "0 0 6px 0" }}>{idea.description}</p>
-          <p style={{ margin: 0, color: "#4b5563" }}>
+          <p style={{ margin: 0, color: "var(--text-secondary)" }}>
             <strong>Why:</strong> {idea.rationale}
           </p>
         </div>
@@ -610,14 +647,15 @@ function DecisionButton({
       disabled={disabled}
       style={{
         padding: "8px 10px",
-        borderRadius: 10,
-        border: active ? "1px solid #111827" : "1px solid #d1d5db",
-        background: active ? "#111827" : "#ffffff",
-        color: active ? "#ffffff" : "#111827",
+        borderRadius: "var(--radius-sm)",
+        border: active ? "1px solid var(--orchard-green)" : "1px solid var(--border-soft)",
+        background: active ? "var(--orchard-green)" : "var(--paper-white)",
+        color: active ? "var(--paper-white)" : "var(--text-primary)",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         fontSize: 12,
-        fontWeight: 600,
+        fontWeight: 700,
+        boxShadow: active ? "var(--shadow-soft)" : "none",
       }}
     >
       {label}
@@ -639,9 +677,20 @@ function BlockedResultsState({
   linkLabel: string
 }) {
   return (
-    <div>
-      <h2 style={{ marginTop: 0 }}>{title}</h2>
-      <p style={{ color: "#4b5563", marginBottom: 16 }}>{message}</p>
+    <div style={pageStyle}>
+      <div style={sectionLabelStyle}>Generated Lesson</div>
+      <h2
+        style={{
+          marginTop: 0,
+          marginBottom: "var(--space-sm)",
+          fontFamily: "var(--font-heading)",
+          fontSize: 32,
+          color: "var(--orchard-green)",
+        }}
+      >
+        {title}
+      </h2>
+      <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-md)" }}>{message}</p>
       <div style={noticeStyle}>{details}</div>
       <div style={actionsStyle}>
         <Link to={linkTo} style={linkStyle}>
@@ -705,13 +754,13 @@ function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties
       ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
       : tone === "warn"
         ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
-        : { background: "#f9fafb", border: "#e5e7eb", color: "#4b5563" }
+        : { background: "#fcfbf8", border: "var(--border-soft)", color: "var(--text-secondary)" }
 
   return {
     border: `1px solid ${palette.border}`,
     background: palette.background,
     color: palette.color,
-    borderRadius: 12,
+    borderRadius: "var(--radius-md)",
     padding: 12,
   }
 }
@@ -720,21 +769,21 @@ const warningStyle: React.CSSProperties = {
   border: "1px solid #fed7aa",
   background: "#fff7ed",
   color: "#9a3412",
-  borderRadius: 12,
+  borderRadius: "var(--radius-md)",
   padding: 12,
   fontSize: 14,
 }
 
 const noticeStyle: React.CSSProperties = {
   padding: "12px 14px",
-  borderRadius: 12,
-  border: "1px solid #e5e7eb",
-  background: "#f9fafb",
-  color: "#4b5563",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--border-soft)",
+  background: "#fcfbf8",
+  color: "var(--text-secondary)",
 }
 
 const actionsStyle: React.CSSProperties = {
-  marginTop: 16,
+  marginTop: "var(--space-md)",
   display: "flex",
   gap: 12,
 }
@@ -742,31 +791,42 @@ const actionsStyle: React.CSSProperties = {
 const listStyle: React.CSSProperties = {
   margin: 0,
   paddingLeft: 20,
+  color: "var(--text-secondary)",
 }
 
 const preStyle: React.CSSProperties = {
   margin: 0,
   whiteSpace: "pre-wrap",
   fontFamily: "inherit",
-}
-
-const subCardStyle: React.CSSProperties = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 12,
-  padding: 12,
-  background: "#f9fafb",
+  color: "var(--text-secondary)",
 }
 
 const linkStyle: React.CSSProperties = {
   display: "inline-block",
   padding: "10px 14px",
-  borderRadius: 12,
+  borderRadius: "var(--radius-md)",
   textDecoration: "none",
-  border: "1px solid #d1d5db",
-  color: "#111827",
+  border: "1px solid var(--moss-green)",
+  color: "var(--orchard-green)",
+  background: "#fcfbf8",
+  fontWeight: 700,
+  boxShadow: "var(--shadow-soft)",
 }
 
 const summaryStyle: React.CSSProperties = {
   cursor: "pointer",
   fontWeight: 700,
+  color: "var(--orchard-green)",
+}
+
+const sectionHeadingStyle: React.CSSProperties = {
+  marginTop: 0,
+  marginBottom: "var(--space-md)",
+  color: "var(--orchard-green)",
+}
+
+const subHeadingStyle: React.CSSProperties = {
+  fontWeight: 700,
+  marginBottom: 6,
+  color: "var(--orchard-green)",
 }

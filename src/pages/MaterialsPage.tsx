@@ -5,47 +5,91 @@ import { processMaterial } from "../engine/workflow/processMaterial"
 import { MaterialFile, MaterialRole, MaterialStatus } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
-const cardStyle: React.CSSProperties = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 16,
-  padding: 16,
-  background: "#ffffff",
+const pageStyle: React.CSSProperties = {
+  maxWidth: 980,
+  margin: "0 auto",
 }
+
+const introStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  marginBottom: "var(--space-lg)",
+  fontSize: 16,
+  maxWidth: 760,
+}
+
+const sectionLabelStyle: React.CSSProperties = {
+  display: "inline-block",
+  padding: "6px 12px",
+  marginBottom: "var(--space-sm)",
+  borderRadius: "999px",
+  background: "rgba(230, 201, 143, 0.28)",
+  color: "var(--warm-brown)",
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.3,
+  textTransform: "uppercase",
+}
+
+const cardStyle: React.CSSProperties = {
+  border: "1px solid var(--border-soft)",
+  borderRadius: "var(--radius-lg)",
+  padding: "var(--space-lg)",
+  background: "var(--paper-white)",
+  boxShadow: "var(--shadow-card)",
+}
+
+const uploadCardStyle = (role: MaterialRole): React.CSSProperties => ({
+  ...cardStyle,
+  background:
+    role === "curriculum"
+      ? "linear-gradient(135deg, #fffdfa, #f8fbff)"
+      : "linear-gradient(135deg, #fffdfa, #fbf8ff)",
+})
 
 const buttonStyle: React.CSSProperties = {
   padding: "12px 14px",
-  borderRadius: 12,
-  border: "1px solid #d1d5db",
-  background: "#f9fafb",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--moss-green)",
+  background: "#fcfbf8",
+  color: "var(--orchard-green)",
   cursor: "pointer",
-  fontWeight: 600,
+  fontWeight: 700,
+  boxShadow: "var(--shadow-soft)",
 }
 
 const primaryButtonStyle = (disabled: boolean): React.CSSProperties => ({
   padding: "12px 16px",
-  borderRadius: 12,
-  border: "1px solid #111827",
-  background: disabled ? "#9ca3af" : "#111827",
-  color: "#ffffff",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--orchard-green)",
+  background: disabled ? "#9ca3af" : "var(--orchard-green)",
+  color: "var(--paper-white)",
   cursor: disabled ? "not-allowed" : "pointer",
   fontWeight: 700,
   opacity: disabled ? 0.7 : 1,
+  boxShadow: disabled ? "none" : "var(--shadow-soft)",
 })
 
 const rowStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "flex-start",
-  padding: "12px 0",
-  borderTop: "1px solid #f3f4f6",
-  gap: 16,
+  padding: "14px 0",
+  borderTop: "1px solid #f1ede5",
+  gap: "var(--space-md)",
 }
 
 const summaryGridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-  gap: 12,
-  marginBottom: 20,
+  gap: "var(--space-sm)",
+  marginBottom: "var(--space-lg)",
+}
+
+const uploadGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "var(--space-md)",
+  marginBottom: "var(--space-lg)",
 }
 
 const hiddenInputStyle: React.CSSProperties = {
@@ -124,11 +168,22 @@ export default function MaterialsPage() {
   }
 
   return (
-    <div>
-      <h2 style={{ marginTop: 0 }}>Materials</h2>
-      <p style={{ color: "#4b5563", marginBottom: 24 }}>
-        Upload curriculum and exemplar files. Materials appear immediately and stay
-        visible while they move through upload, extraction, analysis, and ready states.
+    <div style={pageStyle}>
+      <div style={sectionLabelStyle}>Source Materials</div>
+      <h2
+        style={{
+          marginTop: 0,
+          marginBottom: "var(--space-sm)",
+          fontFamily: "var(--font-heading)",
+          fontSize: 32,
+          color: "var(--orchard-green)",
+        }}
+      >
+        Materials
+      </h2>
+      <p style={introStyle}>
+        Upload curriculum and exemplar files. Materials appear immediately and stay visible
+        while they move through upload, extraction, analysis, and ready states.
       </p>
 
       <input
@@ -147,19 +202,14 @@ export default function MaterialsPage() {
         style={hiddenInputStyle}
       />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 16,
-          marginBottom: 24,
-        }}
-      >
-        <div style={cardStyle}>
-          <h3 style={{ marginTop: 0 }}>Curriculum</h3>
-          <p style={{ color: "#6b7280" }}>
-            Teaching content authority: standards, word lists, texts, examples,
-            and practice activities.
+      <div style={uploadGridStyle}>
+        <div style={uploadCardStyle("curriculum")}>
+          <div style={miniTagStyle("curriculum")}>Content Authority</div>
+          <h3 style={{ marginTop: 0, marginBottom: "var(--space-xs)", color: "var(--orchard-green)" }}>
+            Curriculum
+          </h3>
+          <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
+            Teaching content authority: standards, word lists, texts, examples, and practice activities.
           </p>
           <button
             type="button"
@@ -170,9 +220,12 @@ export default function MaterialsPage() {
           </button>
         </div>
 
-        <div style={cardStyle}>
-          <h3 style={{ marginTop: 0 }}>Exemplar</h3>
-          <p style={{ color: "#6b7280" }}>
+        <div style={uploadCardStyle("exemplar")}>
+          <div style={miniTagStyle("exemplar")}>Presentation Authority</div>
+          <h3 style={{ marginTop: 0, marginBottom: "var(--space-xs)", color: "var(--orchard-green)" }}>
+            Exemplar
+          </h3>
+          <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
             Presentation authority: slide order, pacing, prompts, layout, and timing.
           </p>
           <button
@@ -185,8 +238,10 @@ export default function MaterialsPage() {
         </div>
       </div>
 
-      <div style={{ ...cardStyle, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0, marginBottom: 16 }}>Support Summary</h3>
+      <div style={{ ...cardStyle, marginBottom: "var(--space-md)" }}>
+        <h3 style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--orchard-green)" }}>
+          Support Summary
+        </h3>
 
         <div style={summaryGridStyle}>
           <SummaryCard label="Ready Curriculum" value={supportSummary.readyCurriculum} />
@@ -203,7 +258,7 @@ export default function MaterialsPage() {
         </div>
 
         {supportSummary.guidance.length > 0 && (
-          <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+          <div style={{ marginTop: "var(--space-sm)", display: "grid", gap: 8 }}>
             {supportSummary.guidance.map((item) => (
               <div key={item} style={guidanceStyle}>
                 {item}
@@ -214,7 +269,9 @@ export default function MaterialsPage() {
       </div>
 
       <div style={cardStyle}>
-        <h3 style={{ marginTop: 0, marginBottom: 16 }}>Status Overview</h3>
+        <h3 style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--orchard-green)" }}>
+          Status Overview
+        </h3>
 
         <div style={summaryGridStyle}>
           <SummaryCard label="Total" value={counts.total} />
@@ -238,7 +295,7 @@ export default function MaterialsPage() {
               : "Add curriculum or exemplar files to begin analysis."}
         </div>
 
-        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ marginTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: 10 }}>
           <button
             type="button"
             onClick={handleGenerateLesson}
@@ -248,7 +305,7 @@ export default function MaterialsPage() {
             {isGenerating ? "Generating Lesson..." : "Generate Lesson"}
           </button>
 
-          <div style={{ fontSize: 13, color: "#6b7280" }}>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
             {!hasRequiredInputs
               ? "Complete all lesson inputs before generating."
               : hasProcessingMaterials
@@ -264,17 +321,19 @@ export default function MaterialsPage() {
         </div>
       </div>
 
-      <div style={{ ...cardStyle, marginTop: 16 }}>
-        <h3 style={{ marginTop: 0, marginBottom: 16 }}>Processing Status</h3>
+      <div style={{ ...cardStyle, marginTop: "var(--space-md)" }}>
+        <h3 style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--orchard-green)" }}>
+          Processing Status
+        </h3>
 
         {materials.length === 0 ? (
-          <p style={{ color: "#6b7280", marginBottom: 0 }}>No materials added yet.</p>
+          <p style={{ color: "var(--text-secondary)", marginBottom: 0 }}>No materials added yet.</p>
         ) : (
           <div style={{ display: "grid", gap: 12 }}>
             {materials.map((material) => (
               <div key={material.id} style={rowStyle}>
                 <div>
-                  <div style={{ fontWeight: 600 }}>{material.name}</div>
+                  <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{material.name}</div>
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
                     <span style={roleBadgeStyle(material.role)}>{material.role}</span>
@@ -284,7 +343,7 @@ export default function MaterialsPage() {
                   </div>
 
                   {material.analysis && (
-                    <div style={{ marginTop: 8, fontSize: 13, color: "#4b5563" }}>
+                    <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
                       {material.analysis.summary}
                     </div>
                   )}
@@ -305,7 +364,7 @@ export default function MaterialsPage() {
                     gap: 10,
                   }}
                 >
-                  <div style={{ textAlign: "right", color: "#6b7280", fontSize: 13 }}>
+                  <div style={{ textAlign: "right", color: "var(--text-secondary)", fontSize: 13 }}>
                     {getStatusExplanation(material.status)}
                   </div>
 
@@ -428,14 +487,14 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
   return (
     <div
       style={{
-        border: "1px solid #f3f4f6",
-        borderRadius: 12,
+        border: "1px solid #f3efe6",
+        borderRadius: "var(--radius-md)",
         padding: 12,
-        background: "#fafafa",
+        background: "#fcfbf8",
       }}
     >
-      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 700 }}>{value}</div>
+      <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: "var(--orchard-green)" }}>{value}</div>
     </div>
   )
 }
@@ -457,13 +516,26 @@ function getStatusExplanation(status: MaterialStatus): string {
   return "Needs attention"
 }
 
+function miniTagStyle(role: MaterialRole): React.CSSProperties {
+  return {
+    display: "inline-block",
+    padding: "6px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    marginBottom: "var(--space-sm)",
+    background: role === "curriculum" ? "#eff6ff" : "#f5f3ff",
+    color: role === "curriculum" ? "#1d4ed8" : "#6d28d9",
+  }
+}
+
 function roleBadgeStyle(role: string): React.CSSProperties {
   return {
     display: "inline-block",
     padding: "6px 10px",
     borderRadius: 999,
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 700,
     background: role === "curriculum" ? "#eff6ff" : "#f5f3ff",
     color: role === "curriculum" ? "#1d4ed8" : "#6d28d9",
     textTransform: "capitalize",
@@ -483,7 +555,7 @@ function statusBadgeStyle(status: MaterialStatus): React.CSSProperties {
     padding: "6px 10px",
     borderRadius: 999,
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 700,
     background: palette.background,
     color: palette.color,
   }
@@ -492,12 +564,13 @@ function statusBadgeStyle(status: MaterialStatus): React.CSSProperties {
 function secondaryButtonStyle(): React.CSSProperties {
   return {
     padding: "8px 10px",
-    borderRadius: 10,
-    border: "1px solid #e5e7eb",
-    background: "#ffffff",
+    borderRadius: "var(--radius-sm)",
+    border: "1px solid var(--border-soft)",
+    background: "var(--paper-white)",
     cursor: "pointer",
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 700,
+    color: "var(--text-primary)",
   }
 }
 
@@ -507,11 +580,11 @@ function noticeStyle(mode: "idle" | "processing" | "ready"): React.CSSProperties
       ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
       : mode === "processing"
         ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
-        : { background: "#f9fafb", border: "#e5e7eb", color: "#4b5563" }
+        : { background: "#fcfbf8", border: "var(--border-soft)", color: "var(--text-secondary)" }
 
   return {
     padding: "12px 14px",
-    borderRadius: 12,
+    borderRadius: "var(--radius-md)",
     border: `1px solid ${palette.border}`,
     background: palette.background,
     color: palette.color,
@@ -524,11 +597,11 @@ function supportNoticeStyle(mode: MaterialSupportSummary["overall"]): React.CSSP
       ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
       : mode === "limited"
         ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
-        : { background: "#f9fafb", border: "#e5e7eb", color: "#4b5563" }
+        : { background: "#fcfbf8", border: "var(--border-soft)", color: "var(--text-secondary)" }
 
   return {
     padding: "12px 14px",
-    borderRadius: 12,
+    borderRadius: "var(--radius-md)",
     border: `1px solid ${palette.border}`,
     background: palette.background,
     color: palette.color,
@@ -536,10 +609,10 @@ function supportNoticeStyle(mode: MaterialSupportSummary["overall"]): React.CSSP
 }
 
 const guidanceStyle: React.CSSProperties = {
-  border: "1px solid #e5e7eb",
-  background: "#f9fafb",
-  color: "#4b5563",
-  borderRadius: 12,
+  border: "1px solid var(--border-soft)",
+  background: "#fcfbf8",
+  color: "var(--text-secondary)",
+  borderRadius: "var(--radius-md)",
   padding: 12,
   fontSize: 14,
 }
