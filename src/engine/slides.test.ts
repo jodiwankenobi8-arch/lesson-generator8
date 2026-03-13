@@ -101,7 +101,7 @@ function makeSlidePlan(mode: LessonMode = "single") {
   ]
 
   const result = runLessonPipeline(inputs, materials, mode)
-  const plan = buildSlidePlan(result.blueprint, result.spec)
+  const plan = buildSlidePlan(result.blueprint, result.lessonSpec)
 
   return { result, plan }
 }
