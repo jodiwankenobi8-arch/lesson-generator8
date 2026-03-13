@@ -617,3 +617,4 @@ function computeExtractionSignals(lines: string[]) {
 function clampConfidence(value: number): number {
   return Math.max(0.05, Math.min(0.98, Number(value.toFixed(2))))
 }
+

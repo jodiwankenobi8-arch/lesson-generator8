@@ -1,3 +1,17 @@
+
+function getSignalStrength(material: MaterialFile): number {
+  const tags = material.analysis?.tags ?? []
+  const tag = tags.find(t => t.startsWith("signal-strength:"))
+  if (!tag) return 0
+  const value = parseInt(tag.split(":")[1], 10)
+  return Number.isFinite(value) ? value : 0
+}
+
+function selectStrongestMaterials(materials: MaterialFile[]): MaterialFile[] {
+  return [...materials].sort((a: MaterialFile, b: MaterialFile) => {
+    return getSignalStrength(b) - getSignalStrength(a)
+  })
+}
 import { detectLessonTargets, resolveLessonMode } from "./detectLessonTargets"
 import { resolveBlueprintContent } from "./resolveBlueprintContent"
 import { resolveBlueprintStructure } from "./resolveBlueprintStructure"
@@ -17,12 +31,16 @@ export function buildBlueprint(
   materials: MaterialFile[],
   selectedMode: LessonMode
 ): LessonBlueprint {
-  const curriculumMaterials = materials.filter(
-    (material) => material.role === "curriculum" && material.analysis?.curriculum
+  const curriculumMaterials = selectStrongestMaterials(
+    materials.filter(
+      (material) => material.role === "curriculum" && material.analysis?.curriculum
+    )
   )
 
-  const exemplarMaterials = materials.filter(
-    (material) => material.role === "exemplar" && material.analysis?.exemplar
+  const exemplarMaterials = selectStrongestMaterials(
+    materials.filter(
+      (material) => material.role === "exemplar" && material.analysis?.exemplar
+    )
   )
 
   const curriculumAnalyses = curriculumMaterials
@@ -187,3 +205,5 @@ function buildResolvedTarget(
     recommendedMode: resolvedMode,
   }
 }
+
+

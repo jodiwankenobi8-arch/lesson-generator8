@@ -43,12 +43,16 @@ function buildCurriculumMaterialAnalysis(
   name: string,
   lines: string[]
 ): MaterialAnalysis {
+
+  const curriculum = buildCurriculumAnalysis(lines)
+  const strength = computeCurriculumSignalStrength(curriculum)
+
   return {
     summary: buildCurriculumSummary(name, lines),
     extractedText: lines,
-    tags: deriveCurriculumTags(lines),
+    tags: [...deriveCurriculumTags(lines), "signal-strength:" + strength],
     sourceRole: "curriculum",
-    curriculum: buildCurriculumAnalysis(lines),
+    curriculum
   }
 }
 
@@ -56,12 +60,16 @@ function buildExemplarMaterialAnalysis(
   name: string,
   lines: string[]
 ): MaterialAnalysis {
+
+  const exemplar = buildExemplarAnalysis(lines)
+  const strength = computeExemplarSignalStrength(exemplar)
+
   return {
     summary: buildExemplarSummary(name, lines),
     extractedText: lines,
-    tags: deriveExemplarTags(lines),
+    tags: [...deriveExemplarTags(lines), "signal-strength:" + strength],
     sourceRole: "exemplar",
-    exemplar: buildExemplarAnalysis(lines),
+    exemplar
   }
 }
 
@@ -1034,3 +1042,38 @@ function startsWithAny(text: string, prefixes: string[]): boolean {
 function unique(items: string[]): string[] {
   return Array.from(new Set(items))
 }
+
+function computeCurriculumSignalStrength(c: CurriculumAnalysis): number {
+  let score = 0
+
+  score += c.standards.length * 4
+  score += c.instructionalTargets.length * 3
+  score += c.vocabulary.length * 2
+  score += c.wordLists.length * 2
+  score += c.practiceTasks.length * 3
+  score += c.examples.length * 2
+  score += c.texts.length * 2
+
+  return score
+}
+
+function computeExemplarSignalStrength(e: ExemplarAnalysis): number {
+  let score = 0
+
+  score += e.slideFlow.length * 3
+  score += e.pacing.length * 2
+  score += e.teacherMoves.length * 2
+  score += e.layoutCues.length * 2
+  score += e.reusableStructure.length * 3
+
+  if (e.detectedFeatures) {
+    score += e.detectedFeatures.items.length * 4
+  }
+
+  return score
+}
+
+
+
+
+

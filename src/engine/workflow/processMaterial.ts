@@ -1,5 +1,5 @@
 import { extractTextFromFile } from "../materials/extractTextFromFile"
-import { analyzeMaterial } from "../materials/analyzeMaterial"
+import { runMaterialAnalysis } from "../analysis/runMaterialAnalysis"
 import { useLessonStore } from "../../state/useLessonStore"
 import { MaterialAnalysis } from "../types"
 
@@ -22,12 +22,12 @@ export async function processMaterial(id: string) {
 
     store.beginMaterialAnalysis(id)
 
-    const analysisResult = await analyzeMaterial({
-      materialId: material.id,
-      name: material.name,
-      extractedText: extraction.extractedText,
-      role: material.role,
-    })
+    const analysisResult = await runMaterialAnalysis(
+      material.id,
+      material.name,
+      material.role,
+      extraction.extractedText
+    )
 
     const analysis: MaterialAnalysis = {
       ...analysisResult.analysis,
@@ -42,3 +42,5 @@ export async function processMaterial(id: string) {
     store.setMaterialError(id, message)
   }
 }
+
+
