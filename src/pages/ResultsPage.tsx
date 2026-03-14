@@ -1,5 +1,7 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
+import { generateLesson } from "../engine/generateLesson"
+import { getAxisDecision, getReliabilityScore, hasRelevantRoleAnalysis, sortByAxisPriority } from "../engine/blueprint/materialSelection"
 import {
   ExportArtifact,
   LessonBlueprint,
@@ -8,18 +10,11 @@ import {
   LessonPlanIdea,
   LessonPlanSectionIdeas,
   LessonPlanningIdeas,
-  MaterialFile,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
   SlidePlan,
+  MaterialFile,
 } from "../engine/types"
-import {
-  getAxisDecision,
-  getReliabilityScore,
-  hasRelevantRoleAnalysis,
-  sortByAxisPriority,
-} from "../engine/blueprint/materialSelection"
-import { generateLesson } from "../engine/generateLesson"
 import { useLessonStore } from "../state/useLessonStore"
 
 const pageStyle: React.CSSProperties = {
@@ -1247,6 +1242,7 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
 
 
 
