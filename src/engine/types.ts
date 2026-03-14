@@ -414,29 +414,57 @@ export type LessonPackage = {
   readiness: LessonPackageReadiness
 }
 
-export type LessonPipelineTrace = {
-  selectedMode: LessonMode
-  materialCounts: {
-    total: number
-    curriculum: number
-    exemplar: number
-  }
-  target: {
-    primary: string
-    secondary: string | null
-    isMixedTarget: boolean
-    recommendedMode: LessonMode
-  }
-  blueprintWarnings: string[]
-  missingAreaPromptComponents: PlanningComponentKey[]
-  package: {
-    density: LessonPackageReadiness["density"]
-    lessonShape: LessonPackageReadiness["lessonShape"]
-    contentFit: LessonPackageReadiness["contentFit"]
-    warningCount: number
-  }
-}
-
+export type LessonPipelineTrace = {
+
+  selectedMode: LessonMode
+
+  materialCounts: {
+
+    total: number
+
+    curriculum: number
+
+    exemplar: number
+
+  }
+
+  selectedSources: {
+
+    curriculumMaterialIds: string[]
+
+    exemplarMaterialIds: string[]
+
+  }
+
+  target: {
+
+    primary: string
+
+    secondary: string | null
+
+    isMixedTarget: boolean
+
+    recommendedMode: LessonMode
+
+  }
+
+  blueprintWarnings: string[]
+
+  missingAreaPromptComponents: PlanningComponentKey[]
+
+  package: {
+
+    density: LessonPackageReadiness["density"]
+
+    lessonShape: LessonPackageReadiness["lessonShape"]
+
+    contentFit: LessonPackageReadiness["contentFit"]
+
+    warningCount: number
+
+  }
+
+}
 export type LessonGenerationResult = {
   blueprint: LessonBlueprint
   planningIdeas: LessonPlanningIdeas
@@ -444,5 +472,7 @@ export type LessonGenerationResult = {
   lessonPackage: LessonPackage
   trace: LessonPipelineTrace
 }
+
+
 
 

@@ -29,11 +29,14 @@ export function runLessonPipeline(
   )
 
   const trace = {
-    selectedMode,
-    materialCounts: {
+    selectedMode,    materialCounts: {
       total: materials.length,
       curriculum: materials.filter((material) => material.role === "curriculum").length,
       exemplar: materials.filter((material) => material.role === "exemplar").length,
+    },
+    selectedSources: {
+      curriculumMaterialIds: blueprint.sourceReadiness.selectedCurriculumMaterialIds,
+      exemplarMaterialIds: blueprint.sourceReadiness.selectedExemplarMaterialIds,
     },
     target: {
       primary: blueprint.content.target.primary,
@@ -60,3 +63,4 @@ export function runLessonPipeline(
     trace,
   }
 }
+

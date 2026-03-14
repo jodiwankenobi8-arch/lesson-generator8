@@ -576,8 +576,8 @@ function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
       <h3 style={sectionHeadingStyle}>Pipeline Trace</h3>
       <div style={{ display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Generation Setup</div>
-          <div style={{ display: "grid", gap: 6, color: "var(--text-secondary)" }}>
+          <div style={subHeadingStyle}>Mode and Material Counts</div>
+          <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Selected Mode:</strong> {trace.selectedMode}</div>
             <div><strong>Total Materials:</strong> {trace.materialCounts.total}</div>
             <div><strong>Curriculum Materials:</strong> {trace.materialCounts.curriculum}</div>
@@ -586,31 +586,66 @@ function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Resolved Target</div>
-          <div style={{ display: "grid", gap: 6, color: "var(--text-secondary)" }}>
-            <div><strong>Primary:</strong> {trace.target.primary}</div>
-            <div><strong>Secondary:</strong> {trace.target.secondary || "None"}</div>
+          <div style={subHeadingStyle}>Selected Source IDs</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <div>
+              <strong>Curriculum:</strong>{" "}
+              {joinOrFallback(trace.selectedSources.curriculumMaterialIds, "None selected")}
+            </div>
+            <div>
+              <strong>Exemplar:</strong>{" "}
+              {joinOrFallback(trace.selectedSources.exemplarMaterialIds, "None selected")}
+            </div>
+          </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Target Resolution</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Primary Target:</strong> {trace.target.primary}</div>
+            <div><strong>Secondary Target:</strong> {trace.target.secondary ?? "None"}</div>
             <div><strong>Mixed Target:</strong> {trace.target.isMixedTarget ? "Yes" : "No"}</div>
             <div><strong>Recommended Mode:</strong> {trace.target.recommendedMode}</div>
           </div>
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Planning and Package Signals</div>
-          <div style={{ display: "grid", gap: 6, color: "var(--text-secondary)" }}>
-            <div><strong>Missing-Area Prompt Components:</strong> {trace.missingAreaPromptComponents.length > 0 ? trace.missingAreaPromptComponents.join(", ") : "None"}</div>
-            <div><strong>Blueprint Warning Count:</strong> {trace.blueprintWarnings.length}</div>
-            <div><strong>Package Density:</strong> {trace.package.density}</div>
+          <div style={subHeadingStyle}>Package Summary</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Density:</strong> {trace.package.density}</div>
             <div><strong>Lesson Shape:</strong> {trace.package.lessonShape}</div>
             <div><strong>Content Fit:</strong> {trace.package.contentFit}</div>
             <div><strong>Package Warning Count:</strong> {trace.package.warningCount}</div>
           </div>
         </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Warnings and Missing-Area Prompts</div>
+          <div style={{ display: "grid", gap: 6, marginBottom: 8 }}>
+            <div>
+              <strong>Missing-Area Prompt Components:</strong>{" "}
+              {joinOrFallback(trace.missingAreaPromptComponents, "None")}
+            </div>
+          </div>
+
+          {trace.blueprintWarnings.length > 0 ? (
+            <div style={{ display: "grid", gap: 8 }}>
+              {trace.blueprintWarnings.map((warning) => (
+                <div key={warning} style={warningStyle}>
+                  {warning}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ color: "var(--text-secondary)" }}>
+              No blueprint warnings were recorded in the pipeline trace.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
 }
-
 function CoverageDecisionsSection({
   planningIdeas,
   decisions,
@@ -1149,6 +1184,7 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
 
 
 

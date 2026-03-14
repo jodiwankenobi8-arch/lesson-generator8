@@ -103,6 +103,8 @@ describe("lesson pipeline traceability", () => {
     expect(result.trace.materialCounts.total).toBe(2)
     expect(result.trace.materialCounts.curriculum).toBe(1)
     expect(result.trace.materialCounts.exemplar).toBe(1)
+    expect(result.trace.selectedSources.curriculumMaterialIds).toEqual(["curriculum-1"])
+    expect(result.trace.selectedSources.exemplarMaterialIds).toEqual(["exemplar-1"])
     expect(result.trace.target.primary.toLowerCase()).toContain("phonics")
     expect(Array.isArray(result.trace.blueprintWarnings)).toBe(true)
     expect(Array.isArray(result.trace.missingAreaPromptComponents)).toBe(true)
