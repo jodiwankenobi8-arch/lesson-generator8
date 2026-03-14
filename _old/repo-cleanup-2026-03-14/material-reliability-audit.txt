@@ -1,0 +1,1817 @@
+
+================================================================================
+MATERIAL RELIABILITY AUDIT
+================================================================================
+
+================================================================================
+PWD
+================================================================================
+
+Path                                          
+----                                          
+C:\Users\jodiw\Desktop\lesson-generator8-local
+
+================================================================================
+Git branch / status
+================================================================================
+## main...origin/main
+ M README.md
+ M package.json
+ M src/engine/analysis-and-blueprint.test.ts
+ M src/engine/analysis/runMaterialAnalysis.ts
+ M src/engine/blueprint/buildBlueprint.ts
+ M src/engine/materials/analyzeMaterial.ts
+ M src/engine/types.ts
+?? material-reliability-audit.txt
+?? src/engine/material-reliability.test.ts
+
+================================================================================
+Top-level files
+================================================================================
+
+Mode   Length LastWriteTime        Name                             
+----   ------ -------------        ----                             
+darh--        3/14/2026 8:39:56 AM .git                             
+d-----        3/14/2026 8:32:11 AM dist                             
+dar---        3/12/2026 7:38:41 AM docs                             
+d-----        3/12/2026 9:13:08 PM node_modules                     
+dar---        3/12/2026 7:56:46 PM src                              
+-a---- 57     3/11/2026 3:39:24 PM .gitignore                       
+-a---- 316    3/11/2026 3:39:24 PM index.html                       
+-a---- 1218   3/14/2026 8:39:56 AM material-reliability-audit.txt   
+-a---- 252362 3/12/2026 9:09:38 PM package-lock.json                
+-a---- 1495   3/14/2026 6:56:15 AM package.json                     
+-a---- 6517   3/11/2026 2:11:13 PM PROJECT_PLAN_UPDATED_2026-03-1...
+-a---- 2667   3/14/2026 7:58:34 AM README.md                        
+-a---- 426    3/11/2026 3:39:24 PM tsconfig.json                    
+-a---- 1666   3/11/2026 2:13:36 PM types.current.txt                
+-a---- 5821   3/11/2026 2:22:20 PM useLessonStore.current.txt       
+-a---- 139    3/11/2026 3:39:24 PM vite.config.ts
+
+================================================================================
+package.json scripts and name
+================================================================================
+
+
+name        : lesson-generator8
+typecheck   : tsc --noEmit
+build       : tsc && vite build
+test        : vitest run
+test_engine : vitest run src/engine
+check       :
+
+================================================================================
+README headings mentioning flow / hardening / exports
+================================================================================
+README.md:5: **Inputs -> Materials -> Results**
+README.md:7: The app takes teacher lesson inputs plus uploaded curriculum and exemplar materials, analyzes them, builds a blueprint, and generates a classroom-ready lesson package.
+README.md:12: It is now in the **hardening phase**.
+README.md:15: - material trust and reliability
+README.md:19: - real export generation
+README.md:26: - Detect what uploaded materials already cover
+README.md:51: - results rendering and pipeline trace concepts
+README.md:52: - typed export artifact contracts
+README.md:54: The current major hardening track is the **Material Reliability layer**, followed by stronger source selection, coverage-first behavior, teacher-choice flows, exemplar transformation UX, real exports, and later OCR/performance hardening.
+
+================================================================================
+Expected seam files present?
+================================================================================
+
+Path                                        Exists
+----                                        ------
+src\engine\analysis\runMaterialAnalysis.ts    True
+src\engine\materials\analyzeMaterial.ts       True
+src\engine\materials\extractTextFromFile.ts   True
+src\engine\blueprint\buildBlueprint.ts        True
+
+================================================================================
+Reliability contract / scoring / decisions
+================================================================================
+--- PATTERN: usableForContent
+src\engine\blueprint\buildBlueprint.ts:29: function isUsableForContent(material: MaterialFile): boolean {
+src\engine\blueprint\buildBlueprint.ts:49: return reliability.usableForContent
+src\engine\blueprint\buildBlueprint.ts:141: materials.filter((material) => isUsableForContent(material))
+src\engine\materials\analyzeMaterial.ts:309: const usableForContent =
+src\engine\materials\analyzeMaterial.ts:335: usableForContent,
+src\engine\materials\analyzeMaterial.ts:339: contentDecision: resolveReliabilityDecision(score, usableForContent),
+src\engine\material-reliability.test.ts:43: expect(result.analysis.reliability?.usableForContent).toBe(true)
+src\engine\material-reliability.test.ts:66: expect(result.analysis.reliability?.usableForContent).toBe(true)
+src\engine\material-reliability.test.ts:91: expect(result.analysis.reliability?.usableForContent).toBe(false)
+src\engine\material-reliability.test.ts:119: expect(result.analysis.reliability?.usableForContent).toBe(false)
+src\engine\types.ts:271: usableForContent: boolean
+
+--- PATTERN: usableForStructure
+src\engine\blueprint\buildBlueprint.ts:55: function isUsableForStructure(material: MaterialFile): boolean {
+src\engine\blueprint\buildBlueprint.ts:75: return reliability.usableForStructure
+src\engine\blueprint\buildBlueprint.ts:149: materials.filter((material) => isUsableForStructure(material))
+src\engine\materials\analyzeMaterial.ts:319: const usableForStructure =
+src\engine\materials\analyzeMaterial.ts:337: usableForStructure,
+src\engine\materials\analyzeMaterial.ts:341: structureDecision: resolveReliabilityDecision(score, usableForStructure),
+src\engine\material-reliability.test.ts:45: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\material-reliability.test.ts:68: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\material-reliability.test.ts:117: expect(result.analysis.reliability?.usableForStructure).toBe(true)
+src\engine\material-reliability.test.ts:147: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\types.ts:273: usableForStructure: boolean
+
+--- PATTERN: contentDecision
+src\engine\materials\analyzeMaterial.ts:339: contentDecision: resolveReliabilityDecision(score, usableForContent),
+src\engine\material-reliability.test.ts:44: expect(result.analysis.reliability?.contentDecision).toBe("allow")
+src\engine\material-reliability.test.ts:67: expect(result.analysis.reliability?.contentDecision).toBe("caution")
+src\engine\material-reliability.test.ts:92: expect(result.analysis.reliability?.contentDecision).toBe("block")
+src\engine\material-reliability.test.ts:120: expect(result.analysis.reliability?.contentDecision).toBe("block")
+src\engine\types.ts:275: contentDecision: MaterialUseDecision
+
+--- PATTERN: structureDecision
+src\engine\materials\analyzeMaterial.ts:341: structureDecision: resolveReliabilityDecision(score, usableForStructure),
+src\engine\material-reliability.test.ts:46: expect(result.analysis.reliability?.structureDecision).toBe("block")
+src\engine\material-reliability.test.ts:118: expect(result.analysis.reliability?.structureDecision).toBe("allow")
+src\engine\material-reliability.test.ts:148: expect(result.analysis.reliability?.structureDecision).toBe("block")
+src\engine\types.ts:277: structureDecision: MaterialUseDecision
+
+--- PATTERN: reliability
+src\engine\blueprint\buildBlueprint.ts:19: function getReliabilityScore(material: MaterialFile): number {
+src\engine\blueprint\buildBlueprint.ts:21: const score = material.analysis?.reliability?.score
+src\engine\blueprint\buildBlueprint.ts:39: const reliability = material.analysis.reliability
+src\engine\blueprint\buildBlueprint.ts:41: if (!reliability) {
+src\engine\blueprint\buildBlueprint.ts:49: return reliability.usableForContent
+src\engine\blueprint\buildBlueprint.ts:65: const reliability = material.analysis.reliability
+src\engine\blueprint\buildBlueprint.ts:67: if (!reliability) {
+src\engine\blueprint\buildBlueprint.ts:75: return reliability.usableForStructure
+src\engine\blueprint\buildBlueprint.ts:85: const reliabilityDelta = getReliabilityScore(b) - getReliabilityScore(a)
+src\engine\blueprint\buildBlueprint.ts:87: if (reliabilityDelta !== 0) {
+src\engine\blueprint\buildBlueprint.ts:89: return reliabilityDelta
+src\engine\materials\analyzeMaterial.ts:17: MaterialReliability,
+src\engine\materials\analyzeMaterial.ts:85: reliability: buildMaterialReliability({
+src\engine\materials\analyzeMaterial.ts:113: type BuildMaterialReliabilityInput = {
+src\engine\materials\analyzeMaterial.ts:127: function buildMaterialReliability(
+src\engine\materials\analyzeMaterial.ts:129: input: BuildMaterialReliabilityInput
+src\engine\materials\analyzeMaterial.ts:131: ): MaterialReliability {
+src\engine\materials\analyzeMaterial.ts:231: const noisyLineCount = input.lines.filter(isReliabilityNoiseLine).length
+src\engine\materials\analyzeMaterial.ts:339: contentDecision: resolveReliabilityDecision(score, usableForContent),
+src\engine\materials\analyzeMaterial.ts:341: structureDecision: resolveReliabilityDecision(score, usableForStructure),
+src\engine\materials\analyzeMaterial.ts:353: function resolveReliabilityDecision(
+src\engine\materials\analyzeMaterial.ts:449: function isReliabilityNoiseLine(line: string): boolean {
+src\engine\material-reliability.test.ts:23: describe("material reliability", () => {
+src\engine\material-reliability.test.ts:42: expect(result.analysis.reliability?.level).toBe("high")
+src\engine\material-reliability.test.ts:43: expect(result.analysis.reliability?.usableForContent).toBe(true)
+src\engine\material-reliability.test.ts:44: expect(result.analysis.reliability?.contentDecision).toBe("allow")
+src\engine\material-reliability.test.ts:45: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\material-reliability.test.ts:46: expect(result.analysis.reliability?.structureDecision).toBe("block")
+src\engine\material-reliability.test.ts:65: expect(result.analysis.reliability?.level).toBe("medium")
+src\engine\material-reliability.test.ts:66: expect(result.analysis.reliability?.usableForContent).toBe(true)
+src\engine\material-reliability.test.ts:67: expect(result.analysis.reliability?.contentDecision).toBe("caution")
+src\engine\material-reliability.test.ts:68: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\material-reliability.test.ts:90: expect(result.analysis.reliability?.level).toBe("low")
+src\engine\material-reliability.test.ts:91: expect(result.analysis.reliability?.usableForContent).toBe(false)
+src\engine\material-reliability.test.ts:92: expect(result.analysis.reliability?.contentDecision).toBe("block")
+src\engine\material-reliability.test.ts:93: expect(result.analysis.reliability?.warnings).toContain(
+src\engine\material-reliability.test.ts:116: expect(result.analysis.reliability?.level).toBe("high")
+src\engine\material-reliability.test.ts:117: expect(result.analysis.reliability?.usableForStructure).toBe(true)
+src\engine\material-reliability.test.ts:118: expect(result.analysis.reliability?.structureDecision).toBe("allow")
+src\engine\material-reliability.test.ts:119: expect(result.analysis.reliability?.usableForContent).toBe(false)
+src\engine\material-reliability.test.ts:120: expect(result.analysis.reliability?.contentDecision).toBe("block")
+src\engine\material-reliability.test.ts:146: expect(result.analysis.reliability?.level).toBe("low")
+src\engine\material-reliability.test.ts:147: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\material-reliability.test.ts:148: expect(result.analysis.reliability?.structureDecision).toBe("block")
+src\engine\material-reliability.test.ts:149: expect(result.analysis.reliability?.reasons.join(" ")).toMatch(/OCR|noise|low/i)
+src\engine\types.ts:257: export type MaterialReliabilityLevel = "high" | "medium" | "low"
+src\engine\types.ts:265: export type MaterialReliability = {
+src\engine\types.ts:267: level: MaterialReliabilityLevel
+src\engine\types.ts:367: reliability?: MaterialReliability
+
+--- PATTERN: reliabilityScore
+src\engine\blueprint\buildBlueprint.ts:19: function getReliabilityScore(material: MaterialFile): number {
+src\engine\blueprint\buildBlueprint.ts:85: const reliabilityDelta = getReliabilityScore(b) - getReliabilityScore(a)
+
+--- PATTERN: blocked
+src\pages\MaterialsPage.tsx:337: ? "Results stay blocked until all uploaded materials finish processing."
+src\pages\ResultsPage.tsx:96: <BlockedResultsState
+src\pages\ResultsPage.tsx:98: message="Results are blocked while materials are still processing."
+src\pages\ResultsPage.tsx:108: <BlockedResultsState
+src\pages\ResultsPage.tsx:110: message="Results are blocked until all required lesson inputs are completed."
+src\pages\ResultsPage.tsx:120: <BlockedResultsState
+src\pages\ResultsPage.tsx:122: message="Results are blocked until at least one material is analyzed and ready."
+src\pages\ResultsPage.tsx:132: <BlockedResultsState
+src\pages\ResultsPage.tsx:746: function BlockedResultsState({
+src\App.tsx:15: const resultsBlockedReason = getResultsBlockedReason({
+src\App.tsx:47: marginBottom: resultsBlockedReason ? "var(--space-sm)" : 0,
+src\App.tsx:56: <Link to="/results" style={linkStyle("/results", Boolean(resultsBlockedReason))}>
+src\App.tsx:61: {resultsBlockedReason && (
+src\App.tsx:73: {resultsBlockedReason}
+src\App.tsx:170: function getResultsBlockedReason({
+
+--- PATTERN: down-rank
+[no hits]
+
+--- PATTERN: downrank
+[no hits]
+
+--- PATTERN: warning
+src\engine\blueprint\buildBlueprint.ts:399: warnings: detected.warnings,
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:65: const warnings: string[] = []
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:68: warnings.push("No curriculum materials are ready, so content is relying on fallback signals.")
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:70: warnings.push("Curriculum materials are present, but strong content signals still look limited.")
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:74: warnings.push("No exemplar materials are ready, so structure is relying on generic lesson flow.")
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:76: warnings.push("Exemplar materials are present, but strong structure signals still look limited.")
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:83: warnings,
+src\engine\materials\analyzeMaterial.ts:137: const warnings: string[] = []
+src\engine\materials\analyzeMaterial.ts:149: warnings.push("No extraction metadata available.")
+src\engine\materials\analyzeMaterial.ts:171: warnings.push("Material may not have enough extracted text to shape the blueprint safely.")
+src\engine\materials\analyzeMaterial.ts:219: warnings.push(...metadata.notes.slice(0, 2))
+src\engine\materials\analyzeMaterial.ts:289: warnings.push("Curriculum signals were too weak to ground content safely.")
+src\engine\materials\analyzeMaterial.ts:299: warnings.push("Exemplar structure signals were too weak to ground lesson structure safely.")
+src\engine\materials\analyzeMaterial.ts:345: warnings: unique(warnings),
+src\engine\materials\analyzeMaterial.ts:1321: warnings: buildExemplarFeatureWarnings(lines, items),
+src\engine\materials\analyzeMaterial.ts:1329: function buildExemplarFeatureWarnings(
+src\engine\materials\analyzeMaterial.ts:1337: const warnings: string[] = []
+src\engine\materials\analyzeMaterial.ts:1343: warnings.push("Little usable exemplar text was available for feature detection.")
+src\engine\materials\analyzeMaterial.ts:1351: warnings.push("No strong exemplar features were confidently detected from extracted text.")
+src\engine\materials\analyzeMaterial.ts:1367: warnings.push("Visual/style features may be under-detected when extraction is mostly text-only.")
+src\engine\materials\analyzeMaterial.ts:1373: return warnings
+src\engine\materials\extractTextFromFile.ts:324: const warningLines = result.messages
+src\engine\materials\extractTextFromFile.ts:333: return normalizeExtractedText([...contentLines, ...warningLines])
+src\engine\package\buildLessonPackageReadiness.ts:30: const warnings: string[] = []
+src\engine\package\buildLessonPackageReadiness.ts:33: warnings.push("Package outputs look thin and may need richer planning signals.")
+src\engine\package\buildLessonPackageReadiness.ts:37: warnings.push("Curriculum-driven content signals look sparse.")
+src\engine\package\buildLessonPackageReadiness.ts:41: warnings.push("This package includes more than one instructional target.")
+src\engine\package\buildLessonPackageReadiness.ts:48: warnings,
+src\engine\package\buildPackageOutputs.ts:236: const warnings = blueprint.sourceReadiness.warnings.map((warning) => `- ${warning}`)
+src\engine\package\buildPackageOutputs.ts:243: ...warnings,
+src\engine\pipeline\runLessonPipeline.ts:44: blueprintWarnings: blueprint.sourceReadiness.warnings,
+src\engine\pipeline\runLessonPipeline.ts:51: warningCount: lessonPackage.readiness.warnings.length,
+src\engine\analysis-signals.test.ts:85: expect(detected?.warnings).toBeDefined()
+src\engine\analysis-signals.test.ts:130: it("adds sensible warnings when exemplar text is too thin for strong feature detection", async () => {
+src\engine\analysis-signals.test.ts:145: expect(detected?.warnings.join(" ")).toContain("Visual/style features may be under-detected")
+src\engine\blueprint-structure-features.test.ts:121: warnings: [],
+src\engine\blueprint-structure-features.test.ts:217: warnings: [],
+src\engine\lesson-spec.test.ts:52: warnings: [],
+src\engine\material-reliability.test.ts:93: expect(result.analysis.reliability?.warnings).toContain(
+src\engine\package-decisions.test.ts:44: warnings: ["Minor warning for visibility."],
+src\engine\package-outputs.test.ts:38: warnings: ["Minor warning for visibility."],
+src\engine\package-outputs.test.ts:195: expect(result.lessonPlan).toContain("Minor warning for visibility.")
+src\engine\pipeline-trace.test.ts:107: expect(Array.isArray(result.trace.blueprintWarnings)).toBe(true)
+src\engine\planning-coverage.test.ts:52: warnings: [],
+src\engine\style-settings-blueprint.test.ts:72: warnings: [],
+src\engine\types.ts:193: warnings: string[]
+src\engine\types.ts:281: warnings: string[]
+src\engine\types.ts:527: warnings: string[]
+src\engine\types.ts:763: warnings: string[]
+src\engine\types.ts:839: blueprintWarnings: string[]
+src\engine\types.ts:851: warningCount: number
+src\pages\ResultsPage.tsx:169: <div style={warningStyle}>
+src\pages\ResultsPage.tsx:197: warnings={blueprint.sourceReadiness.warnings}
+src\pages\ResultsPage.tsx:203: warnings={lessonPackage.readiness.warnings}
+src\pages\ResultsPage.tsx:271: const combinedWarnings = [...blueprint.sourceReadiness.warnings, ...lessonPackage.readiness.warnings]
+src\pages\ResultsPage.tsx:314: <div style={subHeadingStyle}>Warnings and Fallback Notes</div>
+src\pages\ResultsPage.tsx:315: {combinedWarnings.length > 0 ? (
+src\pages\ResultsPage.tsx:317: {combinedWarnings.map((warning) => (
+src\pages\ResultsPage.tsx:318: <div key={warning} style={warningStyle}>
+src\pages\ResultsPage.tsx:319: {warning}
+src\pages\ResultsPage.tsx:325: No major blueprint or package warnings were triggered for this lesson.
+src\pages\ResultsPage.tsx:363: <div><strong>Blueprint Warning Count:</strong> {trace.blueprintWarnings.length}</div>
+src\pages\ResultsPage.tsx:367: <div><strong>Package Warning Count:</strong> {trace.package.warningCount}</div>
+src\pages\ResultsPage.tsx:481: warnings,
+src\pages\ResultsPage.tsx:485: warnings: string[]
+src\pages\ResultsPage.tsx:500: {warnings.length > 0 && (
+src\pages\ResultsPage.tsx:502: {warnings.map((warning) => (
+src\pages\ResultsPage.tsx:503: <div key={warning} style={warningStyle}>
+src\pages\ResultsPage.tsx:504: {warning}
+src\pages\ResultsPage.tsx:848: const warningStyle: React.CSSProperties = {
+
+--- PATTERN: fallback-notice
+src\engine\material-reliability.test.ts:71: it("blocks fallback-notice curriculum from shaping content", async () => {
+
+--- PATTERN: ocr
+src\engine\materials\analyzeMaterial.ts:153: if (metadata.method === "ocr") {
+src\engine\materials\analyzeMaterial.ts:157: reasons.push("OCR-only extraction reduced confidence.")
+src\engine\materials\analyzeMaterial.ts:163: reasons.push("Mixed parser/OCR extraction needs caution.")
+src\engine\materials\analyzeMaterial.ts:209: if (metadata.ocrCandidate && metadata.method !== "parser") {
+src\engine\materials\analyzeMaterial.ts:213: reasons.push("OCR fallback or OCR-heavy extraction was needed.")
+src\engine\materials\extractPdfOcr.ts:1: export type PdfOcrPageResult = {
+src\engine\materials\extractPdfOcr.ts:7: export type PdfOcrResult = {
+src\engine\materials\extractPdfOcr.ts:8: pages: PdfOcrPageResult[]
+src\engine\materials\extractPdfOcr.ts:14: export async function extractPdfTextWithOcrFallback(
+src\engine\materials\extractPdfOcr.ts:21: ): Promise<PdfOcrResult> {
+src\engine\materials\extractPdfOcr.ts:31: notes: ["OCR fallback is only available in a browser environment."],
+src\engine\materials\extractPdfOcr.ts:42: notes: ["PDF OCR fallback could not render any pages to images."],
+src\engine\materials\extractPdfOcr.ts:50: const pages: PdfOcrPageResult[] = []
+src\engine\materials\extractPdfOcr.ts:54: const text = normalizeOcrText(result.data.text).join("\n")
+src\engine\materials\extractPdfOcr.ts:64: const combinedLines = normalizeOcrText(
+src\engine\materials\extractPdfOcr.ts:83: `OCR processed ${pages.length} page(s).`,
+src\engine\materials\extractPdfOcr.ts:84: `Average OCR confidence: ${Math.round(averageConfidence * 100)}%.`,
+src\engine\materials\extractPdfOcr.ts:140: function normalizeOcrText(text: string): string[] {
+src\engine\materials\extractTextFromFile.ts:1: import { extractPdfTextWithOcrFallback } from "./extractPdfOcr"
+src\engine\materials\extractTextFromFile.ts:47: const upgradedPdfResult = await maybeApplyPdfOcrFallback({
+src\engine\materials\extractTextFromFile.ts:225: async function maybeApplyPdfOcrFallback({
+src\engine\materials\extractTextFromFile.ts:237: !parserMetadata.ocrCandidate
+src\engine\materials\extractTextFromFile.ts:246: const ocrResult = await extractPdfTextWithOcrFallback(input.fileBuffer, {
+src\engine\materials\extractTextFromFile.ts:254: ...ocrResult.combinedLines,
+src\engine\materials\extractTextFromFile.ts:258: ocrResult.combinedLines.length >= 3 &&
+src\engine\materials\extractTextFromFile.ts:268: ...ocrResult.notes,
+src\engine\materials\extractTextFromFile.ts:269: "OCR fallback did not add enough new readable text, so parser output was kept.",
+src\engine\materials\extractTextFromFile.ts:287: ...ocrResult.notes,
+src\engine\materials\extractTextFromFile.ts:288: `OCR fallback added ${mergedText.length - parserText.length} additional normalized line(s).`,
+src\engine\materials\extractTextFromFile.ts:294: error instanceof Error ? error.message : "Unknown OCR fallback error"
+src\engine\materials\extractTextFromFile.ts:302: `OCR fallback attempt failed: ${message}`,
+src\engine\materials\extractTextFromFile.ts:510: const ocrCandidate = fileType === "pdf" || fileType === "pptx"
+src\engine\materials\extractTextFromFile.ts:518: "OCR or alternative recovery may be needed later.",
+src\engine\materials\extractTextFromFile.ts:520: ocrCandidate,
+src\engine\materials\extractTextFromFile.ts:521: ocrReason: ocrCandidate
+src\engine\materials\extractTextFromFile.ts:548: const ocrEligibleFileType = fileType === "pdf" || fileType === "pptx"
+src\engine\materials\extractTextFromFile.ts:549: const ocrCandidate =
+src\engine\materials\extractTextFromFile.ts:550: ocrEligibleFileType &&
+src\engine\materials\extractTextFromFile.ts:557: const ocrReason = ocrCandidate
+src\engine\materials\extractTextFromFile.ts:558: ? "Parser output looks thin or image-based, so OCR recovery is likely worth trying."
+src\engine\materials\extractTextFromFile.ts:572: if (ocrReason) {
+src\engine\materials\extractTextFromFile.ts:573: notes.push(ocrReason)
+src\engine\materials\extractTextFromFile.ts:581: ocrCandidate,
+src\engine\materials\extractTextFromFile.ts:582: ocrReason,
+src\engine\analysis-and-blueprint.test.ts:51: ocrCandidate: false,
+src\engine\analysis-and-blueprint.test.ts:53: ocrReason: null,
+src\engine\analysis-and-blueprint.test.ts:459: it("prefers a cleaner curriculum source over a noisier OCR-heavy one for content", async () => {
+src\engine\analysis-and-blueprint.test.ts:485: method: "ocr",
+src\engine\analysis-and-blueprint.test.ts:491: ocrCandidate: true,
+src\engine\analysis-and-blueprint.test.ts:493: ocrReason: "OCR recovery was needed.",
+src\engine\analysis-and-blueprint.test.ts:495: notes: ["OCR text was noisy."],
+src\engine\analysis-and-blueprint.test.ts:553: it("prefers a cleaner exemplar source over a noisier OCR-heavy one for structure", async () => {
+src\engine\analysis-and-blueprint.test.ts:583: method: "ocr",
+src\engine\analysis-and-blueprint.test.ts:589: ocrCandidate: true,
+src\engine\analysis-and-blueprint.test.ts:591: ocrReason: "OCR recovery was needed.",
+src\engine\analysis-and-blueprint.test.ts:593: notes: ["OCR text was noisy."],
+src\engine\extraction.test.ts:7: const extractPdfTextWithOcrFallbackMock = vi.fn()
+src\engine\extraction.test.ts:31: vi.mock("./materials/extractPdfOcr", () => ({
+src\engine\extraction.test.ts:32: extractPdfTextWithOcrFallback: (...args: unknown[]) =>
+src\engine\extraction.test.ts:33: extractPdfTextWithOcrFallbackMock(...args),
+src\engine\extraction.test.ts:48: extractPdfTextWithOcrFallbackMock.mockReset()
+src\engine\extraction.test.ts:55: extractPdfTextWithOcrFallbackMock.mockResolvedValue({
+src\engine\extraction.test.ts:59: notes: ["OCR fallback mock returned no extra text."],
+src\engine\extraction.test.ts:105: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:106: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:132: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:133: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:157: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:158: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:161: it("marks fallback pdf output as an OCR candidate", async () => {
+src\engine\extraction.test.ts:171: expect(result.extractionMetadata.ocrCandidate).toBe(true)
+src\engine\extraction.test.ts:172: expect(result.extractionMetadata.ocrReason).toContain("Parser did not recover usable text")
+src\engine\extraction.test.ts:173: expect(extractPdfTextWithOcrFallbackMock).not.toHaveBeenCalled()
+src\engine\extraction.test.ts:176: it("does not mark fallback docx output as an OCR candidate", async () => {
+src\engine\extraction.test.ts:186: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:187: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:190: it("marks fallback pptx output as an OCR candidate", async () => {
+src\engine\extraction.test.ts:200: expect(result.extractionMetadata.ocrCandidate).toBe(true)
+src\engine\extraction.test.ts:201: expect(result.extractionMetadata.ocrReason).toContain("Parser did not recover usable text")
+src\engine\extraction.test.ts:204: it("does not mark unknown fallback output as an OCR candidate", async () => {
+src\engine\extraction.test.ts:217: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:218: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:221: it("marks thin parsed pdf text as an OCR candidate", async () => {
+src\engine\extraction.test.ts:238: expect(result.extractionMetadata.ocrCandidate).toBe(true)
+src\engine\extraction.test.ts:239: expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
+src\engine\extraction.test.ts:241: expect(extractPdfTextWithOcrFallbackMock).toHaveBeenCalledTimes(1)
+src\engine\extraction.test.ts:244: it("does not mark strong parsed pdf text as an OCR candidate", async () => {
+src\engine\extraction.test.ts:259: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:260: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:262: expect(extractPdfTextWithOcrFallbackMock).not.toHaveBeenCalled()
+src\engine\extraction.test.ts:265: it("marks thin parsed pptx text as an OCR candidate", async () => {
+src\engine\extraction.test.ts:278: expect(result.extractionMetadata.ocrCandidate).toBe(true)
+src\engine\extraction.test.ts:279: expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
+src\engine\extraction.test.ts:282: it("keeps parser output when OCR adds too little new text", async () => {
+src\engine\extraction.test.ts:291: extractPdfTextWithOcrFallbackMock.mockResolvedValue({
+src\engine\extraction.test.ts:301: notes: ["OCR processed 1 page."],
+src\engine\extraction.test.ts:312: "OCR fallback did not add enough new readable text"
+src\engine\extraction.test.ts:316: it("upgrades pdf extraction to mixed when OCR adds enough useful text", async () => {
+src\engine\extraction.test.ts:325: extractPdfTextWithOcrFallbackMock.mockResolvedValue({
+src\engine\extraction.test.ts:339: notes: ["OCR processed 1 page.", "Average OCR confidence: 88%."],
+src\engine\extraction.test.ts:349: "OCR fallback added"
+src\engine\extraction.test.ts:359: it("falls back gracefully when OCR throws", async () => {
+src\engine\extraction.test.ts:368: extractPdfTextWithOcrFallbackMock.mockRejectedValue(
+src\engine\extraction.test.ts:369: new Error("OCR worker crashed")
+src\engine\extraction.test.ts:373: fileName: "ocr-failure.pdf",
+src\engine\extraction.test.ts:380: "OCR fallback attempt failed: OCR worker crashed"
+src\engine\material-reliability.test.ts:5: method: "parser" | "ocr" | "mixed" | "fallback_notice"
+src\engine\material-reliability.test.ts:9: ocrCandidate: boolean
+src\engine\material-reliability.test.ts:10: ocrReason: string | null
+src\engine\material-reliability.test.ts:17: ocrCandidate: false,
+src\engine\material-reliability.test.ts:18: ocrReason: null,
+src\engine\material-reliability.test.ts:84: ocrCandidate: true,
+src\engine\material-reliability.test.ts:85: ocrReason: "Parser did not recover usable text.",
+src\engine\material-reliability.test.ts:123: it("blocks noisy OCR-heavy exemplar structure", async () => {
+src\engine\material-reliability.test.ts:137: method: "ocr",
+src\engine\material-reliability.test.ts:140: ocrCandidate: true,
+src\engine\material-reliability.test.ts:141: ocrReason: "OCR recovery was needed.",
+src\engine\material-reliability.test.ts:142: notes: ["OCR text was noisy."],
+src\engine\material-reliability.test.ts:149: expect(result.analysis.reliability?.reasons.join(" ")).toMatch(/OCR|noise|low/i)
+src\engine\types.ts:231: export type ExtractionMethod = "parser" | "ocr" | "mixed" | "fallback_notice"
+src\engine\types.ts:249: ocrCandidate: boolean
+src\engine\types.ts:251: ocrReason: string | null
+src\pages\MaterialsPage.tsx:396: {material.analysis.extractionMetadata.ocrCandidate && (
+src\pages\MaterialsPage.tsx:397: <span style={ocrCandidateBadgeStyle}>OCR candidate</span>
+src\pages\MaterialsPage.tsx:425: {material.analysis.extractionMetadata.ocrReason && (
+src\pages\MaterialsPage.tsx:427: <strong>OCR reason:</strong> {material.analysis.extractionMetadata.ocrReason}
+src\pages\MaterialsPage.tsx:705: function methodBadgeStyle(method: "parser" | "ocr" | "mixed" | "fallback_notice"): React.CSSProperties {
+src\pages\MaterialsPage.tsx:709: : method === "ocr"
+src\pages\MaterialsPage.tsx:745: const ocrCandidateBadgeStyle: React.CSSProperties = {
+src\pages\MaterialsPage.tsx:755: function formatExtractionMethod(method: "parser" | "ocr" | "mixed" | "fallback_notice"): string {
+src\pages\MaterialsPage.tsx:757: if (method === "ocr") return "OCR"
+
+
+================================================================================
+Blueprint / strongest-source / ranking seams
+================================================================================
+--- PATTERN: buildBlueprint
+src\engine\blueprint\buildBlueprint.ts:107: import { buildBlueprintSourceReadiness } from "./buildBlueprintSourceReadiness"
+src\engine\blueprint\buildBlueprint.ts:129: export function buildBlueprint(
+src\engine\blueprint\buildBlueprint.ts:221: const sourceReadiness = buildBlueprintSourceReadiness({
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:6: export function buildBlueprintSourceReadiness(args: {
+src\engine\package\buildPackageOutputs.ts:116: const readinessBlock = buildBlueprintReadinessBlock(blueprint)
+src\engine\package\buildPackageOutputs.ts:235: function buildBlueprintReadinessBlock(blueprint: LessonBlueprint): string {
+src\engine\pipeline\runLessonPipeline.ts:1: import { buildBlueprint } from "../blueprint/buildBlueprint"
+src\engine\pipeline\runLessonPipeline.ts:20: const blueprint = buildBlueprint(inputs, materials, selectedMode)
+src\engine\analysis-and-blueprint.test.ts:5: import { buildBlueprint } from "./blueprint/buildBlueprint"
+src\engine\analysis-and-blueprint.test.ts:335: describe("buildBlueprint source readiness", () => {
+src\engine\analysis-and-blueprint.test.ts:375: const blueprint = buildBlueprint(makeInputs(), [curriculum, exemplar], "single")
+src\engine\analysis-and-blueprint.test.ts:407: const blueprint = buildBlueprint(makeInputs(), [curriculum], "single")
+src\engine\analysis-and-blueprint.test.ts:445: const blueprint = buildBlueprint(makeInputs(), [exemplar], "single")
+src\engine\analysis-and-blueprint.test.ts:525: const blueprint = buildBlueprint(
+src\engine\analysis-and-blueprint.test.ts:627: const blueprint = buildBlueprint(
+src\engine\blueprint-readiness.test.ts:2: import { buildBlueprint } from "./blueprint/buildBlueprint"
+src\engine\blueprint-readiness.test.ts:6: const result = buildBlueprint(
+src\engine\blueprint-readiness.test.ts:93: const result = buildBlueprint(
+src\engine\blueprint-structure-features.test.ts:2: import { buildBlueprint } from "./blueprint/buildBlueprint"
+src\engine\blueprint-structure-features.test.ts:44: const result = buildBlueprint(
+src\engine\blueprint-structure-features.test.ts:172: const result = buildBlueprint(
+src\engine\style-settings-blueprint.test.ts:2: import { buildBlueprint } from "./blueprint/buildBlueprint"
+src\engine\style-settings-blueprint.test.ts:99: const result = buildBlueprint(
+src\engine\style-settings-blueprint.test.ts:129: const result = buildBlueprint(
+src\engine\style-settings-blueprint.test.ts:162: const result = buildBlueprint(
+
+--- PATTERN: strongest
+src\engine\blueprint\buildBlueprint.ts:81: function selectStrongestMaterials(materials: MaterialFile[]): MaterialFile[] {
+src\engine\blueprint\buildBlueprint.ts:139: const curriculumMaterials = selectStrongestMaterials(
+src\engine\blueprint\buildBlueprint.ts:147: const exemplarMaterials = selectStrongestMaterials(
+src\engine\spec\buildLessonSpec.ts:561: return `Revisit the strongest word examples: ${wordList.slice(0, 3).join(", ")}.`
+src\engine\lesson-spec.test.ts:102: description: "Revisit the strongest long a examples.",
+src\pages\MaterialsPage.tsx:559: ? "You currently have both curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
+
+--- PATTERN: select
+src\engine\blueprint\buildBlueprint.ts:81: function selectStrongestMaterials(materials: MaterialFile[]): MaterialFile[] {
+src\engine\blueprint\buildBlueprint.ts:135: selectedMode: LessonMode
+src\engine\blueprint\buildBlueprint.ts:139: const curriculumMaterials = selectStrongestMaterials(
+src\engine\blueprint\buildBlueprint.ts:147: const exemplarMaterials = selectStrongestMaterials(
+src\engine\blueprint\buildBlueprint.ts:183: const rawTarget = detectLessonTargets(inputs, selectedMode)
+src\engine\blueprint\buildBlueprint.ts:185: const resolvedMode = resolveLessonMode(selectedMode, rawTarget)
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:140: "teacher-selected standard",
+src\engine\blueprint\detectLessonTargets.ts:26: selectedMode: LessonMode = "single"
+src\engine\blueprint\detectLessonTargets.ts:28: if (selectedMode === "phonics_only") {
+src\engine\blueprint\detectLessonTargets.ts:37: if (selectedMode === "comprehension_only") {
+src\engine\blueprint\detectLessonTargets.ts:46: if (selectedMode === "full") {
+src\engine\blueprint\resolveBlueprintContent.ts:117: return ["teacher-selected standard"]
+src\engine\blueprint\resolveBlueprintContent.ts:255: "selection",
+src\engine\blueprint\resolveBlueprintContent.ts:368: "teacher-selected standard",
+src\engine\blueprint\resolveBlueprintContent.ts:370: "teacher-selected word list",
+src\engine\materials\analyzeMaterial.ts:633: const objectives = selectInstructionalTargets(lines).length
+src\engine\materials\analyzeMaterial.ts:635: const vocabulary = selectVocabulary(lines).length
+src\engine\materials\analyzeMaterial.ts:637: const tasks = selectPracticeTasks(lines).length
+src\engine\materials\analyzeMaterial.ts:657: const flow = selectSlideFlow(lines).length
+src\engine\materials\analyzeMaterial.ts:659: const pacing = selectPacing(lines).length
+src\engine\materials\analyzeMaterial.ts:661: const moves = selectTeacherMoves(lines).length
+src\engine\materials\analyzeMaterial.ts:663: const structure = selectReusableStructure(lines).length
+src\engine\materials\analyzeMaterial.ts:679: const instructionalTargets = selectInstructionalTargets(lines)
+src\engine\materials\analyzeMaterial.ts:681: const vocabulary = selectVocabulary(lines)
+src\engine\materials\analyzeMaterial.ts:683: const wordLists = selectWordLists(lines)
+src\engine\materials\analyzeMaterial.ts:685: const texts = selectTexts(lines)
+src\engine\materials\analyzeMaterial.ts:687: const practiceTasks = selectPracticeTasks(lines)
+src\engine\materials\analyzeMaterial.ts:689: const examples = selectExamples(lines)
+src\engine\materials\analyzeMaterial.ts:691: const foundationalSkills = selectFoundationalSkills(lines)
+src\engine\materials\analyzeMaterial.ts:693: const sightWords = selectSightWords(lines)
+src\engine\materials\analyzeMaterial.ts:695: const lessonSegments = selectCoveredLessonSegments(lines)
+src\engine\materials\analyzeMaterial.ts:701: standards: standards.length ? standards : ["teacher-selected standard"],
+src\engine\materials\analyzeMaterial.ts:705: wordLists: wordLists.length ? wordLists : ["teacher-selected word list"],
+src\engine\materials\analyzeMaterial.ts:745: const slideFlow = selectSlideFlow(lines)
+src\engine\materials\analyzeMaterial.ts:747: const pacing = selectPacing(lines)
+src\engine\materials\analyzeMaterial.ts:749: const teacherMoves = selectTeacherMoves(lines)
+src\engine\materials\analyzeMaterial.ts:751: const promptStyle = selectPromptStyle(lines)
+src\engine\materials\analyzeMaterial.ts:753: const layoutCues = selectLayoutCues(lines)
+src\engine\materials\analyzeMaterial.ts:755: const tone = selectTone(lines)
+src\engine\materials\analyzeMaterial.ts:757: const reusableStructure = selectReusableStructure(lines)
+src\engine\materials\analyzeMaterial.ts:1267: (line) => containsAny(line, ["passage", "story", "text", "article", "selection"]),
+src\engine\materials\analyzeMaterial.ts:1449: ...tagIfAny(selectVocabulary(lines), "vocabulary"),
+src\engine\materials\analyzeMaterial.ts:1451: ...tagIfAny(selectWordLists(lines), "word work"),
+src\engine\materials\analyzeMaterial.ts:1453: ...tagIfAny(selectPracticeTasks(lines), "practice"),
+src\engine\materials\analyzeMaterial.ts:1455: ...tagIfAny(selectInstructionalTargets(lines), "instruction"),
+src\engine\materials\analyzeMaterial.ts:1457: ...tagIfAny(selectSightWords(lines), "sight words"),
+src\engine\materials\analyzeMaterial.ts:1459: ...tagIfAny(selectFoundationalSkills(lines), "foundational skills"),
+src\engine\materials\analyzeMaterial.ts:1461: ...tagIfAny(selectTexts(lines), "text"),
+src\engine\materials\analyzeMaterial.ts:1481: ...tagIfAny(selectSlideFlow(lines), "slide flow"),
+src\engine\materials\analyzeMaterial.ts:1483: ...tagIfAny(selectPacing(lines), "pacing"),
+src\engine\materials\analyzeMaterial.ts:1485: ...tagIfAny(selectTeacherMoves(lines), "teacher prompts"),
+src\engine\materials\analyzeMaterial.ts:1487: ...tagIfAny(selectLayoutCues(lines), "layout"),
+src\engine\materials\analyzeMaterial.ts:1489: ...tagIfAny(selectReusableStructure(lines), "structure"),
+src\engine\materials\analyzeMaterial.ts:1491: ...tagIfAny(selectTone(lines), "tone"),
+src\engine\materials\analyzeMaterial.ts:1533: function selectInstructionalTargets(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1583: function selectVocabulary(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1617: function selectWordLists(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1673: function selectTexts(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1691: "selection",
+src\engine\materials\analyzeMaterial.ts:1709: function selectPracticeTasks(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1765: function selectExamples(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1797: function selectFoundationalSkills(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1865: function selectSightWords(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1905: function selectCoveredLessonSegments(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1955: function selectSlideFlow(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1995: function selectPacing(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:2015: function selectTeacherMoves(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:2073: function selectPromptStyle(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:2119: function selectLayoutCues(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:2161: function selectTone(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:2195: function selectReusableStructure(lines: string[]): string[] {
+src\engine\package\buildPackageOutputs.ts:385: return "Teacher Table Focus: No small-group block selected."
+src\engine\pipeline\runLessonPipeline.ts:17: selectedMode: LessonMode,
+src\engine\pipeline\runLessonPipeline.ts:20: const blueprint = buildBlueprint(inputs, materials, selectedMode)
+src\engine\pipeline\runLessonPipeline.ts:32: selectedMode,
+src\engine\planning\buildLessonPlanningIdeas.ts:165: const contentAnchor = selectSlideContentAnchor(segmentLabel, blueprint)
+src\engine\planning\buildLessonPlanningIdeas.ts:177: function selectSlideContentAnchor(
+src\engine\spec\buildLessonSpec.ts:133: const wordList = take(blueprint.content.wordLists, 5, ["teacher-selected examples"])
+src\engine\spec\buildLessonSpec.ts:136: const standards = take(blueprint.content.standards, 2, ["teacher-selected standard"])
+src\engine\generateLesson.ts:23: store.selectedLessonMode,
+src\engine\pipeline-trace.test.ts:102: expect(result.trace.selectedMode).toBe("single")
+src\engine\style-settings-blueprint.test.ts:128: it("filters blueprint structure to selected aspects only", () => {
+src\engine\style-settings-blueprint.test.ts:139: makeExemplarMaterial("ex-selected", {
+src\engine\style-settings-blueprint.test.ts:140: mode: "selected_aspects",
+src\engine\style-settings-blueprint.test.ts:161: it("removes pacing influence when pacing is not selected", () => {
+src\engine\style-settings-blueprint.test.ts:173: mode: "selected_aspects",
+src\engine\types.ts:43: | "selected_aspects"
+src\engine\types.ts:203: | "use_selected_features"
+src\engine\types.ts:815: selectedMode: LessonMode
+src\pages\InputsPage.tsx:132: const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
+src\pages\InputsPage.tsx:133: const setSelectedLessonMode = useLessonStore((state) => state.setSelectedLessonMode)
+src\pages\InputsPage.tsx:139: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+src\pages\InputsPage.tsx:266: selected={selectedLessonMode === "single"}
+src\pages\InputsPage.tsx:269: onSelect={setSelectedLessonMode}
+src\pages\InputsPage.tsx:275: selected={selectedLessonMode === "full"}
+src\pages\InputsPage.tsx:278: onSelect={setSelectedLessonMode}
+src\pages\InputsPage.tsx:283: selected={selectedLessonMode === "phonics_only"}
+src\pages\InputsPage.tsx:286: onSelect={setSelectedLessonMode}
+src\pages\InputsPage.tsx:291: selected={selectedLessonMode === "comprehension_only"}
+src\pages\InputsPage.tsx:294: onSelect={setSelectedLessonMode}
+src\pages\InputsPage.tsx:332: selected,
+src\pages\InputsPage.tsx:335: onSelect,
+src\pages\InputsPage.tsx:339: selected: boolean
+src\pages\InputsPage.tsx:342: onSelect: (mode: LessonMode) => void
+src\pages\InputsPage.tsx:356: checked={selected}
+src\pages\InputsPage.tsx:357: onChange={() => onSelect(mode)}
+src\pages\MaterialsPage.tsx:150: async function handleFilesSelected(
+src\pages\MaterialsPage.tsx:238: onChange={(event) => handleFilesSelected("curriculum", event)}
+src\pages\MaterialsPage.tsx:246: onChange={(event) => handleFilesSelected("exemplar", event)}
+src\pages\ResultsPage.tsx:63: const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
+src\pages\ResultsPage.tsx:180: selectedLessonMode={selectedLessonMode}
+src\pages\ResultsPage.tsx:222: selectedLessonMode,
+src\pages\ResultsPage.tsx:226: selectedLessonMode: string
+src\pages\ResultsPage.tsx:241: <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
+src\pages\ResultsPage.tsx:282: <div><strong>Standards Source:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
+src\pages\ResultsPage.tsx:342: <div><strong>Selected Mode:</strong> {trace.selectedMode}</div>
+src\state\useLessonStore.ts:40: selectedLessonMode: LessonMode
+src\state\useLessonStore.ts:49: setSelectedLessonMode: (mode: LessonMode) => void
+src\state\useLessonStore.ts:146: selectedLessonMode: LessonMode
+src\state\useLessonStore.ts:148: const detected = detectLessonTargets(inputs, selectedLessonMode)
+src\state\useLessonStore.ts:157: selectedLessonMode === "single"
+src\state\useLessonStore.ts:159: : `Inputs appear mixed. Current selection: ${selectedLessonMode}.`,
+src\state\useLessonStore.ts:195: selectedLessonMode: "single",
+src\state\useLessonStore.ts:212: setSelectedLessonMode: (selectedLessonMode) =>
+src\state\useLessonStore.ts:214: selectedLessonMode,
+src\state\useLessonStore.ts:382: const { inputs, selectedLessonMode } = get()
+src\state\useLessonStore.ts:383: return buildTargetPreview(inputs, selectedLessonMode)
+
+--- PATTERN: rank
+[no hits]
+
+--- PATTERN: curriculum
+src\engine\blueprint\buildBlueprint.ts:31: if (material.role !== "curriculum" || !material.analysis?.curriculum) {
+src\engine\blueprint\buildBlueprint.ts:111: CurriculumAnalysis,
+src\engine\blueprint\buildBlueprint.ts:139: const curriculumMaterials = selectStrongestMaterials(
+src\engine\blueprint\buildBlueprint.ts:155: const curriculumAnalyses = curriculumMaterials
+src\engine\blueprint\buildBlueprint.ts:159: .map((material) => material.analysis?.curriculum)
+src\engine\blueprint\buildBlueprint.ts:161: .filter((analysis): analysis is CurriculumAnalysis => Boolean(analysis))
+src\engine\blueprint\buildBlueprint.ts:193: curriculumMaterials,
+src\engine\blueprint\buildBlueprint.ts:195: curriculumAnalyses,
+src\engine\blueprint\buildBlueprint.ts:223: curriculumMaterials,
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:7: curriculumMaterials: MaterialFile[]
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:18: curriculumMaterials,
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:29: const curriculumSignalCount = countStrongCurriculumSignals(
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:42: const curriculumSupport =
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:43: curriculumMaterials.length === 0
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:45: : curriculumSignalCount >= 3
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:57: curriculumSupport === "strong" && exemplarSupport === "strong"
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:59: : curriculumSupport === "strong"
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:67: if (curriculumMaterials.length === 0) {
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:68: warnings.push("No curriculum materials are ready, so content is relying on fallback signals.")
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:69: } else if (curriculumSupport === "limited") {
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:70: warnings.push("Curriculum materials are present, but strong content signals still look limited.")
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:80: curriculumSupport,
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:86: label: "Curriculum Support",
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:87: value: curriculumSupport === "strong" ? "Strong" : "Limited",
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:89: curriculumSupport === "strong"
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:90: ? `Content signals are grounded by curriculum material (${curriculumSignalCount} strong signal areas detected).`
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:91: : curriculumMaterials.length === 0
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:92: ? "No ready curriculum materials were available."
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:93: : `Curriculum material is present, but only ${curriculumSignalCount} strong content signal area(s) were detected.`,
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:94: tone: curriculumSupport === "strong" ? "good" : "warn",
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:119: ? "Curriculum and exemplar are both contributing meaningfully."
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:131: function countStrongCurriculumSignals(
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:161: "curriculum-aligned practice task",
+src\engine\blueprint\resolveBlueprintContent.ts:3: CurriculumAnalysis,
+src\engine\blueprint\resolveBlueprintContent.ts:9: curriculumMaterials: MaterialFile[]
+src\engine\blueprint\resolveBlueprintContent.ts:10: curriculumAnalyses: CurriculumAnalysis[]
+src\engine\blueprint\resolveBlueprintContent.ts:17: const { curriculumMaterials, curriculumAnalyses, inputs, target } = args
+src\engine\blueprint\resolveBlueprintContent.ts:19: const standards = resolveStandards(curriculumAnalyses, inputs.standard)
+src\engine\blueprint\resolveBlueprintContent.ts:20: const vocabulary = resolveVocabulary(curriculumMaterials, curriculumAnalyses, target.primary)
+src\engine\blueprint\resolveBlueprintContent.ts:21: const wordLists = resolveWordLists(curriculumMaterials, curriculumAnalyses, target.primary)
+src\engine\blueprint\resolveBlueprintContent.ts:22: const texts = resolveTexts(curriculumMaterials, curriculumAnalyses, inputs.topic)
+src\engine\blueprint\resolveBlueprintContent.ts:23: const practiceIdeas = resolvePracticeIdeas(curriculumMaterials, curriculumAnalyses, target.primary)
+src\engine\blueprint\resolveBlueprintContent.ts:24: const coverage = resolveBlueprintContentCoverage(curriculumAnalyses)
+src\engine\blueprint\resolveBlueprintContent.ts:37: curriculumAnalyses: CurriculumAnalysis[]
+src\engine\blueprint\resolveBlueprintContent.ts:41: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:47: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:53: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:59: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:65: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:71: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:77: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:83: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:89: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:98: curriculumAnalyses: CurriculumAnalysis[],
+src\engine\blueprint\resolveBlueprintContent.ts:107: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:121: curriculumMaterials: MaterialFile[],
+src\engine\blueprint\resolveBlueprintContent.ts:122: curriculumAnalyses: CurriculumAnalysis[],
+src\engine\blueprint\resolveBlueprintContent.ts:126: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:137: curriculumMaterials.flatMap((material) => material.analysis?.extractedText ?? []),
+src\engine\blueprint\resolveBlueprintContent.ts:173: curriculumMaterials: MaterialFile[],
+src\engine\blueprint\resolveBlueprintContent.ts:174: curriculumAnalyses: CurriculumAnalysis[],
+src\engine\blueprint\resolveBlueprintContent.ts:178: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:189: curriculumMaterials.flatMap((material) => material.analysis?.extractedText ?? []),
+src\engine\blueprint\resolveBlueprintContent.ts:232: curriculumMaterials: MaterialFile[],
+src\engine\blueprint\resolveBlueprintContent.ts:233: curriculumAnalyses: CurriculumAnalysis[],
+src\engine\blueprint\resolveBlueprintContent.ts:237: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:248: curriculumMaterials.flatMap((material) => material.analysis?.extractedText ?? []),
+src\engine\blueprint\resolveBlueprintContent.ts:275: curriculumMaterials: MaterialFile[],
+src\engine\blueprint\resolveBlueprintContent.ts:276: curriculumAnalyses: CurriculumAnalysis[],
+src\engine\blueprint\resolveBlueprintContent.ts:280: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:291: curriculumMaterials.flatMap((material) => material.analysis?.extractedText ?? []),
+src\engine\blueprint\resolveBlueprintContent.ts:323: curriculumAnalyses.flatMap((analysis) => {
+src\engine\blueprint\resolveBlueprintContent.ts:338: function getCoverage(analysis: CurriculumAnalysis) {
+src\engine\blueprint\resolveBlueprintContent.ts:372: "curriculum-aligned practice task",
+src\engine\materials\analyzeMaterial.ts:3: CurriculumAnalysis,
+src\engine\materials\analyzeMaterial.ts:71: input.role === "curriculum"
+src\engine\materials\analyzeMaterial.ts:73: ? buildCurriculumMaterialAnalysis(input.name, cleanedText)
+src\engine\materials\analyzeMaterial.ts:279: const contentGroundedness = countCurriculumGroundedness(input.analysis)
+src\engine\materials\analyzeMaterial.ts:285: if (input.role === "curriculum" && contentGroundedness === 0) {
+src\engine\materials\analyzeMaterial.ts:289: warnings.push("Curriculum signals were too weak to ground content safely.")
+src\engine\materials\analyzeMaterial.ts:375: function countCurriculumGroundedness(analysis: MaterialAnalysis): number {
+src\engine\materials\analyzeMaterial.ts:377: const curriculum = analysis.curriculum
+src\engine\materials\analyzeMaterial.ts:381: if (!curriculum) {
+src\engine\materials\analyzeMaterial.ts:391: curriculum.standards.length +
+src\engine\materials\analyzeMaterial.ts:393: curriculum.vocabulary.length +
+src\engine\materials\analyzeMaterial.ts:395: curriculum.wordLists.length +
+src\engine\materials\analyzeMaterial.ts:397: curriculum.texts.length +
+src\engine\materials\analyzeMaterial.ts:399: curriculum.practiceTasks.length +
+src\engine\materials\analyzeMaterial.ts:401: curriculum.instructionalTargets.length +
+src\engine\materials\analyzeMaterial.ts:403: curriculum.examples.length
+src\engine\materials\analyzeMaterial.ts:489: function buildCurriculumMaterialAnalysis(
+src\engine\materials\analyzeMaterial.ts:499: const curriculum = buildCurriculumAnalysis(lines)
+src\engine\materials\analyzeMaterial.ts:501: const strength = computeCurriculumSignalStrength(curriculum)
+src\engine\materials\analyzeMaterial.ts:507: summary: buildCurriculumSummary(name, lines),
+src\engine\materials\analyzeMaterial.ts:511: tags: [...deriveCurriculumTags(lines), "signal-strength:" + strength],
+src\engine\materials\analyzeMaterial.ts:513: sourceRole: "curriculum",
+src\engine\materials\analyzeMaterial.ts:515: curriculum
+src\engine\materials\analyzeMaterial.ts:621: function buildCurriculumSummary(name: string, lines: string[]): string {
+src\engine\materials\analyzeMaterial.ts:625: return `Curriculum material ${name} was analyzed, but little usable text was extracted.`
+src\engine\materials\analyzeMaterial.ts:641: return `Curriculum material ${name} analyzed with ${lines.length} usable lines, ${standards} standards signals, ${objectives} target signals, ${vocabulary} vocabulary signals, and ${tasks} practice signals.`
+src\engine\materials\analyzeMaterial.ts:675: function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
+src\engine\materials\analyzeMaterial.ts:709: practiceTasks: practiceTasks.length ? practiceTasks : ["curriculum-aligned practice task"],
+src\engine\materials\analyzeMaterial.ts:1439: function deriveCurriculumTags(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1471: : ["curriculum", "standards", "vocabulary", "word work", "text", "practice", "instruction"]
+src\engine\materials\analyzeMaterial.ts:2497: function computeCurriculumSignalStrength(c: CurriculumAnalysis): number {
+src\engine\package\buildLessonPackageReadiness.ts:37: warnings.push("Curriculum-driven content signals look sparse.")
+src\engine\package\buildLessonPackageReadiness.ts:73: ? "Curriculum-driven content signals are present in the package."
+src\engine\package\buildLessonPackageReadiness.ts:74: : "Some curriculum-driven content signals look sparse.",
+src\engine\package\buildPackageOutputs.ts:72: "Slide 2: Teach - Model the focus skill with curriculum-aligned content.",
+src\engine\package\buildPackageOutputs.ts:240: `- Curriculum Support: ${blueprint.sourceReadiness.curriculumSupport}`,
+src\engine\pipeline\runLessonPipeline.ts:35: curriculum: materials.filter((material) => material.role === "curriculum").length,
+src\engine\planning\buildLessonPlanningIdeas.ts:127: ? "Model the target phonics pattern or decoding move with curriculum-aligned examples."
+src\engine\planning\buildLessonPlanningIdeas.ts:128: : "Model the key comprehension or content thinking with curriculum-aligned text."
+src\engine\planning\buildLessonPlanningIdeas.ts:136: return "Move students into independent application of the target skill with curriculum-grounded tasks."
+src\engine\planning\buildLessonPlanningIdeas.ts:149: return "Carry the exemplar shell forward while swapping in curriculum-aligned content."
+src\engine\planning\buildLessonPlanningIdeas.ts:191: return blueprint.content.practiceIdeas.slice(0, 2).join(", ") || "curriculum practice task"
+src\engine\planning\buildLessonPlanningIdeas.ts:264: rationale: `Keeps the lesson anchored to curriculum examples and standard(s): ${standards.slice(0, 2).join(", ")}.`,
+src\engine\planning\buildLessonPlanningIdeas.ts:278: rationale: "Turns curriculum text into the centerpiece of the teach phase.",
+src\engine\planning\buildLessonPlanningIdeas.ts:319: description: `Guide students through curriculum tasks such as ${practiceIdeas.slice(0, 2).join(", ")}.`,
+src\engine\planning\buildLessonPlanningIdeas.ts:320: rationale: "Keeps guided practice grounded in actual curriculum routines instead of generic drill.",
+src\engine\spec\buildLessonSpec.ts:224: `Guide students through two curriculum-aligned practice blocks: ${context.practiceIdeas.join(", ")}.`,
+src\engine\spec\buildLessonSpec.ts:274: `Model the phonics focus with these curriculum examples: ${context.wordList.join(", ")}.`,
+src\engine\spec\buildLessonSpec.ts:532: return `Guide practice with these curriculum-aligned phonics tasks: ${practiceIdeas.join(", ")}. Keep practice aligned to: ${standards.join(", ")}.`
+src\engine\spec\buildLessonSpec.ts:536: return `Guide students through these curriculum-based comprehension tasks: ${practiceIdeas.join(", ")}. Keep the work aligned to: ${standards.join(", ")}.`
+src\engine\analysis-and-blueprint.test.ts:101: async function makeCurriculumFromLines(
+src\engine\analysis-and-blueprint.test.ts:111: materialId: "curriculum-1",
+src\engine\analysis-and-blueprint.test.ts:113: role: "curriculum",
+src\engine\analysis-and-blueprint.test.ts:115: name: "curriculum.txt",
+src\engine\analysis-and-blueprint.test.ts:127: id: "curriculum-1",
+src\engine\analysis-and-blueprint.test.ts:129: name: "curriculum.txt",
+src\engine\analysis-and-blueprint.test.ts:131: role: "curriculum",
+src\engine\analysis-and-blueprint.test.ts:183: it("extracts curriculum phonics signals from usable lines", async () => {
+src\engine\analysis-and-blueprint.test.ts:187: materialId: "curriculum-1",
+src\engine\analysis-and-blueprint.test.ts:189: role: "curriculum",
+src\engine\analysis-and-blueprint.test.ts:191: name: "curriculum.txt",
+src\engine\analysis-and-blueprint.test.ts:213: expect(result.analysis.curriculum).toBeTruthy()
+src\engine\analysis-and-blueprint.test.ts:217: const curriculum = result.analysis.curriculum!
+src\engine\analysis-and-blueprint.test.ts:219: expect(curriculum.standards.join(" ").toLowerCase()).toContain("rf.1.3")
+src\engine\analysis-and-blueprint.test.ts:221: expect(curriculum.vocabulary.join(" ").toLowerCase()).toContain("vocabulary")
+src\engine\analysis-and-blueprint.test.ts:223: expect(curriculum.wordLists.join(" ").toLowerCase()).toContain("word list")
+src\engine\analysis-and-blueprint.test.ts:225: expect(curriculum.practiceTasks.join(" ").toLowerCase()).toContain("practice")
+src\engine\analysis-and-blueprint.test.ts:289: materialId: "curriculum-1",
+src\engine\analysis-and-blueprint.test.ts:291: role: "curriculum",
+src\engine\analysis-and-blueprint.test.ts:293: name: "curriculum.txt",
+src\engine\analysis-and-blueprint.test.ts:337: it("reports balanced when curriculum and exemplar are both strong", async () => {
+src\engine\analysis-and-blueprint.test.ts:339: const curriculum = await makeCurriculumFromLines([
+src\engine\analysis-and-blueprint.test.ts:375: const blueprint = buildBlueprint(makeInputs(), [curriculum, exemplar], "single")
+src\engine\analysis-and-blueprint.test.ts:379: expect(blueprint.sourceReadiness.curriculumSupport).toBe("strong")
+src\engine\analysis-and-blueprint.test.ts:389: it("reports content-heavy when only curriculum is strong", async () => {
+src\engine\analysis-and-blueprint.test.ts:391: const curriculum = await makeCurriculumFromLines([
+src\engine\analysis-and-blueprint.test.ts:407: const blueprint = buildBlueprint(makeInputs(), [curriculum], "single")
+src\engine\analysis-and-blueprint.test.ts:411: expect(blueprint.sourceReadiness.curriculumSupport).toBe("strong")
+src\engine\analysis-and-blueprint.test.ts:449: expect(blueprint.sourceReadiness.curriculumSupport).toBe("limited")
+src\engine\analysis-and-blueprint.test.ts:459: it("prefers a cleaner curriculum source over a noisier OCR-heavy one for content", async () => {
+src\engine\analysis-and-blueprint.test.ts:461: const noisyCurriculum = await makeCurriculumFromLines(
+src\engine\analysis-and-blueprint.test.ts:503: const cleanCurriculum = await makeCurriculumFromLines(
+src\engine\analysis-and-blueprint.test.ts:529: [noisyCurriculum, cleanCurriculum],
+src\engine\analysis-signals.test.ts:5: it("detects richer curriculum signals from structured lesson text", async () => {
+src\engine\analysis-signals.test.ts:8: role: "curriculum",
+src\engine\analysis-signals.test.ts:9: name: "curriculum.txt",
+src\engine\analysis-signals.test.ts:23: expect(result.analysis.sourceRole).toBe("curriculum")
+src\engine\analysis-signals.test.ts:24: expect(result.analysis.curriculum?.standards).toContain("Standard: RF.1.3")
+src\engine\analysis-signals.test.ts:25: expect(result.analysis.curriculum?.instructionalTargets.length ?? 0).toBeGreaterThanOrEqual(2)
+src\engine\analysis-signals.test.ts:26: expect(result.analysis.curriculum?.vocabulary.length ?? 0).toBeGreaterThan(0)
+src\engine\analysis-signals.test.ts:27: expect(result.analysis.curriculum?.wordLists.length ?? 0).toBeGreaterThan(0)
+src\engine\analysis-signals.test.ts:28: expect(result.analysis.curriculum?.texts.length ?? 0).toBeGreaterThan(0)
+src\engine\analysis-signals.test.ts:29: expect(result.analysis.curriculum?.practiceTasks.length ?? 0).toBeGreaterThanOrEqual(2)
+src\engine\analysis-signals.test.ts:30: expect(result.analysis.curriculum?.examples.length ?? 0).toBeGreaterThan(0)
+src\engine\blueprint-readiness.test.ts:5: it("uses exemplar-provided structure when both curriculum and exemplar materials are present", () => {
+src\engine\blueprint-readiness.test.ts:18: role: "curriculum",
+src\engine\blueprint-readiness.test.ts:19: name: "curriculum.txt",
+src\engine\blueprint-readiness.test.ts:24: sourceRole: "curriculum",
+src\engine\blueprint-readiness.test.ts:25: summary: "Curriculum material with long a content support.",
+src\engine\blueprint-readiness.test.ts:30: tags: ["phonics", "long a", "curriculum"],
+src\engine\blueprint-readiness.test.ts:31: curriculum: {
+src\engine\blueprint-readiness.test.ts:92: it("uses fallback structure when curriculum is present without exemplar support", () => {
+src\engine\blueprint-readiness.test.ts:105: role: "curriculum",
+src\engine\blueprint-readiness.test.ts:106: name: "curriculum.txt",
+src\engine\blueprint-readiness.test.ts:111: sourceRole: "curriculum",
+src\engine\blueprint-readiness.test.ts:112: summary: "Curriculum material with long a content support.",
+src\engine\blueprint-readiness.test.ts:117: tags: ["phonics", "long a", "curriculum"],
+src\engine\blueprint-readiness.test.ts:118: curriculum: {
+src\engine\extraction.test.ts:65: expect(detectFileType("curriculum.Pdf")).toBe("pdf")
+src\engine\extraction.test.ts:163: fileName: "curriculum.pdf",
+src\engine\extraction.test.ts:167: expect(result.extractedText[0]).toContain("PDF file curriculum.pdf was detected")
+src\engine\extraction.test.ts:178: fileName: "curriculum.docx",
+src\engine\extraction.test.ts:182: expect(result.extractedText[0]).toContain("DOCX file curriculum.docx was detected")
+src\engine\lesson-spec.test.ts:49: curriculumSupport: "strong",
+src\engine\lesson-spec.test.ts:70: rationale: "Keeps the lesson anchored to curriculum examples.",
+src\engine\lesson-spec.test.ts:275: "Guide students through two curriculum-aligned practice blocks"
+src\engine\lesson-spec.test.ts:289: "Model the phonics focus with these curriculum examples"
+src\engine\lesson-spec.test.ts:292: "Guide practice with these curriculum-aligned phonics tasks"
+src\engine\material-reliability.test.ts:24: it("allows strong curriculum for content but not structure", async () => {
+src\engine\material-reliability.test.ts:27: role: "curriculum",
+src\engine\material-reliability.test.ts:28: name: "curriculum.txt",
+src\engine\material-reliability.test.ts:49: it("downgrades sparse curriculum to caution instead of full trust", async () => {
+src\engine\material-reliability.test.ts:52: role: "curriculum",
+src\engine\material-reliability.test.ts:53: name: "sparse-curriculum.txt",
+src\engine\material-reliability.test.ts:71: it("blocks fallback-notice curriculum from shaping content", async () => {
+src\engine\material-reliability.test.ts:74: role: "curriculum",
+src\engine\package-decisions.test.ts:41: curriculumSupport: "strong",
+src\engine\package-outputs.test.ts:35: curriculumSupport: "strong",
+src\engine\package-outputs.test.ts:43: note: "Curriculum and exemplar are both present.",
+src\engine\pipeline-trace.test.ts:37: function makeCurriculumMaterial(): MaterialFile {
+src\engine\pipeline-trace.test.ts:39: id: "curriculum-1",
+src\engine\pipeline-trace.test.ts:40: name: "curriculum.txt",
+src\engine\pipeline-trace.test.ts:41: role: "curriculum",
+src\engine\pipeline-trace.test.ts:43: summary: "Curriculum test material",
+src\engine\pipeline-trace.test.ts:49: tags: ["curriculum", "word work", "practice"],
+src\engine\pipeline-trace.test.ts:50: sourceRole: "curriculum",
+src\engine\pipeline-trace.test.ts:51: curriculum: {
+src\engine\pipeline-trace.test.ts:97: [makeCurriculumMaterial(), makeExemplarMaterial()],
+src\engine\pipeline-trace.test.ts:104: expect(result.trace.materialCounts.curriculum).toBe(1)
+src\engine\pipeline.test.ts:36: function makeCurriculumMaterial(lines: string[]): MaterialFile {
+src\engine\pipeline.test.ts:38: id: "curriculum-1",
+src\engine\pipeline.test.ts:39: name: "curriculum.txt",
+src\engine\pipeline.test.ts:40: role: "curriculum",
+src\engine\pipeline.test.ts:42: summary: "Curriculum test material",
+src\engine\pipeline.test.ts:44: tags: ["curriculum", "word work", "practice"],
+src\engine\pipeline.test.ts:45: sourceRole: "curriculum",
+src\engine\pipeline.test.ts:46: curriculum: {
+src\engine\pipeline.test.ts:86: makeCurriculumMaterial([
+src\engine\pipeline.test.ts:112: [makeCurriculumMaterial(["Long A patterns ai and ay"])],
+src\engine\pipeline.test.ts:128: makeCurriculumMaterial([
+src\engine\pipeline.test.ts:150: makeCurriculumMaterial([
+src\engine\pipeline.test.ts:171: it("uses curriculum for content and exemplar for structure", () => {
+src\engine\pipeline.test.ts:174: const curriculum = makeCurriculumMaterial([
+src\engine\pipeline.test.ts:191: const result = runLessonPipeline(inputs, [curriculum, exemplar], "single")
+src\engine\planning-coverage.test.ts:49: curriculumSupport: "strong",
+src\engine\slides.test.ts:37: function makeCurriculumMaterial(lines: string[]): MaterialFile {
+src\engine\slides.test.ts:39: id: "curriculum-1",
+src\engine\slides.test.ts:40: name: "curriculum.txt",
+src\engine\slides.test.ts:41: role: "curriculum",
+src\engine\slides.test.ts:43: summary: "Curriculum test material",
+src\engine\slides.test.ts:45: tags: ["curriculum", "word work", "practice"],
+src\engine\slides.test.ts:46: sourceRole: "curriculum",
+src\engine\slides.test.ts:47: curriculum: {
+src\engine\slides.test.ts:86: makeCurriculumMaterial([
+src\engine\slides.test.ts:149: it("pulls curriculum content into slide bodies", () => {
+src\engine\types.ts:19: export type MaterialRole = "curriculum" | "exemplar"
+src\engine\types.ts:143: | "curriculum_slide_slots"
+src\engine\types.ts:287: export type CurriculumCoverage = {
+src\engine\types.ts:311: export type CurriculumAnalysis = {
+src\engine\types.ts:327: coverage?: CurriculumCoverage
+src\engine\types.ts:369: curriculum?: CurriculumAnalysis
+src\engine\types.ts:521: curriculumSupport: "strong" | "limited"
+src\engine\types.ts:821: curriculum: number
+src\pages\InputsPage.tsx:158: Define the lesson intent before adding curriculum and exemplar materials.
+src\pages\MaterialsPage.tsx:44: role === "curriculum"
+src\pages\MaterialsPage.tsx:145: const curriculumInputRef = useRef<HTMLInputElement | null>(null)
+src\pages\MaterialsPage.tsx:230: Upload curriculum and exemplar files. Materials appear immediately and stay visible
+src\pages\MaterialsPage.tsx:235: ref={curriculumInputRef}
+src\pages\MaterialsPage.tsx:238: onChange={(event) => handleFilesSelected("curriculum", event)}
+src\pages\MaterialsPage.tsx:251: <div style={uploadCardStyle("curriculum")}>
+src\pages\MaterialsPage.tsx:252: <div style={miniTagStyle("curriculum")}>Content Authority</div>
+src\pages\MaterialsPage.tsx:254: Curriculum
+src\pages\MaterialsPage.tsx:262: onClick={() => curriculumInputRef.current?.click()}
+src\pages\MaterialsPage.tsx:264: Upload Curriculum Files
+src\pages\MaterialsPage.tsx:292: <SummaryCard label="Ready Curriculum" value={supportSummary.readyCurriculum} />
+src\pages\MaterialsPage.tsx:340: : "Add curriculum or exemplar files to begin analysis."}
+src\pages\MaterialsPage.tsx:359: ? "At least one curriculum or exemplar material must be ready."
+src\pages\MaterialsPage.tsx:487: readyCurriculum: number
+src\pages\MaterialsPage.tsx:497: const readyCurriculum = materials.filter(
+src\pages\MaterialsPage.tsx:498: (material) => material.role === "curriculum" && material.status === "ready" && material.analysis?.curriculum
+src\pages\MaterialsPage.tsx:505: const contentSignalCount = readyCurriculum.reduce((total, material) => {
+src\pages\MaterialsPage.tsx:506: const curriculum = material.analysis?.curriculum
+src\pages\MaterialsPage.tsx:507: if (!curriculum) return total
+src\pages\MaterialsPage.tsx:511: curriculum.standards.length +
+src\pages\MaterialsPage.tsx:512: curriculum.vocabulary.length +
+src\pages\MaterialsPage.tsx:513: curriculum.wordLists.length +
+src\pages\MaterialsPage.tsx:514: curriculum.texts.length +
+src\pages\MaterialsPage.tsx:515: curriculum.practiceTasks.length +
+src\pages\MaterialsPage.tsx:516: curriculum.instructionalTargets.length
+src\pages\MaterialsPage.tsx:535: const hasCurriculumSupport = readyCurriculum.length > 0 && contentSignalCount > 0
+src\pages\MaterialsPage.tsx:539: hasCurriculumSupport && hasExemplarSupport
+src\pages\MaterialsPage.tsx:541: : hasCurriculumSupport
+src\pages\MaterialsPage.tsx:549: if (!hasCurriculumSupport) {
+src\pages\MaterialsPage.tsx:550: guidance.push("Add at least one strong curriculum file so lesson content is grounded in actual standards, texts, word lists, and tasks.")
+src\pages\MaterialsPage.tsx:559: ? "You currently have both curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
+src\pages\MaterialsPage.tsx:561: ? "You currently have stronger curriculum support than exemplar support. Content should be more grounded than structure."
+src\pages\MaterialsPage.tsx:563: ? "You currently have stronger exemplar support than curriculum support. Structure should be stronger than content grounding."
+src\pages\MaterialsPage.tsx:567: readyCurriculum: readyCurriculum.length,
+src\pages\MaterialsPage.tsx:668: background: role === "curriculum" ? "#eff6ff" : "#f5f3ff",
+src\pages\MaterialsPage.tsx:669: color: role === "curriculum" ? "#1d4ed8" : "#6d28d9",
+src\pages\MaterialsPage.tsx:680: background: role === "curriculum" ? "#eff6ff" : "#f5f3ff",
+src\pages\MaterialsPage.tsx:681: color: role === "curriculum" ? "#1d4ed8" : "#6d28d9",
+src\pages\ResultsPage.tsx:123: details="Add curriculum or exemplar materials and wait for analysis to complete before generating results."
+src\pages\ResultsPage.tsx:256: blueprint.sourceReadiness.curriculumSupport === "strong"
+src\pages\ResultsPage.tsx:257: ? "Curriculum materials strongly influenced the lesson content."
+src\pages\ResultsPage.tsx:258: : "Curriculum support is limited, so some content may rely on fallback lesson logic."
+src\pages\ResultsPage.tsx:281: <div><strong>Curriculum Support:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
+src\pages\ResultsPage.tsx:285: <div><strong>Practice Source:</strong> {joinOrFallback(blueprint.content.practiceIdeas, "Curriculum-aligned practice task")}</div>
+src\pages\ResultsPage.tsx:344: <div><strong>Curriculum Materials:</strong> {trace.materialCounts.curriculum}</div>
+src\pages\ResultsPage.tsx:792: const hasLimitedCurriculum = blueprint.sourceReadiness.curriculumSupport === "limited"
+src\pages\ResultsPage.tsx:796: if (hasLimitedContentFit && hasLimitedCurriculum && hasLimitedExemplar) {
+src\pages\ResultsPage.tsx:800: if (hasLimitedContentFit || hasLimitedCurriculum || hasLimitedExemplar) {
+src\state\useLessonStore.ts:131: return role === "curriculum"
+src\state\useLessonStore.ts:132: ? `curriculum-${timestamp}`
+src\App.tsx:143: Build teacher-friendly lesson packages from lesson inputs, curriculum materials, and exemplar materials with clear traceability.
+src\App.tsx:190: return "Results stay locked until at least one curriculum or exemplar material is ready."
+
+--- PATTERN: exemplar
+src\engine\blueprint\buildBlueprint.ts:57: if (material.role !== "exemplar" || !material.analysis?.exemplar) {
+src\engine\blueprint\buildBlueprint.ts:113: ExemplarAnalysis,
+src\engine\blueprint\buildBlueprint.ts:115: ExemplarStyleSettings,
+src\engine\blueprint\buildBlueprint.ts:147: const exemplarMaterials = selectStrongestMaterials(
+src\engine\blueprint\buildBlueprint.ts:165: const exemplarAnalyses = exemplarMaterials
+src\engine\blueprint\buildBlueprint.ts:171: material.analysis?.exemplar
+src\engine\blueprint\buildBlueprint.ts:173: ? applyExemplarStyleSettings(material.analysis.exemplar, material.styleSettings)
+src\engine\blueprint\buildBlueprint.ts:179: .filter((analysis): analysis is ExemplarAnalysis => Boolean(analysis))
+src\engine\blueprint\buildBlueprint.ts:213: exemplarAnalyses,
+src\engine\blueprint\buildBlueprint.ts:225: exemplarMaterials,
+src\engine\blueprint\buildBlueprint.ts:265: function applyExemplarStyleSettings(
+src\engine\blueprint\buildBlueprint.ts:267: analysis: ExemplarAnalysis,
+src\engine\blueprint\buildBlueprint.ts:269: styleSettings?: ExemplarStyleSettings | null
+src\engine\blueprint\buildBlueprint.ts:271: ): ExemplarAnalysis {
+src\engine\blueprint\buildBlueprint.ts:329: analysis: ExemplarAnalysis,
+src\engine\blueprint\buildBlueprint.ts:331: aspects: Set<ExemplarStyleSettings["aspects"][number]>
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:8: exemplarMaterials: MaterialFile[]
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:19: exemplarMaterials,
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:36: const exemplarSignalCount = countStrongExemplarSignals(
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:49: const exemplarSupport =
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:50: exemplarMaterials.length === 0
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:52: : exemplarSignalCount >= 2
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:57: curriculumSupport === "strong" && exemplarSupport === "strong"
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:61: : exemplarSupport === "strong"
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:73: if (exemplarMaterials.length === 0) {
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:74: warnings.push("No exemplar materials are ready, so structure is relying on generic lesson flow.")
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:75: } else if (exemplarSupport === "limited") {
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:76: warnings.push("Exemplar materials are present, but strong structure signals still look limited.")
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:81: exemplarSupport,
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:97: label: "Exemplar Support",
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:98: value: exemplarSupport === "strong" ? "Strong" : "Limited",
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:100: exemplarSupport === "strong"
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:101: ? `Structure signals are grounded by exemplar material (${exemplarSignalCount} strong signal areas detected).`
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:102: : exemplarMaterials.length === 0
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:103: ? "No ready exemplar materials were available."
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:104: : `Exemplar material is present, but only ${exemplarSignalCount} strong structure signal area(s) were detected.`,
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:105: tone: exemplarSupport === "strong" ? "good" : "warn",
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:119: ? "Curriculum and exemplar are both contributing meaningfully."
+src\engine\blueprint\buildBlueprintSourceReadiness.ts:175: function countStrongExemplarSignals(
+src\engine\blueprint\resolveBlueprintStructure.ts:2: ExemplarAnalysis,
+src\engine\blueprint\resolveBlueprintStructure.ts:3: ExemplarDetectedFeature,
+src\engine\blueprint\resolveBlueprintStructure.ts:4: ExemplarDetectedFeatureKey,
+src\engine\blueprint\resolveBlueprintStructure.ts:9: exemplarAnalyses: ExemplarAnalysis[]
+src\engine\blueprint\resolveBlueprintStructure.ts:12: const { exemplarAnalyses, target } = args
+src\engine\blueprint\resolveBlueprintStructure.ts:14: const timing = buildTiming(exemplarAnalyses, target)
+src\engine\blueprint\resolveBlueprintStructure.ts:15: const lessonSegments = buildLessonSegments(exemplarAnalyses, target)
+src\engine\blueprint\resolveBlueprintStructure.ts:16: const teacherMoves = buildTeacherMoves(exemplarAnalyses, target)
+src\engine\blueprint\resolveBlueprintStructure.ts:17: const promptStyle = buildPromptStyle(exemplarAnalyses, target)
+src\engine\blueprint\resolveBlueprintStructure.ts:18: const tone = buildTone(exemplarAnalyses)
+src\engine\blueprint\resolveBlueprintStructure.ts:20: exemplarAnalyses,
+src\engine\blueprint\resolveBlueprintStructure.ts:39: exemplarAnalyses: ExemplarAnalysis[],
+src\engine\blueprint\resolveBlueprintStructure.ts:42: const exemplarTiming = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.pacing))
+src\engine\blueprint\resolveBlueprintStructure.ts:43: const features = getDetectedFeatures(exemplarAnalyses)
+src\engine\blueprint\resolveBlueprintStructure.ts:45: if (exemplarTiming.length > 0) {
+src\engine\blueprint\resolveBlueprintStructure.ts:46: return exemplarTiming.slice(0, 6)
+src\engine\blueprint\resolveBlueprintStructure.ts:61: exemplarAnalyses: ExemplarAnalysis[],
+src\engine\blueprint\resolveBlueprintStructure.ts:65: ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
+src\engine\blueprint\resolveBlueprintStructure.ts:66: ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
+src\engine\blueprint\resolveBlueprintStructure.ts:67: ...buildSegmentsFromDetectedFeatures(exemplarAnalyses),
+src\engine\blueprint\resolveBlueprintStructure.ts:84: exemplarAnalyses: ExemplarAnalysis[],
+src\engine\blueprint\resolveBlueprintStructure.ts:87: const features = getDetectedFeatures(exemplarAnalyses)
+src\engine\blueprint\resolveBlueprintStructure.ts:89: ...exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves),
+src\engine\blueprint\resolveBlueprintStructure.ts:109: exemplarAnalyses: ExemplarAnalysis[],
+src\engine\blueprint\resolveBlueprintStructure.ts:112: const features = getDetectedFeatures(exemplarAnalyses)
+src\engine\blueprint\resolveBlueprintStructure.ts:114: ...exemplarAnalyses.flatMap((analysis) => analysis.promptStyle),
+src\engine\blueprint\resolveBlueprintStructure.ts:133: function buildTone(exemplarAnalyses: ExemplarAnalysis[]): string[] {
+src\engine\blueprint\resolveBlueprintStructure.ts:134: const tones = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.tone))
+src\engine\blueprint\resolveBlueprintStructure.ts:144: exemplarAnalyses: ExemplarAnalysis[],
+src\engine\blueprint\resolveBlueprintStructure.ts:156: ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
+src\engine\blueprint\resolveBlueprintStructure.ts:157: ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
+src\engine\blueprint\resolveBlueprintStructure.ts:158: ...buildTemplateShellSignalsFromFeatures(exemplarAnalyses),
+src\engine\blueprint\resolveBlueprintStructure.ts:193: function buildSegmentsFromDetectedFeatures(exemplarAnalyses: ExemplarAnalysis[]): string[] {
+src\engine\blueprint\resolveBlueprintStructure.ts:194: const features = getDetectedFeatures(exemplarAnalyses)
+src\engine\blueprint\resolveBlueprintStructure.ts:224: function buildTeacherMovesFromFeatures(features: ExemplarDetectedFeature[]): string[] {
+src\engine\blueprint\resolveBlueprintStructure.ts:250: function buildPromptStyleFromFeatures(features: ExemplarDetectedFeature[]): string[] {
+src\engine\blueprint\resolveBlueprintStructure.ts:272: function buildTemplateShellSignalsFromFeatures(exemplarAnalyses: ExemplarAnalysis[]): string[] {
+src\engine\blueprint\resolveBlueprintStructure.ts:273: const features = getDetectedFeatures(exemplarAnalyses)
+src\engine\blueprint\resolveBlueprintStructure.ts:311: function getDetectedFeatures(exemplarAnalyses: ExemplarAnalysis[]): ExemplarDetectedFeature[] {
+src\engine\blueprint\resolveBlueprintStructure.ts:312: const all = exemplarAnalyses.flatMap((analysis) => analysis.detectedFeatures?.items ?? [])
+src\engine\blueprint\resolveBlueprintStructure.ts:313: const byKey = new Map<ExemplarDetectedFeatureKey, ExemplarDetectedFeature>()
+src\engine\blueprint\resolveBlueprintStructure.ts:327: features: ExemplarDetectedFeature[],
+src\engine\blueprint\resolveBlueprintStructure.ts:328: key: ExemplarDetectedFeatureKey
+src\engine\materials\analyzeMaterial.ts:5: ExemplarAnalysis,
+src\engine\materials\analyzeMaterial.ts:7: ExemplarDetectedFeature,
+src\engine\materials\analyzeMaterial.ts:9: ExemplarDetectedFeatureCategory,
+src\engine\materials\analyzeMaterial.ts:11: ExemplarDetectedFeatureKey,
+src\engine\materials\analyzeMaterial.ts:75: : buildExemplarMaterialAnalysis(input.name, cleanedText)
+src\engine\materials\analyzeMaterial.ts:281: const structureGroundedness = countExemplarGroundedness(input.analysis)
+src\engine\materials\analyzeMaterial.ts:295: if (input.role === "exemplar" && structureGroundedness === 0) {
+src\engine\materials\analyzeMaterial.ts:299: warnings.push("Exemplar structure signals were too weak to ground lesson structure safely.")
+src\engine\materials\analyzeMaterial.ts:411: function countExemplarGroundedness(analysis: MaterialAnalysis): number {
+src\engine\materials\analyzeMaterial.ts:413: const exemplar = analysis.exemplar
+src\engine\materials\analyzeMaterial.ts:417: if (!exemplar) {
+src\engine\materials\analyzeMaterial.ts:427: exemplar.slideFlow.length +
+src\engine\materials\analyzeMaterial.ts:429: exemplar.pacing.length +
+src\engine\materials\analyzeMaterial.ts:431: exemplar.teacherMoves.length +
+src\engine\materials\analyzeMaterial.ts:433: exemplar.promptStyle.length +
+src\engine\materials\analyzeMaterial.ts:435: exemplar.layoutCues.length +
+src\engine\materials\analyzeMaterial.ts:437: exemplar.tone.length +
+src\engine\materials\analyzeMaterial.ts:439: exemplar.reusableStructure.length +
+src\engine\materials\analyzeMaterial.ts:441: (exemplar.detectedFeatures?.items.length ?? 0)
+src\engine\materials\analyzeMaterial.ts:523: function buildExemplarMaterialAnalysis(
+src\engine\materials\analyzeMaterial.ts:533: const exemplar = buildExemplarAnalysis(lines)
+src\engine\materials\analyzeMaterial.ts:535: const strength = computeExemplarSignalStrength(exemplar)
+src\engine\materials\analyzeMaterial.ts:541: summary: buildExemplarSummary(name, lines),
+src\engine\materials\analyzeMaterial.ts:545: tags: [...deriveExemplarTags(lines), "signal-strength:" + strength],
+src\engine\materials\analyzeMaterial.ts:547: sourceRole: "exemplar",
+src\engine\materials\analyzeMaterial.ts:549: exemplar
+src\engine\materials\analyzeMaterial.ts:647: function buildExemplarSummary(name: string, lines: string[]): string {
+src\engine\materials\analyzeMaterial.ts:651: return `Exemplar material ${name} was analyzed, but little usable text was extracted.`
+src\engine\materials\analyzeMaterial.ts:665: const detectedFeatureCount = detectExemplarFeatures(lines).items.length
+src\engine\materials\analyzeMaterial.ts:669: return `Exemplar material ${name} analyzed with ${lines.length} usable lines, ${flow} slide-flow signals, ${pacing} pacing signals, ${moves} teacher-move signals, ${structure} reusable structure signals, and ${detectedFeatureCount} detected exemplar features.`
+src\engine\materials\analyzeMaterial.ts:743: function buildExemplarAnalysis(lines: string[]): ExemplarAnalysis {
+src\engine\materials\analyzeMaterial.ts:759: const detectedFeatures = detectExemplarFeatures(lines)
+src\engine\materials\analyzeMaterial.ts:787: function detectExemplarFeatures(lines: string[]) {
+src\engine\materials\analyzeMaterial.ts:789: const items: ExemplarDetectedFeature[] = []
+src\engine\materials\analyzeMaterial.ts:1321: warnings: buildExemplarFeatureWarnings(lines, items),
+src\engine\materials\analyzeMaterial.ts:1329: function buildExemplarFeatureWarnings(
+src\engine\materials\analyzeMaterial.ts:1333: items: ExemplarDetectedFeature[]
+src\engine\materials\analyzeMaterial.ts:1343: warnings.push("Little usable exemplar text was available for feature detection.")
+src\engine\materials\analyzeMaterial.ts:1351: warnings.push("No strong exemplar features were confidently detected from extracted text.")
+src\engine\materials\analyzeMaterial.ts:1381: items: ExemplarDetectedFeature[],
+src\engine\materials\analyzeMaterial.ts:1385: key: ExemplarDetectedFeatureKey
+src\engine\materials\analyzeMaterial.ts:1393: category: ExemplarDetectedFeatureCategory
+src\engine\materials\analyzeMaterial.ts:1477: function deriveExemplarTags(lines: string[]): string[] {
+src\engine\materials\analyzeMaterial.ts:1501: : ["exemplar", "structure", "pacing", "teacher prompts", "layout", "slide flow"]
+src\engine\materials\analyzeMaterial.ts:2525: function computeExemplarSignalStrength(e: ExemplarAnalysis): number {
+src\engine\package\buildPackageOutputs.ts:241: `- Exemplar Support: ${blueprint.sourceReadiness.exemplarSupport}`,
+src\engine\pipeline\runLessonPipeline.ts:36: exemplar: materials.filter((material) => material.role === "exemplar").length,
+src\engine\planning\buildLessonPlanningIdeas.ts:132: return "Support students through scaffolded practice using the exemplar?s structure and prompts."
+src\engine\planning\buildLessonPlanningIdeas.ts:149: return "Carry the exemplar shell forward while swapping in curriculum-aligned content."
+src\engine\spec\buildLessonSpec.ts:150: const flowLine = `Follow the exemplar lesson flow: ${shell.lessonSegments.join(" -> ")}.`
+src\engine\spec\buildLessonSpec.ts:151: const slideShellLine = `Preserve the exemplar slide shell: ${shell.slideShell.join(" -> ")}.`
+src\engine\spec\buildLessonSpec.ts:153: const teacherMoveLine = `Use exemplar-style teacher moves such as: ${shell.teacherMoves.join(", ")}.`
+src\engine\analysis-and-blueprint.test.ts:141: async function makeExemplarFromLines(
+src\engine\analysis-and-blueprint.test.ts:151: materialId: "exemplar-1",
+src\engine\analysis-and-blueprint.test.ts:153: role: "exemplar",
+src\engine\analysis-and-blueprint.test.ts:155: name: "exemplar.txt",
+src\engine\analysis-and-blueprint.test.ts:167: id: "exemplar-1",
+src\engine\analysis-and-blueprint.test.ts:169: name: "exemplar.txt",
+src\engine\analysis-and-blueprint.test.ts:171: role: "exemplar",
+src\engine\analysis-and-blueprint.test.ts:231: it("extracts exemplar structure signals from usable lines", async () => {
+src\engine\analysis-and-blueprint.test.ts:235: materialId: "exemplar-1",
+src\engine\analysis-and-blueprint.test.ts:237: role: "exemplar",
+src\engine\analysis-and-blueprint.test.ts:239: name: "exemplar.txt",
+src\engine\analysis-and-blueprint.test.ts:267: expect(result.analysis.exemplar).toBeTruthy()
+src\engine\analysis-and-blueprint.test.ts:271: const exemplar = result.analysis.exemplar!
+src\engine\analysis-and-blueprint.test.ts:273: expect(exemplar.slideFlow.join(" ").toLowerCase()).toContain("opening")
+src\engine\analysis-and-blueprint.test.ts:275: expect(exemplar.teacherMoves.join(" ").toLowerCase()).toContain("turn and talk")
+src\engine\analysis-and-blueprint.test.ts:277: expect(exemplar.promptStyle.join(" ").toLowerCase()).toContain("what do you notice")
+src\engine\analysis-and-blueprint.test.ts:279: expect(exemplar.pacing.join(" ").toLowerCase()).toContain("5 minutes")
+src\engine\analysis-and-blueprint.test.ts:337: it("reports balanced when curriculum and exemplar are both strong", async () => {
+src\engine\analysis-and-blueprint.test.ts:355: const exemplar = await makeExemplarFromLines([
+src\engine\analysis-and-blueprint.test.ts:375: const blueprint = buildBlueprint(makeInputs(), [curriculum, exemplar], "single")
+src\engine\analysis-and-blueprint.test.ts:381: expect(blueprint.sourceReadiness.exemplarSupport).toBe("strong")
+src\engine\analysis-and-blueprint.test.ts:413: expect(blueprint.sourceReadiness.exemplarSupport).toBe("limited")
+src\engine\analysis-and-blueprint.test.ts:421: it("reports structure-heavy when only exemplar is strong", async () => {
+src\engine\analysis-and-blueprint.test.ts:423: const exemplar = await makeExemplarFromLines([
+src\engine\analysis-and-blueprint.test.ts:445: const blueprint = buildBlueprint(makeInputs(), [exemplar], "single")
+src\engine\analysis-and-blueprint.test.ts:451: expect(blueprint.sourceReadiness.exemplarSupport).toBe("strong")
+src\engine\analysis-and-blueprint.test.ts:553: it("prefers a cleaner exemplar source over a noisier OCR-heavy one for structure", async () => {
+src\engine\analysis-and-blueprint.test.ts:555: const noisyExemplar = await makeExemplarFromLines(
+src\engine\analysis-and-blueprint.test.ts:601: const cleanExemplar = await makeExemplarFromLines(
+src\engine\analysis-and-blueprint.test.ts:631: [noisyExemplar, cleanExemplar],
+src\engine\analysis-signals.test.ts:44: it("detects richer exemplar signals and detected features from lesson-delivery text", async () => {
+src\engine\analysis-signals.test.ts:47: role: "exemplar",
+src\engine\analysis-signals.test.ts:48: name: "exemplar.txt",
+src\engine\analysis-signals.test.ts:71: expect(result.analysis.sourceRole).toBe("exemplar")
+src\engine\analysis-signals.test.ts:72: expect(result.analysis.exemplar?.slideFlow.length ?? 0).toBeGreaterThan(0)
+src\engine\analysis-signals.test.ts:73: expect(result.analysis.exemplar?.pacing).toContain("5 min launch")
+src\engine\analysis-signals.test.ts:74: expect(result.analysis.exemplar?.teacherMoves.length ?? 0).toBeGreaterThanOrEqual(2)
+src\engine\analysis-signals.test.ts:75: expect(result.analysis.exemplar?.promptStyle.length ?? 0).toBeGreaterThanOrEqual(2)
+src\engine\analysis-signals.test.ts:76: expect(result.analysis.exemplar?.layoutCues.length ?? 0).toBeGreaterThan(0)
+src\engine\analysis-signals.test.ts:77: expect(result.analysis.exemplar?.reusableStructure.length ?? 0).toBeGreaterThan(0)
+src\engine\analysis-signals.test.ts:82: const detected = result.analysis.exemplar?.detectedFeatures
+src\engine\analysis-signals.test.ts:130: it("adds sensible warnings when exemplar text is too thin for strong feature detection", async () => {
+src\engine\analysis-signals.test.ts:133: role: "exemplar",
+src\engine\analysis-signals.test.ts:134: name: "thin-exemplar.txt",
+src\engine\analysis-signals.test.ts:142: const detected = result.analysis.exemplar?.detectedFeatures
+src\engine\blueprint-readiness.test.ts:5: it("uses exemplar-provided structure when both curriculum and exemplar materials are present", () => {
+src\engine\blueprint-readiness.test.ts:46: role: "exemplar",
+src\engine\blueprint-readiness.test.ts:47: name: "exemplar.txt",
+src\engine\blueprint-readiness.test.ts:52: sourceRole: "exemplar",
+src\engine\blueprint-readiness.test.ts:53: summary: "Exemplar material with lesson structure support.",
+src\engine\blueprint-readiness.test.ts:60: tags: ["exemplar", "structure", "slides"],
+src\engine\blueprint-readiness.test.ts:61: exemplar: {
+src\engine\blueprint-readiness.test.ts:92: it("uses fallback structure when curriculum is present without exemplar support", () => {
+src\engine\blueprint-structure-features.test.ts:3: import { ExemplarDetectedFeatures, MaterialAnalysis, MaterialFile } from "./types"
+src\engine\blueprint-structure-features.test.ts:5: function makeExemplarAnalysis(detectedFeatures: ExemplarDetectedFeatures): MaterialAnalysis {
+src\engine\blueprint-structure-features.test.ts:7: sourceRole: "exemplar",
+src\engine\blueprint-structure-features.test.ts:8: summary: "Exemplar material with detected structural features.",
+src\engine\blueprint-structure-features.test.ts:10: tags: ["exemplar", "structure"],
+src\engine\blueprint-structure-features.test.ts:11: exemplar: {
+src\engine\blueprint-structure-features.test.ts:24: function makeExemplarMaterial(
+src\engine\blueprint-structure-features.test.ts:26: detectedFeatures: ExemplarDetectedFeatures
+src\engine\blueprint-structure-features.test.ts:30: role: "exemplar",
+src\engine\blueprint-structure-features.test.ts:35: analysis: makeExemplarAnalysis(detectedFeatures),
+src\engine\blueprint-structure-features.test.ts:42: describe("blueprint structure from exemplar detected features", () => {
+src\engine\blueprint-structure-features.test.ts:43: it("strengthens timing, interaction, segments, and template shell from detected exemplar features", () => {
+src\engine\blueprint-structure-features.test.ts:54: makeExemplarMaterial("ex-1", {
+src\engine\blueprint-structure-features.test.ts:171: it("adds content-slot shell signals from detected exemplar features", () => {
+src\engine\blueprint-structure-features.test.ts:182: makeExemplarMaterial("ex-2", {
+src\engine\lesson-spec.test.ts:50: exemplarSupport: "strong",
+src\engine\material-reliability.test.ts:98: it("allows strong exemplar for structure but not content", async () => {
+src\engine\material-reliability.test.ts:101: role: "exemplar",
+src\engine\material-reliability.test.ts:102: name: "exemplar.txt",
+src\engine\material-reliability.test.ts:123: it("blocks noisy OCR-heavy exemplar structure", async () => {
+src\engine\material-reliability.test.ts:126: role: "exemplar",
+src\engine\package-decisions.test.ts:42: exemplarSupport: "strong",
+src\engine\package-outputs.test.ts:36: exemplarSupport: "strong",
+src\engine\package-outputs.test.ts:43: note: "Curriculum and exemplar are both present.",
+src\engine\package-outputs.test.ts:79: notes: "Use exemplar pacing",
+src\engine\pipeline-trace.test.ts:64: function makeExemplarMaterial(): MaterialFile {
+src\engine\pipeline-trace.test.ts:66: id: "exemplar-1",
+src\engine\pipeline-trace.test.ts:67: name: "exemplar.txt",
+src\engine\pipeline-trace.test.ts:68: role: "exemplar",
+src\engine\pipeline-trace.test.ts:70: summary: "Exemplar test material",
+src\engine\pipeline-trace.test.ts:78: tags: ["exemplar", "structure", "slide flow"],
+src\engine\pipeline-trace.test.ts:79: sourceRole: "exemplar",
+src\engine\pipeline-trace.test.ts:80: exemplar: {
+src\engine\pipeline-trace.test.ts:97: [makeCurriculumMaterial(), makeExemplarMaterial()],
+src\engine\pipeline-trace.test.ts:105: expect(result.trace.materialCounts.exemplar).toBe(1)
+src\engine\pipeline.test.ts:59: function makeExemplarMaterial(lines: string[]): MaterialFile {
+src\engine\pipeline.test.ts:61: id: "exemplar-1",
+src\engine\pipeline.test.ts:62: name: "exemplar.txt",
+src\engine\pipeline.test.ts:63: role: "exemplar",
+src\engine\pipeline.test.ts:65: summary: "Exemplar test material",
+src\engine\pipeline.test.ts:67: tags: ["exemplar", "structure", "slide flow"],
+src\engine\pipeline.test.ts:68: sourceRole: "exemplar",
+src\engine\pipeline.test.ts:69: exemplar: {
+src\engine\pipeline.test.ts:91: makeExemplarMaterial([
+src\engine\pipeline.test.ts:156: makeExemplarMaterial([
+src\engine\pipeline.test.ts:171: it("uses curriculum for content and exemplar for structure", () => {
+src\engine\pipeline.test.ts:181: const exemplar = makeExemplarMaterial([
+src\engine\pipeline.test.ts:191: const result = runLessonPipeline(inputs, [curriculum, exemplar], "single")
+src\engine\planning-coverage.test.ts:50: exemplarSupport: "strong",
+src\engine\slides.test.ts:60: function makeExemplarMaterial(lines: string[]): MaterialFile {
+src\engine\slides.test.ts:62: id: "exemplar-1",
+src\engine\slides.test.ts:63: name: "exemplar.txt",
+src\engine\slides.test.ts:64: role: "exemplar",
+src\engine\slides.test.ts:66: summary: "Exemplar test material",
+src\engine\slides.test.ts:68: tags: ["exemplar", "structure", "slide flow"],
+src\engine\slides.test.ts:69: sourceRole: "exemplar",
+src\engine\slides.test.ts:70: exemplar: {
+src\engine\slides.test.ts:92: makeExemplarMaterial([
+src\engine\slides.test.ts:127: it("includes guided and independent practice when exemplar flow supports them", () => {
+src\engine\slides.test.ts:157: it("pulls exemplar structure into teacher-facing metadata", () => {
+src\engine\style-settings-blueprint.test.ts:4: ExemplarAnalysis,
+src\engine\style-settings-blueprint.test.ts:5: ExemplarDetectedFeatures,
+src\engine\style-settings-blueprint.test.ts:6: ExemplarStyleSettings,
+src\engine\style-settings-blueprint.test.ts:11: function makeExemplarAnalysis(
+src\engine\style-settings-blueprint.test.ts:12: overrides: Partial<ExemplarAnalysis> = {},
+src\engine\style-settings-blueprint.test.ts:13: detectedFeatures?: ExemplarDetectedFeatures
+src\engine\style-settings-blueprint.test.ts:16: sourceRole: "exemplar",
+src\engine\style-settings-blueprint.test.ts:17: summary: "Exemplar material with configurable style settings.",
+src\engine\style-settings-blueprint.test.ts:19: tags: ["exemplar", "structure"],
+src\engine\style-settings-blueprint.test.ts:20: exemplar: {
+src\engine\style-settings-blueprint.test.ts:79: function makeExemplarMaterial(
+src\engine\style-settings-blueprint.test.ts:81: styleSettings: ExemplarStyleSettings
+src\engine\style-settings-blueprint.test.ts:85: role: "exemplar",
+src\engine\style-settings-blueprint.test.ts:90: analysis: makeExemplarAnalysis(),
+src\engine\style-settings-blueprint.test.ts:97: describe("blueprint respects exemplar style settings", () => {
+src\engine\style-settings-blueprint.test.ts:98: it("keeps full exemplar influence for copy_closely mode", () => {
+src\engine\style-settings-blueprint.test.ts:109: makeExemplarMaterial("ex-copy", {
+src\engine\style-settings-blueprint.test.ts:139: makeExemplarMaterial("ex-selected", {
+src\engine\style-settings-blueprint.test.ts:172: makeExemplarMaterial("ex-no-pacing", {
+src\engine\types.ts:19: export type MaterialRole = "curriculum" | "exemplar"
+src\engine\types.ts:37: export type ExemplarStyleMode =
+src\engine\types.ts:49: export type ExemplarStyleAspect =
+src\engine\types.ts:65: export type ExemplarStyleSettings = {
+src\engine\types.ts:67: mode: ExemplarStyleMode
+src\engine\types.ts:69: aspects: ExemplarStyleAspect[]
+src\engine\types.ts:77: export type ExemplarDetectedFeatureKey =
+src\engine\types.ts:153: export type ExemplarDetectedFeatureCategory =
+src\engine\types.ts:171: export type ExemplarDetectedFeature = {
+src\engine\types.ts:173: key: ExemplarDetectedFeatureKey
+src\engine\types.ts:183: category: ExemplarDetectedFeatureCategory
+src\engine\types.ts:189: export type ExemplarDetectedFeatures = {
+src\engine\types.ts:191: items: ExemplarDetectedFeature[]
+src\engine\types.ts:199: export type ExemplarTransformationMode =
+src\engine\types.ts:211: export type ExemplarTransformationRequest = {
+src\engine\types.ts:213: mode: ExemplarTransformationMode
+src\engine\types.ts:215: keepFeatures: ExemplarDetectedFeatureKey[]
+src\engine\types.ts:217: removeFeatures: ExemplarDetectedFeatureKey[]
+src\engine\types.ts:333: export type ExemplarAnalysis = {
+src\engine\types.ts:349: detectedFeatures?: ExemplarDetectedFeatures
+src\engine\types.ts:371: exemplar?: ExemplarAnalysis
+src\engine\types.ts:391: styleSettings?: ExemplarStyleSettings | null
+src\engine\types.ts:393: transformationRequest?: ExemplarTransformationRequest | null
+src\engine\types.ts:523: exemplarSupport: "strong" | "limited"
+src\engine\types.ts:823: exemplar: number
+src\pages\InputsPage.tsx:158: Define the lesson intent before adding curriculum and exemplar materials.
+src\pages\MaterialsPage.tsx:146: const exemplarInputRef = useRef<HTMLInputElement | null>(null)
+src\pages\MaterialsPage.tsx:230: Upload curriculum and exemplar files. Materials appear immediately and stay visible
+src\pages\MaterialsPage.tsx:243: ref={exemplarInputRef}
+src\pages\MaterialsPage.tsx:246: onChange={(event) => handleFilesSelected("exemplar", event)}
+src\pages\MaterialsPage.tsx:268: <div style={uploadCardStyle("exemplar")}>
+src\pages\MaterialsPage.tsx:269: <div style={miniTagStyle("exemplar")}>Presentation Authority</div>
+src\pages\MaterialsPage.tsx:271: Exemplar
+src\pages\MaterialsPage.tsx:279: onClick={() => exemplarInputRef.current?.click()}
+src\pages\MaterialsPage.tsx:281: Upload Exemplar Files
+src\pages\MaterialsPage.tsx:293: <SummaryCard label="Ready Exemplar" value={supportSummary.readyExemplar} />
+src\pages\MaterialsPage.tsx:340: : "Add curriculum or exemplar files to begin analysis."}
+src\pages\MaterialsPage.tsx:359: ? "At least one curriculum or exemplar material must be ready."
+src\pages\MaterialsPage.tsx:488: readyExemplar: number
+src\pages\MaterialsPage.tsx:501: const readyExemplar = materials.filter(
+src\pages\MaterialsPage.tsx:502: (material) => material.role === "exemplar" && material.status === "ready" && material.analysis?.exemplar
+src\pages\MaterialsPage.tsx:520: const structureSignalCount = readyExemplar.reduce((total, material) => {
+src\pages\MaterialsPage.tsx:521: const exemplar = material.analysis?.exemplar
+src\pages\MaterialsPage.tsx:522: if (!exemplar) return total
+src\pages\MaterialsPage.tsx:526: exemplar.slideFlow.length +
+src\pages\MaterialsPage.tsx:527: exemplar.pacing.length +
+src\pages\MaterialsPage.tsx:528: exemplar.teacherMoves.length +
+src\pages\MaterialsPage.tsx:529: exemplar.promptStyle.length +
+src\pages\MaterialsPage.tsx:530: exemplar.layoutCues.length +
+src\pages\MaterialsPage.tsx:531: exemplar.reusableStructure.length
+src\pages\MaterialsPage.tsx:536: const hasExemplarSupport = readyExemplar.length > 0 && structureSignalCount > 0
+src\pages\MaterialsPage.tsx:539: hasCurriculumSupport && hasExemplarSupport
+src\pages\MaterialsPage.tsx:543: : hasExemplarSupport
+src\pages\MaterialsPage.tsx:553: if (!hasExemplarSupport) {
+src\pages\MaterialsPage.tsx:554: guidance.push("Add at least one strong exemplar file so pacing, slide flow, prompts, and structure are grounded in a real model.")
+src\pages\MaterialsPage.tsx:559: ? "You currently have both curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
+src\pages\MaterialsPage.tsx:561: ? "You currently have stronger curriculum support than exemplar support. Content should be more grounded than structure."
+src\pages\MaterialsPage.tsx:563: ? "You currently have stronger exemplar support than curriculum support. Structure should be stronger than content grounding."
+src\pages\MaterialsPage.tsx:568: readyExemplar: readyExemplar.length,
+src\pages\ResultsPage.tsx:123: details="Add curriculum or exemplar materials and wait for analysis to complete before generating results."
+src\pages\ResultsPage.tsx:261: blueprint.sourceReadiness.exemplarSupport === "strong"
+src\pages\ResultsPage.tsx:262: ? "Exemplar materials strongly influenced pacing, flow, and teacher-facing structure."
+src\pages\ResultsPage.tsx:263: : "Exemplar support is limited, so structure may rely on fallback lesson organization."
+src\pages\ResultsPage.tsx:293: <div><strong>Exemplar Support:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
+src\pages\ResultsPage.tsx:345: <div><strong>Exemplar Materials:</strong> {trace.materialCounts.exemplar}</div>
+src\pages\ResultsPage.tsx:793: const hasLimitedExemplar = blueprint.sourceReadiness.exemplarSupport === "limited"
+src\pages\ResultsPage.tsx:796: if (hasLimitedContentFit && hasLimitedCurriculum && hasLimitedExemplar) {
+src\pages\ResultsPage.tsx:800: if (hasLimitedContentFit || hasLimitedCurriculum || hasLimitedExemplar) {
+src\state\useLessonStore.ts:4: ExemplarStyleSettings,
+src\state\useLessonStore.ts:62: setMaterialStyleSettings: (id: string, settings: ExemplarStyleSettings) => void
+src\state\useLessonStore.ts:133: : `exemplar-${timestamp}`
+src\state\useLessonStore.ts:136: function defaultExemplarStyleSettings(): ExemplarStyleSettings {
+src\state\useLessonStore.ts:232: styleSettings: role === "exemplar" ? defaultExemplarStyleSettings() : null,
+src\App.tsx:143: Build teacher-friendly lesson packages from lesson inputs, curriculum materials, and exemplar materials with clear traceability.
+src\App.tsx:190: return "Results stay locked until at least one curriculum or exemplar material is ready."
+
+--- PATTERN: content authority
+src\pages\MaterialsPage.tsx:252: <div style={miniTagStyle("curriculum")}>Content Authority</div>
+src\pages\MaterialsPage.tsx:257: Teaching content authority: standards, word lists, texts, examples, and practice activities.
+src\pages\ResultsPage.tsx:278: <div style={subHeadingStyle}>Content Authority</div>
+
+--- PATTERN: presentation authority
+src\pages\MaterialsPage.tsx:269: <div style={miniTagStyle("exemplar")}>Presentation Authority</div>
+src\pages\MaterialsPage.tsx:274: Presentation authority: slide order, pacing, prompts, layout, and timing.
+src\pages\ResultsPage.tsx:290: <div style={subHeadingStyle}>Presentation Authority</div>
+
+
+================================================================================
+Teacher-facing explanation seams in UI
+================================================================================
+--- PATTERN: used
+src\engine\materials\analyzeMaterial.ts:21: MaterialUseDecision,
+src\engine\materials\analyzeMaterial.ts:359: ): MaterialUseDecision {
+src\engine\materials\extractTextFromFile.ts:562: `Primary extraction used ${method} for ${fileType}.`,
+src\engine\planning\buildLessonPlanningIdeas.ts:490: rationale: "Keeps center work focused instead of overloading students with both targets at once.",
+src\engine\planning\buildLessonPlanningIdeas.ts:593: description: "Identify which part of the two-part lesson caused difficulty first and intervene there before reteaching everything.",
+src\engine\types.ts:261: export type MaterialUseDecision = "allow" | "caution" | "block"
+src\engine\types.ts:275: contentDecision: MaterialUseDecision
+src\engine\types.ts:277: structureDecision: MaterialUseDecision
+src\state\useLessonStore.ts:169: message: "Inputs currently read mostly as phonics-focused.",
+src\state\useLessonStore.ts:179: message: "Inputs currently read mostly as comprehension-focused.",
+
+--- PATTERN: ignored
+[no hits]
+
+--- PATTERN: blocked
+src\pages\MaterialsPage.tsx:337: ? "Results stay blocked until all uploaded materials finish processing."
+src\pages\ResultsPage.tsx:96: <BlockedResultsState
+src\pages\ResultsPage.tsx:98: message="Results are blocked while materials are still processing."
+src\pages\ResultsPage.tsx:108: <BlockedResultsState
+src\pages\ResultsPage.tsx:110: message="Results are blocked until all required lesson inputs are completed."
+src\pages\ResultsPage.tsx:120: <BlockedResultsState
+src\pages\ResultsPage.tsx:122: message="Results are blocked until at least one material is analyzed and ready."
+src\pages\ResultsPage.tsx:132: <BlockedResultsState
+src\pages\ResultsPage.tsx:746: function BlockedResultsState({
+src\App.tsx:15: const resultsBlockedReason = getResultsBlockedReason({
+src\App.tsx:47: marginBottom: resultsBlockedReason ? "var(--space-sm)" : 0,
+src\App.tsx:56: <Link to="/results" style={linkStyle("/results", Boolean(resultsBlockedReason))}>
+src\App.tsx:61: {resultsBlockedReason && (
+src\App.tsx:73: {resultsBlockedReason}
+src\App.tsx:170: function getResultsBlockedReason({
+
+--- PATTERN: down-ranked
+[no hits]
+
+--- PATTERN: downranked
+[no hits]
+
+--- PATTERN: reliability reasons
+[no hits]
+
+--- PATTERN: traceability
+src\engine\pipeline-trace.test.ts:93: describe("lesson pipeline traceability", () => {
+src\pages\ResultsPage.tsx:183: <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} />
+src\pages\ResultsPage.tsx:248: function TraceabilitySection({
+src\App.tsx:143: Build teacher-friendly lesson packages from lesson inputs, curriculum materials, and exemplar materials with clear traceability.
+
+--- PATTERN: extraction
+src\engine\analysis\runMaterialAnalysis.ts:3: import { ExtractionMetadata, MaterialRole } from "../types"
+src\engine\analysis\runMaterialAnalysis.ts:27: extractionMetadata?: ExtractionMetadata
+src\engine\analysis\runMaterialAnalysis.ts:41: extractionMetadata,
+src\engine\materials\analyzeMaterial.ts:13: ExtractionMetadata,
+src\engine\materials\analyzeMaterial.ts:37: extractionMetadata?: ExtractionMetadata
+src\engine\materials\analyzeMaterial.ts:83: extractionMetadata: input.extractionMetadata,
+src\engine\materials\analyzeMaterial.ts:91: extractionMetadata: input.extractionMetadata,
+src\engine\materials\analyzeMaterial.ts:119: extractionMetadata?: ExtractionMetadata
+src\engine\materials\analyzeMaterial.ts:141: const metadata = input.extractionMetadata
+src\engine\materials\analyzeMaterial.ts:149: warnings.push("No extraction metadata available.")
+src\engine\materials\analyzeMaterial.ts:157: reasons.push("OCR-only extraction reduced confidence.")
+src\engine\materials\analyzeMaterial.ts:163: reasons.push("Mixed parser/OCR extraction needs caution.")
+src\engine\materials\analyzeMaterial.ts:169: reasons.push("Fallback extraction notice means little usable source text.")
+src\engine\materials\analyzeMaterial.ts:181: reasons.push("Extraction quality is medium.")
+src\engine\materials\analyzeMaterial.ts:187: reasons.push("Extraction quality is low.")
+src\engine\materials\analyzeMaterial.ts:197: reasons.push("Extraction confidence is very low.")
+src\engine\materials\analyzeMaterial.ts:203: reasons.push("Extraction confidence is moderate.")
+src\engine\materials\analyzeMaterial.ts:213: reasons.push("OCR fallback or OCR-heavy extraction was needed.")
+src\engine\materials\analyzeMaterial.ts:1367: warnings.push("Visual/style features may be under-detected when extraction is mostly text-only.")
+src\engine\materials\extractTextFromFile.ts:2: import { ExtractionMetadata } from "../types"
+src\engine\materials\extractTextFromFile.ts:14: extractionMetadata: ExtractionMetadata
+src\engine\materials\extractTextFromFile.ts:30: extractionMetadata: buildExtractionMetadata({
+src\engine\materials\extractTextFromFile.ts:41: const parserMetadata = buildExtractionMetadata({
+src\engine\materials\extractTextFromFile.ts:57: extractionMetadata: upgradedPdfResult.extractionMetadata,
+src\engine\materials\extractTextFromFile.ts:68: extractionMetadata: buildExtractionMetadata({
+src\engine\materials\extractTextFromFile.ts:85: extractionMetadata: buildExtractionMetadata({
+src\engine\materials\extractTextFromFile.ts:100: extractionMetadata: buildExtractionMetadata({
+src\engine\materials\extractTextFromFile.ts:115: extractionMetadata: buildExtractionMetadata({
+src\engine\materials\extractTextFromFile.ts:191: "Provide the uploaded PDF as an ArrayBuffer so real extraction can run.",
+src\engine\materials\extractTextFromFile.ts:215: error instanceof Error ? error.message : "Unknown PDF extraction error"
+src\engine\materials\extractTextFromFile.ts:217: return [`PDF extraction failed for ${input.fileName}.`, message]
+src\engine\materials\extractTextFromFile.ts:232: parserMetadata: ExtractionMetadata
+src\engine\materials\extractTextFromFile.ts:233: }): Promise<{ extractedText: string[]; extractionMetadata: ExtractionMetadata }> {
+src\engine\materials\extractTextFromFile.ts:241: extractionMetadata: parserMetadata,
+src\engine\materials\extractTextFromFile.ts:264: extractionMetadata: {
+src\engine\materials\extractTextFromFile.ts:275: const mixedMetadata = buildExtractionMetadata({
+src\engine\materials\extractTextFromFile.ts:283: extractionMetadata: {
+src\engine\materials\extractTextFromFile.ts:298: extractionMetadata: {
+src\engine\materials\extractTextFromFile.ts:313: "Provide the uploaded DOCX as an ArrayBuffer so real extraction can run.",
+src\engine\materials\extractTextFromFile.ts:336: error instanceof Error ? error.message : "Unknown DOCX extraction error"
+src\engine\materials\extractTextFromFile.ts:338: return [`DOCX extraction failed for ${input.fileName}.`, message]
+src\engine\materials\extractTextFromFile.ts:346: "Provide the uploaded PPTX as an ArrayBuffer so real extraction can run.",
+src\engine\materials\extractTextFromFile.ts:357: `PPTX extraction produced no readable text for ${input.fileName}.`,
+src\engine\materials\extractTextFromFile.ts:365: error instanceof Error ? error.message : "Unknown PPTX extraction error"
+src\engine\materials\extractTextFromFile.ts:367: return [`PPTX extraction failed for ${input.fileName}.`, message]
+src\engine\materials\extractTextFromFile.ts:480: "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
+src\engine\materials\extractTextFromFile.ts:494: joined.includes("extraction failed") ||
+src\engine\materials\extractTextFromFile.ts:500: function buildExtractionMetadata({
+src\engine\materials\extractTextFromFile.ts:505: method: ExtractionMetadata["method"]
+src\engine\materials\extractTextFromFile.ts:508: }): ExtractionMetadata {
+src\engine\materials\extractTextFromFile.ts:517: `Extraction returned fallback notice output for ${fileType}.`,
+src\engine\materials\extractTextFromFile.ts:527: const signals = computeExtractionSignals(extractedText)
+src\engine\materials\extractTextFromFile.ts:562: `Primary extraction used ${method} for ${fileType}.`,
+src\engine\materials\extractTextFromFile.ts:569: notes.push("No longer-form lines were detected, which may indicate thin extraction quality.")
+src\engine\materials\extractTextFromFile.ts:586: function computeExtractionSignals(lines: string[]) {
+src\engine\workflow\processMaterial.ts:15: store.beginMaterialExtraction(id)
+src\engine\workflow\processMaterial.ts:17: const extraction = await extractTextFromFile({
+src\engine\workflow\processMaterial.ts:29: extraction.extractedText
+src\engine\workflow\processMaterial.ts:34: extractionMetadata: extraction.extractionMetadata,
+src\engine\analysis-and-blueprint.test.ts:7: import { ExtractionMetadata, LessonInputs, MaterialAnalysis, MaterialFile, MaterialRole } from "./types"
+src\engine\analysis-and-blueprint.test.ts:35: function makeExtractionMetadata(
+src\engine\analysis-and-blueprint.test.ts:37: overrides: Partial<ExtractionMetadata> = {}
+src\engine\analysis-and-blueprint.test.ts:39: ): ExtractionMetadata {
+src\engine\analysis-and-blueprint.test.ts:105: extractionMetadata?: ExtractionMetadata
+src\engine\analysis-and-blueprint.test.ts:119: extractionMetadata,
+src\engine\analysis-and-blueprint.test.ts:145: extractionMetadata?: ExtractionMetadata
+src\engine\analysis-and-blueprint.test.ts:159: extractionMetadata,
+src\engine\analysis-and-blueprint.test.ts:285: it("filters obvious extraction noise", async () => {
+src\engine\analysis-and-blueprint.test.ts:483: makeExtractionMetadata({
+src\engine\analysis-and-blueprint.test.ts:519: makeExtractionMetadata()
+src\engine\analysis-and-blueprint.test.ts:581: makeExtractionMetadata({
+src\engine\analysis-and-blueprint.test.ts:621: makeExtractionMetadata()
+src\engine\extraction.test.ts:42: describe("extraction contract", () => {
+src\engine\extraction.test.ts:104: expect(result.extractionMetadata.quality).toBe("low")
+src\engine\extraction.test.ts:105: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:106: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:132: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:133: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:157: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:158: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:169: expect(result.extractionMetadata.method).toBe("fallback_notice")
+src\engine\extraction.test.ts:170: expect(result.extractionMetadata.quality).toBe("low")
+src\engine\extraction.test.ts:171: expect(result.extractionMetadata.ocrCandidate).toBe(true)
+src\engine\extraction.test.ts:172: expect(result.extractionMetadata.ocrReason).toContain("Parser did not recover usable text")
+src\engine\extraction.test.ts:184: expect(result.extractionMetadata.method).toBe("fallback_notice")
+src\engine\extraction.test.ts:185: expect(result.extractionMetadata.quality).toBe("low")
+src\engine\extraction.test.ts:186: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:187: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:198: expect(result.extractionMetadata.method).toBe("fallback_notice")
+src\engine\extraction.test.ts:199: expect(result.extractionMetadata.quality).toBe("low")
+src\engine\extraction.test.ts:200: expect(result.extractionMetadata.ocrCandidate).toBe(true)
+src\engine\extraction.test.ts:201: expect(result.extractionMetadata.ocrReason).toContain("Parser did not recover usable text")
+src\engine\extraction.test.ts:213: "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
+src\engine\extraction.test.ts:215: expect(result.extractionMetadata.method).toBe("fallback_notice")
+src\engine\extraction.test.ts:216: expect(result.extractionMetadata.quality).toBe("low")
+src\engine\extraction.test.ts:217: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:218: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:236: expect(result.extractionMetadata.method).toBe("parser")
+src\engine\extraction.test.ts:237: expect(result.extractionMetadata.quality).toBe("low")
+src\engine\extraction.test.ts:238: expect(result.extractionMetadata.ocrCandidate).toBe(true)
+src\engine\extraction.test.ts:239: expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
+src\engine\extraction.test.ts:257: expect(result.extractionMetadata.method).toBe("parser")
+src\engine\extraction.test.ts:258: expect(result.extractionMetadata.quality).toBe("high")
+src\engine\extraction.test.ts:259: expect(result.extractionMetadata.ocrCandidate).toBe(false)
+src\engine\extraction.test.ts:260: expect(result.extractionMetadata.ocrReason).toBeNull()
+src\engine\extraction.test.ts:276: expect(result.extractionMetadata.method).toBe("parser")
+src\engine\extraction.test.ts:277: expect(result.extractionMetadata.quality).toBe("low")
+src\engine\extraction.test.ts:278: expect(result.extractionMetadata.ocrCandidate).toBe(true)
+src\engine\extraction.test.ts:279: expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
+src\engine\extraction.test.ts:310: expect(result.extractionMetadata.method).toBe("parser")
+src\engine\extraction.test.ts:311: expect(result.extractionMetadata.notes.join(" ")).toContain(
+src\engine\extraction.test.ts:316: it("upgrades pdf extraction to mixed when OCR adds enough useful text", async () => {
+src\engine\extraction.test.ts:347: expect(result.extractionMetadata.method).toBe("mixed")
+src\engine\extraction.test.ts:348: expect(result.extractionMetadata.notes.join(" ")).toContain(
+src\engine\extraction.test.ts:378: expect(result.extractionMetadata.method).toBe("parser")
+src\engine\extraction.test.ts:379: expect(result.extractionMetadata.notes.join(" ")).toContain(
+src\engine\material-reliability.test.ts:39: extractionMetadata: makeMetadata(),
+src\engine\material-reliability.test.ts:59: extractionMetadata: makeMetadata({
+src\engine\material-reliability.test.ts:78: "ArrayBuffer is required for readable extraction.",
+src\engine\material-reliability.test.ts:80: extractionMetadata: makeMetadata({
+src\engine\material-reliability.test.ts:113: extractionMetadata: makeMetadata(),
+src\engine\material-reliability.test.ts:136: extractionMetadata: makeMetadata({
+src\engine\types.ts:231: export type ExtractionMethod = "parser" | "ocr" | "mixed" | "fallback_notice"
+src\engine\types.ts:235: export type ExtractionQuality = "high" | "medium" | "low"
+src\engine\types.ts:239: export type ExtractionMetadata = {
+src\engine\types.ts:241: method: ExtractionMethod
+src\engine\types.ts:243: quality: ExtractionQuality
+src\engine\types.ts:365: extractionMetadata?: ExtractionMetadata
+src\pages\MaterialsPage.tsx:231: while they move through upload, extraction, analysis, and ready states.
+src\pages\MaterialsPage.tsx:388: {material.analysis?.extractionMetadata && (
+src\pages\MaterialsPage.tsx:390: <span style={methodBadgeStyle(material.analysis.extractionMetadata.method)}>
+src\pages\MaterialsPage.tsx:391: {formatExtractionMethod(material.analysis.extractionMetadata.method)}
+src\pages\MaterialsPage.tsx:393: <span style={qualityBadgeStyle(material.analysis.extractionMetadata.quality)}>
+src\pages\MaterialsPage.tsx:394: {formatExtractionQuality(material.analysis.extractionMetadata.quality)}
+src\pages\MaterialsPage.tsx:396: {material.analysis.extractionMetadata.ocrCandidate && (
+src\pages\MaterialsPage.tsx:418: {material.analysis?.extractionMetadata && (
+src\pages\MaterialsPage.tsx:421: <div style={{ fontWeight: 700, marginBottom: 4 }}>Extraction Trace</div>
+src\pages\MaterialsPage.tsx:423: <strong>Confidence:</strong> {formatExtractionConfidence(material.analysis.extractionMetadata.confidence)}
+src\pages\MaterialsPage.tsx:425: {material.analysis.extractionMetadata.ocrReason && (
+src\pages\MaterialsPage.tsx:427: <strong>OCR reason:</strong> {material.analysis.extractionMetadata.ocrReason}
+src\pages\MaterialsPage.tsx:430: {material.analysis.extractionMetadata.notes.length > 0 && (
+src\pages\MaterialsPage.tsx:432: <strong>Notes:</strong> {material.analysis.extractionMetadata.notes.join(" ")}
+src\pages\MaterialsPage.tsx:624: if (status === "uploaded") return "Queued for extraction"
+src\pages\MaterialsPage.tsx:755: function formatExtractionMethod(method: "parser" | "ocr" | "mixed" | "fallback_notice"): string {
+src\pages\MaterialsPage.tsx:762: function formatExtractionQuality(quality: "high" | "medium" | "low"): string {
+src\pages\MaterialsPage.tsx:766: function formatExtractionConfidence(confidence: number): string {
+src\state\useLessonStore.ts:65: beginMaterialExtraction: (id: string) => void
+src\state\useLessonStore.ts:317: beginMaterialExtraction: (id) => {
+
+--- PATTERN: MaterialsPage
+src\pages\MaterialsPage.tsx:130: export default function MaterialsPage() {
+src\App.tsx:4: import MaterialsPage from "./pages/MaterialsPage"
+src\App.tsx:161: <Route path="/materials" element={<MaterialsPage />} />
+
+--- PATTERN: ResultsPage
+src\pages\ResultsPage.tsx:57: export default function ResultsPage() {
+src\App.tsx:5: import ResultsPage from "./pages/ResultsPage"
+src\App.tsx:162: <Route path="/results" element={<ResultsPage />} />
+
+
+================================================================================
+Material Reliability related test files
+================================================================================
+src\engine\analysis-and-blueprint.test.ts
+src\engine\blueprint-readiness.test.ts
+src\engine\blueprint-structure-features.test.ts
+src\engine\material-reliability.test.ts
+src\engine\style-settings-blueprint.test.ts
+
+================================================================================
+Test lines mentioning reliability / gating / blueprint
+================================================================================
+src\engine\analysis-and-blueprint.test.ts:5: import { buildBlueprint } from "./blueprint/buildBlueprint"
+src\engine\analysis-and-blueprint.test.ts:335: describe("buildBlueprint source readiness", () => {
+src\engine\analysis-and-blueprint.test.ts:375: const blueprint = buildBlueprint(makeInputs(), [curriculum, exemplar], "single")
+src\engine\analysis-and-blueprint.test.ts:379: expect(blueprint.sourceReadiness.curriculumSupport).toBe("strong")
+src\engine\analysis-and-blueprint.test.ts:381: expect(blueprint.sourceReadiness.exemplarSupport).toBe("strong")
+src\engine\analysis-and-blueprint.test.ts:383: expect(blueprint.sourceReadiness.overall).toBe("balanced")
+src\engine\analysis-and-blueprint.test.ts:407: const blueprint = buildBlueprint(makeInputs(), [curriculum], "single")
+src\engine\analysis-and-blueprint.test.ts:411: expect(blueprint.sourceReadiness.curriculumSupport).toBe("strong")
+src\engine\analysis-and-blueprint.test.ts:413: expect(blueprint.sourceReadiness.exemplarSupport).toBe("limited")
+src\engine\analysis-and-blueprint.test.ts:415: expect(blueprint.sourceReadiness.overall).toBe("content_heavy")
+src\engine\analysis-and-blueprint.test.ts:445: const blueprint = buildBlueprint(makeInputs(), [exemplar], "single")
+src\engine\analysis-and-blueprint.test.ts:449: expect(blueprint.sourceReadiness.curriculumSupport).toBe("limited")
+src\engine\analysis-and-blueprint.test.ts:451: expect(blueprint.sourceReadiness.exemplarSupport).toBe("strong")
+src\engine\analysis-and-blueprint.test.ts:453: expect(blueprint.sourceReadiness.overall).toBe("structure_heavy")
+src\engine\analysis-and-blueprint.test.ts:525: const blueprint = buildBlueprint(
+src\engine\analysis-and-blueprint.test.ts:537: const wordLists = blueprint.content.wordLists.join(" ").toLowerCase()
+src\engine\analysis-and-blueprint.test.ts:539: const texts = blueprint.content.texts.join(" ").toLowerCase()
+src\engine\analysis-and-blueprint.test.ts:627: const blueprint = buildBlueprint(
+src\engine\analysis-and-blueprint.test.ts:639: const prompts = blueprint.structure.promptStyle.join(" ").toLowerCase()
+src\engine\analysis-and-blueprint.test.ts:641: const timing = blueprint.structure.timing.join(" ").toLowerCase()
+src\engine\blueprint-readiness.test.ts:2: import { buildBlueprint } from "./blueprint/buildBlueprint"
+src\engine\blueprint-readiness.test.ts:4: describe("blueprint source readiness", () => {
+src\engine\blueprint-readiness.test.ts:6: const result = buildBlueprint(
+src\engine\blueprint-readiness.test.ts:93: const result = buildBlueprint(
+src\engine\blueprint-structure-features.test.ts:2: import { buildBlueprint } from "./blueprint/buildBlueprint"
+src\engine\blueprint-structure-features.test.ts:42: describe("blueprint structure from exemplar detected features", () => {
+src\engine\blueprint-structure-features.test.ts:44: const result = buildBlueprint(
+src\engine\blueprint-structure-features.test.ts:172: const result = buildBlueprint(
+src\engine\detect-lesson-targets.test.ts:2: import { detectLessonTargets, resolveLessonMode } from "./blueprint/detectLessonTargets"
+src\engine\lesson-spec.test.ts:3: import { LessonBlueprint, LessonPlanningIdeas } from "./types"
+src\engine\lesson-spec.test.ts:5: function makeBlueprint(overrides: Partial<LessonBlueprint> = {}): LessonBlueprint {
+src\engine\lesson-spec.test.ts:150: makeBlueprint(),
+src\engine\lesson-spec.test.ts:224: makeBlueprint({
+src\engine\lesson-spec.test.ts:286: const spec = buildLessonSpec(makeBlueprint(), makePlanningIdeas())
+src\engine\material-reliability.test.ts:23: describe("material reliability", () => {
+src\engine\material-reliability.test.ts:42: expect(result.analysis.reliability?.level).toBe("high")
+src\engine\material-reliability.test.ts:43: expect(result.analysis.reliability?.usableForContent).toBe(true)
+src\engine\material-reliability.test.ts:44: expect(result.analysis.reliability?.contentDecision).toBe("allow")
+src\engine\material-reliability.test.ts:45: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\material-reliability.test.ts:46: expect(result.analysis.reliability?.structureDecision).toBe("block")
+src\engine\material-reliability.test.ts:65: expect(result.analysis.reliability?.level).toBe("medium")
+src\engine\material-reliability.test.ts:66: expect(result.analysis.reliability?.usableForContent).toBe(true)
+src\engine\material-reliability.test.ts:67: expect(result.analysis.reliability?.contentDecision).toBe("caution")
+src\engine\material-reliability.test.ts:68: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\material-reliability.test.ts:71: it("blocks fallback-notice curriculum from shaping content", async () => {
+src\engine\material-reliability.test.ts:90: expect(result.analysis.reliability?.level).toBe("low")
+src\engine\material-reliability.test.ts:91: expect(result.analysis.reliability?.usableForContent).toBe(false)
+src\engine\material-reliability.test.ts:92: expect(result.analysis.reliability?.contentDecision).toBe("block")
+src\engine\material-reliability.test.ts:93: expect(result.analysis.reliability?.warnings).toContain(
+src\engine\material-reliability.test.ts:94: "Material may not have enough extracted text to shape the blueprint safely."
+src\engine\material-reliability.test.ts:116: expect(result.analysis.reliability?.level).toBe("high")
+src\engine\material-reliability.test.ts:117: expect(result.analysis.reliability?.usableForStructure).toBe(true)
+src\engine\material-reliability.test.ts:118: expect(result.analysis.reliability?.structureDecision).toBe("allow")
+src\engine\material-reliability.test.ts:119: expect(result.analysis.reliability?.usableForContent).toBe(false)
+src\engine\material-reliability.test.ts:120: expect(result.analysis.reliability?.contentDecision).toBe("block")
+src\engine\material-reliability.test.ts:146: expect(result.analysis.reliability?.level).toBe("low")
+src\engine\material-reliability.test.ts:147: expect(result.analysis.reliability?.usableForStructure).toBe(false)
+src\engine\material-reliability.test.ts:148: expect(result.analysis.reliability?.structureDecision).toBe("block")
+src\engine\material-reliability.test.ts:149: expect(result.analysis.reliability?.reasons.join(" ")).toMatch(/OCR|noise|low/i)
+src\engine\package-decisions.test.ts:4: LessonBlueprint,
+src\engine\package-decisions.test.ts:11: const blueprint: LessonBlueprint = {
+src\engine\package-decisions.test.ts:122: blueprint,
+src\engine\package-decisions.test.ts:149: blueprint,
+src\engine\package-decisions.test.ts:198: blueprint,
+src\engine\package-outputs.test.ts:3: import { LessonBlueprint, LessonPlanningIdeas, LessonSpec } from "./types"
+src\engine\package-outputs.test.ts:5: const blueprint: LessonBlueprint = {
+src\engine\package-outputs.test.ts:136: blueprint,
+src\engine\package-outputs.test.ts:142: expect(result.lessonPlan).toContain("Blueprint Readiness")
+src\engine\package-outputs.test.ts:183: blueprint,
+src\engine\pipeline-trace.test.ts:107: expect(Array.isArray(result.trace.blueprintWarnings)).toBe(true)
+src\engine\pipeline.test.ts:83: it("builds blueprint, planning, lesson spec, and package end to end", () => {
+src\engine\pipeline.test.ts:101: expect(result.blueprint).toBeTruthy()
+src\engine\pipeline.test.ts:137: expect(result.blueprint.content.target.primary.toLowerCase()).toContain("phonics")
+src\engine\pipeline.test.ts:138: expect(result.blueprint.content.target.isMixedTarget).toBe(false)
+src\engine\pipeline.test.ts:167: expect(result.blueprint.content.target.isMixedTarget).toBe(true)
+src\engine\pipeline.test.ts:193: const joinedWordLists = result.blueprint.content.wordLists.join(" ").toLowerCase()
+src\engine\pipeline.test.ts:194: const joinedSegments = result.blueprint.structure.lessonSegments.join(" ").toLowerCase()
+src\engine\pipeline.test.ts:195: const joinedTeacherMoves = result.blueprint.structure.teacherMoves.join(" ").toLowerCase()
+src\engine\planning-coverage.test.ts:3: import { LessonBlueprint, PlanningCoverageStatus } from "./types"
+src\engine\planning-coverage.test.ts:5: function makeBlueprint(overrides: Partial<LessonBlueprint> = {}): LessonBlueprint {
+src\engine\planning-coverage.test.ts:64: it("marks major lesson components as covered when blueprint signals are strong", () => {
+src\engine\planning-coverage.test.ts:65: const planning = buildLessonPlanningIdeas(makeBlueprint())
+src\engine\planning-coverage.test.ts:89: it("uses blueprint content coverage as the source-coverage handoff even when structure is thin", () => {
+src\engine\planning-coverage.test.ts:91: makeBlueprint({
+src\engine\planning-coverage.test.ts:153: it("still produces structured planning output when blueprint structure is thin", () => {
+src\engine\planning-coverage.test.ts:155: makeBlueprint({
+src\engine\planning-coverage.test.ts:231: makeBlueprint({
+src\engine\slides.test.ts:104: const plan = buildSlidePlan(result.blueprint, result.lessonSpec)
+src\engine\style-settings-blueprint.test.ts:2: import { buildBlueprint } from "./blueprint/buildBlueprint"
+src\engine\style-settings-blueprint.test.ts:97: describe("blueprint respects exemplar style settings", () => {
+src\engine\style-settings-blueprint.test.ts:99: const result = buildBlueprint(
+src\engine\style-settings-blueprint.test.ts:128: it("filters blueprint structure to selected aspects only", () => {
+src\engine\style-settings-blueprint.test.ts:129: const result = buildBlueprint(
+src\engine\style-settings-blueprint.test.ts:162: const result = buildBlueprint(
+
+================================================================================
+Verification commands available right now
+================================================================================
+>>> npm run typecheck -- --help
+
+> lesson-generator8@1.0.0 typecheck
+> tsc --noEmit --help
+
+tsc: The TypeScript Compiler - Version 5.9.3
+
+COMMON COMMANDS
+
+  tsc
+  Compiles the current project (tsconfig.json in the working directory.)
+
+  tsc app.ts util.ts
+  Ignoring tsconfig.json, compiles the specified files with default compiler options.
+
+  tsc -b
+  Build a composite project in the working directory.
+
+  tsc --init
+  Creates a tsconfig.json with the recommended settings in the working directory.
+
+  tsc -p ./path/to/tsconfig.json
+  Compiles the TypeScript project located at the specified path.
+
+  tsc --help --all
+  An expanded version of this information, showing all possible compiler options
+
+  tsc --noEmit
+  tsc --target esnext
+  Compiles the current project, with additional settings.
+
+COMMAND LINE FLAGS
+
+--help, -h
+Print this message.
+
+--watch, -w
+Watch input files.
+
+--all
+Show all compiler options.
+
+--version, -v
+Print the compiler's version.
+
+--init
+Initializes a TypeScript project and creates a tsconfig.json file.
+
+--project, -p
+Compile the project given the path to its configuration file, or to a folder with a 'tsconfig.json'.
+
+--showConfig
+Print the final configuration instead of building.
+
+--build, -b
+Build one or more projects and their dependencies, if out of date
+
+COMMON COMPILER OPTIONS
+
+--pretty
+Enable color and formatting in TypeScript's output to make compiler errors easier to read.
+type: boolean
+default: true
+
+--declaration, -d
+Generate .d.ts files from TypeScript and JavaScript files in your project.
+type: boolean
+default: `false`, unless `composite` is set
+
+--declarationMap
+Create sourcemaps for d.ts files.
+type: boolean
+default: false
+
+--emitDeclarationOnly
+Only output d.ts files and not JavaScript files.
+type: boolean
+default: false
+
+--sourceMap
+Create source map files for emitted JavaScript files.
+type: boolean
+default: false
+
+--noEmit
+Disable emitting files from a compilation.
+type: boolean
+default: false
+
+--target, -t
+Set the JavaScript language version for emitted JavaScript and include compatible library declarations.
+one of: es5, es6/es2015, es2016, es2017, es2018, es2019, es2020, es2021, es2022, es2023, es2024, esnext
+default: es5
+
+--module, -m
+Specify what module code is generated.
+one of: none, commonjs, amd, umd, system, es6/es2015, es2020, es2022, esnext, node16, node18, node20, nodenext, preserve
+default: undefined
+
+--lib
+Specify a set of bundled library declaration files that describe the target runtime environment.
+one or more: es5, es6/es2015, es7/es2016, es2017, es2018, es2019, es2020, es2021, es2022, es2023, es2024, esnext, dom, dom.iterable, dom.asynciterable, webworker, webworker.importscripts, webworker.iterable, webworker.asynciterable, scripthost, es2015.core, es2015.collection, es2015.generator, es2015.iterable, es2015.promise, es2015.proxy, es2015.reflect, es2015.symbol, es2015.symbol.wellknown, es2016.array.include, es2016.intl, es2017.arraybuffer, es2017.date, es2017.object, es2017.sharedmemory, es2017.string, es2017.intl, es2017.typedarrays, es2018.asyncgenerator, es2018.asynciterable/esnext.asynciterable, es2018.intl, es2018.promise, es2018.regexp, es2019.array, es2019.object, es2019.string, es2019.symbol/esnext.symbol, es2019.intl, es2020.bigint/esnext.bigint, es2020.date, es2020.promise, es2020.sharedmemory, es2020.string, es2020.symbol.wellknown, es2020.intl, es2020.number, es2021.promise, es2021.string, es2021.weakref/esnext.weakref, es2021.intl, es2022.array, es2022.error, es2022.intl, es2022.object, es2022.string, es2022.regexp, es2023.array, es2023.collection, es2023.intl, es2024.arraybuffer, es2024.collection, es2024.object/esnext.object, es2024.promise, es2024.regexp/esnext.regexp, es2024.sharedmemory, es2024.string/esnext.string, esnext.array, esnext.collection, esnext.intl, esnext.disposable, esnext.promise, esnext.decorators, esnext.iterator, esnext.float16, esnext.error, esnext.sharedmemory, decorators, decorators.legacy
+default: undefined
+
+--allowJs
+Allow JavaScript files to be a part of your program. Use the 'checkJs' option to get errors from these files.
+type: boolean
+default: false
+
+--checkJs
+Enable error reporting in type-checked JavaScript files.
+type: boolean
+default: false
+
+--jsx
+Specify what JSX code is generated.
+one of: preserve, react, react-native, react-jsx, react-jsxdev
+default: undefined
+
+--outFile
+Specify a file that bundles all outputs into one JavaScript file. If 'declaration' is true, also designates a file that bundles all .d.ts output.
+
+--outDir
+Specify an output folder for all emitted files.
+
+--removeComments
+Disable emitting comments.
+type: boolean
+default: false
+
+--strict
+Enable all strict type-checking options.
+type: boolean
+default: false
+
+--types
+Specify type package names to be included without being referenced in a source file.
+
+--esModuleInterop
+Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility.
+type: boolean
+default: false
+
+You can learn about all of the compiler options at https://aka.ms/tsc
+
+
+>>> npm run build -- --help
+
+> lesson-generator8@1.0.0 build
+> tsc && vite build --help
+
+vite/5.4.21
+
+Usage:
+  $ vite build [root]
+
+Options:
+  --target <target>             [string] transpile target (default: 'modules') 
+  --outDir <dir>                [string] output directory (default: dist) 
+  --assetsDir <dir>             [string] directory under outDir to place assets in (default: assets) 
+  --assetsInlineLimit <number>  [number] static asset base64 inline threshold in bytes (default: 4096) 
+  --ssr [entry]                 [string] build specified entry for server-side rendering 
+  --sourcemap [output]          [boolean | "inline" | "hidden"] output source maps for build (default: false) 
+  --minify [minifier]           [boolean | "terser" | "esbuild"] enable/disable minification, or specify minifier to use (default: esbuild) 
+  --manifest [name]             [boolean | string] emit build manifest json 
+  --ssrManifest [name]          [boolean | string] emit ssr manifest json 
+  --emptyOutDir                 [boolean] force empty outDir when it's outside of root 
+  -w, --watch                   [boolean] rebuilds when modules have changed on disk 
+  -c, --config <file>           [string] use specified config file 
+  --base <path>                 [string] public base path (default: /) 
+  -l, --logLevel <level>        [string] info | warn | error | silent 
+  --clearScreen                 [boolean] allow/disable clear screen when logging 
+  -d, --debug [feat]            [string | boolean] show debug logs 
+  -f, --filter <filter>         [string] filter debug logs 
+  -m, --mode <mode>             [string] set env mode 
+  -h, --help                    Display this message 
+
+>>> npm run test:engine -- --help
+
+> lesson-generator8@1.0.0 test:engine
+> vitest run src/engine --help
+
+vitest/4.1.0
+
+Usage:
+  $ vitest run [...filters]
+
+Options:
+  -r, --root <path>                                          Root path 
+  -c, --config <path>                                        Path to config file 
+  -u, --update [type]                                        Update snapshot (accepts boolean, "new", "all" or "none") 
+  -w, --watch                                                Enable watch mode 
+  -t, --testNamePattern <pattern>                            Run tests with full names matching the specified regexp pattern 
+  --dir <path>                                               Base directory to scan for the test files 
+  --ui                                                       Enable UI 
+  --open                                                     Open UI automatically (default: !process.env.CI) 
+  --api [port]                                               Specify server port. Note if the port is already being used, Vite will automatically try the next available port so this may not be the actual port the server ends up listening on. If true will be set to 51204. Use '--help --api' for more info. 
+  --silent [value]                                           Silent console output from tests. Use 'passed-only' to see logs from failing tests only. 
+  --hideSkippedTests                                         Hide logs for skipped tests 
+  --reporter <name>                                          Specify reporters (default, agent, blob, verbose, dot, json, tap, tap-flat, junit, tree, hanging-process, github-actions) 
+  --outputFile <filename/-s>                                 Write test results to a file when supporter reporter is also specified, use cac's dot notation for individual outputs of multiple reporters (example: --outputFile.tap=./tap.txt) 
+  --coverage                                                 Enable coverage report. Use '--help --coverage' for more info. 
+  --mode <name>                                              Override Vite mode (default: test or benchmark) 
+  --isolate                                                  Run every test file in isolation. To disable isolation, use --no-isolate (default: true) 
+  --globals                                                  Inject apis globally 
+  --dom                                                      Mock browser API with happy-dom 
+  --browser <name>                                           Run tests in the browser. Equivalent to --browser.enabled (default: false). Use '--help --browser' for more info. 
+  --pool <pool>                                              Specify pool, if not running in the browser (default: forks) 
+  --execArgv <option>                                        Pass additional arguments to node process when spawning worker_threads or child_process. 
+  --vmMemoryLimit <limit>                                    Memory limit for VM pools. If you see memory leaks, try to tinker this value. 
+  --fileParallelism                                          Should all test files run in parallel. Use --no-file-parallelism to disable (default: true) 
+  --maxWorkers <workers>                                     Maximum number or percentage of workers to run tests in 
+  --environment <name>                                       Specify runner environment, if not running in the browser (default: node) 
+  --passWithNoTests                                          Pass when no tests are found 
+  --logHeapUsage                                             Show the size of heap for each test when running in node 
+  --detectAsyncLeaks                                         Detect asynchronous resources leaking from the test file (default: false) 
+  --allowOnly                                                Allow tests and suites that are marked as only (default: !process.env.CI) 
+  --dangerouslyIgnoreUnhandledErrors                         Ignore any unhandled errors that occur 
+  --shard <shards>                                           Test suite shard to execute in a format of <index>/<count> 
+  --changed [since]                                          Run tests that are affected by the changed files (default: false) 
+  --sequence <options>                                       Options for how tests should be sorted. Use '--help --sequence' for more info. 
+  --inspect [[host:]port]                                    Enable Node.js inspector (default: 127.0.0.1:9229) 
+  --inspectBrk [[host:]port]                                 Enable Node.js inspector and break before the test starts 
+  --testTimeout <timeout>                                    Default timeout of a test in milliseconds (default: 5000). Use 0 to disable timeout completely. 
+  --hookTimeout <timeout>                                    Default hook timeout in milliseconds (default: 10000). Use 0 to disable timeout completely. 
+  --bail <number>                                            Stop test execution when given number of tests have failed (default: 0) 
+  --retry <times>                                            Retry the test specific number of times if it fails (default: 0). Use '--help --retry' for more info. 
+  --diff <path>                                              DiffOptions object or a path to a module which exports DiffOptions object. Use '--help --diff' for more info. 
+  --exclude <glob>                                           Additional file globs to be excluded from test 
+  --expandSnapshotDiff                                       Show full diff when snapshot fails 
+  --disableConsoleIntercept                                  Disable automatic interception of console logging (default: false) 
+  --typecheck                                                Enable typechecking alongside tests (default: false). Use '--help --typecheck' for more info. 
+  --project <name>                                           The name of the project to run if you are using Vitest workspace feature. This can be repeated for multiple projects: --project=1 --project=2. You can also filter projects using wildcards like --project=packages*, and exclude projects with --project=!pattern. 
+  --slowTestThreshold <threshold>                            Threshold in milliseconds for a test or suite to be considered slow (default: 300) 
+  --teardownTimeout <timeout>                                Default timeout of a teardown function in milliseconds (default: 10000) 
+  --cache                                                    Enable cache. Use '--help --cache' for more info. 
+  --maxConcurrency <number>                                  Maximum number of concurrent tests and suites during test file execution (default: 5) 
+  --expect                                                   Configuration options for expect() matches. Use '--help --expect' for more info. 
+  --printConsoleTrace                                        Always print console stack traces 
+  --includeTaskLocation                                      Collect test and suite locations in the location property 
+  --attachmentsDir <dir>                                     The directory where attachments from context.annotate are stored in (default: .vitest-attachments) 
+  --run                                                      Disable watch mode 
+  --no-color                                                 Removes colors from the console output (default: true)
+  --clearScreen                                              Clear terminal screen when re-running tests during watch mode (default: true) 
+  --configLoader <loader>                                    Use bundle to bundle the config with esbuild or runner (experimental) to process it on the fly. This is only available in vite version 6.1.0 and above. (default: bundle) 
+  --standalone                                               Start Vitest without running tests. Tests will be running only on change. This option is ignored when CLI file filters are passed. (default: false) 
+  --mergeReports [path]                                      Path to a blob reports directory. If this options is used, Vitest won't run any tests, it will only report previously recorded tests 
+  --listTags [type]                                          List all available tags instead of running tests. --list-tags=json will output tags in JSON format, unless there are no tags. 
+  --clearCache                                               Delete all Vitest caches, including experimental.fsModuleCache, without running any tests. This will reduce the performance in the subsequent test run. 
+  --tagsFilter <expression>                                  Run only tests with the specified tags. You can use logical operators && (and), || (or) and ! (not) to create complex expressions, see https://vitest.dev/guide/test-tags#syntax for more information. 
+  --strictTags                                               Should Vitest throw an error if test has a tag that is not defined in the config. (default: true) 
+  --experimental <features>                                  Experimental features.. Use '--help --experimental' for more info. 
+  -h, --help                                                 Display this message

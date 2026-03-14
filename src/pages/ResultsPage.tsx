@@ -12,6 +12,7 @@ import {
   LessonPlanningIdeas,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
+  MaterialFile
 } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
@@ -67,6 +68,7 @@ export default function ResultsPage() {
   const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
   const counts = useLessonStore((state) => state.getMaterialCounts)()
+  const materials = useLessonStore((state) => state.materials)
   const [isRegenerating, setIsRegenerating] = useState(false)
   const [regenerationError, setRegenerationError] = useState<string | null>(null)
 
@@ -180,7 +182,7 @@ export default function ResultsPage() {
           selectedLessonMode={selectedLessonMode}
         />
 
-        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} />
+        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />
 
         {lessonTrace && <PipelineTraceSection trace={lessonTrace} />}
 
@@ -248,9 +250,11 @@ function PackageSummarySection({
 function TraceabilitySection({
   blueprint,
   lessonPackage,
+  materials,
 }: {
   blueprint: LessonBlueprint
   lessonPackage: LessonPackage
+  materials: MaterialFile[]
 }) {
   const contentSourceLabel =
     blueprint.sourceReadiness.curriculumSupport === "strong"
@@ -269,6 +273,8 @@ function TraceabilitySection({
 
   const fallbackUsageLabel = getFallbackUsageLabel(blueprint, lessonPackage)
   const combinedWarnings = [...blueprint.sourceReadiness.warnings, ...lessonPackage.readiness.warnings]
+  const contentMaterials = buildReliabilityDecisions(materials, "curriculum", "content")
+  const structureMaterials = buildReliabilityDecisions(materials, "exemplar", "structure")
 
   return (
     <div style={sectionStyle}>
@@ -311,6 +317,27 @@ function TraceabilitySection({
         </div>
 
         <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Material Reliability Decisions</div>
+          <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>
+            These notes show which analyzed materials were used, down-ranked, blocked, or ignored for each authority axis.
+          </div>
+
+          <AuthorityDecisionList
+            title="Content materials"
+            items={contentMaterials}
+            emptyText="No analyzed curriculum materials were available to explain."
+          />
+
+          <div style={{ height: 12 }} />
+
+          <AuthorityDecisionList
+            title="Presentation materials"
+            items={structureMaterials}
+            emptyText="No analyzed exemplar materials were available to explain."
+          />
+        </div>
+
+        <div style={subCardStyle}>
           <div style={subHeadingStyle}>Warnings and Fallback Notes</div>
           {combinedWarnings.length > 0 ? (
             <div style={{ display: "grid", gap: 8 }}>
@@ -329,6 +356,247 @@ function TraceabilitySection({
       </div>
     </div>
   )
+}
+
+type ReliabilityAxis = "content" | "structure"
+type ReliabilityOutcome = "used" | "down-ranked" | "blocked" | "ignored"
+
+type ReliabilityUiItem = {
+  key: string
+  name: string
+  outcome: ReliabilityOutcome
+  decision: string
+  score: number
+  note: string
+  reasons: string[]
+}
+
+function AuthorityDecisionList({
+  title,
+  items,
+  emptyText,
+}: {
+  title: string
+  items: ReliabilityUiItem[]
+  emptyText: string
+}) {
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <div style={{ fontWeight: 700 }}>{title}</div>
+
+      {items.length > 0 ? (
+        <div style={{ display: "grid", gap: 8 }}>
+          {items.map((item) => (
+            <div
+              key={item.key}
+              style={{
+                border: "1px solid var(--border-soft)",
+                borderRadius: "var(--radius-sm)",
+                padding: "10px 12px",
+                background: "rgba(255,255,255,0.82)",
+                display: "grid",
+                gap: 6,
+              }}
+            >
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                <strong>{item.name}</strong>
+                <span style={decisionBadgeStyle(item.outcome)}>{formatReliabilityOutcome(item.outcome)}</span>
+                <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>
+                  {formatReliabilityDecision(item.decision)} · score {item.score}
+                </span>
+              </div>
+
+              <div style={{ color: "var(--text-secondary)" }}>{item.note}</div>
+
+              {item.reasons.length > 0 ? (
+                <div style={{ display: "grid", gap: 4 }}>
+                  {item.reasons.slice(0, 3).map((reason) => (
+                    <div key={reason} style={warningStyle}>
+                      {reason}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ color: "var(--text-secondary)" }}>{emptyText}</div>
+      )}
+    </div>
+  )
+}
+
+function buildReliabilityDecisions(
+  materials: MaterialFile[],
+  role: "curriculum" | "exemplar",
+  axis: ReliabilityAxis
+): ReliabilityUiItem[] {
+  const relevant = materials
+    .filter((material) => material.status === "ready" && hasRelevantRoleAnalysis(material, role))
+    .sort((a, b) => sortByReliabilityAndStrength(a, b))
+
+  const usedMaterial = relevant.find((material) => isUsableForAxis(material, axis))
+  const usedId = usedMaterial?.id ?? null
+
+  return relevant.map((material) => {
+    const decision = getAxisDecision(material, axis)
+    let outcome: ReliabilityOutcome = "ignored"
+
+    if (decision === "block") {
+      outcome = "blocked"
+    } else if (material.id === usedId) {
+      outcome = "used"
+    } else if (decision === "allow" || decision === "caution") {
+      outcome = "down-ranked"
+    }
+
+    return {
+      key: material.id + "-" + axis,
+      name: material.name,
+      outcome,
+      decision,
+      score: getReliabilityScore(material),
+      note: buildReliabilityNote(material, axis, outcome),
+      reasons: collectReliabilityReasons(material),
+    }
+  })
+}
+
+function hasRelevantRoleAnalysis(material: MaterialFile, role: "curriculum" | "exemplar"): boolean {
+  if (role === "curriculum") {
+    return material.role === "curriculum" && Boolean(material.analysis?.curriculum)
+  }
+
+  return material.role === "exemplar" && Boolean(material.analysis?.exemplar)
+}
+
+function sortByReliabilityAndStrength(a: MaterialFile, b: MaterialFile): number {
+  const reliabilityDelta = getReliabilityScore(b) - getReliabilityScore(a)
+  if (reliabilityDelta !== 0) {
+    return reliabilityDelta
+  }
+
+  return getSignalStrength(b) - getSignalStrength(a)
+}
+
+function getReliabilityScore(material: MaterialFile): number {
+  const score = material.analysis?.reliability?.score
+  return typeof score === "number" ? score : 100
+}
+
+function getSignalStrength(material: MaterialFile): number {
+  const tags = Array.isArray(material.analysis?.tags) ? material.analysis.tags : []
+  const tag = tags.find((value) => value.startsWith("signal-strength:"))
+
+  if (!tag) {
+    return 0
+  }
+
+  const parsed = parseInt(String(tag).split(":")[1] ?? "0", 10)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function getAxisDecision(material: MaterialFile, axis: ReliabilityAxis): string {
+  const reliability = material.analysis?.reliability
+
+  if (!reliability) {
+    return "allow"
+  }
+
+  return axis === "content"
+    ? reliability.contentDecision ?? "allow"
+    : reliability.structureDecision ?? "allow"
+}
+
+function isUsableForAxis(material: MaterialFile, axis: ReliabilityAxis): boolean {
+  const reliability = material.analysis?.reliability
+
+  if (!reliability) {
+    return true
+  }
+
+  return axis === "content"
+    ? Boolean(reliability.usableForContent)
+    : Boolean(reliability.usableForStructure)
+}
+
+function buildReliabilityNote(
+  material: MaterialFile,
+  axis: ReliabilityAxis,
+  outcome: ReliabilityOutcome
+): string {
+  if (outcome === "used") {
+    return axis === "content"
+      ? "Used to ground lesson content because it was the strongest eligible curriculum source."
+      : "Used to shape pacing, flow, and teacher-facing structure because it was the strongest eligible exemplar source."
+  }
+
+  if (outcome === "down-ranked") {
+    const decision = getAxisDecision(material, axis)
+    return decision === "caution"
+      ? "Stayed eligible with caution, but a cleaner or stronger source won this axis."
+      : "Remained eligible, but another source ranked higher for this axis."
+  }
+
+  if (outcome === "blocked") {
+    return axis === "content"
+      ? "Blocked from steering content because the reliability layer marked it unsafe for curriculum grounding."
+      : "Blocked from steering presentation because the reliability layer marked it unsafe for exemplar structure."
+  }
+
+  return axis === "content"
+    ? "Ignored because it did not provide relevant usable content signals for this axis."
+    : "Ignored because it did not provide relevant usable presentation signals for this axis."
+}
+
+function collectReliabilityReasons(material: MaterialFile): string[] {
+  const reliability = material.analysis?.reliability
+
+  if (!reliability) {
+    return []
+  }
+
+  const reasons = Array.isArray(reliability.reasons) ? reliability.reasons : []
+  const warnings = Array.isArray(reliability.warnings) ? reliability.warnings : []
+
+  return Array.from(new Set([...reasons, ...warnings]))
+}
+
+function formatReliabilityOutcome(outcome: ReliabilityOutcome): string {
+  if (outcome === "used") return "Used"
+  if (outcome === "down-ranked") return "Down-ranked"
+  if (outcome === "blocked") return "Blocked"
+  return "Ignored"
+}
+
+function formatReliabilityDecision(decision: string): string {
+  if (!decision) {
+    return "Allow"
+  }
+
+  return decision.charAt(0).toUpperCase() + decision.slice(1)
+}
+
+function decisionBadgeStyle(outcome: ReliabilityOutcome): React.CSSProperties {
+  const palette =
+    outcome === "used"
+      ? { background: "#ecfdf5", color: "#065f46" }
+      : outcome === "down-ranked"
+        ? { background: "#fff7ed", color: "#9a3412" }
+        : outcome === "blocked"
+          ? { background: "#fef2f2", color: "#991b1b" }
+          : { background: "#f3f4f6", color: "#374151" }
+
+  return {
+    display: "inline-block",
+    padding: "4px 8px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    background: palette.background,
+    color: palette.color,
+  }
 }
 
 function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {

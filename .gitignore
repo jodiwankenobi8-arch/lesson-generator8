@@ -3,3 +3,7 @@ dist/
 *.bak
 *.broken
 *.current.txt
+
+*.bak
+
+*.broken
