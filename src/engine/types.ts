@@ -257,12 +257,22 @@ export type BlueprintSourceSignal = {
   tone: BlueprintSourceSignalTone
 }
 
-export type BlueprintSourceReadiness = {
-  curriculumSupport: "strong" | "limited"
-  exemplarSupport: "strong" | "limited"
-  overall: "balanced" | "content_heavy" | "structure_heavy" | "limited"
-  warnings: string[]
-  signals: BlueprintSourceSignal[]
+export type BlueprintSourceReadiness = {
+
+  curriculumSupport: "strong" | "limited"
+
+  exemplarSupport: "strong" | "limited"
+
+  overall: "balanced" | "content_heavy" | "structure_heavy" | "limited"
+
+  selectedCurriculumMaterialIds: string[]
+
+  selectedExemplarMaterialIds: string[]
+
+  warnings: string[]
+
+  signals: BlueprintSourceSignal[]
+
 }
 
 export type LessonBlueprint = {
@@ -434,3 +444,5 @@ export type LessonGenerationResult = {
   lessonPackage: LessonPackage
   trace: LessonPipelineTrace
 }
+
+

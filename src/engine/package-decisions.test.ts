@@ -41,6 +41,8 @@ const blueprint: LessonBlueprint = {
     curriculumSupport: "strong",
     exemplarSupport: "strong",
     overall: "balanced",
+    selectedCurriculumMaterialIds: [],
+    selectedExemplarMaterialIds: [],
     warnings: ["Minor warning for visibility."],
     signals: [],
   },
@@ -220,3 +222,5 @@ describe("buildPackageOutputs decision handling", () => {
     ])
   })
 })
+
+

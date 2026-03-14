@@ -49,7 +49,9 @@ function makeBlueprint(overrides: Partial<LessonBlueprint> = {}): LessonBlueprin
       curriculumSupport: "strong",
       exemplarSupport: "strong",
       overall: "balanced",
-      warnings: [],
+      selectedCurriculumMaterialIds: [],
+    selectedExemplarMaterialIds: [],
+    warnings: [],
       signals: [],
       ...overrides.sourceReadiness,
     },
@@ -285,3 +287,5 @@ describe("planning coverage and missing-area prompts", () => {
     expect(isCoverageStatus(byComponent.get("intervention")?.status)).toBe(true)
   })
 })
+
+

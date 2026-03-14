@@ -274,8 +274,26 @@ function TraceabilitySection({
 
   const fallbackUsageLabel = getFallbackUsageLabel(blueprint, lessonPackage)
   const combinedWarnings = [...blueprint.sourceReadiness.warnings, ...lessonPackage.readiness.warnings]
-  const contentMaterials = buildReliabilityDecisions(materials, "curriculum", "content")
-  const structureMaterials = buildReliabilityDecisions(materials, "exemplar", "structure")
+  const selectedContentSourceNames = getSelectedMaterialNames(
+    materials,
+    blueprint.sourceReadiness.selectedCurriculumMaterialIds
+  )
+  const selectedStructureSourceNames = getSelectedMaterialNames(
+    materials,
+    blueprint.sourceReadiness.selectedExemplarMaterialIds
+  )
+  const contentMaterials = buildReliabilityDecisions(
+    materials,
+    "curriculum",
+    "content",
+    blueprint.sourceReadiness.selectedCurriculumMaterialIds
+  )
+  const structureMaterials = buildReliabilityDecisions(
+    materials,
+    "exemplar",
+    "structure",
+    blueprint.sourceReadiness.selectedExemplarMaterialIds
+  )
 
   return (
     <div style={sectionStyle}>
@@ -286,6 +304,7 @@ function TraceabilitySection({
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{contentSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Curriculum Support:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
+            <div><strong>Selected Curriculum Source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
             <div><strong>Standards Source:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
             <div><strong>Vocabulary Source:</strong> {joinOrFallback(blueprint.content.vocabulary, "Key vocabulary")}</div>
             <div><strong>Text/Topic Source:</strong> {joinOrFallback(blueprint.content.texts, "Teacher-provided lesson text")}</div>
@@ -298,6 +317,7 @@ function TraceabilitySection({
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{structureSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Exemplar Support:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
+            <div><strong>Selected Exemplar Source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
             <div><strong>Lesson Flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
             <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
             <div><strong>Teacher Moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
@@ -403,7 +423,7 @@ function AuthorityDecisionList({
                 <strong>{item.name}</strong>
                 <span style={decisionBadgeStyle(item.outcome)}>{formatReliabilityOutcome(item.outcome)}</span>
                 <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>
-                  {formatReliabilityDecision(item.decision)} Â· score {item.score}
+                  {formatReliabilityDecision(item.decision)} · score {item.score}
                 </span>
               </div>
 
@@ -431,14 +451,14 @@ function AuthorityDecisionList({
 function buildReliabilityDecisions(
   materials: MaterialFile[],
   role: "curriculum" | "exemplar",
-  axis: ReliabilityAxis
+  axis: ReliabilityAxis,
+  selectedMaterialIds: string[]
 ): ReliabilityUiItem[] {
   const relevant = materials
     .filter((material) => material.status === "ready" && hasRelevantRoleAnalysis(material, role))
     .sort((a, b) => sortByReliabilityAndStrength(a, b))
 
-  const usedMaterial = relevant.find((material) => isUsableForAxis(material, axis))
-  const usedId = usedMaterial?.id ?? null
+  const selectedIdSet = new Set(selectedMaterialIds)
 
   return relevant.map((material) => {
     const decision = getAxisDecision(material, axis)
@@ -446,7 +466,7 @@ function buildReliabilityDecisions(
 
     if (decision === "block") {
       outcome = "blocked"
-    } else if (material.id === usedId) {
+    } else if (selectedIdSet.has(material.id)) {
       outcome = "used"
     } else if (decision === "allow" || decision === "caution") {
       outcome = "down-ranked"
@@ -462,6 +482,14 @@ function buildReliabilityDecisions(
       reasons: collectReliabilityReasons(material),
     }
   })
+}
+
+function getSelectedMaterialNames(materials: MaterialFile[], selectedIds: string[]): string[] {
+  const selectedIdSet = new Set(selectedIds)
+
+  return materials
+    .filter((material) => selectedIdSet.has(material.id))
+    .map((material) => material.name)
 }
 
 function buildReliabilityNote(
@@ -1121,6 +1149,8 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
+
 
 
 

@@ -26,6 +26,9 @@ export function buildBlueprintSourceReadiness(args: {
     promptStyle,
   } = args
 
+  const selectedCurriculumMaterialIds = curriculumMaterials.slice(0, 1).map((material) => material.id)
+  const selectedExemplarMaterialIds = exemplarMaterials.slice(0, 1).map((material) => material.id)
+
   const curriculumSignalCount = countStrongCurriculumSignals(
     standards,
     vocabulary,
@@ -80,6 +83,8 @@ export function buildBlueprintSourceReadiness(args: {
     curriculumSupport,
     exemplarSupport,
     overall,
+    selectedCurriculumMaterialIds,
+    selectedExemplarMaterialIds,
     warnings,
     signals: [
       {
