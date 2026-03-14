@@ -72,12 +72,16 @@ export default function ResultsPage() {
   const materials = useLessonStore((state) => state.materials)
   const [isRegenerating, setIsRegenerating] = useState(false)
   const [regenerationError, setRegenerationError] = useState<string | null>(null)
+  const [lastDecisionSummary, setLastDecisionSummary] = useState<string | null>(null)
 
   async function handleMissingAreaDecision(
     component: PlanningComponentKey,
     choice: MissingAreaDecisionChoice
   ) {
+    const decisionSummary = `${formatPlanningComponentLabel(component)} set to ${formatDecisionChoice(choice)}.`
+
     setMissingAreaDecision(component, choice)
+    setLastDecisionSummary(decisionSummary)
     setRegenerationError(null)
     setIsRegenerating(true)
 
@@ -160,11 +164,26 @@ export default function ResultsPage() {
         Teacher-facing lesson package first. Supporting planning details are available below.
       </p>
 
-      {(isRegenerating || regenerationError) && (
+      {(isRegenerating || regenerationError || lastDecisionSummary) && (
         <div style={{ marginBottom: "var(--space-md)", display: "grid", gap: 8 }}>
           {isRegenerating && (
             <div style={noticeStyle}>
-              Updating the lesson package to reflect the latest teacher decision.
+              {lastDecisionSummary
+                ? `${lastDecisionSummary} Regenerating the lesson package now.`
+                : "Updating the lesson package to reflect the latest teacher decision."}
+            </div>
+          )}
+
+          {!isRegenerating && !regenerationError && lastDecisionSummary && (
+            <div
+              style={{
+                ...noticeStyle,
+                background: "#ecfdf5",
+                borderColor: "#a7f3d0",
+                color: "#065f46",
+              }}
+            >
+              {lastDecisionSummary} The package has been refreshed with your latest teacher decision.
             </div>
           )}
 
@@ -378,6 +397,13 @@ function TraceabilitySection({
       </div>
     </div>
   )
+}
+
+function formatPlanningComponentLabel(component: PlanningComponentKey): string {
+  return component
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
 }
 
 type ReliabilityAxis = "content" | "structure"
@@ -792,6 +818,16 @@ function CoverageDecisionsSection({
                     <div style={{ marginTop: 8, fontSize: 13 }}>
                       <strong>Current decision:</strong> {formatDecisionChoice(currentChoice)}
                     </div>
+
+                    <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                      This teacher decision is applied to the current package and will remain active until you change it.
+                    </div>
+
+                    {isRegenerating && (
+                      <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                        Refreshing the lesson package with the latest decision...
+                      </div>
+                    )}
                   </div>
                 )
               })}
