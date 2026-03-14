@@ -14,6 +14,7 @@ import {
   PlanningComponentKey,
   MaterialFile
 } from "../engine/types"
+import { getAxisDecision, getReliabilityScore, hasRelevantRoleAnalysis, isUsableForAxis, sortByReliabilityAndStrength } from "../engine/blueprint/materialSelection"
 import { useLessonStore } from "../state/useLessonStore"
 
 const pageStyle: React.CSSProperties = {
@@ -461,64 +462,6 @@ function buildReliabilityDecisions(
       reasons: collectReliabilityReasons(material),
     }
   })
-}
-
-function hasRelevantRoleAnalysis(material: MaterialFile, role: "curriculum" | "exemplar"): boolean {
-  if (role === "curriculum") {
-    return material.role === "curriculum" && Boolean(material.analysis?.curriculum)
-  }
-
-  return material.role === "exemplar" && Boolean(material.analysis?.exemplar)
-}
-
-function sortByReliabilityAndStrength(a: MaterialFile, b: MaterialFile): number {
-  const reliabilityDelta = getReliabilityScore(b) - getReliabilityScore(a)
-  if (reliabilityDelta !== 0) {
-    return reliabilityDelta
-  }
-
-  return getSignalStrength(b) - getSignalStrength(a)
-}
-
-function getReliabilityScore(material: MaterialFile): number {
-  const score = material.analysis?.reliability?.score
-  return typeof score === "number" ? score : 100
-}
-
-function getSignalStrength(material: MaterialFile): number {
-  const tags = Array.isArray(material.analysis?.tags) ? material.analysis.tags : []
-  const tag = tags.find((value) => value.startsWith("signal-strength:"))
-
-  if (!tag) {
-    return 0
-  }
-
-  const parsed = parseInt(String(tag).split(":")[1] ?? "0", 10)
-  return Number.isFinite(parsed) ? parsed : 0
-}
-
-function getAxisDecision(material: MaterialFile, axis: ReliabilityAxis): string {
-  const reliability = material.analysis?.reliability
-
-  if (!reliability) {
-    return "allow"
-  }
-
-  return axis === "content"
-    ? reliability.contentDecision ?? "allow"
-    : reliability.structureDecision ?? "allow"
-}
-
-function isUsableForAxis(material: MaterialFile, axis: ReliabilityAxis): boolean {
-  const reliability = material.analysis?.reliability
-
-  if (!reliability) {
-    return true
-  }
-
-  return axis === "content"
-    ? Boolean(reliability.usableForContent)
-    : Boolean(reliability.usableForStructure)
 }
 
 function buildReliabilityNote(
@@ -1178,5 +1121,6 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
 
 
