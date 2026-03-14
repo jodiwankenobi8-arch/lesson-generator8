@@ -285,14 +285,14 @@ const fileSize = (file.size / (1024 * 1024)).toFixed(2) + " MB"
 
       <div style={{ ...cardStyle, marginBottom: "var(--space-md)" }}>
         <h3 style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--orchard-green)" }}>
-          Support Summary
+          Materials Trust Summary
         </h3>
 
         <div style={summaryGridStyle}>
-          <SummaryCard label="Ready Curriculum" value={supportSummary.readyCurriculum} />
-          <SummaryCard label="Ready Exemplar" value={supportSummary.readyExemplar} />
-          <SummaryCard label="Content Signals" value={supportSummary.contentSignalCount} />
-          <SummaryCard label="Structure Signals" value={supportSummary.structureSignalCount} />
+          <SummaryCard label="Content-ready files" value={supportSummary.readyCurriculum} />
+          <SummaryCard label="Structure-ready files" value={supportSummary.readyExemplar} />
+          <SummaryCard label="Content grounding signals" value={supportSummary.contentSignalCount} />
+          <SummaryCard label="Structure guidance signals" value={supportSummary.structureSignalCount} />
         </div>
 
         <div style={supportNoticeStyle(supportSummary.overall)}>
@@ -415,6 +415,15 @@ const fileSize = (file.size / (1024 * 1024)).toFixed(2) + " MB"
                     </div>
                   </div>
 
+                  <div style={{ marginTop: 8, display: "grid", gap: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                    <div>
+                      <strong>Influence:</strong> {formatInfluenceLabel(material)}
+                    </div>
+                    <div>
+                      <strong>Use status:</strong> {formatUseStatusLabel(material)}
+                    </div>
+                  </div>
+
                   {material.analysis?.extractionMetadata && (
                     <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
                       <div style={metadataPanelStyle}>
@@ -439,6 +448,22 @@ const fileSize = (file.size / (1024 * 1024)).toFixed(2) + " MB"
                   {material.analysis && (
                     <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
                       {material.analysis.summary}
+                    </div>
+                  )}
+
+                  {buildMaterialPreviewLines(material).length > 0 && (
+                    <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                      <div style={metadataPanelStyle}>
+                        <div style={{ fontWeight: 700, marginBottom: 4 }}>Preview</div>
+                        {buildMaterialPreviewLines(material).map((line, index) => (
+                          <div
+                            key={`${material.id}-preview-${index}`}
+                            style={{ fontSize: 13, marginTop: index === 0 ? 0 : 4 }}
+                          >
+                            {line}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -575,10 +600,58 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
 }
 
 function formatSupportHeading(overall: MaterialSupportSummary["overall"]): string {
-  if (overall === "balanced") return "Balanced support"
-  if (overall === "content_heavy") return "Content-heavy support"
-  if (overall === "structure_heavy") return "Structure-heavy support"
+  if (overall === "balanced") return "Balanced teacher support"
+  if (overall === "content_heavy") return "Content-led support"
+  if (overall === "structure_heavy") return "Structure-led support"
   return "Limited support"
+}
+
+function formatInfluenceLabel(material: MaterialFile): string {
+  const curriculumSignals =
+    (material.analysis?.curriculum?.standards.length ?? 0) +
+    (material.analysis?.curriculum?.vocabulary.length ?? 0) +
+    (material.analysis?.curriculum?.wordLists.length ?? 0) +
+    (material.analysis?.curriculum?.texts.length ?? 0) +
+    (material.analysis?.curriculum?.practiceTasks.length ?? 0) +
+    (material.analysis?.curriculum?.instructionalTargets.length ?? 0)
+
+  const exemplarSignals =
+    (material.analysis?.exemplar?.slideFlow.length ?? 0) +
+    (material.analysis?.exemplar?.pacing.length ?? 0) +
+    (material.analysis?.exemplar?.teacherMoves.length ?? 0) +
+    (material.analysis?.exemplar?.promptStyle.length ?? 0) +
+    (material.analysis?.exemplar?.layoutCues.length ?? 0) +
+    (material.analysis?.exemplar?.reusableStructure.length ?? 0)
+
+  if (curriculumSignals > 0 && exemplarSignals > 0) return "Mixed support"
+  if (curriculumSignals > 0) return "Content authority"
+  if (exemplarSignals > 0) return "Structure authority"
+  return "Limited support"
+}
+
+function formatUseStatusLabel(material: MaterialFile): string {
+  if (material.status === "error") return "Needs attention"
+  if (material.status !== "ready") return "Partial support"
+
+  const influence = formatInfluenceLabel(material)
+
+  if (influence === "Content authority") return "Ready for content grounding"
+  if (influence === "Structure authority") return "Ready for structure guidance"
+  if (influence === "Mixed support") return "Ready for mixed support"
+
+  return "Needs attention"
+}
+
+function buildMaterialPreviewLines(material: MaterialFile): string[] {
+  const extractedLines = (material.analysis?.extractedText ?? [])
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter((line) => line.length >= 20)
+
+  const noteLines = (material.analysis?.extractionMetadata?.notes ?? [])
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter((line) => line.length >= 20)
+
+  return Array.from(new Set([...extractedLines, ...noteLines])).slice(0, 5)
 }
 
 function SummaryCard({ label, value }: { label: string; value: number }) {
