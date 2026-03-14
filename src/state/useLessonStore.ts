@@ -79,6 +79,7 @@ type LessonStore = {
   ) => void
   clearMissingAreaDecisions: () => void
   resetGeneratedContent: () => void
+  processMaterial: (id: string) => Promise<void>
   generateLesson: () => Promise<void>
 
   hasRequiredInputs: () => boolean
@@ -344,6 +345,53 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   resetGeneratedContent: () => set(clearedGeneratedState()),
 
+  processMaterial: async (id: string) => {
+    const store = get()
+    const material = store.materials.find((item) => item.id === id)
+
+    if (!material) {
+      return
+    }
+
+    const hasUsableSource = Boolean(material.fileBuffer) || Boolean(material.fileContent?.trim())
+
+    if (!hasUsableSource) {
+      get().setMaterialError(id, "No file content is available for processing.")
+      return
+    }
+
+    try {
+      get().beginMaterialExtraction(id)
+
+      const extraction = await extractTextFromFile({
+        fileName: material.name,
+        fileBuffer: material.fileBuffer ?? undefined,
+        fileContent: material.fileContent ?? undefined,
+      })
+
+      get().beginMaterialAnalysis(id)
+
+      const result = await runMaterialAnalysis(
+        material.id,
+        material.name,
+        material.role,
+        extraction.extractedText
+      )
+
+      const analysis: MaterialAnalysis = {
+        ...result.analysis,
+        extractionMetadata: extraction.extractionMetadata,
+      }
+
+      get().setMaterialAnalysis(id, analysis)
+    } catch (error) {
+      get().setMaterialError(
+        id,
+        error instanceof Error ? error.message : "Unknown material processing error"
+      )
+    }
+  },
+
   generateLesson: async () => {
     const store = get()
 
@@ -364,34 +412,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     })
 
     for (const material of materialsToPrepare) {
-      try {
-        get().beginMaterialExtraction(material.id)
-
-        const extraction = await extractTextFromFile({
-          fileName: material.name,
-          fileBuffer: material.fileBuffer ?? undefined,
-          fileContent: material.fileContent ?? undefined,
-        })
-
-        get().beginMaterialAnalysis(material.id)
-
-        const result = await runMaterialAnalysis(
-          material.id,
-          material.name,
-          material.role,
-          extraction.extractedText,
-          extraction.extractionMetadata
-        )
-
-        get().setMaterialAnalysis(material.id, result.analysis)
-      } catch (error) {
-        get().setMaterialError(
-          material.id,
-          error instanceof Error
-            ? error.message
-            : "Material analysis failed during lesson generation."
-        )
-      }
+      await get().processMaterial(material.id)
     }
 
     const readyMaterials = get().materials.filter(

@@ -1,7 +1,5 @@
 import React, { useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { generateLesson } from "../engine/generateLesson"
-import { processMaterial } from "../engine/workflow/processMaterial"
 import { MaterialFile, MaterialRole, MaterialStatus } from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
 
@@ -136,6 +134,8 @@ export default function MaterialsPage() {
   const addMaterial = useLessonStore((state) => state.addMaterial)
   const setMaterialSource = useLessonStore((state) => state.setMaterialSource)
   const removeMaterial = useLessonStore((state) => state.removeMaterial)
+  const processMaterial = useLessonStore((state) => state.processMaterial)
+  const generateLesson = useLessonStore((state) => state.generateLesson)
   const counts = useLessonStore((state) => state.getMaterialCounts)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
   const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
@@ -904,13 +904,4 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
-
-
-
-
-
-
-
-
-
 
