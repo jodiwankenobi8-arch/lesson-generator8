@@ -133,6 +133,9 @@ export default function InputsPage() {
   const setSelectedLessonMode = useLessonStore((state) => state.setSelectedLessonMode)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const targetPreview = useLessonStore((state) => state.getTargetPreview)()
+  const [showLessonShapeOverride, setShowLessonShapeOverride] = React.useState(
+    selectedLessonMode !== "single"
+  )
 
   const updateInput =
     (field: keyof typeof inputs) =>
@@ -246,7 +249,7 @@ export default function InputsPage() {
               Lesson shape
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 8 }}>
-              Choose whether to generate one lesson focus or a fuller mixed lesson.
+              The system recommends a lesson shape from your inputs behind the scenes. Change it manually only if you need to override the recommendation.
             </div>
 
             <div
@@ -258,41 +261,86 @@ export default function InputsPage() {
                 color: targetPreview.isMixedTarget ? "#9a3412" : "var(--text-secondary)",
               }}
             >
-              {targetPreview.message}
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>
+                Recommended shape: {formatLessonModeLabel(targetPreview.recommendedMode)}
+              </div>
+              <div>{targetPreview.message}</div>
+              {selectedLessonMode !== "single" && (
+                <div style={{ marginTop: 6, fontSize: 13 }}>
+                  Manual override active: {formatLessonModeLabel(selectedLessonMode)}
+                </div>
+              )}
             </div>
 
-            <LessonModeOption
-              mode="single"
-              selected={selectedLessonMode === "single"}
-              title="Single target auto mode"
-              description="Let the system resolve a single main lesson focus from your inputs."
-              onSelect={setSelectedLessonMode}
-              isFirst
-            />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+                marginBottom: showLessonShapeOverride ? 12 : 0,
+              }}
+            >
+              <div style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+                {showLessonShapeOverride
+                  ? "Manual lesson shape options are visible below."
+                  : "Using automatic recommendation by default."}
+              </div>
 
-            <LessonModeOption
-              mode="full"
-              selected={selectedLessonMode === "full"}
-              title="Full mixed lesson"
-              description="Use this when you want both parts preserved, such as phonics plus comprehension."
-              onSelect={setSelectedLessonMode}
-            />
+              <button
+                type="button"
+                onClick={() => setShowLessonShapeOverride((value) => !value)}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-soft)",
+                  background: "#ffffff",
+                  color: "var(--text-primary)",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {showLessonShapeOverride ? "Hide manual lesson shape options" : "Change lesson shape manually"}
+              </button>
+            </div>
 
-            <LessonModeOption
-              mode="phonics_only"
-              selected={selectedLessonMode === "phonics_only"}
-              title="Phonics only"
-              description="Generate only the phonics portion when the input includes extra reading/comprehension context."
-              onSelect={setSelectedLessonMode}
-            />
+            {showLessonShapeOverride && (
+              <>
+                <LessonModeOption
+                  mode="single"
+                  selected={selectedLessonMode === "single"}
+                  title="Automatic recommendation"
+                  description="Let the system resolve the lesson shape from your inputs."
+                  onSelect={setSelectedLessonMode}
+                  isFirst
+                />
 
-            <LessonModeOption
-              mode="comprehension_only"
-              selected={selectedLessonMode === "comprehension_only"}
-              title="Comprehension only"
-              description="Generate only the comprehension/text-thinking portion."
-              onSelect={setSelectedLessonMode}
-            />
+                <LessonModeOption
+                  mode="full"
+                  selected={selectedLessonMode === "full"}
+                  title="Full mixed lesson"
+                  description="Use this when you want both parts preserved, such as phonics plus comprehension."
+                  onSelect={setSelectedLessonMode}
+                />
+
+                <LessonModeOption
+                  mode="phonics_only"
+                  selected={selectedLessonMode === "phonics_only"}
+                  title="Phonics only"
+                  description="Generate only the phonics portion when the input includes extra reading/comprehension context."
+                  onSelect={setSelectedLessonMode}
+                />
+
+                <LessonModeOption
+                  mode="comprehension_only"
+                  selected={selectedLessonMode === "comprehension_only"}
+                  title="Comprehension only"
+                  description="Generate only the comprehension/text-thinking portion."
+                  onSelect={setSelectedLessonMode}
+                />
+              </>
+            )}
           </div>
         </div>
 
@@ -325,6 +373,13 @@ export default function InputsPage() {
       </div>
     </div>
   )
+}
+
+function formatLessonModeLabel(mode: LessonMode): string {
+  if (mode === "full") return "Full mixed lesson"
+  if (mode === "phonics_only") return "Phonics only"
+  if (mode === "comprehension_only") return "Comprehension only"
+  return "Automatic recommendation"
 }
 
 function LessonModeOption({
