@@ -1,5 +1,8 @@
 import { create } from "zustand"
 import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
+import { runMaterialAnalysis } from "../engine/analysis/runMaterialAnalysis"
+import { runLessonPipeline } from "../engine/pipeline/runLessonPipeline"
+import { extractTextFromFile } from "../engine/materials/extractTextFromFile"
 import {
   ExemplarStyleSettings,
   LessonBlueprint,
@@ -76,6 +79,7 @@ type LessonStore = {
   ) => void
   clearMissingAreaDecisions: () => void
   resetGeneratedContent: () => void
+  generateLesson: () => Promise<void>
 
   hasRequiredInputs: () => boolean
   hasReadyMaterials: () => boolean
@@ -340,6 +344,80 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   resetGeneratedContent: () => set(clearedGeneratedState()),
 
+  generateLesson: async () => {
+    const store = get()
+
+    if (!store.hasRequiredInputs()) {
+      throw new Error("Complete all required lesson inputs before generating.")
+    }
+
+    if (store.hasProcessingMaterials()) {
+      throw new Error("Wait for current material processing to finish before generating.")
+    }
+
+    const materialsToPrepare = store.materials.filter((material) => {
+      if (material.status === "ready" && material.analysis) {
+        return false
+      }
+
+      return Boolean(material.fileBuffer) || Boolean(material.fileContent?.trim())
+    })
+
+    for (const material of materialsToPrepare) {
+      try {
+        get().beginMaterialExtraction(material.id)
+
+        const extraction = await extractTextFromFile({
+          fileName: material.name,
+          fileBuffer: material.fileBuffer ?? undefined,
+          fileContent: material.fileContent ?? undefined,
+        })
+
+        get().beginMaterialAnalysis(material.id)
+
+        const result = await runMaterialAnalysis(
+          material.id,
+          material.name,
+          material.role,
+          extraction.extractedText,
+          extraction.extractionMetadata
+        )
+
+        get().setMaterialAnalysis(material.id, result.analysis)
+      } catch (error) {
+        get().setMaterialError(
+          material.id,
+          error instanceof Error
+            ? error.message
+            : "Material analysis failed during lesson generation."
+        )
+      }
+    }
+
+    const readyMaterials = get().materials.filter(
+      (material) => material.status === "ready" && Boolean(material.analysis)
+    )
+
+    if (readyMaterials.length === 0) {
+      throw new Error("No analyzed materials are ready for lesson generation.")
+    }
+
+    const result = runLessonPipeline(
+      get().inputs,
+      readyMaterials,
+      get().selectedLessonMode,
+      get().missingAreaDecisions
+    )
+
+    set({
+      blueprint: result.blueprint,
+      planningIdeas: result.planningIdeas,
+      lessonSpec: result.lessonSpec,
+      lessonPackage: result.lessonPackage,
+      lessonTrace: result.trace,
+    })
+  },
+
   hasRequiredInputs: () => {
     const { inputs } = get()
     return (
@@ -383,3 +461,4 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return buildTargetPreview(inputs, selectedLessonMode)
   },
 }))
+

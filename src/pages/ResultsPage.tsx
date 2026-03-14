@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
-import { generateLesson } from "../engine/generateLesson"
 import { getAxisDecision, getReliabilityScore, hasRelevantRoleAnalysis, sortByAxisPriority } from "../engine/blueprint/materialSelection"
 import {
   ExportArtifact,
@@ -65,6 +64,7 @@ export default function ResultsPage() {
   const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
   const missingAreaDecisions = useLessonStore((state) => state.missingAreaDecisions)
   const setMissingAreaDecision = useLessonStore((state) => state.setMissingAreaDecision)
+  const generateLesson = useLessonStore((state) => state.generateLesson)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
@@ -1242,6 +1242,8 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
+
 
 
 
