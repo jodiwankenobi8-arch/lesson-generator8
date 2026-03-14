@@ -1,4 +1,4 @@
-import { MaterialFile, MaterialRole, MaterialUseDecision } from "../types"
+import { CurriculumCoverage, MaterialFile, MaterialRole, MaterialUseDecision } from "../types"
 
 export type ReliabilityAxis = "content" | "structure"
 
@@ -17,6 +17,51 @@ export function getSignalStrength(material: MaterialFile): number {
 export function getReliabilityScore(material: MaterialFile): number {
   const score = material.analysis?.reliability?.score
   return typeof score === "number" ? score : 100
+}
+
+export function getCurriculumCoverageBreadth(material: MaterialFile): number {
+  if (material.role !== "curriculum" || !material.analysis?.curriculum) {
+    return 0
+  }
+
+  const coverage = getCurriculumCoverage(material)
+  const groups = [
+    coverage.standards,
+    coverage.instructionalTargets,
+    coverage.foundationalSkills,
+    coverage.sightWords,
+    coverage.vocabulary,
+    coverage.wordLists,
+    coverage.texts,
+    coverage.practiceTasks,
+    coverage.lessonSegments,
+  ]
+
+  return groups.filter((group) => hasMeaningfulCoverage(group)).length
+}
+
+export function getCurriculumCoverageVolume(material: MaterialFile): number {
+  if (material.role !== "curriculum" || !material.analysis?.curriculum) {
+    return 0
+  }
+
+  const coverage = getCurriculumCoverage(material)
+  const groups = [
+    coverage.standards,
+    coverage.instructionalTargets,
+    coverage.foundationalSkills,
+    coverage.sightWords,
+    coverage.vocabulary,
+    coverage.wordLists,
+    coverage.texts,
+    coverage.practiceTasks,
+    coverage.lessonSegments,
+  ]
+
+  return groups.reduce(
+    (sum, group) => sum + group.filter((value) => !isWeakCoverageValue(value)).length,
+    0
+  )
 }
 
 export function hasRelevantRoleAnalysis(material: MaterialFile, role: MaterialRole): boolean {
@@ -77,6 +122,33 @@ export function sortByReliabilityAndStrength(a: MaterialFile, b: MaterialFile): 
   return getSignalStrength(b) - getSignalStrength(a)
 }
 
+export function sortByAxisPriority(
+  a: MaterialFile,
+  b: MaterialFile,
+  axis: ReliabilityAxis
+): number {
+  const reliabilityDelta = getReliabilityScore(b) - getReliabilityScore(a)
+  if (reliabilityDelta !== 0) {
+    return reliabilityDelta
+  }
+
+  if (axis === "content") {
+    const coverageBreadthDelta =
+      getCurriculumCoverageBreadth(b) - getCurriculumCoverageBreadth(a)
+    if (coverageBreadthDelta !== 0) {
+      return coverageBreadthDelta
+    }
+
+    const coverageVolumeDelta =
+      getCurriculumCoverageVolume(b) - getCurriculumCoverageVolume(a)
+    if (coverageVolumeDelta !== 0) {
+      return coverageVolumeDelta
+    }
+  }
+
+  return getSignalStrength(b) - getSignalStrength(a)
+}
+
 export function selectStrongestEligibleMaterials(
   materials: MaterialFile[],
   role: MaterialRole,
@@ -85,5 +157,42 @@ export function selectStrongestEligibleMaterials(
   return materials
     .filter((material) => hasRelevantRoleAnalysis(material, role))
     .filter((material) => isUsableForAxis(material, axis))
-    .sort((a, b) => sortByReliabilityAndStrength(a, b))
+    .sort((a, b) => sortByAxisPriority(a, b, axis))
+}
+
+function getCurriculumCoverage(material: MaterialFile): CurriculumCoverage {
+  const curriculum = material.analysis?.curriculum
+
+  return (
+    curriculum?.coverage ?? {
+      standards: curriculum?.standards ?? [],
+      instructionalTargets: curriculum?.instructionalTargets ?? [],
+      foundationalSkills: [],
+      sightWords: [],
+      vocabulary: curriculum?.vocabulary ?? [],
+      wordLists: curriculum?.wordLists ?? [],
+      texts: curriculum?.texts ?? [],
+      practiceTasks: curriculum?.practiceTasks ?? [],
+      lessonSegments: [],
+    }
+  )
+}
+
+function hasMeaningfulCoverage(values: string[]): boolean {
+  return values.some((value) => !isWeakCoverageValue(value))
+}
+
+function isWeakCoverageValue(value: string): boolean {
+  const lower = value.trim().toLowerCase()
+
+  return [
+    "teacher-selected standard",
+    "key vocabulary",
+    "teacher-selected word list",
+    "teacher-provided lesson text",
+    "curriculum-aligned practice task",
+    "lesson target",
+    "modeled example",
+    "teacher-provided practice items",
+  ].includes(lower)
 }

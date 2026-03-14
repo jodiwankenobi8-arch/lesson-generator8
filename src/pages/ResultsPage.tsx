@@ -1,20 +1,25 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
-import { generateLesson } from "../engine/generateLesson"
 import {
   ExportArtifact,
+  LessonBlueprint,
+  LessonPackage,
+  LessonPipelineTrace,
   LessonPlanIdea,
   LessonPlanSectionIdeas,
-  LessonPackage,
-  LessonBlueprint,
-  LessonPipelineTrace,
-  SlidePlan,
   LessonPlanningIdeas,
+  MaterialFile,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
-  MaterialFile
+  SlidePlan,
 } from "../engine/types"
-import { getAxisDecision, getReliabilityScore, hasRelevantRoleAnalysis, isUsableForAxis, sortByReliabilityAndStrength } from "../engine/blueprint/materialSelection"
+import {
+  getAxisDecision,
+  getReliabilityScore,
+  hasRelevantRoleAnalysis,
+  sortByAxisPriority,
+} from "../engine/blueprint/materialSelection"
+import { generateLesson } from "../engine/generateLesson"
 import { useLessonStore } from "../state/useLessonStore"
 
 const pageStyle: React.CSSProperties = {
@@ -457,7 +462,7 @@ function buildReliabilityDecisions(
 ): ReliabilityUiItem[] {
   const relevant = materials
     .filter((material) => material.status === "ready" && hasRelevantRoleAnalysis(material, role))
-    .sort((a, b) => sortByReliabilityAndStrength(a, b))
+    .sort((a, b) => sortByAxisPriority(a, b, axis))
 
   const selectedIdSet = new Set(selectedMaterialIds)
 
@@ -1185,6 +1190,9 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
+
+
 
 
 

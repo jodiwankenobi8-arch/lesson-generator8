@@ -158,4 +158,50 @@ describe("blueprint selected source ids", () => {
 
     expect(blueprint.sourceReadiness.selectedExemplarMaterialIds).toEqual(["ex-clean"])
   })
+
+  it("prefers broader curriculum coverage when reliability is tied", async () => {
+    const narrowCurriculum = await makeMaterial({
+      id: "curr-narrow",
+      name: "narrow-curriculum.txt",
+      role: "curriculum",
+      lines: [
+        "RF.1.3",
+        "Objective: Students will read long a words.",
+        "Practice: Read the words aloud.",
+        "Practice: Read the words aloud again.",
+        "Practice: Read the words aloud with a partner.",
+        "Example: cake",
+        "Example: game",
+        "Example: late",
+      ],
+      extractionMetadata: makeExtractionMetadata(),
+    })
+
+    const broadCurriculum = await makeMaterial({
+      id: "curr-broad",
+      name: "broad-curriculum.txt",
+      role: "curriculum",
+      lines: [
+        "RF.1.3",
+        "Objective: Students will read long a words and explain the pattern.",
+        "Vocabulary: long a, silent e, vowel pattern.",
+        "Word list: cake, game, same, late.",
+        "Text: Jake made a cake at the lake.",
+        "Practice: Read the words and sort by pattern.",
+        "Sight words: said, they.",
+        "Warm up: review yesterday's word pattern.",
+      ],
+      extractionMetadata: makeExtractionMetadata(),
+    })
+
+    const blueprint = buildBlueprint(
+      makeInputs(),
+      [narrowCurriculum, broadCurriculum],
+      "single"
+    )
+
+    expect(blueprint.sourceReadiness.selectedCurriculumMaterialIds).toEqual(["curr-broad"])
+    expect(blueprint.content.texts.join(" ").toLowerCase()).toContain("jake made a cake")
+    expect(blueprint.content.vocabulary.join(" ").toLowerCase()).toContain("silent e")
+  })
 })
