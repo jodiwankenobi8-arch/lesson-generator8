@@ -1,4 +1,9 @@
-import { CurriculumCoverage, MaterialFile, MaterialRole, MaterialUseDecision } from "../types"
+import {
+  CurriculumCoverage,
+  MaterialFile,
+  MaterialRole,
+  MaterialUseDecision,
+} from "../types"
 
 export type ReliabilityAxis = "content" | "structure"
 
@@ -60,6 +65,49 @@ export function getCurriculumCoverageVolume(material: MaterialFile): number {
 
   return groups.reduce(
     (sum, group) => sum + group.filter((value) => !isWeakCoverageValue(value)).length,
+    0
+  )
+}
+
+export function getExemplarStructureBreadth(material: MaterialFile): number {
+  if (material.role !== "exemplar" || !material.analysis?.exemplar) {
+    return 0
+  }
+
+  const exemplar = material.analysis.exemplar
+  const groups = [
+    exemplar.slideFlow,
+    exemplar.pacing,
+    exemplar.teacherMoves,
+    exemplar.promptStyle,
+    exemplar.layoutCues,
+    exemplar.tone,
+    exemplar.reusableStructure,
+    exemplar.detectedFeatures?.items.map((item) => item.key) ?? [],
+  ]
+
+  return groups.filter((group) => hasMeaningfulStructure(group)).length
+}
+
+export function getExemplarStructureVolume(material: MaterialFile): number {
+  if (material.role !== "exemplar" || !material.analysis?.exemplar) {
+    return 0
+  }
+
+  const exemplar = material.analysis.exemplar
+  const groups = [
+    exemplar.slideFlow,
+    exemplar.pacing,
+    exemplar.teacherMoves,
+    exemplar.promptStyle,
+    exemplar.layoutCues,
+    exemplar.tone,
+    exemplar.reusableStructure,
+    exemplar.detectedFeatures?.items.map((item) => item.key) ?? [],
+  ]
+
+  return groups.reduce(
+    (sum, group) => sum + group.filter((value) => !isWeakStructureValue(value)).length,
     0
   )
 }
@@ -146,6 +194,20 @@ export function sortByAxisPriority(
     }
   }
 
+  if (axis === "structure") {
+    const structureBreadthDelta =
+      getExemplarStructureBreadth(b) - getExemplarStructureBreadth(a)
+    if (structureBreadthDelta !== 0) {
+      return structureBreadthDelta
+    }
+
+    const structureVolumeDelta =
+      getExemplarStructureVolume(b) - getExemplarStructureVolume(a)
+    if (structureVolumeDelta !== 0) {
+      return structureVolumeDelta
+    }
+  }
+
   return getSignalStrength(b) - getSignalStrength(a)
 }
 
@@ -182,6 +244,10 @@ function hasMeaningfulCoverage(values: string[]): boolean {
   return values.some((value) => !isWeakCoverageValue(value))
 }
 
+function hasMeaningfulStructure(values: string[]): boolean {
+  return values.some((value) => !isWeakStructureValue(value))
+}
+
 function isWeakCoverageValue(value: string): boolean {
   const lower = value.trim().toLowerCase()
 
@@ -194,5 +260,22 @@ function isWeakCoverageValue(value: string): boolean {
     "lesson target",
     "modeled example",
     "teacher-provided practice items",
+  ].includes(lower)
+}
+
+function isWeakStructureValue(value: string): boolean {
+  const lower = value.trim().toLowerCase()
+
+  return [
+    "opening",
+    "teach",
+    "practice",
+    "closure",
+    "teacher prompt",
+    "teacher model",
+    "guided support",
+    "teacher-directed pacing",
+    "presentation structure cue",
+    "clear instructional tone",
   ].includes(lower)
 }

@@ -204,4 +204,51 @@ describe("blueprint selected source ids", () => {
     expect(blueprint.content.texts.join(" ").toLowerCase()).toContain("jake made a cake")
     expect(blueprint.content.vocabulary.join(" ").toLowerCase()).toContain("silent e")
   })
+
+  it("prefers broader exemplar structure when reliability is tied", async () => {
+    const narrowExemplar = await makeMaterial({
+      id: "ex-narrow",
+      name: "narrow-exemplar.txt",
+      role: "exemplar",
+      lines: [
+        "Opening",
+        "Teach",
+        "Closure",
+        "Teacher prompt: Echo the line.",
+        "5 minutes",
+      ],
+      extractionMetadata: makeExtractionMetadata(),
+    })
+
+    const broadExemplar = await makeMaterial({
+      id: "ex-broad",
+      name: "broad-exemplar.txt",
+      role: "exemplar",
+      lines: [
+        "Opening",
+        "Teach",
+        "Guided Practice",
+        "Independent Practice",
+        "Closure",
+        "Teacher prompt: What do you notice?",
+        "Turn and talk with your partner.",
+        "5 minutes",
+        "10 minutes",
+        "Layout cue: large word display with clear headers.",
+        "Supportive and clear tone.",
+        "I do, we do, you do.",
+      ],
+      extractionMetadata: makeExtractionMetadata(),
+    })
+
+    const blueprint = buildBlueprint(
+      makeInputs(),
+      [narrowExemplar, broadExemplar],
+      "single"
+    )
+
+    expect(blueprint.sourceReadiness.selectedExemplarMaterialIds).toEqual(["ex-broad"])
+    expect(blueprint.structure.promptStyle.join(" ").toLowerCase()).toContain("what do you notice")
+    expect(blueprint.structure.lessonSegments.join(" ").toLowerCase()).toContain("guided practice")
+  })
 })
