@@ -665,6 +665,9 @@ function CoverageDecisionsSection({
 }) {
   const componentCoverage = planningIdeas.componentCoverage ?? []
   const missingAreaPrompts = planningIdeas.missingAreaPrompts ?? []
+  const coverageByComponent = new Map(
+    componentCoverage.map((entry) => [entry.component, entry] as const)
+  )
 
   return (
     <div style={sectionStyle}>
@@ -680,10 +683,30 @@ function CoverageDecisionsSection({
                   <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
                     {entry.component.replace(/_/g, " ")}: {entry.status}
                   </div>
+
                   <div style={{ marginTop: 4 }}>{entry.rationale}</div>
+
                   {entry.evidence.length > 0 && (
                     <div style={{ marginTop: 4, fontSize: 13 }}>
-                      <strong>Evidence:</strong> {entry.evidence.join(", ")}
+                      <strong>Combined evidence:</strong> {entry.evidence.join(", ")}
+                    </div>
+                  )}
+
+                  {entry.sourceCoverage && (
+                    <div style={{ marginTop: 6, fontSize: 13 }}>
+                      <strong>Source coverage:</strong> {entry.sourceCoverage.status}
+                      {entry.sourceCoverage.evidence.length > 0
+                        ? ` | ${entry.sourceCoverage.evidence.join(", ")}`
+                        : ""}
+                    </div>
+                  )}
+
+                  {entry.generatedCoverage && (
+                    <div style={{ marginTop: 4, fontSize: 13 }}>
+                      <strong>Generated support:</strong> {entry.generatedCoverage.status}
+                      {entry.generatedCoverage.evidence.length > 0
+                        ? ` | ${entry.generatedCoverage.evidence.join(", ")}`
+                        : ""}
                     </div>
                   )}
                 </div>
@@ -702,6 +725,11 @@ function CoverageDecisionsSection({
             <div style={{ display: "grid", gap: 12 }}>
               {missingAreaPrompts.map((prompt, index) => {
                 const currentChoice = decisions[prompt.component] ?? "undecided"
+                const coverage = coverageByComponent.get(prompt.component)
+                const sourceStatus =
+                  coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
+                const generatedStatus =
+                  coverage?.generatedCoverage?.status ?? "missing"
 
                 return (
                   <div
@@ -711,10 +739,39 @@ function CoverageDecisionsSection({
                     <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
                       {prompt.component.replace(/_/g, " ")} ({prompt.importance})
                     </div>
+
                     <div style={{ marginTop: 4 }}>{prompt.prompt}</div>
+
                     <div style={{ marginTop: 4, fontSize: 13 }}>
                       <strong>Why:</strong> {prompt.rationale}
                     </div>
+
+                    <div style={{ marginTop: 6, fontSize: 13 }}>
+                      <strong>Source coverage:</strong> {sourceStatus}
+                    </div>
+
+                    <div style={{ marginTop: 4, fontSize: 13 }}>
+                      <strong>Generated support:</strong> {generatedStatus}
+                    </div>
+
+                    {coverage?.sourceCoverage?.evidence && coverage.sourceCoverage.evidence.length > 0 ? (
+                      <div style={{ marginTop: 4, fontSize: 13 }}>
+                        <strong>Source evidence:</strong> {coverage.sourceCoverage.evidence.join(", ")}
+                      </div>
+                    ) : null}
+
+                    {coverage?.generatedCoverage?.evidence && coverage.generatedCoverage.evidence.length > 0 ? (
+                      <div style={{ marginTop: 4, fontSize: 13 }}>
+                        <strong>Generated evidence:</strong> {coverage.generatedCoverage.evidence.join(", ")}
+                      </div>
+                    ) : null}
+
+                    {sourceStatus === "missing" && generatedStatus !== "missing" ? (
+                      <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+                        The engine can generate support here, but the source materials did not clearly cover it.
+                        Choose whether to keep that generated support or leave it out.
+                      </div>
+                    ) : null}
 
                     <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <DecisionButton
@@ -1190,6 +1247,7 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
 
 
 
