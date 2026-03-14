@@ -263,6 +263,8 @@ export type BlueprintSourceReadiness = {
 
   exemplarSupport: "strong" | "limited"
 
+  coverageSupport: "strong" | "limited"
+
   overall: "balanced" | "content_heavy" | "structure_heavy" | "limited"
 
   selectedCurriculumMaterialIds: string[]
@@ -472,6 +474,7 @@ export type LessonGenerationResult = {
   lessonPackage: LessonPackage
   trace: LessonPipelineTrace
 }
+
 
 
 

@@ -34,6 +34,7 @@ const blueprint: LessonBlueprint = {
   sourceReadiness: {
     curriculumSupport: "strong",
     exemplarSupport: "strong",
+    coverageSupport: "strong",
     overall: "balanced",
     selectedCurriculumMaterialIds: [],
     selectedExemplarMaterialIds: [],
@@ -197,5 +198,6 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Minor warning for visibility.")
   })
 })
+
 
 

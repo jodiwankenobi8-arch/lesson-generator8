@@ -48,6 +48,7 @@ function makeBlueprint(overrides: Partial<LessonBlueprint> = {}): LessonBlueprin
     sourceReadiness: {
       curriculumSupport: "strong",
       exemplarSupport: "strong",
+    coverageSupport: "strong",
       overall: "balanced",
       selectedCurriculumMaterialIds: [],
     selectedExemplarMaterialIds: [],
@@ -301,5 +302,6 @@ describe("buildLessonSpec", () => {
     )
   })
 })
+
 
 

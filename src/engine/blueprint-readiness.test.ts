@@ -86,6 +86,7 @@ describe("blueprint source readiness", () => {
     )
     expect(result.structure.teacherMoves.length).toBeGreaterThan(0)
     expect(result.structure.promptStyle.length).toBeGreaterThan(0)
+    expect(result.sourceReadiness.coverageSupport).toBe("strong")
     expect(result.sourceReadiness.overall).toBe("balanced")
   })
 
@@ -143,6 +144,7 @@ describe("blueprint source readiness", () => {
       "Part 2",
       "Closure",
     ])
+    expect(result.sourceReadiness.coverageSupport).toBe("strong")
     expect(result.sourceReadiness.overall).toBe("content_heavy")
   })
 })

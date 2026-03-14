@@ -330,6 +330,7 @@ function TraceabilitySection({
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{packageConfidenceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Source Balance:</strong> {blueprint.sourceReadiness.overall}</div>
+            <div><strong>Coverage Support:</strong> {blueprint.sourceReadiness.coverageSupport}</div>
             <div><strong>Content Fit:</strong> {lessonPackage.readiness.contentFit}</div>
             <div><strong>Lesson Shape:</strong> {lessonPackage.readiness.lessonShape}</div>
             <div><strong>Package Density:</strong> {lessonPackage.readiness.density}</div>
@@ -1184,6 +1185,7 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
 
 
 

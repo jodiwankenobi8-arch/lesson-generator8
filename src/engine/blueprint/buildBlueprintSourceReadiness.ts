@@ -1,4 +1,5 @@
 import {
+  BlueprintContentCoverage,
   BlueprintSourceReadiness,
   MaterialFile,
 } from "../types"
@@ -6,6 +7,7 @@ import {
 export function buildBlueprintSourceReadiness(args: {
   curriculumMaterials: MaterialFile[]
   exemplarMaterials: MaterialFile[]
+  coverage?: BlueprintContentCoverage
   standards: string[]
   vocabulary: string[]
   texts: string[]
@@ -17,6 +19,7 @@ export function buildBlueprintSourceReadiness(args: {
   const {
     curriculumMaterials,
     exemplarMaterials,
+    coverage,
     standards,
     vocabulary,
     texts,
@@ -42,6 +45,14 @@ export function buildBlueprintSourceReadiness(args: {
     promptStyle
   )
 
+  const coverageSignalCount = countCoverageDimensions(
+    coverage,
+    standards,
+    vocabulary,
+    texts,
+    practiceIdeas
+  )
+
   const curriculumSupport =
     curriculumMaterials.length === 0
       ? "limited"
@@ -56,10 +67,20 @@ export function buildBlueprintSourceReadiness(args: {
         ? "strong"
         : "limited"
 
+  const coverageSupport =
+    curriculumMaterials.length === 0
+      ? "limited"
+      : coverageSignalCount >= 4
+        ? "strong"
+        : "limited"
+
   const overall =
-    curriculumSupport === "strong" && exemplarSupport === "strong"
+    curriculumSupport === "strong" &&
+    exemplarSupport === "strong" &&
+    coverageSupport === "strong"
       ? "balanced"
-      : curriculumSupport === "strong"
+      : (curriculumSupport === "strong" || coverageSupport === "strong") &&
+          exemplarSupport !== "strong"
         ? "content_heavy"
         : exemplarSupport === "strong"
           ? "structure_heavy"
@@ -73,6 +94,10 @@ export function buildBlueprintSourceReadiness(args: {
     warnings.push("Curriculum materials are present, but strong content signals still look limited.")
   }
 
+  if (coverageSupport === "limited") {
+    warnings.push("Curriculum coverage breadth still looks limited, so some lesson areas may rely on fallback logic.")
+  }
+
   if (exemplarMaterials.length === 0) {
     warnings.push("No exemplar materials are ready, so structure is relying on generic lesson flow.")
   } else if (exemplarSupport === "limited") {
@@ -82,6 +107,7 @@ export function buildBlueprintSourceReadiness(args: {
   return {
     curriculumSupport,
     exemplarSupport,
+    coverageSupport,
     overall,
     selectedCurriculumMaterialIds,
     selectedExemplarMaterialIds,
@@ -110,6 +136,17 @@ export function buildBlueprintSourceReadiness(args: {
         tone: exemplarSupport === "strong" ? "good" : "warn",
       },
       {
+        label: "Coverage Support",
+        value: coverageSupport === "strong" ? "Strong" : "Limited",
+        note:
+          coverageSupport === "strong"
+            ? `Curriculum coverage spans ${coverageSignalCount} meaningful source dimension(s).`
+            : curriculumMaterials.length === 0
+              ? "No ready curriculum materials were available to establish coverage breadth."
+              : `Curriculum material is present, but only ${coverageSignalCount} meaningful coverage dimension(s) were detected.`,
+        tone: coverageSupport === "strong" ? "good" : "warn",
+      },
+      {
         label: "Source Balance",
         value:
           overall === "balanced"
@@ -121,12 +158,12 @@ export function buildBlueprintSourceReadiness(args: {
                 : "Limited",
         note:
           overall === "balanced"
-            ? "Curriculum and exemplar are both contributing meaningfully."
+            ? "Curriculum, coverage breadth, and exemplar structure are all contributing meaningfully."
             : overall === "content_heavy"
-              ? "Content grounding is stronger than structure grounding."
+              ? "Content grounding or coverage breadth is stronger than structure grounding."
               : overall === "structure_heavy"
-                ? "Structure grounding is stronger than content grounding."
-                : "Both content and structure grounding still look limited.",
+                ? "Structure grounding is stronger than content grounding or coverage breadth."
+                : "Content grounding, coverage breadth, and structure grounding still look limited.",
         tone: overall === "balanced" ? "good" : overall === "limited" ? "warn" : "neutral",
       },
     ],
@@ -221,6 +258,40 @@ function countStrongExemplarSignals(
   }
 
   return count
+}
+
+function countCoverageDimensions(
+  coverage: BlueprintContentCoverage | undefined,
+  standards: string[],
+  vocabulary: string[],
+  texts: string[],
+  practiceIdeas: string[]
+): number {
+  const resolvedCoverage = coverage ?? {
+    standards,
+    vocabulary,
+    wordLists: [],
+    texts,
+    practiceIdeas,
+    instructionalTargets: [],
+    sightWords: [],
+    foundationalSkills: [],
+    lessonSegments: [],
+  }
+
+  const coverageGroups = [
+    resolvedCoverage.standards,
+    resolvedCoverage.vocabulary,
+    resolvedCoverage.wordLists,
+    resolvedCoverage.texts,
+    resolvedCoverage.practiceIdeas,
+    resolvedCoverage.instructionalTargets,
+    resolvedCoverage.sightWords,
+    resolvedCoverage.foundationalSkills,
+    resolvedCoverage.lessonSegments,
+  ]
+
+  return coverageGroups.filter((group) => Array.isArray(group) && group.length > 0).length
 }
 
 function hasStrongValues(values: string[], weakValues: string[]): boolean {

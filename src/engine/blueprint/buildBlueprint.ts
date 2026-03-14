@@ -66,6 +66,7 @@ export function buildBlueprint(
   const sourceReadiness = buildBlueprintSourceReadiness({
     curriculumMaterials,
     exemplarMaterials,
+    coverage: content.coverage,
     standards: content.standards,
     vocabulary: content.vocabulary,
     texts: content.texts,
@@ -194,3 +195,4 @@ function buildResolvedTarget(
     recommendedMode: resolvedMode,
   }
 }
+
