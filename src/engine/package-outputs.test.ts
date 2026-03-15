@@ -155,20 +155,26 @@ describe("buildPackageOutputs", () => {
       {
         kind: "slides",
         label: "Slides Export",
-        fileName: "ELA-slides-export-placeholder",
-        status: "placeholder",
+        fileName: "ELA-slides-export.txt",
+        status: "ready",
+        mimeType: "text/plain;charset=utf-8",
+        content: expect.stringContaining("Slides Export"),
       },
       {
         kind: "lesson_plan",
         label: "Lesson Plan Export",
-        fileName: "ELA-lesson-plan-export-placeholder",
-        status: "placeholder",
+        fileName: "ELA-lesson-plan-export.txt",
+        status: "ready",
+        mimeType: "text/plain;charset=utf-8",
+        content: expect.stringContaining("Blueprint Readiness"),
       },
       {
         kind: "printables",
         label: "Printables Export",
-        fileName: "ELA-printables-export-placeholder",
-        status: "placeholder",
+        fileName: "ELA-printables-export.txt",
+        status: "ready",
+        mimeType: "text/plain;charset=utf-8",
+        content: expect.stringContaining("Centers"),
       },
     ])
   })
@@ -198,6 +204,7 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Minor warning for visibility.")
   })
 })
+
 
 
 

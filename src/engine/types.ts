@@ -397,13 +397,15 @@ export type LessonPackageReadiness = {
 
 export type ExportArtifactKind = "slides" | "lesson_plan" | "printables"
 
-export type ExportArtifactStatus = "placeholder"
+export type ExportArtifactStatus = "placeholder" | "ready"
 
-export type ExportArtifact = {
-  kind: ExportArtifactKind
-  label: string
-  fileName: string
-  status: ExportArtifactStatus
+export type ExportArtifact = {
+  kind: ExportArtifactKind
+  label: string
+  fileName: string
+  status: ExportArtifactStatus
+  mimeType?: string
+  content?: string
 }
 
 export type LessonPackage = {
@@ -474,6 +476,7 @@ export type LessonGenerationResult = {
   lessonPackage: LessonPackage
   trace: LessonPipelineTrace
 }
+
 
 
 

@@ -45,7 +45,7 @@ export function buildPackageOutputs(args: {
     planningIdeas,
     missingAreaDecisions
   )
-  const exports = buildExports(inputs)
+  const exports = buildExports({ inputs, slides, lessonPlan, centers, rotationPlan, interventions })
 
   return {
     slides,
@@ -328,27 +328,87 @@ function buildDefaultInterventions(blueprint: LessonBlueprint): string[] {
   ]
 }
 
-function buildExports(inputs: LessonInputs): ExportArtifact[] {
-  const safeSubject = inputs.subject.trim() || "lesson"
+type ExportBuildInput = {
+  inputs: LessonInputs
+  slides: string[]
+  lessonPlan: string
+  centers: string[]
+  rotationPlan: string
+  interventions: string[]
+}
+
+function sanitizeExportStem(value: string): string {
+  const cleaned = value
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^A-Za-z0-9\-_]/g, "")
+
+  return cleaned || "lesson"
+}
+
+function buildSlidesExportText(slides: string[]): string {
+  if (slides.length === 0) {
+    return "Slides Export\n\nNo slides generated."
+  }
+
+  return ["Slides Export", "", ...slides.map((slide, index) => `${index + 1}. ${slide}`)].join("\n")
+}
+
+function buildPrintablesExportText({
+  centers,
+  rotationPlan,
+  interventions,
+}: Pick<ExportBuildInput, "centers" | "rotationPlan" | "interventions">): string {
+  return [
+    "Printables Export",
+    "",
+    "Centers",
+    centers.length > 0 ? centers.map((item, index) => `${index + 1}. ${item}`).join("\n") : "None generated.",
+    "",
+    "Rotation Plan",
+    rotationPlan.trim() || "None generated.",
+    "",
+    "Interventions",
+    interventions.length > 0
+      ? interventions.map((item, index) => `${index + 1}. ${item}`).join("\n")
+      : "None generated.",
+  ].join("\n")
+}
+
+function buildExports({
+  inputs,
+  slides,
+  lessonPlan,
+  centers,
+  rotationPlan,
+  interventions,
+}: ExportBuildInput): ExportArtifact[] {
+  const safeSubject = sanitizeExportStem(inputs.subject ?? "")
 
   return [
     {
       kind: "slides",
       label: "Slides Export",
-      fileName: `${safeSubject}-slides-export-placeholder`,
-      status: "placeholder",
+      fileName: `${safeSubject}-slides-export.txt`,
+      status: "ready",
+      mimeType: "text/plain;charset=utf-8",
+      content: buildSlidesExportText(slides),
     },
     {
       kind: "lesson_plan",
       label: "Lesson Plan Export",
-      fileName: `${safeSubject}-lesson-plan-export-placeholder`,
-      status: "placeholder",
+      fileName: `${safeSubject}-lesson-plan-export.txt`,
+      status: "ready",
+      mimeType: "text/plain;charset=utf-8",
+      content: lessonPlan.trim() || "Lesson plan export is empty.",
     },
     {
       kind: "printables",
       label: "Printables Export",
-      fileName: `${safeSubject}-printables-export-placeholder`,
-      status: "placeholder",
+      fileName: `${safeSubject}-printables-export.txt`,
+      status: "ready",
+      mimeType: "text/plain;charset=utf-8",
+      content: buildPrintablesExportText({ centers, rotationPlan, interventions }),
     },
   ]
 }
@@ -427,3 +487,6 @@ function formatDecisionLabel(choice: MissingAreaDecisionChoice): string {
 
   return "Decide later"
 }
+
+
+

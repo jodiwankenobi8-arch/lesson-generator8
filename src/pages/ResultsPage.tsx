@@ -886,7 +886,7 @@ function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage
       <SimpleListSection title="Centers" items={lessonPackage.centers} />
       <PreSection title="Rotation Plan" content={lessonPackage.rotationPlan} />
       <SimpleListSection title="Interventions" items={lessonPackage.interventions} />
-      <SimpleListSection title="Exports" items={lessonPackage.exports} />
+      <ExportArtifactsSection exports={lessonPackage.exports} />
     </>
   )
 }
@@ -987,6 +987,23 @@ function SimpleListSection({
   )
 }
 
+function downloadExportArtifact(artifact: ExportArtifact) {
+  if (artifact.status !== "ready" || !artifact.content) return
+
+  const blob = new Blob([artifact.content], {
+    type: artifact.mimeType ?? "text/plain;charset=utf-8",
+  })
+
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = artifact.fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
 function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
   return (
     <div style={sectionStyle}>
@@ -999,11 +1016,35 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
           >
             <div style={{ fontWeight: 700 }}>{artifact.label}</div>
             <div style={{ marginTop: 4, fontSize: 13 }}>
-              <strong>Status:</strong> {artifact.status === "placeholder" ? "Placeholder" : artifact.status}
+              <strong>Status:</strong> {artifact.status === "ready" ? "Ready" : "Placeholder"}
+            </div>
+            <div style={{ marginTop: 4, fontSize: 13 }}>
+              <strong>Filename:</strong> {artifact.fileName}
             </div>
             <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-              Export generation is not fully implemented yet for this artifact.
+              {artifact.status === "ready"
+                ? "This export is generated from the current lesson package and downloads as plain text."
+                : "This export is not wired yet in the canonical project."}
             </div>
+
+            {artifact.status === "ready" && artifact.content ? (
+              <button
+                type="button"
+                onClick={() => downloadExportArtifact(artifact)}
+                style={{
+                  marginTop: 10,
+                  border: "1px solid var(--border)",
+                  background: "var(--surface)",
+                  color: "var(--text-primary)",
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Download
+              </button>
+            ) : null}
           </div>
         ))}
       </div>
@@ -1278,6 +1319,9 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
+
+
 
 
 
