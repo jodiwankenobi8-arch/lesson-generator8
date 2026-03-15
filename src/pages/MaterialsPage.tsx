@@ -168,8 +168,6 @@ export default function MaterialsPage() {
 
       const id = addMaterial(role, file.name)
 
-const fileType = file.name.split(".").pop()?.toUpperCase() ?? "FILE"
-const fileSize = (file.size / (1024 * 1024)).toFixed(2) + " MB"
 
       try {
         const fileBuffer = await file.arrayBuffer()
