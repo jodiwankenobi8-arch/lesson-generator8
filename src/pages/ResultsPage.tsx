@@ -267,7 +267,7 @@ function PackageSummarySection({
   )
 }
 
-function TraceabilitySection({
+export function TraceabilitySection({
   blueprint,
   lessonPackage,
   materials,
@@ -450,7 +450,7 @@ function AuthorityDecisionList({
                 <strong>{item.name}</strong>
                 <span style={decisionBadgeStyle(item.outcome)}>{formatReliabilityOutcome(item.outcome)}</span>
                 <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>
-                  {formatReliabilityDecision(item.decision)} � score {item.score}
+                  {formatReliabilityDecision(item.decision)} Ã‚Â· score {item.score}
                 </span>
               </div>
 
@@ -597,7 +597,7 @@ function decisionBadgeStyle(outcome: ReliabilityOutcome): React.CSSProperties {
   }
 }
 
-function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
+export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Pipeline Trace</h3>
@@ -673,7 +673,7 @@ function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
     </div>
   )
 }
-function CoverageDecisionsSection({
+export function CoverageDecisionsSection({
   planningIdeas,
   decisions,
   onSetDecision,

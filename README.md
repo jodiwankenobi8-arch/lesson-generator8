@@ -76,6 +76,8 @@ Run all tests:
 
 ```powershell
 npm run test
+> Note: this repo uses Vitest, so Jest-style flags like --runInBand are not supported.
+
 ```
 
 Run engine tests only:

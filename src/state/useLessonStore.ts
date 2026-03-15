@@ -1,8 +1,7 @@
 import { create } from "zustand"
 import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
-import { runMaterialAnalysis } from "../engine/analysis/runMaterialAnalysis"
-import { runLessonPipeline } from "../engine/pipeline/runLessonPipeline"
-import { extractTextFromFile } from "../engine/materials/extractTextFromFile"
+import { generateLessonForStore } from "./workflows/generateLessonForStore"
+import { processMaterialForStore } from "./workflows/processMaterialForStore"
 import {
   ExemplarStyleSettings,
   LessonBlueprint,
@@ -345,89 +344,39 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   resetGeneratedContent: () => set(clearedGeneratedState()),
 
-  processMaterial: async (id: string) => {
+  processMaterial: async (id) => {
     const store = get()
-    const material = store.materials.find((item) => item.id === id)
 
-    if (!material) {
-      return
-    }
-
-    const hasUsableSource = Boolean(material.fileBuffer) || Boolean(material.fileContent?.trim())
-
-    if (!hasUsableSource) {
-      get().setMaterialError(id, "No file content is available for processing.")
-      return
-    }
-
-    try {
-      get().beginMaterialExtraction(id)
-
-      const extraction = await extractTextFromFile({
-        fileName: material.name,
-        fileBuffer: material.fileBuffer ?? undefined,
-        fileContent: material.fileContent ?? undefined,
-      })
-
-      get().beginMaterialAnalysis(id)
-
-      const result = await runMaterialAnalysis(
-        material.id,
-        material.name,
-        material.role,
-        extraction.extractedText
-      )
-
-      const analysis: MaterialAnalysis = {
-        ...result.analysis,
-        extractionMetadata: extraction.extractionMetadata,
-      }
-
-      get().setMaterialAnalysis(id, analysis)
-    } catch (error) {
-      get().setMaterialError(
-        id,
-        error instanceof Error ? error.message : "Unknown material processing error"
-      )
-    }
+    await processMaterialForStore(id, store.materials, {
+      beginMaterialExtraction: store.beginMaterialExtraction,
+      beginMaterialAnalysis: store.beginMaterialAnalysis,
+      setMaterialAnalysis: store.setMaterialAnalysis,
+      setMaterialError: store.setMaterialError,
+    })
   },
 
   generateLesson: async () => {
     const store = get()
 
-    if (!store.hasRequiredInputs()) {
-      throw new Error("Complete all required lesson inputs before generating.")
-    }
+    const result = await generateLessonForStore(
+      {
+        materials: store.materials,
+        hasRequiredInputs: store.hasRequiredInputs,
+        hasProcessingMaterials: store.hasProcessingMaterials,
+      },
+      {
+        processMaterial: store.processMaterial,
+        getCurrentStoreData: () => {
+          const current = get()
 
-    if (store.hasProcessingMaterials()) {
-      throw new Error("Wait for current material processing to finish before generating.")
-    }
-
-    const materialsToPrepare = store.materials.filter((material) => {
-      if (material.status === "ready" && material.analysis) {
-        return false
+          return {
+            inputs: current.inputs,
+            materials: current.materials,
+            selectedLessonMode: current.selectedLessonMode,
+            missingAreaDecisions: current.missingAreaDecisions,
+          }
+        },
       }
-
-      return Boolean(material.fileBuffer) || Boolean(material.fileContent?.trim())
-    })
-
-    for (const material of materialsToPrepare) {
-      await get().processMaterial(material.id)
-    }
-
-    const readyMaterials = get().materials.filter(
-      (material) => material.status === "ready" && Boolean(material.analysis)
-    )
-
-    if (readyMaterials.length === 0) {
-      throw new Error("No analyzed materials are ready for lesson generation.")
-    }
-
-    const result = runLessonPipeline(
-      get().inputs,
-      readyMaterials,
-      get().selectedLessonMode,
-      get().missingAreaDecisions
     )
 
     set({
@@ -435,7 +384,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
       planningIdeas: result.planningIdeas,
       lessonSpec: result.lessonSpec,
       lessonPackage: result.lessonPackage,
-      lessonTrace: result.trace,
+      lessonTrace: result.lessonTrace,
     })
   },
 
@@ -482,4 +431,3 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return buildTargetPreview(inputs, selectedLessonMode)
   },
 }))
-

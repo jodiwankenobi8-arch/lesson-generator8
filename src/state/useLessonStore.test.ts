@@ -5,6 +5,7 @@ import type {
   MaterialAnalysis,
   MaterialFile,
   MaterialRole,
+  MaterialStatus,
 } from "../engine/types"
 
 function makeInputs(overrides: Partial<LessonInputs> = {}): LessonInputs {
@@ -193,5 +194,138 @@ describe("useLessonStore regeneration", () => {
     expect(afterUndecided.lessonPackage!.lessonPlan).toContain("Small Group Ideas")
     expect(afterUndecided.lessonPackage!.lessonPlan).toContain("Intervention Ideas")
     expect(afterUndecided.lessonPackage!.interventions.length).toBeGreaterThan(0)
+  })
+})
+
+describe("useLessonStore processMaterial and trace contracts", () => {
+  beforeEach(() => {
+    useLessonStore.setState((state) => ({
+      ...state,
+      inputs: makeInputs(),
+      selectedLessonMode: "single",
+      materials: [],
+      blueprint: null,
+      planningIdeas: null,
+      lessonSpec: null,
+      lessonPackage: null,
+      lessonTrace: null,
+      missingAreaDecisions: {},
+    }))
+  })
+
+  it("processMaterial no-ops safely when material id is missing", async () => {
+    const before = useLessonStore.getState()
+
+    await useLessonStore.getState().processMaterial("missing-id")
+
+    const after = useLessonStore.getState()
+    expect(after.materials).toEqual(before.materials)
+    expect(after.blueprint).toBe(before.blueprint)
+    expect(after.lessonTrace).toBe(before.lessonTrace)
+  })
+
+  it("processMaterial marks material as error when no usable source content is available", async () => {
+    const store = useLessonStore.getState()
+    const materialId = store.addMaterial("curriculum", "empty-curriculum.txt")
+
+    await useLessonStore.getState().processMaterial(materialId)
+
+    const material = useLessonStore
+      .getState()
+      .materials.find((item) => item.id === materialId)
+
+    expect(material).toBeTruthy()
+    expect(material!.status).toBe("error")
+    expect(material!.errorMessage).toBe("No file content is available for processing.")
+  })
+
+  it("processMaterial drives extracting -> analyzing -> ready and preserves extraction metadata", async () => {
+    const store = useLessonStore.getState()
+    const materialId = store.addMaterial("curriculum", "contract-curriculum.txt")
+
+    store.setMaterialSource(materialId, {
+      fileBuffer: null,
+      fileContent: [
+        "RF.1.3",
+        "Objective: Students will blend and read short a CVC words.",
+        "Vocabulary: short a",
+        "Word list: cat, map, sat, ram",
+        "Practice: Blend cat, map, sat, ram.",
+      ].join("\n"),
+    })
+
+    const statusHistory: MaterialStatus[] = []
+
+    const unsubscribe = useLessonStore.subscribe((state) => {
+      const material = state.materials.find((item) => item.id === materialId)
+
+      if (!material) return
+
+      const last = statusHistory[statusHistory.length - 1]
+      if (last !== material.status) {
+        statusHistory.push(material.status)
+      }
+    })
+
+    try {
+      await useLessonStore.getState().processMaterial(materialId)
+    } finally {
+      unsubscribe()
+    }
+
+    const material = useLessonStore
+      .getState()
+      .materials.find((item) => item.id === materialId)
+
+    expect(material).toBeTruthy()
+    expect(material!.status).toBe("ready")
+    expect(material!.analysis).toBeTruthy()
+    expect(material!.analysis!.extractionMetadata).toBeTruthy()
+    expect(statusHistory).toEqual(
+      expect.arrayContaining(["extracting", "analyzing", "ready"])
+    )
+
+    const extractingIndex = statusHistory.indexOf("extracting")
+    const analyzingIndex = statusHistory.indexOf("analyzing")
+    const readyIndex = statusHistory.indexOf("ready")
+
+    expect(extractingIndex).toBeGreaterThanOrEqual(0)
+    expect(analyzingIndex).toBeGreaterThan(extractingIndex)
+    expect(readyIndex).toBeGreaterThan(analyzingIndex)
+  })
+
+  it("generateLesson stores full package chain and keeps selected-source trace aligned, including regeneration", async () => {
+    seedStore()
+
+    await useLessonStore.getState().generateLesson()
+
+    let state = useLessonStore.getState()
+
+    expect(state.blueprint).toBeTruthy()
+    expect(state.planningIdeas).toBeTruthy()
+    expect(state.lessonSpec).toBeTruthy()
+    expect(state.lessonPackage).toBeTruthy()
+    expect(state.lessonTrace).toBeTruthy()
+
+    expect(state.lessonTrace!.selectedSources.curriculumMaterialIds).toEqual(
+      state.blueprint!.sourceReadiness.selectedCurriculumMaterialIds
+    )
+    expect(state.lessonTrace!.selectedSources.exemplarMaterialIds).toEqual(
+      state.blueprint!.sourceReadiness.selectedExemplarMaterialIds
+    )
+
+    useLessonStore.getState().setMissingAreaDecision("centers", "leave_out")
+    await useLessonStore.getState().generateLesson()
+
+    state = useLessonStore.getState()
+
+    expect(state.lessonTrace).toBeTruthy()
+    expect(state.blueprint).toBeTruthy()
+    expect(state.lessonTrace!.selectedSources.curriculumMaterialIds).toEqual(
+      state.blueprint!.sourceReadiness.selectedCurriculumMaterialIds
+    )
+    expect(state.lessonTrace!.selectedSources.exemplarMaterialIds).toEqual(
+      state.blueprint!.sourceReadiness.selectedExemplarMaterialIds
+    )
   })
 })
