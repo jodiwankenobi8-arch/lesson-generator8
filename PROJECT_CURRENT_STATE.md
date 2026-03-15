@@ -9,12 +9,12 @@
 - useLessonStore is the orchestration seam.
 - Store-driven processing, generation, regeneration, and selected-source explainability are already in place.
 - Current source of truth is GitHub main at 38f9f1c.
-- Main remaining near-term gap is dead-shell / import-graph cleanup before export maturity work.
+- Main remaining near-term gap is export maturity / packaging follow-through, not shell cleanup.
 
 ## Current priorities
-- Confirm and clean dead shell/router artifacts.
-- Protect the store seam from page-to-engine bypasses.
+- Keep the store seam protected from page-to-engine bypasses.
 - Keep local repo state and GitHub state aligned through PROJECT_CURRENT_STATE.md.
+- Move to the next hardening step now that dead-shell confirmation is complete.
 
 ## Active rules
 - Keep useLessonStore as the orchestration seam.
@@ -22,7 +22,6 @@
 - Keep curriculum as content authority and exemplar as presentation authority.
 
 ## Known issues / risks
-- Legacy shell files may still exist and mislead future edits.
 - Export lifecycle maturity still trails the rest of the architecture.
 - Build emits large chunk warnings that should be addressed later.
 - Tests show non-blocking useLayoutEffect SSR-style warnings in integration output.
@@ -37,8 +36,14 @@
 - npm run build passed.
 - Note: local Windows validation is the source of truth if Codex reports a different shell or branch environment.
 
+## Dead shell confirmation
+- src/app does not exist.
+- Search for BlueprintPage, ResultsHubPage, AppRouter, src/app, ./app/AppRouter, and ../app/AppRouter returned no live references.
+- Import-graph audit re-run passed cleanly.
+- No shell/router deletions are required from the current local source of truth.
+
 ## Next recommended step
-- Commit this no-behavior-change audit/setup step, then begin the actual dead-shell cleanup step in a new focused change.
+- Move to the next hardening task: export/package follow-through and cleanup of any remaining delivery/documentation gaps.
 
 ---
 
@@ -50,6 +55,7 @@
 - Added a repeatable import-graph audit script.
 - Added a developer note documenting the supported store seam.
 - Created the canonical in-repo current-state file.
+- Confirmed no dead shell/router path remains in the local source of truth.
 
 ### Files touched
 - scripts/Find-LegacyShellReferences.ps1
@@ -66,7 +72,8 @@
 - Audit passed with no legacy shell references found.
 - Audit passed with no forbidden page-to-engine imports found.
 - Typecheck, tests, and build all passed.
-- Repo is ready for dead-shell confirmation and cleanup work.
+- Dead-shell confirmation is complete and no deletions are required.
+- Repo is ready for the next hardening step.
 
 ### Known issues / risks
 - Build still reports large chunk warnings.
@@ -74,4 +81,4 @@
 - Dependency audit warnings remain for a future maintenance pass.
 
 ### Next recommended step
-- Commit this no-behavior-change audit/setup step, then begin the actual dead-shell cleanup step in a new focused change.
+- Start the next focused hardening change on export/package follow-through.
