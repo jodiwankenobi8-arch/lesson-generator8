@@ -28,8 +28,17 @@
 - Tests show non-blocking useLayoutEffect SSR-style warnings in integration output.
 - npm install reported moderate dependency vulnerabilities that should be reviewed in a later maintenance pass.
 
+## Validation snapshot
+- Local environment: Windows PowerShell at C:\Users\jodiw\OneDrive\Desktop\lesson-generator8-local.
+- Import-graph audit passed: no legacy shell references found.
+- Import-graph audit passed: no forbidden page-to-engine imports found.
+- npm run typecheck passed.
+- npm run test passed: 19 test files, 85 tests passed.
+- npm run build passed.
+- Note: local Windows validation is the source of truth if Codex reports a different shell or branch environment.
+
 ## Next recommended step
-- Review audit output and remove or mark confirmed-dead shell artifacts under the old shell/router path if any still exist as files.
+- Commit this no-behavior-change audit/setup step, then begin the actual dead-shell cleanup step in a new focused change.
 
 ---
 
