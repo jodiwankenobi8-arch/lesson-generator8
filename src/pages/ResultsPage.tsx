@@ -278,7 +278,9 @@ export function TraceabilitySection({
 }) {
   const contentSourceLabel =
     blueprint.sourceReadiness.curriculumSupport === "strong"
-      ? "Curriculum materials strongly influenced the lesson content."
+      ? blueprint.sourceReadiness.selectedCurriculumMaterialIds.length > 1
+        ? "Curriculum materials strongly influenced the lesson content. The strongest curriculum source led content grounding, with secondary curriculum support threaded in where useful."
+        : "A curriculum material strongly influenced the lesson content."
       : "Curriculum support is limited, so some content may rely on fallback lesson logic."
 
   const structureSourceLabel =
@@ -323,7 +325,7 @@ export function TraceabilitySection({
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{contentSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Curriculum Support:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
-            <div><strong>Selected Curriculum Source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Selected Curriculum Source(s):</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
             <div><strong>Standards Source:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
             <div><strong>Vocabulary Source:</strong> {joinOrFallback(blueprint.content.vocabulary, "Key vocabulary")}</div>
             <div><strong>Text/Topic Source:</strong> {joinOrFallback(blueprint.content.texts, "Teacher-provided lesson text")}</div>
@@ -505,7 +507,7 @@ function buildReliabilityDecisions(
       outcome,
       decision,
       score: getReliabilityScore(material),
-      note: buildReliabilityNote(material, axis, outcome),
+      note: buildReliabilityNote(material, axis, outcome, selectedMaterialIds.indexOf(material.id)),
       reasons: collectReliabilityReasons(material),
     }
   })
@@ -522,12 +524,17 @@ function getSelectedMaterialNames(materials: MaterialFile[], selectedIds: string
 function buildReliabilityNote(
   material: MaterialFile,
   axis: ReliabilityAxis,
-  outcome: ReliabilityOutcome
+  outcome: ReliabilityOutcome,
+  selectedIndex: number
 ): string {
   if (outcome === "used") {
-    return axis === "content"
-      ? "Used to ground lesson content because it was the strongest eligible curriculum source."
-      : "Used to shape pacing, flow, and teacher-facing structure because it was the strongest eligible exemplar source."
+    if (axis === "content") {
+      return selectedIndex === 0
+        ? "Used as the primary curriculum grounding source because it ranked strongest for content on this axis."
+        : "Used as a secondary curriculum support source because it added additional eligible content signals."
+    }
+
+    return "Used to shape pacing, flow, and teacher-facing structure because it was the strongest eligible exemplar source."
   }
 
   if (outcome === "down-ranked") {
@@ -1319,20 +1326,4 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

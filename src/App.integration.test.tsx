@@ -115,7 +115,7 @@ describe("App route integration: Results trust flow", () => {
     )
 
     expect(markup).toContain("Results")
-    expect(markup).toContain("Selected Curriculum Source:")
+    expect(markup).toContain("Selected Curriculum Source(s):")
     expect(markup).toContain("curriculum.txt")
     expect(markup).toContain("Selected Exemplar Source:")
     expect(markup).toContain("exemplar.txt")
@@ -126,3 +126,4 @@ describe("App route integration: Results trust flow", () => {
     expect(markup).toContain("Generated support:")
   })
 })
+

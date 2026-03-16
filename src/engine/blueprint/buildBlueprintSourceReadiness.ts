@@ -29,7 +29,7 @@ export function buildBlueprintSourceReadiness(args: {
     promptStyle,
   } = args
 
-  const selectedCurriculumMaterialIds = curriculumMaterials.slice(0, 1).map((material) => material.id)
+  const selectedCurriculumMaterialIds = curriculumMaterials.slice(0, 2).map((material) => material.id)
   const selectedExemplarMaterialIds = exemplarMaterials.slice(0, 1).map((material) => material.id)
 
   const curriculumSignalCount = countStrongCurriculumSignals(
@@ -305,3 +305,4 @@ function hasStrongValues(values: string[], weakValues: string[]): boolean {
 
   return cleaned.some((value) => !weakValues.includes(value))
 }
+
