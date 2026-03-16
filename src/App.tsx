@@ -1,9 +1,10 @@
-import React from "react"
+import React, { Suspense } from "react"
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom"
-import InputsPage from "./pages/InputsPage"
-import MaterialsPage from "./pages/MaterialsPage"
 import ResultsPage from "./pages/ResultsPage"
 import { useLessonStore } from "./state/useLessonStore"
+
+const InputsPage = React.lazy(() => import("./pages/InputsPage"))
+const MaterialsPage = React.lazy(() => import("./pages/MaterialsPage"))
 
 function StepNav() {
   const location = useLocation()
@@ -155,12 +156,29 @@ export default function App() {
         >
           <StepNav />
 
-          <Routes>
-            <Route path="/" element={<Navigate to="/inputs" replace />} />
-            <Route path="/inputs" element={<InputsPage />} />
-            <Route path="/materials" element={<MaterialsPage />} />
-            <Route path="/results" element={<ResultsPage />} />
-          </Routes>
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid var(--border-soft)",
+                  background: "var(--paper-white)",
+                  color: "var(--text-secondary)",
+                  fontSize: 14,
+                }}
+              >
+                Loading page...
+              </div>
+            }
+          >
+            <Routes>
+              <Route path="/" element={<Navigate to="/inputs" replace />} />
+              <Route path="/inputs" element={<InputsPage />} />
+              <Route path="/materials" element={<MaterialsPage />} />
+              <Route path="/results" element={<ResultsPage />} />
+            </Routes>
+          </Suspense>
         </div>
       </div>
     </div>
