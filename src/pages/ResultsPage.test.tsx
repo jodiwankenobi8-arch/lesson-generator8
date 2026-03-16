@@ -224,8 +224,7 @@ function makeExportArtifact(
     kind: "lesson_plan",
     label: "Lesson Plan Export",
     fileName: "ELA-lesson-plan-export.docx",
-    status: "ready",
-    mimeType: DOCX_MIME,
+        mimeType: DOCX_MIME,
     content: "Blueprint Readiness`nTeach",
     ...overrides,
   }

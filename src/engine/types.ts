@@ -403,7 +403,6 @@ export type ExportArtifact = {
   kind: ExportArtifactKind
   label: string
   fileName: string
-  status: ExportArtifactStatus
   mimeType?: string
   content?: string
 }
