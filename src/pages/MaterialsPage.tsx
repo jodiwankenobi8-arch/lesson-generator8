@@ -368,6 +368,17 @@ export default function MaterialsPage() {
         <h3 style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--orchard-green)" }}>
           Processing Status
         </h3>
+        <p
+          style={{
+            marginTop: 0,
+            marginBottom: "var(--space-sm)",
+            color: "var(--text-secondary)",
+            fontSize: 13,
+          }}
+        >
+          Store status remains authoritative. The labels below explain where each file is in
+          intake, extraction, analysis, and readiness.
+        </p>
 
         {materials.length === 0 ? (
           <p style={{ color: "var(--text-secondary)", marginBottom: 0 }}>No materials added yet.</p>
@@ -413,7 +424,16 @@ export default function MaterialsPage() {
                     </div>
                   </div>
 
-                  <div style={{ marginTop: 8, display: "grid", gap: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                                    <div style={{ marginTop: 8, display: "grid", gap: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                    <div>
+                      <strong>Upload:</strong> {buildMaterialStageDetails(material).upload}
+                    </div>
+                    <div>
+                      <strong>Evaluation:</strong> {buildMaterialStageDetails(material).evaluation}
+                    </div>
+                    <div>
+                      <strong>Pipeline:</strong> {buildMaterialStageDetails(material).pipeline}
+                    </div>
                     <div>
                       <strong>Influence:</strong> {formatInfluenceLabel(material)}
                     </div>
@@ -640,6 +660,57 @@ function formatUseStatusLabel(material: MaterialFile): string {
   return "Needs attention"
 }
 
+type MaterialStageDetails = {
+  upload: string
+  evaluation: string
+  pipeline: string
+}
+
+function buildMaterialStageDetails(material: MaterialFile): MaterialStageDetails {
+  if (material.status === "uploaded") {
+    return {
+      upload: "File captured and waiting in the intake queue.",
+      evaluation: "Extraction has not started yet.",
+      pipeline: "Queued for extraction.",
+    }
+  }
+
+  if (material.status === "extracting") {
+    return {
+      upload: "File source is attached to the store.",
+      evaluation: "Extracting readable text from the file.",
+      pipeline: "Waiting for analysis to begin.",
+    }
+  }
+
+  if (material.status === "analyzing") {
+    return {
+      upload: "File source is attached to the store.",
+      evaluation: "Building curriculum or exemplar lesson signals.",
+      pipeline: "Waiting for ready state.",
+    }
+  }
+
+  if (material.status === "ready") {
+    const extraction = material.analysis?.extractionMetadata
+    const extractionSummary = extraction
+      ? `${formatExtractionMethod(extraction.method)} / ${formatExtractionQuality(extraction.quality)}`
+      : "analysis completed"
+
+    return {
+      upload: "File source is attached to the store.",
+      evaluation: `Analysis complete (${extractionSummary}).`,
+      pipeline: "Ready for Results.",
+    }
+  }
+
+  return {
+    upload: "File source needs attention.",
+    evaluation: "Processing stopped before analysis completed.",
+    pipeline: "Review the error before generating Results.",
+  }
+}
+
 function buildMaterialPreviewLines(material: MaterialFile): string[] {
   const extractedLines = (material.analysis?.extractedText ?? [])
     .map((line) => line.replace(/\s+/g, " ").trim())
@@ -692,11 +763,11 @@ function formatStatus(status: string): string {
 }
 
 function getStatusExplanation(status: MaterialStatus): string {
-  if (status === "uploaded") return "Queued for extraction"
-  if (status === "extracting") return "Extracting file contents"
+  if (status === "uploaded") return "Waiting in intake queue"
+  if (status === "extracting") return "Extracting readable text"
   if (status === "analyzing") return "Building lesson signals"
-  if (status === "ready") return "Available for lesson generation"
-  return "Needs attention"
+  if (status === "ready") return "Ready for Results"
+  return "Processing stopped"
 }
 
 function getProgressStepState(
@@ -902,4 +973,5 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
+
 
