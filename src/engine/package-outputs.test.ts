@@ -203,6 +203,39 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Source Balance: balanced")
     expect(result.lessonPlan).toContain("Minor warning for visibility.")
   })
+  it("keeps canonical exports free of banned hub language", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas,
+    })
+
+    const exportContent = result.exports
+      .map((artifact) => artifact.content ?? "")
+      .join("\n")
+
+    const bannedPhrases = [
+      "Lesson Hub",
+      "Clickable Hub",
+      "Choose the lesson path together",
+      "Launch and Navigation",
+      "Guided Rotation and Practice",
+      "Hub Launch",
+      "Center Rotation",
+      "Complete the final quick check before leaving the hub",
+      "Rotate through the practice path you were assigned",
+    ]
+
+    bannedPhrases.forEach((phrase) => {
+      expect(exportContent).not.toContain(phrase)
+    })
+  })
 })
-
-
