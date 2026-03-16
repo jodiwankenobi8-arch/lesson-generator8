@@ -997,7 +997,7 @@ function SimpleListSection({
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
-async function downloadExportArtifact(artifact: ExportArtifact) {
+export async function downloadExportArtifact(artifact: ExportArtifact) {
   if (artifact.status !== "ready" || !artifact.content) return
 
   const blob =
@@ -1334,4 +1334,5 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
 

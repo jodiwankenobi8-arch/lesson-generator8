@@ -1,20 +1,15 @@
 import React from "react"
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { renderToStaticMarkup } from "react-dom/server"
-import {
-  CoverageDecisionsSection,
-  PipelineTraceSection,
-  TraceabilitySection,
-} from "./ResultsPage"
+
+vi.mock("../engine/exports/exportLessonPlanDocx", () => ({
+  exportLessonPlanDocx: vi.fn(),
+}))
+
+import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
+import { CoverageDecisionsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
-import type {
-  LessonInputs,
-  MaterialAnalysis,
-  MaterialFile,
-  MaterialRole,
-  MissingAreaDecisionChoice,
-  PlanningComponentKey,
-} from "../engine/types"
+import type { ExportArtifact, LessonInputs, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
 
 function makeInputs(overrides: Partial<LessonInputs> = {}): LessonInputs {
   return {
@@ -220,3 +215,168 @@ describe("Results explainability rendering contracts", () => {
     expect(coverageMarkup).toContain("Generated support:")
   })
 })
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+function makeExportArtifact(
+  overrides: Partial<ExportArtifact> = {}
+): ExportArtifact {
+  return {
+    kind: "lesson_plan",
+    label: "Lesson Plan Export",
+    fileName: "ELA-lesson-plan-export.docx",
+    status: "ready",
+    mimeType: DOCX_MIME,
+    content: "Blueprint Readiness`nTeach",
+    ...overrides,
+  }
+}
+
+function installDownloadDomHarness(objectUrlValue: string) {
+  const createdLinks: Array<{
+    href: string
+    download: string
+    click: ReturnType<typeof vi.fn>
+  }> = []
+
+  let createdObjectUrlArg: unknown
+
+  const body = {
+    appendChild: vi.fn((node: unknown) => node),
+    removeChild: vi.fn((node: unknown) => node),
+  }
+
+  const documentStub = {
+    body,
+    createElement: vi.fn((tag: string) => {
+      if (tag !== "a") {
+        throw new Error(`Unexpected element request: ${tag}`)
+      }
+
+      const link = {
+        href: "",
+        download: "",
+        click: vi.fn(),
+      }
+
+      createdLinks.push(link)
+      return link
+    }),
+  }
+
+  const urlStub = {
+    createObjectURL: vi.fn((value: unknown) => {
+      createdObjectUrlArg = value
+      return objectUrlValue
+    }),
+    revokeObjectURL: vi.fn(),
+  }
+
+  const previousWindow = (globalThis as Record<string, unknown>).window
+  const previousDocument = (globalThis as Record<string, unknown>).document
+
+  ;(globalThis as Record<string, unknown>).window = { URL: urlStub }
+  ;(globalThis as Record<string, unknown>).document = documentStub
+
+  return {
+    createdLinks,
+    body,
+    documentStub,
+    urlStub,
+    getCreatedObjectUrlArg() {
+      return createdObjectUrlArg
+    },
+    restore() {
+      if (typeof previousWindow === "undefined") {
+        delete (globalThis as Record<string, unknown>).window
+      } else {
+        ;(globalThis as Record<string, unknown>).window = previousWindow
+      }
+
+      if (typeof previousDocument === "undefined") {
+        delete (globalThis as Record<string, unknown>).document
+      } else {
+        ;(globalThis as Record<string, unknown>).document = previousDocument
+      }
+    },
+  }
+}
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+describe("Results export download contract", () => {
+  it("routes DOCX lesson-plan artifacts through exportLessonPlanDocx before download", async () => {
+    const docxBlob = new Blob(["docx-binary"], { type: DOCX_MIME })
+    vi.mocked(exportLessonPlanDocx).mockResolvedValue(docxBlob)
+
+    const harness = installDownloadDomHarness("blob:docx")
+
+    try {
+      const artifact = makeExportArtifact()
+
+      await downloadExportArtifact(artifact)
+
+      expect(exportLessonPlanDocx).toHaveBeenCalledWith(artifact.label, artifact.content)
+      expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
+
+      const blobArg = harness.getCreatedObjectUrlArg()
+      expect(blobArg).toBeTruthy()
+      expect(blobArg).toBe(docxBlob)
+
+      expect(harness.createdLinks).toHaveLength(1)
+      const appendedLink = harness.createdLinks[0]!
+
+      expect(appendedLink.download).toBe(artifact.fileName)
+      expect(appendedLink.href).toBe("blob:docx")
+      expect(appendedLink.click).toHaveBeenCalledTimes(1)
+      expect(harness.body.appendChild).toHaveBeenCalledWith(appendedLink)
+      expect(harness.body.removeChild).toHaveBeenCalledWith(appendedLink)
+      expect(harness.urlStub.revokeObjectURL).toHaveBeenCalledWith("blob:docx")
+    } finally {
+      harness.restore()
+    }
+  })
+
+  it("downloads plain-text exports directly without DOCX conversion", async () => {
+    vi.mocked(exportLessonPlanDocx).mockReset()
+
+    const harness = installDownloadDomHarness("blob:text")
+
+    try {
+      const artifact = makeExportArtifact({
+        kind: "slides",
+        label: "Slides Export",
+        fileName: "ELA-slides-export.txt",
+        mimeType: "text/plain;charset=utf-8",
+        content: "Slides Export`n1. Opening",
+      })
+
+      await downloadExportArtifact(artifact)
+
+      expect(exportLessonPlanDocx).not.toHaveBeenCalled()
+      expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
+
+      const blobArg = harness.getCreatedObjectUrlArg()
+      expect(blobArg).toBeTruthy()
+      expect(blobArg).toBeInstanceOf(Blob)
+      expect((blobArg as Blob).type).toBe("text/plain;charset=utf-8")
+
+      expect(harness.createdLinks).toHaveLength(1)
+      const appendedLink = harness.createdLinks[0]!
+
+      expect(appendedLink.download).toBe(artifact.fileName)
+      expect(appendedLink.href).toBe("blob:text")
+      expect(appendedLink.click).toHaveBeenCalledTimes(1)
+      expect(harness.body.appendChild).toHaveBeenCalledWith(appendedLink)
+      expect(harness.body.removeChild).toHaveBeenCalledWith(appendedLink)
+      expect(harness.urlStub.revokeObjectURL).toHaveBeenCalledWith("blob:text")
+    } finally {
+      harness.restore()
+    }
+  })
+})
+
+
+
+
