@@ -83,7 +83,7 @@ function makeExemplarMaterial(): MaterialFile {
   })
 }
 
-describe("App route integration: Results trust flow", () => {
+describe("App route integration: Results lazy-route shell", () => {
   beforeEach(async () => {
     useLessonStore.setState((state) => ({
       ...state,
@@ -103,7 +103,7 @@ describe("App route integration: Results trust flow", () => {
     Object.assign(useLessonStore.getInitialState(), useLessonStore.getState())
   })
 
-  it("renders Results route with source labels/names, trace ids, and source-vs-generated messaging", () => {
+  it("renders Results route shell and loading fallback before lazy page resolution", () => {
     const state = useLessonStore.getState()
     expect(state.blueprint).toBeTruthy()
     expect(state.lessonTrace).toBeTruthy()
@@ -115,15 +115,7 @@ describe("App route integration: Results trust flow", () => {
     )
 
     expect(markup).toContain("Results")
-    expect(markup).toContain("Selected Curriculum Source(s):")
-    expect(markup).toContain("curriculum.txt")
-    expect(markup).toContain("Selected Exemplar Source:")
-    expect(markup).toContain("exemplar.txt")
-    expect(markup).toContain("Selected Source IDs")
-    expect(markup).toContain("curriculum-1")
-    expect(markup).toContain("exemplar-1")
-    expect(markup).toContain("Source coverage:")
-    expect(markup).toContain("Generated support:")
+    expect(markup).toContain('href="/results"')
+    expect(markup).toContain("Loading page...")
   })
 })
-
