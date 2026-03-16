@@ -1,7 +1,5 @@
 import { create } from "zustand"
 import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
-import { generateLessonForStore } from "./workflows/generateLessonForStore"
-import { processMaterialForStore } from "./workflows/processMaterialForStore"
 import {
   ExemplarStyleSettings,
   LessonBlueprint,
@@ -347,6 +345,8 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   processMaterial: async (id) => {
     const store = get()
 
+    const { processMaterialForStore } = await import("./workflows/processMaterialForStore")
+
     await processMaterialForStore(id, store.materials, {
       beginMaterialExtraction: store.beginMaterialExtraction,
       beginMaterialAnalysis: store.beginMaterialAnalysis,
@@ -357,6 +357,8 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   generateLesson: async () => {
     const store = get()
+
+    const { generateLessonForStore } = await import("./workflows/generateLessonForStore")
 
     const result = await generateLessonForStore(
       {
