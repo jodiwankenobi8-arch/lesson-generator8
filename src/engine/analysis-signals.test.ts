@@ -41,6 +41,30 @@ describe("material analysis signals", () => {
     )
   })
 
+  it("harvests curriculum coverage signals from noisy slide and PDF-style extraction lines", async () => {
+    const result = await analyzeMaterial({
+      materialId: "curr-2",
+      role: "curriculum",
+      name: "noisy-curriculum.txt",
+      extractedText: [
+        "Notes: Slide 4/12: Practice Words: cake, game, same, late",
+        "Text: Let's read together: Jake made a cake at the lake.",
+        "Slide 5: Phonemic Awareness: blend the sounds in cake and late.",
+        "Slide 6: Segment & Spell: map the sounds in game.",
+        "Activity Roadmap",
+        "Celebration",
+      ],
+    })
+
+    const curriculum = result.analysis.curriculum
+    expect(curriculum).toBeTruthy()
+    expect(curriculum?.wordLists).not.toContain("teacher-selected word list")
+    expect(curriculum?.texts).not.toContain("teacher-provided lesson text")
+    expect(curriculum?.practiceTasks).not.toContain("curriculum-aligned practice task")
+    expect(curriculum?.wordLists.length ?? 0).toBeGreaterThan(0)
+    expect(curriculum?.texts.length ?? 0).toBeGreaterThan(0)
+    expect(curriculum?.practiceTasks.length ?? 0).toBeGreaterThan(0)
+  })
   it("detects richer exemplar signals and detected features from lesson-delivery text", async () => {
     const result = await analyzeMaterial({
       materialId: "ex-1",
@@ -145,3 +169,4 @@ describe("material analysis signals", () => {
     expect(detected?.warnings.join(" ")).toContain("Visual/style features may be under-detected")
   })
 })
+
