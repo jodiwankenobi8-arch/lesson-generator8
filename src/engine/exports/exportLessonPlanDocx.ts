@@ -1,5 +1,3 @@
-import { AlignmentType, Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx"
-
 const SECTION_HEADINGS = new Set([
   "Blueprint Readiness",
   "Coverage Decisions",
@@ -19,38 +17,30 @@ export async function exportLessonPlanDocx(
   title: string,
   lessonPlanText: string
 ): Promise<Blob> {
+  const { AlignmentType, Document, HeadingLevel, Packer, Paragraph, TextRun } = await import("docx")
+
   const resolvedTitle = title.trim() || "Lesson Plan Export"
   const lines = normalizeLines(lessonPlanText)
 
-  const doc = new Document({
-    sections: [
-      {
-        properties: {},
-        children: [
-          new Paragraph({
-            heading: HeadingLevel.TITLE,
-            alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: resolvedTitle, bold: true })],
-          }),
-          blankParagraph(),
-          ...linesToParagraphs(lines),
-        ],
-      },
-    ],
-  })
+  const blankParagraph = () =>
+    new Paragraph({
+      children: [new TextRun("")],
+    })
 
-  return Packer.toBlob(doc)
-}
+  const paragraphForLine = (line: string) => {
+    if (SECTION_HEADINGS.has(line)) {
+      return new Paragraph({
+        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: line, bold: true })],
+      })
+    }
 
-function normalizeLines(text: string): string[] {
-  return text
-    .replace(/\r/g, "")
-    .split("\n")
-    .map((line) => line.trimEnd())
-}
+    return new Paragraph({
+      children: [new TextRun(line)],
+    })
+  }
 
-function linesToParagraphs(lines: string[]): Paragraph[] {
-  const paragraphs: Paragraph[] = []
+  const paragraphs: Array<InstanceType<typeof Paragraph>> = []
   let previousWasBlank = true
 
   for (const line of lines) {
@@ -68,24 +58,29 @@ function linesToParagraphs(lines: string[]): Paragraph[] {
     paragraphs.push(paragraphForLine(trimmed))
   }
 
-  return paragraphs
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: [
+          new Paragraph({
+            heading: HeadingLevel.TITLE,
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: resolvedTitle, bold: true })],
+          }),
+          blankParagraph(),
+          ...paragraphs,
+        ],
+      },
+    ],
+  })
+
+  return Packer.toBlob(doc)
 }
 
-function paragraphForLine(line: string): Paragraph {
-  if (SECTION_HEADINGS.has(line)) {
-    return new Paragraph({
-      heading: HeadingLevel.HEADING_2,
-      children: [new TextRun({ text: line, bold: true })],
-    })
-  }
-
-  return new Paragraph({
-    children: [new TextRun(line)],
-  })
-}
-
-function blankParagraph(): Paragraph {
-  return new Paragraph({
-    children: [new TextRun("")],
-  })
+function normalizeLines(text: string): string[] {
+  return text
+    .replace(/\r/g, "")
+    .split("\n")
+    .map((line) => line.trimEnd())
 }
