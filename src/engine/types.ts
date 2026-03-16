@@ -397,7 +397,7 @@ export type LessonPackageReadiness = {
 
 export type ExportArtifactKind = "slides" | "lesson_plan" | "printables"
 
-export type ExportArtifactStatus = "placeholder" | "ready"
+export type ExportArtifactStatus = "ready"
 
 export type ExportArtifact = {
   kind: ExportArtifactKind

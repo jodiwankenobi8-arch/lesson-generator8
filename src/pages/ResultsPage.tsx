@@ -453,7 +453,7 @@ function AuthorityDecisionList({
                 <strong>{item.name}</strong>
                 <span style={decisionBadgeStyle(item.outcome)}>{formatReliabilityOutcome(item.outcome)}</span>
                 <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>
-                  {formatReliabilityDecision(item.decision)} Ã‚Â· score {item.score}
+                  {formatReliabilityDecision(item.decision)} · score {item.score}
                 </span>
               </div>
 
@@ -977,19 +977,15 @@ function SimpleListSection({
   items,
 }: {
   title: string
-  items: Array<string | ExportArtifact>
+  items: string[]
 }) {
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>{title}</h3>
       <ul style={listStyle}>
-        {items.map((item) => {
-          const key = typeof item === "string" ? item : `${item.kind}-${item.fileName}`
-          const label =
-            typeof item === "string" ? item : `${item.label} (${item.fileName})`
-
-          return <li key={key}>{label}</li>
-        })}
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
       </ul>
     </div>
   )
@@ -998,7 +994,7 @@ function SimpleListSection({
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
 export async function downloadExportArtifact(artifact: ExportArtifact) {
-  if (artifact.status !== "ready" || !artifact.content) return
+  if (!artifact.content) return
 
   const blob =
     artifact.mimeType === DOCX_MIME
@@ -1029,20 +1025,18 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
           >
             <div style={{ fontWeight: 700 }}>{artifact.label}</div>
             <div style={{ marginTop: 4, fontSize: 13 }}>
-              <strong>Status:</strong> {artifact.status === "ready" ? "Ready" : "Placeholder"}
+              <strong>Format:</strong> {artifact.mimeType === DOCX_MIME ? "DOCX" : "Plain text"}
             </div>
             <div style={{ marginTop: 4, fontSize: 13 }}>
               <strong>Filename:</strong> {artifact.fileName}
             </div>
             <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-              {artifact.status === "ready"
-                ? artifact.mimeType === DOCX_MIME
-                  ? "This export is generated from the current lesson package and downloads as a DOCX lesson plan."
-                  : "This export is generated from the current lesson package and downloads as plain text."
-                : "This export is not wired yet in the canonical project."}
+              {artifact.mimeType === DOCX_MIME
+                ? "This export is generated from the current lesson package and downloads as a DOCX lesson plan."
+                : "This export is generated from the current lesson package and downloads as plain text."}
             </div>
 
-            {artifact.status === "ready" && artifact.content ? (
+            {artifact.content ? (
               <button
                 type="button"
                 onClick={() => void downloadExportArtifact(artifact)}
