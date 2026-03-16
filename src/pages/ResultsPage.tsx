@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
-import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { getAxisDecision, getReliabilityScore, hasRelevantRoleAnalysis, sortByAxisPriority } from "../engine/blueprint/materialSelection"
 import {
   ExportArtifact,
@@ -996,12 +995,16 @@ const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingm
 export async function downloadExportArtifact(artifact: ExportArtifact) {
   if (!artifact.content) return
 
-  const blob =
-    artifact.mimeType === DOCX_MIME
-      ? await exportLessonPlanDocx(artifact.label, artifact.content)
-      : new Blob([artifact.content], {
-          type: artifact.mimeType ?? "text/plain;charset=utf-8",
-        })
+  let blob: Blob
+
+  if (artifact.mimeType === DOCX_MIME) {
+    const { exportLessonPlanDocx } = await import("../engine/exports/exportLessonPlanDocx")
+    blob = await exportLessonPlanDocx(artifact.label, artifact.content)
+  } else {
+    blob = new Blob([artifact.content], {
+      type: artifact.mimeType ?? "text/plain;charset=utf-8",
+    })
+  }
 
   const url = window.URL.createObjectURL(blob)
   const link = document.createElement("a")
