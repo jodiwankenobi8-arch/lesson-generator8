@@ -163,9 +163,9 @@ describe("buildPackageOutputs", () => {
       {
         kind: "lesson_plan",
         label: "Lesson Plan Export",
-        fileName: "ELA-lesson-plan-export.txt",
+        fileName: "ELA-lesson-plan-export.docx",
         status: "ready",
-        mimeType: "text/plain;charset=utf-8",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         content: expect.stringContaining("Blueprint Readiness"),
       },
       {
@@ -204,7 +204,5 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Minor warning for visibility.")
   })
 })
-
-
 
 

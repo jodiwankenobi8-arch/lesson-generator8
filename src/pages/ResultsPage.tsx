@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
+import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { getAxisDecision, getReliabilityScore, hasRelevantRoleAnalysis, sortByAxisPriority } from "../engine/blueprint/materialSelection"
 import {
   ExportArtifact,
@@ -994,12 +995,17 @@ function SimpleListSection({
   )
 }
 
-function downloadExportArtifact(artifact: ExportArtifact) {
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+async function downloadExportArtifact(artifact: ExportArtifact) {
   if (artifact.status !== "ready" || !artifact.content) return
 
-  const blob = new Blob([artifact.content], {
-    type: artifact.mimeType ?? "text/plain;charset=utf-8",
-  })
+  const blob =
+    artifact.mimeType === DOCX_MIME
+      ? await exportLessonPlanDocx(artifact.label, artifact.content)
+      : new Blob([artifact.content], {
+          type: artifact.mimeType ?? "text/plain;charset=utf-8",
+        })
 
   const url = window.URL.createObjectURL(blob)
   const link = document.createElement("a")
@@ -1030,14 +1036,16 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
             </div>
             <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
               {artifact.status === "ready"
-                ? "This export is generated from the current lesson package and downloads as plain text."
+                ? artifact.mimeType === DOCX_MIME
+                  ? "This export is generated from the current lesson package and downloads as a DOCX lesson plan."
+                  : "This export is generated from the current lesson package and downloads as plain text."
                 : "This export is not wired yet in the canonical project."}
             </div>
 
             {artifact.status === "ready" && artifact.content ? (
               <button
                 type="button"
-                onClick={() => downloadExportArtifact(artifact)}
+                onClick={() => void downloadExportArtifact(artifact)}
                 style={{
                   marginTop: 10,
                   border: "1px solid var(--border)",
