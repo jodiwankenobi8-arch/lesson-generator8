@@ -1,4 +1,4 @@
-﻿param(
+param(
   [string[]]$Roots = @((Join-Path $env:USERPROFILE 'Downloads')),
   [int]$SinceMinutes = 180,
   [switch]$FailOnHit = $true
@@ -58,15 +58,34 @@ function Get-ZipText {
   }
 }
 
+function Get-PlainText {
+  param(
+    [Parameter(Mandatory = $true)][string]$Path
+  )
+
+  return (Get-Content -Raw -Path $Path)
+}
+
 $files = foreach ($root in $rootsToScan) {
   Get-ChildItem $root -File -ErrorAction SilentlyContinue |
     Where-Object {
       $_.LastWriteTime -ge $since -and
-      $_.Extension -in '.docx','.pptx','.zip' -and
       (
-        $_.Name -match 'FULL_EXPORT' -or
-        $_.Name -match 'lesson_plan' -or
-        $_.Name -match 'slides'
+        (
+          $_.Extension -in '.docx','.pptx','.zip' -and
+          (
+            $_.Name -match 'FULL_EXPORT' -or
+            $_.Name -match 'lesson[_-]plan' -or
+            $_.Name -match 'slides'
+          )
+        ) -or
+        (
+          $_.Extension -eq '.txt' -and
+          (
+            $_.Name -match 'slides-export' -or
+            $_.Name -match 'printables-export'
+          )
+        )
       )
     }
 }
@@ -95,6 +114,7 @@ foreach ($file in $files) {
       '.docx' { $text = Get-ZipText -Path $file.FullName -IncludePatterns @('word/*.xml','docProps/*.xml','*.rels') }
       '.pptx' { $text = Get-ZipText -Path $file.FullName -IncludePatterns @('ppt/slides/*.xml','ppt/notesSlides/*.xml','docProps/*.xml','*.rels') }
       '.zip'  { $text = Get-ZipText -Path $file.FullName -IncludePatterns @('*.xml','*.txt','*.json','*.md') }
+      '.txt'  { $text = Get-PlainText -Path $file.FullName }
       default { $text = '' }
     }
 
