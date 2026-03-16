@@ -337,17 +337,20 @@ function buildExemplarSummary(name: string, lines: string[]): string {
   return `Exemplar material ${name} analyzed with ${lines.length} usable lines, ${flow} slide-flow signals, ${pacing} pacing signals, ${moves} teacher-move signals, ${structure} reusable structure signals, and ${detectedFeatureCount} detected exemplar features.`
 }
 
-function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
-  const standards = findStandards(lines)
-  const instructionalTargets = selectInstructionalTargets(lines)
-  const vocabulary = selectVocabulary(lines)
-  const wordLists = selectWordLists(lines)
-  const texts = selectTexts(lines)
-  const practiceTasks = selectPracticeTasks(lines)
-  const examples = selectExamples(lines)
-  const foundationalSkills = selectFoundationalSkills(lines)
-  const sightWords = selectSightWords(lines)
-  const lessonSegments = selectCoveredLessonSegments(lines)
+function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
+  const coverageCandidates = extractCurriculumCoverageCandidates(lines)
+  const coverageLines = unique([...lines, ...coverageCandidates])
+
+  const standards = findStandards(coverageLines)
+  const instructionalTargets = selectInstructionalTargets(coverageLines)
+  const vocabulary = selectVocabulary(coverageLines)
+  const wordLists = selectWordLists(coverageLines)
+  const texts = selectTexts(coverageLines)
+  const practiceTasks = selectPracticeTasks(coverageLines)
+  const examples = selectExamples(coverageLines)
+  const foundationalSkills = selectFoundationalSkills(coverageLines)
+  const sightWords = selectSightWords(coverageLines)
+  const lessonSegments = selectCoveredLessonSegments(coverageLines)
 
   return {
     standards: standards.length ? standards : ["teacher-selected standard"],
@@ -1282,4 +1285,5 @@ function computeExemplarSignalStrength(e: ExemplarAnalysis): number {
 
 
 
+
 
