@@ -1,10 +1,9 @@
 import React, { Suspense } from "react"
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom"
-import ResultsPage from "./pages/ResultsPage"
 import { useLessonStore } from "./state/useLessonStore"
 
 const InputsPage = React.lazy(() => import("./pages/InputsPage"))
-const MaterialsPage = React.lazy(() => import("./pages/MaterialsPage"))
+const MaterialsPage = React.lazy(() => import("./pages/MaterialsPage"))`r`nconst ResultsPage = React.lazy(() => import("./pages/ResultsPage"))
 
 function StepNav() {
   const location = useLocation()
