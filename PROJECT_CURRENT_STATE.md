@@ -1,4 +1,4 @@
-# Project Current State
+﻿# Project Current State
 
 **Project:** Lesson Generator 8  
 **Last updated:** 2026-03-16 (America/Chicago)  
@@ -50,3 +50,24 @@
 ### Update - 2026-03-16
 - Landed import-graph audit tooling and store-seam note (cherry-picked).
 - Resolved PROJECT_CURRENT_STATE.md conflict markers and recorded canonical guidance + validation snapshot.
+
+## Branch archaeology / deletion gate
+
+Do not treat older repo notes as gospel.
+
+For branch archaeology and donor-branch deletion:
+- judge seams by behavior lineage, not path lineage
+- use current code and recent merged lineage as the benchmark
+- mine donor branches before deleting them
+- port only the still-valuable missing remainder into canonical
+- delete branches only after their meaningful seams are accounted for as already present, hand-ported, or truly superseded
+
+Working order:
+mine first -> prune second -> harden third -> move forward fourth
+
+## Imported chat handoff summaries (2026-03-17 16:39)
+
+
+Recommended cleanup:
+- rename or remove any empty-slug handoff filenames
+- continue using sanitized slugs for future handoffs
