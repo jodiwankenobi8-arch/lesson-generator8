@@ -147,4 +147,78 @@ describe("blueprint source readiness", () => {
     expect(result.sourceReadiness.coverageSupport).toBe("strong")
     expect(result.sourceReadiness.overall).toBe("content_heavy")
   })
+
+it("emits curriculum-side warnings without exemplar warning when exemplar is strong but curriculum is missing", () => {
+  const result = buildBlueprint(
+    {
+      grade: "1",
+      subject: "ELA",
+      standard: "RF.1.3",
+      skill: "Long A phonics",
+      topic: "Long A vowel patterns",
+      duration: "30 minutes",
+    },
+    [
+      {
+        id: "ex-strong",
+        name: "exemplar.txt",
+        role: "exemplar",
+        status: "ready",
+        analysis: {
+          summary: "Strong exemplar structure.",
+          extractedText: [],
+          tags: ["signal-strength:8"],
+          sourceRole: "exemplar",
+          exemplar: {
+            slideFlow: ["Opening", "Teach", "Guided Practice", "Closure"],
+            pacing: ["5 minutes"],
+            teacherMoves: ["Teacher prompt: What do you notice?"],
+            promptStyle: ["Turn and talk to your partner."],
+            layoutCues: ["Layout cue: large word display"],
+            tone: ["Supportive and clear tone"],
+            reusableStructure: ["I do, we do, you do."],
+            detectedFeatures: {
+              items: [
+                {
+                  key: "guided_practice",
+                  label: "Guided Practice",
+                  description: "Includes guided-practice structure.",
+                  evidence: ["Guided Practice"],
+                  confidence: 0.9,
+                  category: "instructional_flow",
+                },
+              ],
+              warnings: [],
+            },
+          },
+        },
+        errorMessage: null,
+        styleSettings: null,
+        transformationRequest: null,
+        fileBuffer: null,
+        fileContent: null,
+      },
+    ],
+    "single"
+  )
+
+  expect(result.sourceReadiness.curriculumSupport).toBe("limited")
+  expect(result.sourceReadiness.coverageSupport).toBe("limited")
+  expect(result.sourceReadiness.exemplarSupport).toBe("strong")
+  expect(result.sourceReadiness.overall).toBe("structure_heavy")
+
+  expect(result.sourceReadiness.warnings).toEqual(
+    expect.arrayContaining([
+      "No curriculum materials are ready, so content is relying on fallback signals.",
+      "Curriculum coverage breadth still looks limited, so some lesson areas may rely on fallback logic.",
+    ])
+  )
+
+  expect(result.sourceReadiness.warnings).not.toContain(
+    "Exemplar materials are present, but strong structure signals still look limited."
+  )
+  expect(result.sourceReadiness.warnings).not.toContain(
+    "No exemplar materials are ready, so structure is relying on generic lesson flow."
+  )
+})
 })
