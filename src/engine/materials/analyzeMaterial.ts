@@ -337,20 +337,52 @@ function buildExemplarSummary(name: string, lines: string[]): string {
   return `Exemplar material ${name} analyzed with ${lines.length} usable lines, ${flow} slide-flow signals, ${pacing} pacing signals, ${moves} teacher-move signals, ${structure} reusable structure signals, and ${detectedFeatureCount} detected exemplar features.`
 }
 
+function normalizeCoverageSelections(items: string[]): string[] {
+  const cleanedItems: string[] = []
+  const seen = new Set<string>()
+
+  for (const item of items) {
+    const cleaned = item
+      .replace(/^notes:\s*slide\s*\d+\s*\/\s*\d+\s*:\s*/i, "")
+      .replace(/^notes:\s*/i, "")
+      .replace(/^text:\s*/i, "")
+      .replace(/^slide\s*\d+\s*:\s*/i, "")
+      .replace(/\s*(?:\bpage\s*\d+\s*(?:of\s*\d+)?\b)\s*$/i, "")
+      .replace(/\s*-?\s*continued\s*$/i, "")
+      .replace(/\s*-?\s*cont\.?\s*$/i, "")
+      .replace(/\s+/g, " ")
+      .trim()
+
+    if (!cleaned) {
+      continue
+    }
+
+    const key = cleaned.toLowerCase()
+    if (seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    cleanedItems.push(cleaned)
+  }
+
+  return cleanedItems
+}
+
 function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
   const coverageCandidates = extractCurriculumCoverageCandidates(lines)
-  const coverageLines = unique([...lines, ...coverageCandidates])
+  const coverageLines = unique([...coverageCandidates, ...lines])
 
-  const standards = findStandards(coverageLines)
-  const instructionalTargets = selectInstructionalTargets(coverageLines)
-  const vocabulary = selectVocabulary(coverageLines)
-  const wordLists = selectWordLists(coverageLines)
-  const texts = selectTexts(coverageLines)
-  const practiceTasks = selectPracticeTasks(coverageLines)
-  const examples = selectExamples(coverageLines)
-  const foundationalSkills = selectFoundationalSkills(coverageLines)
-  const sightWords = selectSightWords(coverageLines)
-  const lessonSegments = selectCoveredLessonSegments(coverageLines)
+  const standards = normalizeCoverageSelections(findStandards(coverageLines))
+  const instructionalTargets = normalizeCoverageSelections(selectInstructionalTargets(coverageLines))
+  const vocabulary = normalizeCoverageSelections(selectVocabulary(coverageLines))
+  const wordLists = normalizeCoverageSelections(selectWordLists(coverageLines))
+  const texts = normalizeCoverageSelections(selectTexts(coverageLines))
+  const practiceTasks = normalizeCoverageSelections(selectPracticeTasks(coverageLines))
+  const examples = normalizeCoverageSelections(selectExamples(coverageLines))
+  const foundationalSkills = normalizeCoverageSelections(selectFoundationalSkills(coverageLines))
+  const sightWords = normalizeCoverageSelections(selectSightWords(coverageLines))
+  const lessonSegments = normalizeCoverageSelections(selectCoveredLessonSegments(coverageLines))
 
   return {
     standards: standards.length ? standards : ["teacher-selected standard"],
@@ -1173,6 +1205,12 @@ function scoreLine(line: string): number {
   if (containsAny(lower, ["phonics", "syllable", "cvce", "cvc", "long a", "short a", "vowel team", "silent e", "decode"])) score += 3
   if (containsAny(lower, ["vocabulary", "define", "meaning", "example", "model"])) score += 2
 
+  if (/^notes:\s*slide\s*\d+(?:\s*\/\s*\d+)?\s*:/i.test(line)) score -= 6
+  else if (/^notes:\s*/i.test(line)) score -= 3
+
+  if (/^slide\s*\d+\s*:/i.test(line)) score -= 5
+  if (/^text:\s*/i.test(line)) score -= 3
+  if (/\bpage\s*\d+(?:\s*of\s*\d+)?\b/i.test(line)) score -= 3
   const wordCount = lower.split(/\s+/).filter(Boolean).length
   if (wordCount >= 3 && wordCount <= 18) score += 2
   if (wordCount > 30) score -= 2
