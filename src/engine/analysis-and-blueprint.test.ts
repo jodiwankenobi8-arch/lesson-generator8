@@ -324,4 +324,78 @@ describe("buildBlueprint source readiness", () => {
     expect(prompts).not.toContain("echo the line")
     expect(timing).toContain("5 minutes")
   })
+  it("treats strong coverage plus strong exemplar support as balanced even when direct curriculum content signals are limited", () => {
+    const curriculum = makeMaterial({
+      id: "curr-coverage-strong",
+      name: "curriculum-coverage-strong.txt",
+      role: "curriculum",
+      analysis: {
+        summary: "Coverage-rich curriculum with intentionally weak direct content fields.",
+        extractedText: [],
+        tags: ["signal-strength:4"],
+        sourceRole: "curriculum",
+        curriculum: {
+          standards: ["teacher-selected standard"],
+          vocabulary: ["key vocabulary"],
+          wordLists: ["teacher-selected word list"],
+          texts: ["teacher-provided lesson text"],
+          practiceTasks: ["curriculum-aligned practice task"],
+          instructionalTargets: ["lesson target"],
+          examples: ["modeled example"],
+          coverage: {
+            standards: ["RF.1.3"],
+            instructionalTargets: ["Objective: Students will read long a words."],
+            foundationalSkills: ["Phonemic Awareness: blend the sounds in cake and game."],
+            sightWords: ["Sight words: said, they"],
+            vocabulary: ["Vocabulary: vowel team, silent e"],
+            wordLists: ["Word list: cake, game, same, late"],
+            texts: ["Passage: Jake made a cake at the lake."],
+            practiceTasks: ["Practice: sort long a words with a partner."],
+            lessonSegments: ["Warm up", "Guided Practice"],
+          },
+        },
+      },
+    })
+
+    const exemplar = makeMaterial({
+      id: "ex-strong",
+      name: "exemplar-strong.txt",
+      role: "exemplar",
+      analysis: {
+        summary: "Strong exemplar structure.",
+        extractedText: [],
+        tags: ["signal-strength:8"],
+        sourceRole: "exemplar",
+        exemplar: {
+          slideFlow: ["Opening", "Teach", "Guided Practice", "Closure"],
+          pacing: ["5 minutes"],
+          teacherMoves: ["Teacher prompt: What do you notice?"],
+          promptStyle: ["Turn and talk to your partner."],
+          layoutCues: ["Layout cue: large word display"],
+          tone: ["Supportive and clear tone"],
+          reusableStructure: ["I do, we do, you do."],
+          detectedFeatures: {
+            items: [
+              {
+                key: "guided_practice",
+                label: "Guided Practice",
+                description: "Includes guided-practice structure.",
+                evidence: ["Guided Practice"],
+                confidence: 0.9,
+                category: "instructional_flow",
+              },
+            ],
+            warnings: [],
+          },
+        },
+      },
+    })
+
+    const blueprint = buildBlueprint(makeInputs(), [curriculum, exemplar], "single")
+
+    expect(blueprint.sourceReadiness.curriculumSupport).toBe("strong")
+    expect(blueprint.sourceReadiness.coverageSupport).toBe("strong")
+    expect(blueprint.sourceReadiness.exemplarSupport).toBe("strong")
+    expect(blueprint.sourceReadiness.overall).toBe("balanced")
+  })
 })
