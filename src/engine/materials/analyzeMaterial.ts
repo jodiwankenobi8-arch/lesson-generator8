@@ -419,8 +419,8 @@ function detectExemplarFeatures(lines: string[]) {
     evidence: takeBestMatches(
       lines,
       (line) =>
-        startsWithAny(line, ["prompt", "question stem", "sentence stem"]) ||
-        containsAny(line, ["prompt students", "question stem", "sentence stem", "what do you notice"]),
+        startsWithAny(line, ["prompt", "question stem", "sentence stem", "teacher note", "notes:", "watch and listen", "my turn", "your turn", "say it with me"]) ||
+        containsAny(line, ["prompt students", "question stem", "sentence stem", "what do you notice", "teacher note", "notes:", "watch and listen", "my turn", "your turn", "say it with me", "preview lesson steps", "students echo", "echo"]),
       3
     ),
   })
@@ -433,8 +433,8 @@ function detectExemplarFeatures(lines: string[]) {
     evidence: takeBestMatches(
       lines,
       (line) =>
-        startsWithAny(line, ["teacher says", "teacher will", "say", "model", "explain"]) ||
-        containsAny(line, ["teacher says", "teacher will", "think aloud", "show students"]),
+        startsWithAny(line, ["teacher says", "teacher will", "teacher note", "notes:", "say", "model", "explain", "watch and listen", "my turn", "your turn", "say it with me"]) ||
+        containsAny(line, ["teacher says", "teacher will", "teacher note", "notes:", "think aloud", "show students", "watch and listen", "students echo", "echo", "my turn", "your turn", "say it with me", "preview lesson steps", "circulate"]),
       3
     ),
   })
@@ -1017,22 +1017,36 @@ function selectTeacherMoves(lines: string[]): string[] {
       startsWithAny(line, [
         "teacher says",
         "teacher will",
+        "teacher note",
+        "notes:",
         "model",
         "guide",
         "ask",
         "say",
         "show students",
         "explain",
+        "watch and listen",
+        "my turn",
+        "your turn",
+        "say it with me",
         "turn and talk",
       ]) ||
       containsAny(line, [
         "teacher says",
         "teacher will",
+        "teacher note",
+        "notes:",
         "model",
         "think aloud",
         "guide",
         "circulate",
         "listen for",
+        "watch and listen",
+        "my turn",
+        "your turn",
+        "say it with me",
+        "students echo",
+        "echo",
         "turn and talk",
       ]),
     8
@@ -1047,16 +1061,31 @@ function selectPromptStyle(lines: string[]): string[] {
         "prompt",
         "question stem",
         "sentence stem",
+        "teacher note",
+        "notes:",
+        "watch and listen",
+        "my turn",
+        "your turn",
+        "say it with me",
         "turn and talk",
       ]) ||
       containsAny(line, [
         "prompt students",
         "question stem",
         "sentence stem",
+        "teacher note",
+        "notes:",
+        "watch and listen",
+        "my turn",
+        "your turn",
+        "say it with me",
+        "preview lesson steps",
         "turn and talk",
         "discuss",
         "share with a partner",
         "what do you notice",
+        "students echo",
+        "echo",
       ]),
     8
   )

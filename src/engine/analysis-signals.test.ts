@@ -151,6 +151,42 @@ describe("material analysis signals", () => {
     expect(turnAndTalk?.evidence.join(" ").toLowerCase()).toContain("turn and talk")
   })
 
+  it("detects teacher-delivery cues from note-style exemplar text", async () => {
+    const result = await analyzeMaterial({
+      materialId: "ex-3",
+      role: "exemplar",
+      name: "teacher-notes-exemplar.txt",
+      extractedText: [
+        "Teacher Note: Preview lesson steps before students begin.",
+        "Notes: Students echo the target word after you model it.",
+        "Watch and listen.",
+        "My turn, your turn.",
+        "Say it with me.",
+        "Circulate and give fast feedback.",
+        "Guided Practice",
+        "Closure",
+      ],
+    })
+
+    const exemplar = result.analysis.exemplar
+    expect(exemplar).toBeTruthy()
+
+    const joinedMoves = (exemplar?.teacherMoves ?? []).join(" ").toLowerCase()
+    const joinedPrompts = (exemplar?.promptStyle ?? []).join(" ").toLowerCase()
+    const keys = (exemplar?.detectedFeatures?.items ?? []).map((item) => item.key)
+
+    expect(joinedMoves).toMatch(/teacher note|watch and listen|my turn|say it with me|circulate|echo/)
+    expect(joinedPrompts).toMatch(/watch and listen|my turn|your turn|say it with me|preview lesson steps/)
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        "teacher_prompt_blocks",
+        "teacher_scripts",
+        "guided_practice",
+        "closure",
+      ])
+    )
+  })
+
   it("adds sensible warnings when exemplar text is too thin for strong feature detection", async () => {
     const result = await analyzeMaterial({
       materialId: "ex-2",
@@ -169,4 +205,5 @@ describe("material analysis signals", () => {
     expect(detected?.warnings.join(" ")).toContain("Visual/style features may be under-detected")
   })
 })
+
 
