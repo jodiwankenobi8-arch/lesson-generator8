@@ -161,7 +161,7 @@ export default function ResultsPage() {
         Results
       </h2>
       <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-lg)", fontSize: 16 }}>
-        Teacher-facing lesson package first. Supporting planning details are available below.
+        Teacher-facing lesson package first. Review the generated package, confirm the standards and source support, open the planning details when needed, and export only the pieces you want to use.
       </p>
 
       {(isRegenerating || regenerationError || lastDecisionSummary) && (
@@ -262,6 +262,9 @@ function PackageSummarySection({
         <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
         <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+            Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.
+          </div>
       </div>
     </div>
   )
@@ -1020,6 +1023,9 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Exports</h3>
+      <p style={{ color: "var(--text-secondary)", margin: "0 0 var(--space-sm) 0" }}>
+        Export only what you need, or download the full lesson package once the artifacts are ready.
+      </p>
       <div style={{ display: "grid", gap: 10 }}>
         {exports.map((artifact) => (
           <div
@@ -1331,5 +1337,3 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
-
-
