@@ -1,4 +1,4 @@
-import { create } from "zustand"
+﻿import { create } from "zustand"
 import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
 import {
   ExemplarStyleSettings,
@@ -404,7 +404,9 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   hasReadyMaterials: () => {
     const { materials } = get()
-    return materials.some((material) => material.status === "ready")
+    return materials.some(
+      (material) => material.status === "ready" && Boolean(material.analysis)
+    )
   },
 
   hasProcessingMaterials: () => {
@@ -433,3 +435,4 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return buildTargetPreview(inputs, selectedLessonMode)
   },
 }))
+

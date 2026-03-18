@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest"
+﻿import { beforeEach, describe, expect, it } from "vitest"
 import { useLessonStore } from "./useLessonStore"
 import type {
   LessonInputs,
@@ -222,6 +222,27 @@ describe("useLessonStore processMaterial and trace contracts", () => {
     expect(after.materials).toEqual(before.materials)
     expect(after.blueprint).toBe(before.blueprint)
     expect(after.lessonTrace).toBe(before.lessonTrace)
+  })
+
+  it("hasReadyMaterials stays false for status-only ready materials without analysis", () => {
+    useLessonStore.setState((state) => ({
+      ...state,
+      materials: [
+        {
+          id: "status-only-ready",
+          name: "status-only-ready.txt",
+          role: "curriculum",
+          status: "ready",
+          analysis: null,
+          errorMessage: null,
+          styleSettings: null,
+          fileBuffer: null,
+          fileContent: null,
+        },
+      ],
+    }))
+
+    expect(useLessonStore.getState().hasReadyMaterials()).toBe(false)
   })
 
   it("processMaterial marks material as error when no usable source content is available", async () => {
