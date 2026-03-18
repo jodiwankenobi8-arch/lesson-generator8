@@ -138,7 +138,9 @@ export default function MaterialsPage() {
   const generateLesson = useLessonStore((state) => state.generateLesson)
   const counts = useLessonStore((state) => state.getMaterialCounts)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
-  const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
+  const hasUsableMaterialsForGeneration = useLessonStore(
+    (state) => state.hasUsableMaterialsForGeneration
+  )()
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const canGenerate = useLessonStore((state) => state.canGenerate)()
 
@@ -287,10 +289,10 @@ export default function MaterialsPage() {
         </h3>
 
         <div style={summaryGridStyle}>
-          <SummaryCard label="Content-ready files" value={supportSummary.readyCurriculum} />
-          <SummaryCard label="Structure-ready files" value={supportSummary.readyExemplar} />
-          <SummaryCard label="Content grounding signals" value={supportSummary.contentSignalCount} />
-          <SummaryCard label="Structure guidance signals" value={supportSummary.structureSignalCount} />
+          <SummaryCard label="Usable content files" value={supportSummary.usableCurriculum} />
+          <SummaryCard label="Usable structure files" value={supportSummary.usableExemplar} />
+          <SummaryCard label="Caution files" value={supportSummary.cautionCount} />
+          <SummaryCard label="Blocked files" value={supportSummary.blockedCount} />
         </div>
 
         <div style={supportNoticeStyle(supportSummary.overall)}>
@@ -328,14 +330,18 @@ export default function MaterialsPage() {
 
         <div
           style={noticeStyle(
-            hasProcessingMaterials ? "processing" : hasReadyMaterials ? "ready" : "idle"
+            hasProcessingMaterials
+              ? "processing"
+              : hasUsableMaterialsForGeneration
+                ? "ready"
+                : "idle"
           )}
         >
           {hasProcessingMaterials
             ? "Results stay blocked until all uploaded materials finish processing."
-            : hasReadyMaterials
-              ? "At least one material is ready. You can continue once your inputs are complete."
-              : "Add curriculum or exemplar files to begin analysis."}
+            : hasUsableMaterialsForGeneration
+              ? "At least one material is usable for grounded generation."
+              : "Add stronger curriculum or exemplar files to unlock grounded generation."}
         </div>
 
         <div style={{ marginTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -353,9 +359,9 @@ export default function MaterialsPage() {
               ? "Complete all lesson inputs before generating."
               : hasProcessingMaterials
                 ? "Wait until uploaded materials finish processing."
-                : !hasReadyMaterials
-                  ? "At least one curriculum or exemplar material must be ready."
-                  : "Inputs and materials are ready for lesson generation."}
+                : !hasUsableMaterialsForGeneration
+                  ? "At least one curriculum or exemplar material must be usable for grounded generation."
+                  : "Inputs and usable materials are ready for lesson generation."}
           </div>
 
           {generationError && (
@@ -527,8 +533,10 @@ export default function MaterialsPage() {
 }
 
 type MaterialSupportSummary = {
-  readyCurriculum: number
-  readyExemplar: number
+  usableCurriculum: number
+  usableExemplar: number
+  cautionCount: number
+  blockedCount: number
   contentSignalCount: number
   structureSignalCount: number
   overall: "balanced" | "content_heavy" | "structure_heavy" | "limited"
@@ -537,15 +545,40 @@ type MaterialSupportSummary = {
 }
 
 function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupportSummary {
-  const readyCurriculum = materials.filter(
-    (material) => material.role === "curriculum" && material.status === "ready" && material.analysis?.curriculum
+  const usableCurriculum = materials.filter(
+    (material) =>
+      material.role === "curriculum" &&
+      material.status === "ready" &&
+      material.analysis?.curriculum &&
+      (!material.analysis.reliability || material.analysis.reliability.usableForContent)
   )
 
-  const readyExemplar = materials.filter(
-    (material) => material.role === "exemplar" && material.status === "ready" && material.analysis?.exemplar
+  const usableExemplar = materials.filter(
+    (material) =>
+      material.role === "exemplar" &&
+      material.status === "ready" &&
+      material.analysis?.exemplar &&
+      (!material.analysis.reliability || material.analysis.reliability.usableForStructure)
   )
 
-  const contentSignalCount = readyCurriculum.reduce((total, material) => {
+  const cautionCount = materials.filter((material) => {
+    const reliability = material.analysis?.reliability
+    if (material.status !== "ready" || !reliability) return false
+
+    return (
+      (reliability.usableForContent && reliability.contentDecision === "caution") ||
+      (reliability.usableForStructure && reliability.structureDecision === "caution")
+    )
+  }).length
+
+  const blockedCount = materials.filter((material) => {
+    const reliability = material.analysis?.reliability
+    if (material.status !== "ready" || !reliability) return false
+
+    return !reliability.usableForContent && !reliability.usableForStructure
+  }).length
+
+  const contentSignalCount = usableCurriculum.reduce((total, material) => {
     const curriculum = material.analysis?.curriculum
     if (!curriculum) return total
 
@@ -560,7 +593,7 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
     )
   }, 0)
 
-  const structureSignalCount = readyExemplar.reduce((total, material) => {
+  const structureSignalCount = usableExemplar.reduce((total, material) => {
     const exemplar = material.analysis?.exemplar
     if (!exemplar) return total
 
@@ -575,8 +608,8 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
     )
   }, 0)
 
-  const hasCurriculumSupport = readyCurriculum.length > 0 && contentSignalCount > 0
-  const hasExemplarSupport = readyExemplar.length > 0 && structureSignalCount > 0
+  const hasCurriculumSupport = usableCurriculum.length > 0 && contentSignalCount > 0
+  const hasExemplarSupport = usableExemplar.length > 0 && structureSignalCount > 0
 
   const overall =
     hasCurriculumSupport && hasExemplarSupport
@@ -589,26 +622,36 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
 
   const guidance: string[] = []
 
+  if (blockedCount > 0) {
+    guidance.push("Some files finished processing but are blocked from grounding generation because their extracted text is too weak or unreliable.")
+  }
+
+  if (cautionCount > 0) {
+    guidance.push("Some files are usable only with caution. Review extraction trace notes before relying on them heavily.")
+  }
+
   if (!hasCurriculumSupport) {
-    guidance.push("Add at least one strong curriculum file so lesson content is grounded in actual standards, texts, word lists, and tasks.")
+    guidance.push("Add at least one usable curriculum file so lesson content is grounded in actual standards, texts, word lists, and tasks.")
   }
 
   if (!hasExemplarSupport) {
-    guidance.push("Add at least one strong exemplar file so pacing, slide flow, prompts, and structure are grounded in a real model.")
+    guidance.push("Add at least one usable exemplar file so pacing, slide flow, prompts, and structure are grounded in a real model.")
   }
 
   const message =
     overall === "balanced"
-      ? "You currently have both curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
+      ? "You currently have usable curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
       : overall === "content_heavy"
-        ? "You currently have stronger curriculum support than exemplar support. Content should be more grounded than structure."
+        ? "You currently have more usable curriculum support than exemplar support. Content should be more grounded than structure."
         : overall === "structure_heavy"
-          ? "You currently have stronger exemplar support than curriculum support. Structure should be stronger than content grounding."
-          : "Current material support is limited. The lesson may rely more on fallback logic until stronger files are added."
+          ? "You currently have more usable exemplar support than curriculum support. Structure should be stronger than content grounding."
+          : "Current usable material support is limited. The lesson may rely more on fallback logic until stronger files are added."
 
   return {
-    readyCurriculum: readyCurriculum.length,
-    readyExemplar: readyExemplar.length,
+    usableCurriculum: usableCurriculum.length,
+    usableExemplar: usableExemplar.length,
+    cautionCount,
+    blockedCount,
     contentSignalCount,
     structureSignalCount,
     overall,
@@ -651,11 +694,29 @@ function formatUseStatusLabel(material: MaterialFile): string {
   if (material.status === "error") return "Needs attention"
   if (material.status !== "ready") return "Partial support"
 
-  const influence = formatInfluenceLabel(material)
+  const reliability = material.analysis?.reliability
 
-  if (influence === "Content authority") return "Ready for content grounding"
-  if (influence === "Structure authority") return "Ready for structure guidance"
-  if (influence === "Mixed support") return "Ready for mixed support"
+  if (!reliability) {
+    return "Ready, trust not scored"
+  }
+
+  if (!reliability.usableForContent && !reliability.usableForStructure) {
+    return "Blocked for lesson generation"
+  }
+
+  if (
+    (reliability.usableForContent && reliability.contentDecision === "caution") ||
+    (reliability.usableForStructure && reliability.structureDecision === "caution")
+  ) {
+    return "Usable with caution"
+  }
+
+  const usableForContent = reliability.usableForContent
+  const usableForStructure = reliability.usableForStructure
+
+  if (usableForContent && usableForStructure) return "Ready for grounded generation"
+  if (usableForContent) return "Ready for content grounding"
+  if (usableForStructure) return "Ready for structure guidance"
 
   return "Needs attention"
 }
@@ -973,5 +1034,3 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
-
-

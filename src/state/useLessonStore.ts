@@ -81,6 +81,7 @@ type LessonStore = {
 
   hasRequiredInputs: () => boolean
   hasReadyMaterials: () => boolean
+  hasUsableMaterialsForGeneration: () => boolean
   hasProcessingMaterials: () => boolean
   canGenerate: () => boolean
   getMaterialCounts: () => MaterialCounts
@@ -409,6 +410,22 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     )
   },
 
+  hasUsableMaterialsForGeneration: () => {
+    const { materials } = get()
+    return materials.some((material) => {
+      if (material.status !== "ready" || !material.analysis) {
+        return false
+      }
+
+      const reliability = material.analysis.reliability
+      if (!reliability) {
+        return true
+      }
+
+      return reliability.usableForContent || reliability.usableForStructure
+    })
+  },
+
   hasProcessingMaterials: () => {
     const { materials } = get()
     return materials.some(
@@ -424,7 +441,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return (
       store.hasRequiredInputs() &&
       !store.hasProcessingMaterials() &&
-      store.hasReadyMaterials()
+      store.hasUsableMaterialsForGeneration()
     )
   },
 
@@ -435,4 +452,3 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return buildTargetPreview(inputs, selectedLessonMode)
   },
 }))
-
