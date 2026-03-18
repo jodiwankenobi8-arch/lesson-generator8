@@ -1,0 +1,294 @@
+﻿# AGENTS.md
+
+## Project identity
+Lesson Generator 8 is a teacher-facing lesson generator.
+
+Primary app flow:
+Inputs -> Materials -> Results
+
+Canonical engine flow:
+extraction -> analysis -> blueprint -> planning -> spec -> package -> results
+
+This is not a generic AI toy or generic dashboard app.
+It should feel teacher-first, trustworthy, source-grounded, and finishable.
+
+## Instruction priority
+If the user gives a direct request in the current chat that conflicts with a default preference here, follow the user's current request.
+
+## Current product phase
+This project is in hardening / finishing mode.
+
+Prioritize:
+- trust
+- reliability
+- source selection clarity
+- results traceability
+- export usefulness
+- clean architecture
+
+Do not prioritize broad new-feature expansion ahead of core trust hardening.
+
+## Core product rules
+These are non-negotiable:
+- Curriculum = content authority
+- Exemplar = presentation / structure authority
+- Do not let exemplar override lesson topic or lesson content
+- Do not reduce strong curriculum content into weak generic filler
+- Detect what uploaded materials already cover
+- Avoid duplicating strong source coverage
+- Ask before adding meaningful missing areas
+- If mixed targets are detected, prefer clarification over guessing
+- AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
+
+## User workflow / SOP rules
+The repo owner is completely new to development and wants beginner-safe help.
+
+Always work like this:
+1. inspect first
+2. explain what is being changed and why
+3. give one PowerShell paste at a time
+4. use the biggest safe coherent chunk
+5. do one clean edit
+6. verify immediately
+7. keep architecture clean
+8. checkpoint frequently
+9. push to Git after meaningful progress
+
+When helping with implementation, prefer this structure:
+- What we are doing
+- Why now
+- One PowerShell paste
+- Expected success result
+- What to send back if it fails
+
+Prefer the single best next move over many competing options.
+
+## Review size vs change size
+These are different:
+- Review size: use the smallest sufficient review scope for the task, unless the user asks for a full historical sweep or contradictions require broader review.
+- Change size: prefer the biggest safe coherent implementation step once the real seam is understood.
+
+Do not confuse "read less" with "change less."
+Do not patch-stack tiny fixes when one cleaner seam-level move is safer and more effective.
+
+## Notes review mode
+There are two valid review modes.
+
+### Standard continuation mode
+Use this by default.
+
+Read:
+1. AGENTS.md
+2. PROJECT_CURRENT_STATE.md
+3. docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
+4. the most relevant recent handoff(s)
+5. the actual repo files involved in the task
+
+### Full historical sweep mode
+Use this when:
+- the user asks for it
+- the project direction is unclear
+- notes conflict
+- a major planning or architecture review is requested
+
+In full historical sweep mode, expand review to:
+- docs/project-notes/
+- docs/project-notes/archive/
+- docs/chat-handoffs/
+- README.md
+
+## Notes precedence rule
+When repo files, notes, and handoffs disagree, use this order:
+1. live repo code and tests
+2. PROJECT_CURRENT_STATE.md
+3. newer handoff files
+4. OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt for design decisions
+5. README.md for public-facing repo summary
+6. older archive notes as historical context only
+
+Never treat older archive notes as current truth if they are clearly overridden.
+
+Always identify:
+- what is current
+- what is stale
+- what is superseded
+- what changed over time
+
+## Honesty rule
+Do not claim a file, note set, repo area, test result, or review scope was checked unless it was actually inspected.
+
+If access is incomplete, say exactly:
+- what was checked
+- what was not checked
+- what conclusions are therefore uncertain
+
+## Documentation drift rule
+If notes, handoffs, README, or repo files conflict, identify the conflict clearly and recommend which file should be updated so future chats do not inherit stale guidance.
+
+## PowerShell safety rules
+- Do not paste raw TypeScript directly into PowerShell
+- Use safe file-write commands when code must be created or replaced
+- Prefer inspect-first commands before edit commands
+- Prefer one clean change at a time
+- Verify immediately after edits
+- Prefer targeted git commands over overly broad git commands
+- Avoid sloppy bulk commands when a narrower command is safer
+
+## Architecture rules
+- Keep responsibilities clearly separated
+- Prefer clean architecture over quick patches
+- Do not patch-stack brittle fixes if a seam clearly needs a cleaner repair
+- Inspect real current files before recommending edits
+- Treat live repo files as truth over older notes when they conflict
+- Preserve explainability and trust surfaces
+- Avoid unnecessary complexity
+- Make the smartest safest biggest move in plan order
+
+## Verification rule
+After meaningful edits, prefer this order when available:
+1. targeted inspection
+2. typecheck
+3. relevant tests
+4. build
+5. brief manual verification
+
+After every 2–3 meaningful implementation steps, run a structured checkpoint:
+- is the architecture still clean?
+- is the build still green?
+- is the system becoming fragile?
+- is the work aligned to the finish plan?
+- is anything unnecessarily complex?
+- what should be simplified, clarified, or trimmed?
+
+## Current product direction
+Primary focus:
+- finish the current app cleanly
+- improve material trust and reliability
+- improve source selection and explainability
+- improve coverage-first behavior
+- improve teacher control surfaces
+- improve results traceability
+- improve real export usefulness
+- preserve deterministic orchestration
+
+Priority order:
+1. repo truth / current-state clarity
+2. reliability and source gating
+3. blueprint and generation trust
+4. results traceability
+5. export usefulness
+6. design polish
+7. broader feature expansion later
+
+## Design direction
+Official design authority:
+docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
+
+Design requirements:
+- teacher-first
+- warm
+- calm
+- orchard / storybook direction
+- elegant
+- readable
+- layered but not cluttered
+- polished, not corporate
+- inviting, not childish
+- practical, not flashy
+
+Avoid:
+- generic SaaS/dashboard drift
+- startup admin-panel styling
+- bright edtech energy
+- cold corporate surfaces
+- harsh shadows
+- square, stiff visual language
+- over-decoration
+- clutter
+- visual gimmicks
+- dark wood-heavy or schoolhouse-heavy styling
+- overly sepia UI
+
+When design sources conflict, use:
+1. OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
+2. current streamlined product vision
+3. current shared UI system
+4. older leftover theme files last
+
+## What to avoid
+- claiming things are finished without repo evidence
+- making recommendations without inspecting actual repo files
+- over-prioritizing new features over trust hardening
+- silently narrowing review scope when the user asked for a broader sweep
+- treating old archive notes as current truth
+- generic suggestions disconnected from the repo
+- giving multiple large implementation tracks at once
+- unsafe or confusing instructions for a beginner
+- design drift away from the orchard / warm storybook direction
+- bypassing deterministic pipeline ownership with vague AI-first ideas
+- resuming from stale branch or repo assumptions without re-checking local truth
+
+## Standard repo review behavior
+When asked to review the connected GitHub repo:
+1. confirm which repo is selected
+2. choose the correct review mode
+3. read the required context for that mode
+4. separate current truth from stale history
+5. identify contradictions and overridden notes
+6. inspect the actual repo files before recommending edits
+7. keep all advice beginner-safe and implementation-ready
+
+If connector access is incomplete, say so clearly instead of pretending the full set was read.
+
+## Required output format for repo review
+After reviewing the repo and notes, respond in this order:
+1. what the app currently is
+2. what is already working
+3. what is incomplete, fragile, or misleading
+4. what changed over time in the project
+5. which older notes are now stale or overridden
+6. the top 5 next steps in order
+7. what should be fixed now vs later vs not at all
+8. the single best next move now
+9. one PowerShell paste only
+10. what success should look like
+11. what the user should send back if it fails
+
+Keep it:
+- honest
+- repo-grounded
+- practical
+- beginner-safe
+- structured
+- focused on finishing the app
+
+## Default continuation behavior
+If a new chat is opened for this repo, the assistant should first:
+- read AGENTS.md
+- read PROJECT_CURRENT_STATE.md
+- read docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
+- inspect the repo files relevant to the task
+- recommend the single best next move
+
+Do not assume older chat context is current unless it is reflected in repo files or maintained notes.
+
+## Maintenance rule
+Keep stable instructions here.
+Keep changing project status in PROJECT_CURRENT_STATE.md.
+
+Use AGENTS.md for:
+- lasting workflow rules
+- SOPs
+- product rules
+- design rules
+- review behavior
+- output format
+
+Use PROJECT_CURRENT_STATE.md for:
+- current phase
+- what was just completed
+- immediate next milestone
+- single best next step
+- files likely involved next
+- current risks
+- current verification target
