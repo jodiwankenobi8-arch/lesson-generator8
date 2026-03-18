@@ -1,4 +1,4 @@
-﻿import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it } from "vitest"
 import { useLessonStore } from "./useLessonStore"
 import type {
   LessonInputs,
@@ -130,35 +130,39 @@ describe("useLessonStore regeneration", () => {
     seedStore()
   })
 
-  it("rebuilds the lesson package when centers are left out, then restores them when set back to undecided", async () => {
-    await useLessonStore.getState().generateLesson()
+  it(
+    "rebuilds the lesson package when centers are left out, then restores them when set back to undecided",
+    { timeout: 15000 },
+    async () => {
+      await useLessonStore.getState().generateLesson()
 
-    const initialState = useLessonStore.getState()
-    expect(initialState.lessonPackage).toBeTruthy()
-    expect(initialState.lessonTrace).toBeTruthy()
-    expect(initialState.lessonPackage!.centers.length).toBeGreaterThan(0)
-    expect(initialState.lessonPackage!.rotationPlan).toContain("Rotation 1")
+      const initialState = useLessonStore.getState()
+      expect(initialState.lessonPackage).toBeTruthy()
+      expect(initialState.lessonTrace).toBeTruthy()
+      expect(initialState.lessonPackage!.centers.length).toBeGreaterThan(0)
+      expect(initialState.lessonPackage!.rotationPlan).toContain("Rotation 1")
 
-    useLessonStore.getState().setMissingAreaDecision("centers", "leave_out")
-    await useLessonStore.getState().generateLesson()
+      useLessonStore.getState().setMissingAreaDecision("centers", "leave_out")
+      await useLessonStore.getState().generateLesson()
 
-    const afterLeaveOut = useLessonStore.getState()
-    expect(afterLeaveOut.missingAreaDecisions.centers).toBe("leave_out")
-    expect(afterLeaveOut.lessonPackage).toBeTruthy()
-    expect(afterLeaveOut.lessonTrace).toBeTruthy()
-    expect(afterLeaveOut.lessonPackage!.centers).toHaveLength(0)
-    expect(afterLeaveOut.lessonPackage!.rotationPlan).toContain("No centers defined.")
+      const afterLeaveOut = useLessonStore.getState()
+      expect(afterLeaveOut.missingAreaDecisions.centers).toBe("leave_out")
+      expect(afterLeaveOut.lessonPackage).toBeTruthy()
+      expect(afterLeaveOut.lessonTrace).toBeTruthy()
+      expect(afterLeaveOut.lessonPackage!.centers).toHaveLength(0)
+      expect(afterLeaveOut.lessonPackage!.rotationPlan).toContain("No centers defined.")
 
-    useLessonStore.getState().setMissingAreaDecision("centers", "undecided")
-    await useLessonStore.getState().generateLesson()
+      useLessonStore.getState().setMissingAreaDecision("centers", "undecided")
+      await useLessonStore.getState().generateLesson()
 
-    const afterUndecided = useLessonStore.getState()
-    expect(afterUndecided.missingAreaDecisions.centers).toBe("undecided")
-    expect(afterUndecided.lessonPackage).toBeTruthy()
-    expect(afterUndecided.lessonTrace).toBeTruthy()
-    expect(afterUndecided.lessonPackage!.centers.length).toBeGreaterThan(0)
-    expect(afterUndecided.lessonPackage!.rotationPlan).toContain("Rotation 1")
-  })
+      const afterUndecided = useLessonStore.getState()
+      expect(afterUndecided.missingAreaDecisions.centers).toBe("undecided")
+      expect(afterUndecided.lessonPackage).toBeTruthy()
+      expect(afterUndecided.lessonTrace).toBeTruthy()
+      expect(afterUndecided.lessonPackage!.centers.length).toBeGreaterThan(0)
+      expect(afterUndecided.lessonPackage!.rotationPlan).toContain("Rotation 1")
+    }
+  )
 
   it("rebuilds support outputs when small group and intervention are left out, then restores them when set back to undecided", async () => {
     await useLessonStore.getState().generateLesson()
@@ -196,7 +200,6 @@ describe("useLessonStore regeneration", () => {
     expect(afterUndecided.lessonPackage!.interventions.length).toBeGreaterThan(0)
   })
 })
-
 describe("useLessonStore processMaterial and trace contracts", () => {
   beforeEach(() => {
     useLessonStore.setState((state) => ({

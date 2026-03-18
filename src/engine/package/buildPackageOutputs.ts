@@ -45,7 +45,7 @@ export function buildPackageOutputs(args: {
     planningIdeas,
     missingAreaDecisions
   )
-  const exports = buildExports({ inputs, slides, lessonPlan, centers, rotationPlan, interventions })
+  const exports = buildExports(inputs, slides, lessonPlan, centers, rotationPlan, interventions)
 
   return {
     slides,
@@ -92,35 +92,217 @@ function buildLessonPlan(
     `Skill: ${inputs.skill}`,
     `Topic: ${inputs.topic}`,
     `Duration: ${inputs.duration}`,
-    `Primary Target: ${blueprint.content.target.primary}`,
-    `Secondary Target: ${blueprint.content.target.secondary ?? "None"}`,
-    `Mixed Target: ${blueprint.content.target.isMixedTarget ? "Yes" : "No"}`,
-    `Source Balance: ${blueprint.sourceReadiness.overall}`,
   ].join("\n")
 
-  const sections = [
-    spec.teach,
-    spec.guidedPractice,
-    spec.independentPractice,
-    spec.centers,
-    spec.closure,
-  ]
-
-  const body = sections
-    .map((section) => {
-      const steps = section.steps.map((step) => `- ${step}`).join("\n")
-      return `${section.title}\n${steps}`
-    })
-    .join("\n\n")
-
+  const groundingBlock = buildLessonGroundingBlock(blueprint)
   const readinessBlock = buildBlueprintReadinessBlock(blueprint)
   const coverageBlock = buildCoverageDecisionBlock(planningIdeas, missingAreaDecisions)
+
+  const teachBlock = buildSectionNarrativeBlock(spec.teach.title, [
+    `Model Resources: ${selectModelResources(blueprint)}`,
+    `Teacher Moves: ${joinOrFallback(
+      blueprint.structure.teacherMoves.slice(0, 3),
+      "teacher model, guided support"
+    )}`,
+    `Slide Shell Cue: ${joinOrFallback(
+      blueprint.structure.templateShell.slideShell.slice(0, 3),
+      "Objective -> Teach -> Guided Practice"
+    )}`,
+  ], spec.teach.steps)
+
+  const guidedBlock = buildSectionNarrativeBlock(spec.guidedPractice.title, [
+    `Practice Anchor: ${joinOrFallback(
+      blueprint.content.practiceIdeas.slice(0, 3),
+      "curriculum-aligned guided practice"
+    )}`,
+    `Prompt Style: ${joinOrFallback(
+      blueprint.structure.promptStyle.slice(0, 3),
+      "teacher prompt"
+    )}`,
+    `Timing Cue: ${joinOrFallback(
+      blueprint.structure.templateShell.timingShell.slice(0, 3),
+      "Mini-lesson | Practice | Closure"
+    )}`,
+  ], spec.guidedPractice.steps)
+
+  const independentBlock = buildSectionNarrativeBlock(spec.independentPractice.title, [
+    `Transfer Task: ${selectIndependentResources(blueprint)}`,
+    `Student Practice: ${joinOrFallback(
+      blueprint.content.practiceIdeas.slice(0, 2),
+      "independent application"
+    )}`,
+  ], spec.independentPractice.steps)
+
+  const centersBlock = buildSectionNarrativeBlock(spec.centers.title, [
+    `Rotation Focus: ${joinOrFallback(
+      planningIdeas?.centerIdeas.map((idea) => idea.title).slice(0, 3) ?? [],
+      "teacher table, partner practice, independent practice"
+    )}`,
+    `Small Group Support: ${joinOrFallback(
+      planningIdeas?.smallGroupIdeas.map((idea) => idea.title).slice(0, 2) ?? [],
+      "targeted reteach or extension"
+    )}`,
+    `Intervention Focus: ${joinOrFallback(
+      planningIdeas?.interventionIdeas.map((idea) => idea.title).slice(0, 2) ?? [],
+      "targeted support for the lesson need"
+    )}`,
+  ], spec.centers.steps)
+
+  const closureBlock = buildSectionNarrativeBlock(spec.closure.title, [
+    `Review Focus: ${selectClosureResources(blueprint)}`,
+    `Delivery Tone: ${joinOrFallback(
+      blueprint.structure.tone.slice(0, 2),
+      "clear instructional tone"
+    )}`,
+  ], spec.closure.steps)
+
   const planningBlock = buildPlanningBlock(planningIdeas)
   const supportBlock = buildSupportBlock(planningIdeas, missingAreaDecisions)
 
-  return [header, readinessBlock, coverageBlock, body, planningBlock, supportBlock]
+  return [
+    header,
+    groundingBlock,
+    readinessBlock,
+    coverageBlock,
+    teachBlock,
+    guidedBlock,
+    independentBlock,
+    centersBlock,
+    closureBlock,
+    planningBlock,
+    supportBlock,
+  ]
     .filter(Boolean)
     .join("\n\n")
+}
+
+function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
+  return [
+    "Lesson Grounding",
+    `- Primary Target: ${blueprint.content.target.primary}`,
+    `- Secondary Target: ${blueprint.content.target.secondary ?? "None"}`,
+    `- Mixed Target: ${blueprint.content.target.isMixedTarget ? "Yes" : "No"}`,
+    `- Source Balance: ${blueprint.sourceReadiness.overall}`,
+    `- Standards: ${joinOrFallback(
+      blueprint.content.standards.slice(0, 3),
+      "teacher-selected standard"
+    )}`,
+    `- Vocabulary: ${joinOrFallback(
+      blueprint.content.vocabulary.slice(0, 4),
+      "key vocabulary"
+    )}`,
+    `- Word List: ${joinOrFallback(
+      blueprint.content.wordLists.slice(0, 5),
+      "teacher-selected examples"
+    )}`,
+    `- Texts: ${joinOrFallback(
+      blueprint.content.texts.slice(0, 2),
+      "teacher-provided text"
+    )}`,
+    `- Practice Ideas: ${joinOrFallback(
+      blueprint.content.practiceIdeas.slice(0, 4),
+      "guided practice"
+    )}`,
+    `- Exemplar Segment Order: ${joinOrFallback(
+      blueprint.structure.templateShell.segmentOrder.slice(0, 6),
+      "Teach -> Practice -> Closure"
+    )}`,
+    `- Exemplar Slide Shell: ${joinOrFallback(
+      blueprint.structure.templateShell.slideShell.slice(0, 6),
+      "Objective -> Teach -> Guided Practice -> Closure"
+    )}`,
+    `- Exemplar Teacher Moves: ${joinOrFallback(
+      blueprint.structure.teacherMoves.slice(0, 4),
+      "teacher model, guided support"
+    )}`,
+    `- Exemplar Prompt Style: ${joinOrFallback(
+      blueprint.structure.promptStyle.slice(0, 4),
+      "teacher prompt"
+    )}`,
+    `- Exemplar Tone: ${joinOrFallback(
+      blueprint.structure.tone.slice(0, 2),
+      "clear instructional tone"
+    )}`,
+  ].join("\n")
+}
+
+function buildSectionNarrativeBlock(
+  title: string,
+  contextLines: string[],
+  steps: string[]
+): string {
+  const details = contextLines.map((line) => `- ${line}`)
+  const body = steps.map((step) => `- ${step}`)
+
+  return [title, ...details, ...body].join("\n")
+}
+
+function selectModelResources(blueprint: LessonBlueprint): string {
+  const primary = blueprint.content.target.primary.toLowerCase()
+
+  if (primary === "phonics") {
+    return joinOrFallback(
+      blueprint.content.wordLists.slice(0, 4),
+      "teacher-selected word examples"
+    )
+  }
+
+  if (primary === "comprehension") {
+    return joinOrFallback(
+      blueprint.content.texts.slice(0, 2),
+      "teacher-selected text"
+    )
+  }
+
+  return joinOrFallback(
+    [
+      ...blueprint.content.wordLists.slice(0, 2),
+      ...blueprint.content.texts.slice(0, 1),
+    ],
+    "teacher-selected lesson resources"
+  )
+}
+
+function selectIndependentResources(blueprint: LessonBlueprint): string {
+  const primary = blueprint.content.target.primary.toLowerCase()
+
+  if (primary === "phonics") {
+    return joinOrFallback(
+      blueprint.content.wordLists.slice(0, 3),
+      "target words for student transfer"
+    )
+  }
+
+  if (primary === "comprehension") {
+    return joinOrFallback(
+      blueprint.content.texts.slice(0, 2),
+      "lesson text for student response"
+    )
+  }
+
+  return joinOrFallback(
+    [
+      ...blueprint.content.practiceIdeas.slice(0, 2),
+      ...blueprint.content.texts.slice(0, 1),
+    ],
+    "independent lesson resources"
+  )
+}
+
+function selectClosureResources(blueprint: LessonBlueprint): string {
+  const primary = blueprint.content.target.primary.toLowerCase()
+
+  if (primary === "phonics") {
+    return joinOrFallback(
+      blueprint.content.wordLists.slice(0, 3),
+      "strong word examples"
+    )
+  }
+
+  return joinOrFallback(
+    blueprint.content.vocabulary.slice(0, 3),
+    "key lesson vocabulary"
+  )
 }
 
 function buildCoverageDecisionBlock(
@@ -275,11 +457,14 @@ function buildRotationPlan(
   planningIdeas?: LessonPlanningIdeas,
   missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string {
-  if (centers.length === 0) {
-    return "No centers defined."
-  }
-
   const smallGroupLine = resolveTeacherTableLine(planningIdeas, missingAreaDecisions)
+
+  if (centers.length === 0) {
+    return [
+      "No centers defined.",
+      smallGroupLine,
+    ].join("\n")
+  }
 
   return [
     ...centers.map((center, index) => `Rotation ${index + 1}: ${center}`),
@@ -328,62 +513,21 @@ function buildDefaultInterventions(blueprint: LessonBlueprint): string[] {
   ]
 }
 
-type ExportBuildInput = {
-  inputs: LessonInputs
-  slides: string[]
-  lessonPlan: string
-  centers: string[]
-  rotationPlan: string
+function buildExports(
+  inputs: LessonInputs,
+  slides: string[],
+  lessonPlan: string,
+  centers: string[],
+  rotationPlan: string,
   interventions: string[]
-}
-
-function sanitizeExportStem(value: string): string {
-  const cleaned = value
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^A-Za-z0-9\-_]/g, "")
-
-  return cleaned || "lesson"
-}
-
-function buildSlidesExportText(slides: string[]): string {
-  if (slides.length === 0) {
-    return "Slides Export\n\nNo slides generated."
-  }
-
-  return ["Slides Export", "", ...slides.map((slide, index) => `${index + 1}. ${slide}`)].join("\n")
-}
-
-function buildPrintablesExportText({
-  centers,
-  rotationPlan,
-  interventions,
-}: Pick<ExportBuildInput, "centers" | "rotationPlan" | "interventions">): string {
-  return [
-    "Printables Export",
-    "",
-    "Centers",
-    centers.length > 0 ? centers.map((item, index) => `${index + 1}. ${item}`).join("\n") : "None generated.",
-    "",
-    "Rotation Plan",
-    rotationPlan.trim() || "None generated.",
-    "",
-    "Interventions",
-    interventions.length > 0
-      ? interventions.map((item, index) => `${index + 1}. ${item}`).join("\n")
-      : "None generated.",
-  ].join("\n")
-}
-
-function buildExports({
-  inputs,
-  slides,
-  lessonPlan,
-  centers,
-  rotationPlan,
-  interventions,
-}: ExportBuildInput): ExportArtifact[] {
-  const safeSubject = sanitizeExportStem(inputs.subject ?? "")
+): ExportArtifact[] {
+  const safeSubject = sanitizeExportSubject(inputs.subject)
+  const slidesContent = buildSlidesExportText(slides)
+  const printablesContent = buildPrintablesExportText(
+    centers,
+    rotationPlan,
+    interventions
+  )
 
   return [
     {
@@ -391,23 +535,77 @@ function buildExports({
       label: "Slides Export",
       fileName: `${safeSubject}-slides-export.txt`,
       mimeType: "text/plain;charset=utf-8",
-      content: buildSlidesExportText(slides),
+      content: slidesContent,
     },
     {
       kind: "lesson_plan",
       label: "Lesson Plan Export",
       fileName: `${safeSubject}-lesson-plan-export.docx`,
       mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      content: lessonPlan.trim() || "Lesson plan export is empty.",
+      content: lessonPlan,
     },
     {
       kind: "printables",
       label: "Printables Export",
       fileName: `${safeSubject}-printables-export.txt`,
       mimeType: "text/plain;charset=utf-8",
-      content: buildPrintablesExportText({ centers, rotationPlan, interventions }),
+      content: printablesContent,
     },
   ]
+}
+
+function buildSlidesExportText(slides: string[]): string {
+  const lines = slides.length > 0 ? slides : ["No slides defined."]
+
+  return [
+    "Slides Export",
+    "",
+    ...lines,
+  ].join("\n")
+}
+
+function buildPrintablesExportText(
+  centers: string[],
+  rotationPlan: string,
+  interventions: string[]
+): string {
+  const centerLines =
+    centers.length > 0
+      ? centers.map((center) => `- ${center}`)
+      : ["- No centers defined."]
+
+  const interventionLines =
+    interventions.length > 0
+      ? interventions.map((item) => `- ${item}`)
+      : ["- No interventions defined."]
+
+  return [
+    "Printables Export",
+    "",
+    "Centers",
+    ...centerLines,
+    "",
+    "Rotation Plan",
+    rotationPlan || "No rotation plan defined.",
+    "",
+    "Interventions",
+    ...interventionLines,
+  ].join("\n")
+}
+
+function sanitizeExportSubject(subject: string): string {
+  const trimmed = subject.trim()
+
+  if (!trimmed) {
+    return "lesson"
+  }
+
+  const cleaned = trimmed
+    .replace(/[^\w\-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+
+  return cleaned || "lesson"
 }
 
 function resolveDecisionAwareList(options: DecisionAwareListOptions): string[] {
@@ -483,5 +681,13 @@ function formatDecisionLabel(choice: MissingAreaDecisionChoice): string {
   }
 
   return "Decide later"
+}
+
+function joinOrFallback(items: string[], fallback: string): string {
+  const cleaned = Array.from(
+    new Set((items ?? []).map((item) => item.trim()).filter((item) => item.length > 0))
+  )
+
+  return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
 

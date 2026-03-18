@@ -100,7 +100,6 @@ describe("App route integration: Results lazy-route shell", () => {
 
     await useLessonStore.getState().generateLesson()
 
-    Object.assign(useLessonStore.getInitialState(), useLessonStore.getState())
   })
 
   it("renders Results route shell and loading fallback before lazy page resolution", () => {
@@ -119,3 +118,4 @@ describe("App route integration: Results lazy-route shell", () => {
     expect(markup).toContain("Loading page...")
   })
 })
+
