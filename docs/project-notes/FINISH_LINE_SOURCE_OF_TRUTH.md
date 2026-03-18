@@ -1,9 +1,9 @@
 # Finish Line Source Of Truth
 
 **Project:** Lesson Generator 8  
-**Written:** 2026-03-18 18:27 -04:00  
+**Written:** 2026-03-18 18:34 -04:00  
 **Active branch:** work/canonical-project-consolidation  
-**Current HEAD when written:** 84fa9c2  
+**Current HEAD when written:** 74b7093  
 
 ## Current verified repo truth
 
@@ -13,19 +13,17 @@
 - **Curriculum = content authority**.
 - **Exemplar = presentation / structure authority**.
 - The export/package hardening seam has been landed and verified in the current branch.
-- The current local working tree is clean except for the untracked debug/ folder, which should be treated as local scratch unless intentionally promoted later.
+- The current local working tree is clean except for the untracked `debug/` folder, which should be treated as local scratch unless intentionally promoted later.
 
 ## What was just verified
 
 The current seam was verified with:
-- 
-pm run typecheck -> PASS
+- `npm run typecheck` -> PASS
 - targeted Vitest run -> PASS
-- 
-pm run build -> PASS
+- `npm run build` -> PASS
 
 Known non-blocking warnings still present:
-- useLayoutEffect SSR warnings in the route integration test
+- `useLayoutEffect` SSR warnings in the route integration test
 - large chunk warnings during production build
 
 These are follow-up items, not the immediate next seam.
@@ -41,12 +39,12 @@ These are follow-up items, not the immediate next seam.
 
 ## What is still weak or misleading
 
-1. docs/STORE_SEAM_NOTE.md is stale and still points to main and an older baseline.
-2. README.md still contains stale continuation/path guidance and a milestone emphasis that does not fully match current repo reality.
-3. PROJECT_CURRENT_STATE.md still needs reconciliation with the latest live branch state and the newly landed seam.
+1. `docs/STORE_SEAM_NOTE.md` is stale and still points to `main` and an older baseline.
+2. `README.md` still contains stale continuation/path guidance and a milestone emphasis that does not fully match current repo reality.
+3. `PROJECT_CURRENT_STATE.md` still needs reconciliation with the latest live branch state and the newly landed seam.
 4. Materials trust language can still overstate support by treating analyzed/ready files as more trustworthy than they may actually be.
-5. The Materials pipeline helper still has visible polish debt (? pipeline markers) and should be cleaned during the trust/UI seam.
-6. debug/ exists locally and should not be treated as repo truth.
+5. The Materials pipeline helper still has visible polish debt (`?` pipeline markers) and should be cleaned during the trust/UI seam.
+6. `debug/` exists locally and should not be treated as repo truth.
 
 ## Finish order from here
 
@@ -72,14 +70,15 @@ A teacher should be able to tell:
 
 ### 4. Then reconcile stale docs
 Update:
-- PROJECT_CURRENT_STATE.md
-- README.md
-- docs/STORE_SEAM_NOTE.md
+- `PROJECT_CURRENT_STATE.md`
+- `README.md`
+- `docs/STORE_SEAM_NOTE.md`
 
 Those files should all reflect the same current truth.
 
 ### 5. Then do the orchard convergence pass
 Not a broad redesign.
+
 Do a controlled convergence pass across:
 - Inputs
 - Materials
@@ -125,8 +124,8 @@ That seam should:
 
 - Do not open a broad redesign track yet.
 - Do not add major new features.
-- Do not let multiple conflicting “current state” documents continue to coexist uncorrected.
-- Do not promote debug/ into the repo unless it is intentionally rewritten into durable project notes.
+- Do not let multiple conflicting "current state" documents continue to coexist uncorrected.
+- Do not promote `debug/` into the repo unless it is intentionally rewritten into durable project notes.
 
 ## Current checkpoint
 
