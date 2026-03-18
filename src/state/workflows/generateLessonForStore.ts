@@ -1,4 +1,4 @@
-import { runLessonPipeline } from "../../engine/pipeline/runLessonPipeline"
+﻿import { runLessonPipeline } from "../../engine/pipeline/runLessonPipeline"
 import {
   LessonBlueprint,
   LessonInputs,
@@ -56,7 +56,8 @@ export async function generateLessonForStore(
     throw new Error("Wait for current material processing to finish before generating.")
   }
 
-  const materialsToPrepare = store.materials.filter((material) => {
+  const current = dependencies.getCurrentStoreData()
+  const materialsToPrepare = current.materials.filter((material) => {
     if (isReady(material)) {
       return false
     }
@@ -68,18 +69,18 @@ export async function generateLessonForStore(
     await dependencies.processMaterial(material.id)
   }
 
-  const current = dependencies.getCurrentStoreData()
-  const readyMaterials = current.materials.filter(isReady)
+  const refreshed = dependencies.getCurrentStoreData()
+  const readyMaterials = refreshed.materials.filter(isReady)
 
   if (readyMaterials.length === 0) {
     throw new Error("No analyzed materials are ready for lesson generation.")
   }
 
   const result = runLessonPipeline(
-    current.inputs,
+    refreshed.inputs,
     readyMaterials,
-    current.selectedLessonMode,
-    current.missingAreaDecisions
+    refreshed.selectedLessonMode,
+    refreshed.missingAreaDecisions
   )
 
   return {
@@ -90,3 +91,6 @@ export async function generateLessonForStore(
     lessonTrace: result.trace,
   }
 }
+
+
+
