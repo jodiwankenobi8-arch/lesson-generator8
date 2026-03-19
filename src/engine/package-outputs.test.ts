@@ -176,7 +176,7 @@ describe("buildPackageOutputs", () => {
     ])
   })
 
-  it("falls back to spec and target-based defaults when planning ideas are absent", () => {
+  it("falls back to grounded target-based defaults when planning ideas are absent", () => {
     const result = buildPackageOutputs({
       inputs: {
         grade: "1",
@@ -190,16 +190,25 @@ describe("buildPackageOutputs", () => {
       spec,
     })
 
-    expect(result.centers).toEqual(["Word sort center", "Partner reading center"])
-    expect(result.rotationPlan).toContain("Rotation 1: Word sort center")
-    expect(result.rotationPlan).toContain("Teacher Table Focus: Targeted reteach or extension based on student need.")
+    expect(result.centers).toEqual([
+      "Word sort center: Sort, read, and revisit cake, game, same, late.",
+      "Partner reading center: Use this practice: Read the word list aloud.",
+      "Teacher support center: Reteach the target phonics pattern with cake, game, same, late.",
+    ])
+    expect(result.rotationPlan).toContain(
+      "Rotation 1: Word sort center: Sort, read, and revisit cake, game, same, late."
+    )
+    expect(result.rotationPlan).toContain(
+      "Teacher Table Focus: Reteach the target phonics pattern with cake, game, same, late and guide students through this practice: Read the word list aloud."
+    )
     expect(result.interventions).toEqual([
-      "Reteach the target phonics pattern with a reduced word set.",
-      "Provide extra guided decoding and blending practice.",
+      "Reteach the target phonics pattern with cake, game, same, late.",
+      "Provide extra guided decoding and blending practice with Read the word list aloud.",
     ])
     expect(result.lessonPlan).toContain("Source Balance: balanced")
     expect(result.lessonPlan).toContain("Minor warning for visibility.")
   })
+
   it("keeps canonical exports free of banned hub language", () => {
     const result = buildPackageOutputs({
       inputs: {

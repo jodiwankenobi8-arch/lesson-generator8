@@ -38,8 +38,13 @@ export function buildPackageOutputs(args: {
     planningIdeas,
     missingAreaDecisions
   )
-  const centers = buildCenters(spec, planningIdeas, missingAreaDecisions)
-  const rotationPlan = buildRotationPlan(centers, planningIdeas, missingAreaDecisions)
+  const centers = buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions)
+  const rotationPlan = buildRotationPlan(
+    blueprint,
+    centers,
+    planningIdeas,
+    missingAreaDecisions
+  )
   const interventions = buildInterventions(
     blueprint,
     planningIdeas,
@@ -157,7 +162,7 @@ function buildLessonPlan(
   ], spec.closure.steps)
 
   const planningBlock = buildPlanningBlock(planningIdeas)
-  const supportBlock = buildSupportBlock(planningIdeas, missingAreaDecisions)
+  const supportBlock = buildSupportBlock(blueprint, planningIdeas, missingAreaDecisions)
 
   return [
     header,
@@ -364,6 +369,7 @@ function buildPlanningBlock(planningIdeas?: LessonPlanningIdeas): string {
 }
 
 function buildSupportBlock(
+  blueprint: LessonBlueprint,
   planningIdeas?: LessonPlanningIdeas,
   missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string {
@@ -381,9 +387,7 @@ function buildSupportBlock(
       (idea) => `- ${idea.title}: ${idea.description}`
     ),
     missingAreaDecisions,
-    addFallbackItems: [
-      "- Teacher Table Support: Add a small-group reteach or extension block based on student need.",
-    ],
+    addFallbackItems: [`- ${buildAddSmallGroupSupportLine(blueprint)}`],
   })
 
   const interventions = resolveDecisionAwareList({
@@ -392,9 +396,9 @@ function buildSupportBlock(
       (idea) => `- ${idea.title}: ${idea.description}`
     ),
     missingAreaDecisions,
-    addFallbackItems: [
-      "- Targeted Reteach: Add an intervention block for students who need extra support with the main lesson skill.",
-    ],
+    addFallbackItems: buildAddFallbackInterventions(blueprint).map(
+      (item) => `- ${item}`
+    ),
   })
 
   const sections: string[] = []
@@ -427,37 +431,34 @@ function buildBlueprintReadinessBlock(blueprint: LessonBlueprint): string {
 }
 
 function buildCenters(
+  blueprint: LessonBlueprint,
   spec: LessonSpec,
   planningIdeas?: LessonPlanningIdeas,
   missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string[] {
+  const groundedDefaults = buildGroundedCenterDefaults(blueprint, spec)
+
   return resolveDecisionAwareList({
     component: "centers",
     plannedItems:
       planningIdeas?.centerIdeas.map((idea) => `${idea.title}: ${idea.description}`) ?? [],
     missingAreaDecisions,
-    addFallbackItems: [
-      "Independent practice center",
-      "Partner practice center",
-      "Teacher support center",
-    ],
-    defaultItems:
-      spec.centers.steps.length > 0
-        ? spec.centers.steps
-        : [
-            "Independent practice center",
-            "Partner practice center",
-            "Teacher support center",
-          ],
+    addFallbackItems: groundedDefaults,
+    defaultItems: groundedDefaults,
   })
 }
 
 function buildRotationPlan(
+  blueprint: LessonBlueprint,
   centers: string[],
   planningIdeas?: LessonPlanningIdeas,
   missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string {
-  const smallGroupLine = resolveTeacherTableLine(planningIdeas, missingAreaDecisions)
+  const smallGroupLine = resolveTeacherTableLine(
+    blueprint,
+    planningIdeas,
+    missingAreaDecisions
+  )
 
   if (centers.length === 0) {
     return [
@@ -484,33 +485,320 @@ function buildInterventions(
         (idea) => `${idea.title}: ${idea.description}`
       ) ?? [],
     missingAreaDecisions,
-    addFallbackItems: [
-      "Provide targeted reteach for the primary lesson need.",
-      "Use a short teacher-led intervention block before independent transfer.",
-    ],
+    addFallbackItems: buildAddFallbackInterventions(blueprint),
     defaultItems: buildDefaultInterventions(blueprint),
   })
 }
 
-function buildDefaultInterventions(blueprint: LessonBlueprint): string[] {
-  if (blueprint.content.target.primary === "phonics") {
+function buildGroundedCenterDefaults(
+  blueprint: LessonBlueprint,
+  spec: LessonSpec
+): string[] {
+  const isMixed = blueprint.content.target.isMixedTarget
+  const primary = blueprint.content.target.primary.toLowerCase()
+  const labels = resolveCenterLabels(
+    spec,
+    isMixed
+      ? ["Word work center", "Reading response center", "Teacher support center"]
+      : primary === "phonics"
+        ? ["Word work center", "Partner practice center", "Teacher support center"]
+        : ["Reading response center", "Partner discussion center", "Teacher support center"]
+  )
+
+  if (isMixed) {
     return [
-      "Reteach the target phonics pattern with a reduced word set.",
-      "Provide extra guided decoding and blending practice.",
+      `${labels[0]}: Practice the foundational skill with ${selectWordListFocus(
+        blueprint,
+        "teacher-selected examples"
+      )}.`,
+      `${labels[1]}: Revisit ${selectTextFocus(
+        blueprint,
+        "teacher-provided text"
+      )} through this task: ${selectPracticeFocus(blueprint, "guided practice")}.`,
+      `${labels[2]}: Connect word work and meaning using ${selectVocabularyFocus(
+        blueprint,
+        "key vocabulary"
+      )}.`,
     ]
   }
 
-  if (blueprint.content.target.primary === "comprehension") {
+  if (primary === "phonics") {
     return [
-      "Reread a shorter chunk of text with guided prompting.",
-      "Support vocabulary and evidence-based responses in a small group.",
+      `${labels[0]}: Sort, read, and revisit ${selectWordListFocus(
+        blueprint,
+        "target words"
+      )}.`,
+      `${labels[1]}: Use this practice: ${selectPracticeFocus(
+        blueprint,
+        "partner decoding and word reading"
+      )}.`,
+      `${labels[2]}: Reteach the target phonics pattern with ${selectWordListFocus(
+        blueprint,
+        "target words"
+      )}.`,
     ]
   }
 
   return [
-    "Provide targeted reteach for the primary lesson need.",
-    "Use small-group support before independent transfer.",
+    `${labels[0]}: Reread ${selectTextFocus(
+      blueprint,
+      "teacher-provided text"
+    )} and talk through the key thinking.`,
+    `${labels[1]}: Use this task during partner work: ${selectPracticeFocus(
+      blueprint,
+      "partner discussion"
+    )}.`,
+    `${labels[2]}: Reinforce ${selectVocabularyFocus(
+      blueprint,
+      "key vocabulary"
+    )} while revisiting ${selectTextFocus(blueprint, "teacher-provided text")}.`,
   ]
+}
+
+function buildAddFallbackInterventions(blueprint: LessonBlueprint): string[] {
+  const isMixed = blueprint.content.target.isMixedTarget
+  const primary = blueprint.content.target.primary.toLowerCase()
+
+  if (isMixed) {
+    return [
+      `Add a targeted intervention block with ${selectWordListFocus(
+        blueprint,
+        "teacher-selected examples"
+      )}.`,
+      `Reconnect the text task using ${selectTextFocus(
+        blueprint,
+        "teacher-provided text"
+      )} and ${selectVocabularyFocus(blueprint, "key vocabulary")}.`,
+    ]
+  }
+
+  if (primary === "phonics") {
+    return [
+      `Add a targeted intervention block using ${selectWordListFocus(
+        blueprint,
+        "target words"
+      )}.`,
+      `Use ${selectPracticeFocus(
+        blueprint,
+        "guided decoding and blending practice"
+      )} for extra guided decoding and blending practice.`,
+    ]
+  }
+
+  return [
+    `Add a targeted intervention block using ${selectTextFocus(
+      blueprint,
+      "teacher-provided text"
+    )}.`,
+    `Reinforce ${selectVocabularyFocus(
+      blueprint,
+      "key vocabulary"
+    )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`,
+  ]
+}
+
+function buildDefaultInterventions(blueprint: LessonBlueprint): string[] {
+  const isMixed = blueprint.content.target.isMixedTarget
+  const primary = blueprint.content.target.primary.toLowerCase()
+
+  if (isMixed) {
+    return [
+      `Reteach the foundational skill with ${selectWordListFocus(
+        blueprint,
+        "teacher-selected examples"
+      )}.`,
+      `Reconnect the text task using ${selectTextFocus(
+        blueprint,
+        "teacher-provided text"
+      )} and ${selectVocabularyFocus(blueprint, "key vocabulary")}.`,
+    ]
+  }
+
+  if (primary === "phonics") {
+    return [
+      `Reteach the target phonics pattern with ${selectWordListFocus(
+        blueprint,
+        "target words"
+      )}.`,
+      `Provide extra guided decoding and blending practice with ${selectPracticeFocus(
+        blueprint,
+        "guided decoding and blending practice"
+      )}.`,
+    ]
+  }
+
+  return [
+    `Reread ${selectTextFocus(blueprint, "teacher-provided text")} with guided prompting.`,
+    `Reinforce ${selectVocabularyFocus(
+      blueprint,
+      "key vocabulary"
+    )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`,
+  ]
+}
+
+function buildAddSmallGroupSupportLine(blueprint: LessonBlueprint): string {
+  const isMixed = blueprint.content.target.isMixedTarget
+  const primary = blueprint.content.target.primary.toLowerCase()
+
+  if (isMixed) {
+    return `Teacher Table Support: Add a targeted small-group block that connects ${selectWordListFocus(
+      blueprint,
+      "teacher-selected examples"
+    )} to ${selectTextFocus(
+      blueprint,
+      "teacher-provided text"
+    )} through this practice: ${selectPracticeFocus(blueprint, "guided practice")}.`
+  }
+
+  if (primary === "phonics") {
+    return `Teacher Table Support: Add a targeted phonics reteach using ${selectWordListFocus(
+      blueprint,
+      "target words"
+    )} and guide students through this practice: ${selectPracticeFocus(
+      blueprint,
+      "guided decoding and blending practice"
+    )}.`
+  }
+
+  return `Teacher Table Support: Add a guided small-group reread using ${selectTextFocus(
+    blueprint,
+    "teacher-provided text"
+  )} and reinforce ${selectVocabularyFocus(
+    blueprint,
+    "key vocabulary"
+  )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`
+}
+
+function resolveTeacherTableLine(
+  blueprint: LessonBlueprint,
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
+): string {
+  if (shouldLeaveOut("small_group", missingAreaDecisions)) {
+    return "Teacher Table Focus: No small-group block selected."
+  }
+
+  const firstSmallGroupIdea = planningIdeas?.smallGroupIdeas[0]
+
+  if (firstSmallGroupIdea) {
+    return `Teacher Table Focus: ${firstSmallGroupIdea.title} - ${firstSmallGroupIdea.description}`
+  }
+
+  if (shouldAdd("small_group", missingAreaDecisions)) {
+    return buildAddTeacherTableLine(blueprint)
+  }
+
+  return buildDefaultTeacherTableLine(blueprint)
+}
+
+function buildAddTeacherTableLine(blueprint: LessonBlueprint): string {
+  const isMixed = blueprint.content.target.isMixedTarget
+  const primary = blueprint.content.target.primary.toLowerCase()
+
+  if (isMixed) {
+    return `Teacher Table Focus: Add a targeted small-group block that connects ${selectWordListFocus(
+      blueprint,
+      "teacher-selected examples"
+    )} to ${selectTextFocus(
+      blueprint,
+      "teacher-provided text"
+    )} through this practice: ${selectPracticeFocus(blueprint, "guided practice")}.`
+  }
+
+  if (primary === "phonics") {
+    return `Teacher Table Focus: Add a targeted phonics reteach using ${selectWordListFocus(
+      blueprint,
+      "target words"
+    )} and guide students through this practice: ${selectPracticeFocus(
+      blueprint,
+      "guided decoding and blending practice"
+    )}.`
+  }
+
+  return `Teacher Table Focus: Add a guided small-group reread using ${selectTextFocus(
+    blueprint,
+    "teacher-provided text"
+  )} and reinforce ${selectVocabularyFocus(
+    blueprint,
+    "key vocabulary"
+  )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`
+}
+
+function buildDefaultTeacherTableLine(blueprint: LessonBlueprint): string {
+  const isMixed = blueprint.content.target.isMixedTarget
+  const primary = blueprint.content.target.primary.toLowerCase()
+
+  if (isMixed) {
+    return `Teacher Table Focus: Support both word work and meaning using ${selectWordListFocus(
+      blueprint,
+      "teacher-selected examples"
+    )} and ${selectTextFocus(
+      blueprint,
+      "teacher-provided text"
+    )} through this practice: ${selectPracticeFocus(blueprint, "guided practice")}.`
+  }
+
+  if (primary === "phonics") {
+    return `Teacher Table Focus: Reteach the target phonics pattern with ${selectWordListFocus(
+      blueprint,
+      "target words"
+    )} and guide students through this practice: ${selectPracticeFocus(
+      blueprint,
+      "guided decoding and blending practice"
+    )}.`
+  }
+
+  return `Teacher Table Focus: Reread ${selectTextFocus(
+    blueprint,
+    "teacher-provided text"
+  )} and reinforce ${selectVocabularyFocus(
+    blueprint,
+    "key vocabulary"
+  )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`
+}
+
+function resolveCenterLabels(spec: LessonSpec, fallbackLabels: string[]): string[] {
+  const rawLabels = takeClean(spec.centers.steps, 3).map((item) => {
+    const lower = item.toLowerCase()
+    return lower.includes("center") || lower.includes("table") ? item : ""
+  })
+
+  return fallbackLabels.map((defaultLabel, index) => rawLabels[index] || defaultLabel)
+}
+
+function selectWordListFocus(blueprint: LessonBlueprint, fallback: string): string {
+  return focusList(blueprint.content.wordLists, 2, fallback)
+}
+
+function selectTextFocus(blueprint: LessonBlueprint, fallback: string): string {
+  return focusList(blueprint.content.texts, 1, fallback)
+}
+
+function selectPracticeFocus(blueprint: LessonBlueprint, fallback: string): string {
+  return focusList(blueprint.content.practiceIdeas, 1, fallback)
+}
+
+function selectVocabularyFocus(blueprint: LessonBlueprint, fallback: string): string {
+  return focusList(blueprint.content.vocabulary, 3, fallback)
+}
+
+function focusList(items: string[], count: number, fallback: string): string {
+  const cleaned = takeClean(items, count)
+  return cleaned.length > 0 ? cleaned.join(", ") : fallback
+}
+
+function takeClean(items: string[], count: number): string[] {
+  return Array.from(
+    new Set(
+      (items ?? [])
+        .map((item) => stripTrailingPunctuation(item.trim()))
+        .filter((item) => item.length > 0)
+    )
+  ).slice(0, count)
+}
+
+function stripTrailingPunctuation(value: string): string {
+  return value.replace(/[.!?]+$/g, "").trim()
 }
 
 function buildExports(
@@ -632,27 +920,6 @@ function resolveDecisionAwareList(options: DecisionAwareListOptions): string[] {
   return defaultItems
 }
 
-function resolveTeacherTableLine(
-  planningIdeas?: LessonPlanningIdeas,
-  missingAreaDecisions: MissingAreaDecisionMap = {}
-): string {
-  if (shouldLeaveOut("small_group", missingAreaDecisions)) {
-    return "Teacher Table Focus: No small-group block selected."
-  }
-
-  const firstSmallGroupIdea = planningIdeas?.smallGroupIdeas[0]
-
-  if (firstSmallGroupIdea) {
-    return `Teacher Table Focus: ${firstSmallGroupIdea.title} - ${firstSmallGroupIdea.description}`
-  }
-
-  if (shouldAdd("small_group", missingAreaDecisions)) {
-    return "Teacher Table Focus: Add a targeted small-group reteach or extension block based on student need."
-  }
-
-  return "Teacher Table Focus: Targeted reteach or extension based on student need."
-}
-
 function shouldAdd(
   component: PlanningComponentKey,
   missingAreaDecisions: MissingAreaDecisionMap
@@ -690,4 +957,3 @@ function joinOrFallback(items: string[], fallback: string): string {
 
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
-
