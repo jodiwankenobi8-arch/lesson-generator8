@@ -63,20 +63,31 @@ When helping with implementation, prefer this structure:
 
 If the assistant wants terminal results reported back into chat, the PowerShell paste should end with a visible summary section like:
 
-===========SUMMARY=============
+============================================================
+==============================SUMMARY========================
 Status: <brief outcome of the terminal run>
 Key result: <the main result or next-useful takeaway>
 Paste back: <exact text, output block, or short result the user should return to chat>
-===================================
+============================================================
+
+The summary title should be visually centered using `=` characters, and both the title line and the underline line should stretch across the visible width of the terminal output as much as practical.
 
 The status/outcome lines should appear directly under the summary heading and above the underline line of `=` characters so the user can easily copy the explanation of the terminal result for future use.
 
 The exact number of `=` characters does not matter; use enough to clearly separate the summary block, and it may be as wide as the terminal if helpful.
 
 That summary section should show:
-- whether the step succeeded
+- the actual outcome of the terminal run that just happened
 - the key result(s) to report back
 - exactly what the user should paste back into chat if follow-up is needed
+
+Do not use vague or conditional summary language such as:
+- "if it succeeded"
+- "if both commits and push succeeded"
+- "verification finished" without saying what was verified
+
+Instead, summarize the real result in plain language based on the command output that just ran.
+If the assistant asked for terminal output, the summary directions should explicitly tell the user to include the actual results, not just the summary labels.
 ## Review size vs change size
 These are different:
 - Review size: use the smallest sufficient review scope for the task, unless the user asks for a full historical sweep or contradictions require broader review.
@@ -166,7 +177,7 @@ After meaningful edits, prefer this order when available:
 4. build
 5. brief manual verification
 
-After every 2ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“3 meaningful implementation steps, run a structured checkpoint:
+After every 2ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“3 meaningful implementation steps, run a structured checkpoint:
 - is the architecture still clean?
 - is the build still green?
 - is the system becoming fragile?
