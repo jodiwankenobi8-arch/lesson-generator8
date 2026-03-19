@@ -1,12 +1,12 @@
 # Store seam note
 
 ## Source of truth
-- Repo: jodiwankenobi8-arch/lesson-generator8
-- Branch: main
-- Confirmed baseline from handoff: 38f9f1c
+- Repo: `jodiwankenobi8-arch/lesson-generator8`
+- Branch: `work/canonical-project-consolidation`
+- Current verified checkpoint at time of this note: `28b9ca1`
 
 ## Public orchestration seam
-src/state/useLessonStore.ts is the supported orchestration seam.
+`src/state/useLessonStore.ts` is the supported orchestration seam.
 
 Pages should:
 - read store state
@@ -14,16 +14,25 @@ Pages should:
 - avoid direct orchestration imports from engine helpers
 
 Pages must not directly import:
-- ../engine/generateLesson
-- ../engine/workflow/processMaterial
+- `../engine/generateLesson`
+- `../engine/workflow/processMaterial`
 
 ## Why this note exists
-The repo is already in completion / hardening mode. The current risk is not broken runtime wiring. The current risk is editing dead shell files or reintroducing bypasses around the store seam.
+The repo is already in hardening mode.
+The current risk is not basic runtime wiring.
+The current risk is reintroducing page-to-engine orchestration bypasses, or letting stale docs drift away from the live store seam during polish and hardening.
 
 ## Audit command
-Run this before shell cleanup work:
+Run this before shell cleanup work or seam-audit work:
 
     .\scripts\Find-LegacyShellReferences.ps1
 
+## Current guardrail
+If you touch page flow, material processing, generation, regeneration, or results refresh behavior:
+- go through `useLessonStore.ts`
+- do not bypass the store from pages
+- keep page code teacher-facing and seam-light
+
 ## Current cleanup target
-Confirm whether any legacy router/shell files under src/app/ are still referenced. Only remove files after this audit shows they are not on the live path.
+Preserve the store seam during orchard convergence / polish and the final hardening pass.
+Only widen engine/page contracts when the seam clearly requires it.

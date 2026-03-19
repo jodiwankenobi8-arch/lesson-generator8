@@ -48,7 +48,7 @@ The repo already includes:
 - role-specific structured material analysis
 - blueprint construction with content/structure separation
 - planning/spec/package layers
-- results rendering and pipeline trace concepts
+- results rendering with teacher-readable traceability and pipeline trace concepts
 - typed export artifact contracts
 
 The current major hardening track is the **Material Reliability layer**, followed by stronger source selection, coverage-first behavior, teacher-choice flows, exemplar transformation UX, real exports, and later OCR/performance hardening.

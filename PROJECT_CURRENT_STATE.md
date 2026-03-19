@@ -1,14 +1,20 @@
-﻿# Project Current State
+# Project Current State
 
 **Project:** Lesson Generator 8  
-**Last updated:** 2026-03-16 (America/Chicago)  
+**Last updated:** 2026-03-18 (America/Chicago)  
 **Status:** In progress
 
 ## Current summary
 - Active product flow is Inputs -> Materials -> Results.
 - **useLessonStore is the orchestration seam.** Pages may read state and call store actions; pages must not import engine orchestration helpers directly.
 - Store-driven processing, generation, regeneration, and selected-source explainability are already in place.
-- Canonical working branch: **work/canonical-project-consolidation** (base commit at time of this update: b0580bb).
+- Canonical working branch: **work/canonical-project-consolidation**
+- Current verified branch head at time of this update: **28b9ca1**
+
+## Recently landed seams
+- **16145b2** Ã¢â‚¬â€ materials trust gating honesty
+- **0b1dcd9** Ã¢â‚¬â€ results authority trace clarity
+- **28b9ca1** Ã¢â‚¬â€ prefer allow over caution in material selection
 
 ## Current priorities
 - Protect the store seam from page-to-engine orchestration bypasses.
@@ -35,13 +41,15 @@
 - npm run build: **PASS**
 - Note: local Windows validation is the source of truth if any external tool reports different environment assumptions.
 
-## Dead shell confirmation (current local source of truth)
-- No legacy router/shell code is on the live import path.
-- If src/app exists as files, it is not referenced by the live graph and can be deprecated or removed only after inventory confirms its presence.
-- This repo now relies on App.tsx route lazy-loading and useLessonStore orchestration.
+## Shell / cleanup note
+- Legacy shell cleanup is not the current priority.
+- Re-run `.\scripts\Find-LegacyShellReferences.ps1` before any future shell deletion or shell cleanup work.
+
 
 ## Next recommended step
-- Continue with export/package follow-through (exports completeness + packaging polish), then isolate chunking improvements.
+- Continue with orchard convergence / polish.
+- Then do the final hardening pass.
+- Keep chunk-size tuning and dependency audit isolated into later follow-up seams.
 
 ---
 
