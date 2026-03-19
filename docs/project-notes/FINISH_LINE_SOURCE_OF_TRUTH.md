@@ -3,7 +3,7 @@
 **Project:** Lesson Generator 8  
 **Written:** 2026-03-19 12:21 -05:00  
 **Active branch:** work/canonical-project-consolidation  
-**Current HEAD when written:** b55f5e4
+**Current HEAD when written:** 4556a26
 
 ## Current verified repo truth
 
@@ -17,7 +17,7 @@
 - Source-readiness teacher wording now uses **usable** language where trust depends on actual grounding value.
 - `AGENTS.md` now requires visible, self-contained terminal summary blocks with actual outcome values.
 - The local repo path used in this chat was `C:\Users\jodiw\OneDrive\Desktop\lesson-generator8-local`.
-- The current local working tree should be rechecked before the next seam if absolute cleanliness matters, but the latest known seam checkpoint is pushed through `b55f5e4`.
+- The current local working tree should be rechecked before the next seam if absolute cleanliness matters, but the latest known pushed checkpoint remains `4556a26`.
 
 ## Documentation / continuation discipline
 
@@ -62,29 +62,28 @@ These are follow-up items, not the immediate next seam.
 
 ## What is still weak or misleading
 
-1. Mixed-target clarification still needs a truth-first pass.
-2. Some older docs and handoffs are now superseded and should not outrank current live code plus newer docs.
-3. Exports still need a classroom-usability pass after mixed-target behavior is tightened.
-4. `debug/` exists locally and should not be treated as repo truth.
-5. Orchard convergence / polish is still not the right immediate seam.
-
-## Finish order from here
+1. Lesson organization is still too tied to the narrow lesson-mode split instead of input-driven lesson parts plus requested outputs.
+2. Optional outputs are still too close to being default assumptions instead of teacher-chosen outputs.
+3. Some older docs and handoffs are now superseded and should not outrank current live code plus newer docs.
+4. Exports still need a classroom-usability pass after the new planning contract is tightened.
+5. `debug/` exists locally and should not be treated as repo truth.
+6. Orchard convergence / polish is still not the right immediate seam.## Finish order from here
 
 ### 1. Keep repo truth aligned
 Use this note plus `PROJECT_CURRENT_STATE.md` plus the newest current handoff as the continuation anchor.
 
-### 2. Next implementation seam: mixed-target clarification
-Make the app handle mixed inputs more honestly across:
-- target detection
-- selected mode
-- recommended mode
+### 2. Next implementation seam: input-driven lesson-part planning with requested outputs
+Make the app handle current inputs more honestly across:
+- detected lesson parts from inputs and materials
+- source-grounded vs teacher-requested lesson parts
+- requested outputs vs omitted outputs
 - teacher-facing preview language
 - generation/runtime behavior
 
-The app should not casually collapse mixed signals into a misleading single-focus story.
+The app should organize according to the actual inputs, allow teacher-requested additions when source coverage is partial, and only generate optional outputs when requested.
 
 ### 3. Then make exports genuinely classroom-usable
-After mixed-target honesty is in place:
+After the new planning contract is honest:
 - tighten exported teacher materials
 - reduce weak fallback feel
 - improve classroom usability rather than just internal completeness
@@ -106,22 +105,20 @@ Do not start the second ladder early.
 
 The single best next implementation move after this docs update is:
 
-**Mixed-target clarification**
+**Scaffold the lesson-parts + requested-outputs contract**
 
 That seam should:
-- keep detection honest
-- keep recommendation honest
-- keep selected mode vs recommended mode understandable
-- avoid overclaiming a single-focus lesson when inputs are mixed
-- preserve deterministic pipeline ownership and explainability
-
-## What not to do next
+- create the correct contract first
+- prepare the app for requested lesson parts and requested outputs
+- preserve deterministic pipeline ownership and explainability## What not to do next
 
 - Do not open a broad redesign track yet.
 - Do not add major new features.
 - Do not let older docs or damaged older handoffs outrank newer repo truth.
 - Do not promote `debug/` into the repo unless it is intentionally rewritten into durable project notes.
 - Do not revert from **usable** trust logic back to **ready-only** assumptions.
+- Do not keep the app trapped in phonics/comprehension-only framing or auto-generate-all-output assumptions.
+- Do not keep the app trapped in phonics/comprehension-only framing or auto-generate-all-output assumptions.
 
 ## Current checkpoint
 
@@ -129,7 +126,8 @@ As of this note:
 - package-output grounding is landed
 - usable-vs-ready runtime honesty is landed
 - AGENTS summary discipline is stricter
-- next seam is clear
+- the new direction is clear
+- the next seam is now the contract scaffold for requested lesson parts and requested outputs
 - finish path is still ordered and practical
 
 ## Phase B - From working to wow

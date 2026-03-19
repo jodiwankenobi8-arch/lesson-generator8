@@ -4,7 +4,7 @@
 
 **Repo:** `jodiwankenobi8-arch/lesson-generator8`  
 **Branch:** `work/canonical-project-consolidation`  
-**Latest known pushed checkpoint:** `b55f5e4`
+**Latest known pushed checkpoint:** `4556a26`
 
 ### Current shipped truth
 
@@ -32,83 +32,69 @@ Before continuing:
 
 ## What changed in this chat
 
-### 1. Package-output grounding is now part of current truth
-- package fallback outputs are more source-grounded than they were before
-- the weakest blueprint-to-generation leak is no longer generic package wording
+### 1. Product direction was clarified beyond the narrow mixed-target framing
+- the real product goal is now explicitly broader than phonics/comprehension-only lesson-shape handling
+- the app should organize according to the actual inputs and materials
+- the app should support teacher-requested additions when source coverage is partial
+- optional outputs such as slides, assessments, centers, small group, intervention, and printables should be generated only when requested
 
-### 2. Usable-vs-ready runtime honesty was landed
-- generation now rejects **ready-but-blocked** materials
-- runtime/store behavior now matches the Materials trust model more honestly
-- source-readiness wording now says **usable** instead of **ready** where appropriate
-- `npm run test:engine` passed
-- `npm run build` passed
+### 2. Source-of-truth docs and AGENTS were updated locally
+The core source-of-truth docs were updated locally in this chat to reflect the new plan and current repo truth:
+- `AGENTS.md`
+- `PROJECT_CURRENT_STATE.md`
+- `docs/project-notes/FINISH_LINE_SOURCE_OF_TRUTH.md`
+- `docs/chat-handoffs/2026-03-19_1221_post-usable-materials-mixed-target-handoff.md`
 
-Checkpoint:
-- `b55f5e4` — `feat: align generation gating with usable materials`
+### 3. The truth-first ladder was reordered
+The next implementation order is now:
+1. scaffold the lesson-parts + requested-outputs contract in types/store
+2. update Inputs for requested lesson parts and requested outputs
+3. teach blueprint/planning/spec/package to honor the new contract and provenance
+4. make exports genuinely classroom-usable
+5. run the final validation / finish-readiness pass
 
-### 3. AGENTS terminal-summary rules were hardened
-- summary blocks must now be visible
-- summary blocks must now be self-contained
-- summary blocks must include actual outcome values needed for continuation
-- continuation chats should not rely on missing terminal context outside the summary block
+### 4. The first code seam was inspected but not landed yet
+- a first contract-scaffold edit was attempted in this chat but did **not** land
+- local numbered anchor snippets were captured to help the next edit target the real file contents
+- no new code checkpoint was created or pushed in this chat
 
-### 4. Path truth mattered
-- actual local repo path in this chat was:
+### 5. Path truth still matters
+- actual local repo path in this chat remained:
   `C:\Users\jodiw\OneDrive\Desktop\lesson-generator8-local`
-- actual store path is:
+- actual store path remains:
   `src/state/useLessonStore.ts`
 
-Do not continue from older path assumptions without checking them first.
-
-## Current plan position
-
-### Ladder 1 - minimum working / truth-first
-1. **Deepen blueprint-to-generation grounding** — done
-2. **Finish Materials runtime honesty / status behavior** — done
-3. **Harden mixed-target clarification** — next
-4. **Make exports genuinely classroom-usable**
-5. **Run the final validation / finish-readiness pass**
-
-### Ladder 2 - from working to wow
-Only after Ladder 1 is truly closed:
-1. Lock the product soul / canonical product rules
-2. Build the signature output style pass
-3. Turn provenance into teacher confidence
-4. Make Materials feel like a studio-quality trust workspace
-5. Build the orchard interface system
-6. Make the app feel chaptered and sequential
-7. Add teacher-confidence UX and daily-use refinements
-8. Run a vision-level QA pass
-
-## What is next
+Do not continue from older path assumptions without checking them first.## What is next
 
 ### Highest-value next seam now
 
-**Mixed-target clarification**
+**Input-driven lesson-part planning with requested outputs**
 
 This is now the next truth-first seam.
 
 The remaining unresolved promise is:
-- mixed inputs should not be flattened too early into a misleading single-focus story
-- selected mode, detected mode, and recommended mode should stay honest and understandable
-- teacher-facing messaging should encourage clarification when inputs are mixed
+- the app should organize according to the actual inputs and materials, not a narrow binary lesson-shape model
+- detected/source-grounded lesson parts should stay distinct from teacher-requested AI-added lesson parts
+- optional outputs should be teacher-chosen instead of assumed defaults
+- teacher-facing messaging should stay honest about what came from sources versus what was added by request
 - deterministic generation behavior should stay clean and explainable
 
 ### Concrete next seam target
 
-Trace one mixed-target case through:
-- target detection
-- selected lesson mode
-- recommended mode
-- blueprint target resolution
+Trace one canonical case through:
+- detected lesson parts from current inputs and materials
+- requested lesson parts beyond current source coverage
+- requested outputs versus omitted outputs
+- blueprint content resolution
+- planning/spec/package behavior
 - teacher-facing preview / messaging
 - generation entry behavior
 
 ### Acceptance bar
-- mixed signals are detected consistently
-- the app does not overclaim a single-focus lesson when inputs are actually mixed
-- recommended mode stays honest
-- teacher-facing messaging encourages clarification where needed
+- the app organizes according to the actual inputs and materials
+- teacher-requested additions can be generated and placed appropriately even when source coverage is partial
+- optional outputs are generated only when requested
+- provenance stays honest about source-grounded vs AI-added content
 - deterministic pipeline behavior stays clean
 
 ## Important constraints going forward
@@ -131,6 +117,7 @@ Trace one mixed-target case through:
 - jumping to orchard polish before truth seams are closed
 - starting the second ladder early
 - reverting from **usable** trust logic back to **ready-only** assumptions
+- keeping the app locked to phonics/comprehension-only framing or auto-generated optional outputs
 
 ## Relevant files to inspect next
 
@@ -141,17 +128,21 @@ Trace one mixed-target case through:
 - this handoff file
 
 ### Next-seam files
-- `src/engine/blueprint/detectLessonTargets.ts`
-- `src/engine/blueprint/buildBlueprint.ts`
-- `src/engine/pipeline/runLessonPipeline.ts`
 - `src/engine/types.ts`
 - `src/state/useLessonStore.ts`
-- the live lesson-mode selection / inputs UI file(s)
-- mixed-target tests
+- `src/state/useLessonStore.test.ts`
 
-## Recommended next move
+### Follow-up seam files after that
+- `src/pages/InputsPage.tsx`
+- requested-output / lesson-part UI file(s)
+- `src/engine/blueprint/buildBlueprint.ts`
+- `src/engine/planning/buildLessonPlanningIdeas.ts`
+- `src/engine/spec/buildLessonSpec.ts`
+- `src/engine/package/buildLessonPackage.ts`
+- `src/engine/package/buildPackageOutputs.ts`
+- output-selection / provenance tests## Recommended next move
 
-**Next seam: mixed-target clarification**
+**Next seam: input-driven lesson-part planning with requested outputs**
 
 Work that seam tightly before orchard convergence.
-The immediate goal is to make mixed inputs honest and explainable across detection, preview, selected mode, recommended mode, and generation behavior.
+The immediate goal is to make the app organize according to actual inputs, support teacher-requested additions when source coverage is partial, and generate optional outputs only when requested.
