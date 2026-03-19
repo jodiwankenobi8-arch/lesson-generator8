@@ -209,7 +209,7 @@ it("emits curriculum-side warnings without exemplar warning when exemplar is str
 
   expect(result.sourceReadiness.warnings).toEqual(
     expect.arrayContaining([
-      "No curriculum materials are ready, so content is relying on fallback signals.",
+      "No usable curriculum materials are available, so content is relying on fallback signals.",
       "Curriculum coverage breadth still looks limited, so some lesson areas may rely on fallback logic.",
     ])
   )
@@ -218,7 +218,7 @@ it("emits curriculum-side warnings without exemplar warning when exemplar is str
     "Exemplar materials are present, but strong structure signals still look limited."
   )
   expect(result.sourceReadiness.warnings).not.toContain(
-    "No exemplar materials are ready, so structure is relying on generic lesson flow."
+    "No usable exemplar materials are available, so structure is relying on generic lesson flow."
   )
 })
 })

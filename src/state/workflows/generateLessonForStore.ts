@@ -1,4 +1,4 @@
-﻿import { runLessonPipeline } from "../../engine/pipeline/runLessonPipeline"
+import { runLessonPipeline } from "../../engine/pipeline/runLessonPipeline"
 import {
   LessonBlueprint,
   LessonInputs,
@@ -44,6 +44,19 @@ function isReady(material: MaterialFile): boolean {
   return material.status === "ready" && Boolean(material.analysis)
 }
 
+function isUsableForGeneration(material: MaterialFile): boolean {
+  if (!isReady(material)) {
+    return false
+  }
+
+  const reliability = material.analysis?.reliability
+  if (!reliability) {
+    return true
+  }
+
+  return reliability.usableForContent || reliability.usableForStructure
+}
+
 export async function generateLessonForStore(
   store: GenerateLessonInput,
   dependencies: GenerateLessonDependencies
@@ -71,9 +84,16 @@ export async function generateLessonForStore(
 
   const refreshed = dependencies.getCurrentStoreData()
   const readyMaterials = refreshed.materials.filter(isReady)
+  const usableMaterials = readyMaterials.filter(isUsableForGeneration)
 
   if (readyMaterials.length === 0) {
     throw new Error("No analyzed materials are ready for lesson generation.")
+  }
+
+  if (usableMaterials.length === 0) {
+    throw new Error(
+      "No usable materials are available for grounded generation. Add a stronger curriculum or exemplar file."
+    )
   }
 
   const result = runLessonPipeline(
@@ -91,6 +111,3 @@ export async function generateLessonForStore(
     lessonTrace: result.trace,
   }
 }
-
-
-

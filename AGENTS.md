@@ -88,6 +88,20 @@ Do not use vague or conditional summary language such as:
 
 Instead, summarize the real result in plain language based on the command output that just ran.
 If the assistant asked for terminal output, the summary directions should explicitly tell the user to include the actual results, not just the summary labels.
+
+The summary block must be self-contained and continuation-ready.
+That means the summary itself should include the exact result values the assistant needs going forward, instead of telling the user to paste separate output elsewhere.
+
+For example, include real outcomes such as:
+- test/build pass or fail
+- the latest commit line
+- whether push succeeded
+- whether the working tree is clean
+- the exact file created or updated
+- the actual failing test name or error headline when something breaks
+
+Do not make the summary depend on unstated terminal context outside the summary block.
+If the summary is meant to be pasted back into chat, it should be usable on its own.
 ## Review size vs change size
 These are different:
 - Review size: use the smallest sufficient review scope for the task, unless the user asks for a full historical sweep or contradictions require broader review.
@@ -177,7 +191,7 @@ After meaningful edits, prefer this order when available:
 4. build
 5. brief manual verification
 
-After every 2ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“3 meaningful implementation steps, run a structured checkpoint:
+After every 2ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ3 meaningful implementation steps, run a structured checkpoint:
 - is the architecture still clean?
 - is the build still green?
 - is the system becoming fragile?

@@ -89,9 +89,9 @@ export function buildBlueprintSourceReadiness(args: {
   const warnings: string[] = []
 
   if (curriculumMaterials.length === 0) {
-    warnings.push("No curriculum materials are ready, so content is relying on fallback signals.")
+    warnings.push("No usable curriculum materials are available, so content is relying on fallback signals.")
   } else if (curriculumSupport === "limited") {
-    warnings.push("Curriculum materials are present, but strong content signals still look limited.")
+    warnings.push("Usable curriculum materials are present, but strong content signals still look limited.")
   }
 
   if (coverageSupport === "limited") {
@@ -99,9 +99,9 @@ export function buildBlueprintSourceReadiness(args: {
   }
 
   if (exemplarMaterials.length === 0) {
-    warnings.push("No exemplar materials are ready, so structure is relying on generic lesson flow.")
+    warnings.push("No usable exemplar materials are available, so structure is relying on generic lesson flow.")
   } else if (exemplarSupport === "limited") {
-    warnings.push("Exemplar materials are present, but strong structure signals still look limited.")
+    warnings.push("Usable exemplar materials are present, but strong structure signals still look limited.")
   }
 
   return {
@@ -118,10 +118,10 @@ export function buildBlueprintSourceReadiness(args: {
         value: curriculumSupport === "strong" ? "Strong" : "Limited",
         note:
           curriculumSupport === "strong"
-            ? `Content signals are grounded by curriculum material (${curriculumSignalCount} strong signal areas detected).`
+            ? `Content signals are grounded by usable curriculum material (${curriculumSignalCount} strong signal areas detected).`
             : curriculumMaterials.length === 0
-              ? "No ready curriculum materials were available."
-              : `Curriculum material is present, but only ${curriculumSignalCount} strong content signal area(s) were detected.`,
+              ? "No usable curriculum materials were available."
+              : `Usable curriculum material is present, but only ${curriculumSignalCount} strong content signal area(s) were detected.`,
         tone: curriculumSupport === "strong" ? "good" : "warn",
       },
       {
@@ -129,10 +129,10 @@ export function buildBlueprintSourceReadiness(args: {
         value: exemplarSupport === "strong" ? "Strong" : "Limited",
         note:
           exemplarSupport === "strong"
-            ? `Structure signals are grounded by exemplar material (${exemplarSignalCount} strong signal areas detected).`
+            ? `Structure signals are grounded by usable exemplar material (${exemplarSignalCount} strong signal areas detected).`
             : exemplarMaterials.length === 0
-              ? "No ready exemplar materials were available."
-              : `Exemplar material is present, but only ${exemplarSignalCount} strong structure signal area(s) were detected.`,
+              ? "No usable exemplar materials were available."
+              : `Usable exemplar material is present, but only ${exemplarSignalCount} strong structure signal area(s) were detected.`,
         tone: exemplarSupport === "strong" ? "good" : "warn",
       },
       {
@@ -142,8 +142,8 @@ export function buildBlueprintSourceReadiness(args: {
           coverageSupport === "strong"
             ? `Curriculum coverage spans ${coverageSignalCount} meaningful source dimension(s).`
             : curriculumMaterials.length === 0
-              ? "No ready curriculum materials were available to establish coverage breadth."
-              : `Curriculum material is present, but only ${coverageSignalCount} meaningful coverage dimension(s) were detected.`,
+              ? "No usable curriculum materials were available to establish coverage breadth."
+              : `Usable curriculum material is present, but only ${coverageSignalCount} meaningful coverage dimension(s) were detected.`,
         tone: coverageSupport === "strong" ? "good" : "warn",
       },
       {
@@ -305,4 +305,3 @@ function hasStrongValues(values: string[], weakValues: string[]): boolean {
 
   return cleaned.some((value) => !weakValues.includes(value))
 }
-
