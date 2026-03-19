@@ -1,7 +1,98 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
-import { LessonMode } from "../engine/types"
+import {
+  LessonMode,
+  RequestedLessonPartKey,
+  RequestedOutputKey,
+} from "../engine/types"
 import { useLessonStore } from "../state/useLessonStore"
+
+type RequestOption<T extends string> = {
+  key: T
+  title: string
+  description: string
+}
+
+const requestedLessonPartOptions: RequestOption<RequestedLessonPartKey>[] = [
+  {
+    key: "teach",
+    title: "Teach / mini-lesson",
+    description: "Direct instruction or modeled teaching you want included on purpose.",
+  },
+  {
+    key: "guided_practice",
+    title: "Guided practice",
+    description: "Supported practice with teacher prompts or shared work.",
+  },
+  {
+    key: "independent_practice",
+    title: "Independent practice",
+    description: "Student practice that can stand on its own after teaching.",
+  },
+  {
+    key: "closure",
+    title: "Closure",
+    description: "A wrap-up, synthesis, or end-of-lesson reflection.",
+  },
+  {
+    key: "formative_assessment",
+    title: "Formative assessment",
+    description: "A quick check for understanding, exit check, or mastery signal.",
+  },
+  {
+    key: "centers",
+    title: "Centers",
+    description: "Station or rotation-based work beyond the main lesson flow.",
+  },
+  {
+    key: "small_group",
+    title: "Small group",
+    description: "A teacher-led follow-up group for extra support or extension.",
+  },
+  {
+    key: "intervention",
+    title: "Intervention",
+    description: "Targeted reteach or support beyond the core lesson.",
+  },
+]
+
+const requestedOutputOptions: RequestOption<RequestedOutputKey>[] = [
+  {
+    key: "slides",
+    title: "Slides",
+    description: "Presentation slides or screen-ready lesson visuals.",
+  },
+  {
+    key: "lesson_plan",
+    title: "Lesson plan",
+    description: "A teacher-facing lesson plan version of the work.",
+  },
+  {
+    key: "assessment",
+    title: "Assessment",
+    description: "A requested assessment or exit-check style deliverable.",
+  },
+  {
+    key: "centers",
+    title: "Centers materials",
+    description: "Requested center materials only when you actually want them.",
+  },
+  {
+    key: "small_group",
+    title: "Small-group support",
+    description: "Requested small-group materials or follow-up supports.",
+  },
+  {
+    key: "intervention",
+    title: "Intervention support",
+    description: "Requested reteach or intervention-oriented supports.",
+  },
+  {
+    key: "printables",
+    title: "Printables",
+    description: "Printable handouts, student-facing pages, or takeaways.",
+  },
+]
 
 const pageStyle: React.CSSProperties = {
   maxWidth: 920,
@@ -124,6 +215,13 @@ const modeOptionStyle: React.CSSProperties = {
   borderTop: "1px solid #ece7df",
 }
 
+const requestGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "var(--space-md)",
+  marginTop: "var(--space-md)",
+}
+
 export default function InputsPage() {
   const navigate = useNavigate()
 
@@ -131,6 +229,11 @@ export default function InputsPage() {
   const setInputs = useLessonStore((state) => state.setInputs)
   const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
   const setSelectedLessonMode = useLessonStore((state) => state.setSelectedLessonMode)
+  const lessonRequest = useLessonStore((state) => state.lessonRequest)
+  const toggleRequestedLessonPart = useLessonStore(
+    (state) => state.toggleRequestedLessonPart
+  )
+  const toggleRequestedOutput = useLessonStore((state) => state.toggleRequestedOutput)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const targetPreview = useLessonStore((state) => state.getTargetPreview)()
   const [showLessonShapeOverride, setShowLessonShapeOverride] = React.useState(
@@ -139,7 +242,11 @@ export default function InputsPage() {
 
   const updateInput =
     (field: keyof typeof inputs) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    (
+      event: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >
+    ) => {
       setInputs({ [field]: event.target.value })
     }
 
@@ -213,7 +320,9 @@ export default function InputsPage() {
               placeholder="25 minutes"
               style={inputStyle}
             />
-            <div style={helpStyle}>Keep this as text for now to match the current engine types.</div>
+            <div style={helpStyle}>
+              Keep this as text for now to match the current engine types.
+            </div>
           </div>
 
           <div style={fullWidthStyle}>
@@ -249,7 +358,9 @@ export default function InputsPage() {
               Lesson shape
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 8 }}>
-              The system recommends a lesson shape from your inputs behind the scenes. Change it manually only if you need to override the recommendation.
+              The system recommends a lesson shape from your inputs behind the
+              scenes. Change it manually only if you need to override the
+              recommendation.
             </div>
 
             <div
@@ -257,17 +368,23 @@ export default function InputsPage() {
                 ...noticeStyle,
                 marginBottom: 12,
                 background: targetPreview.isMixedTarget ? "#fff7ed" : "#fcfbf8",
-                borderColor: targetPreview.isMixedTarget ? "#fed7aa" : "var(--border-soft)",
-                color: targetPreview.isMixedTarget ? "#9a3412" : "var(--text-secondary)",
+                borderColor: targetPreview.isMixedTarget
+                  ? "#fed7aa"
+                  : "var(--border-soft)",
+                color: targetPreview.isMixedTarget
+                  ? "#9a3412"
+                  : "var(--text-secondary)",
               }}
             >
               <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                Recommended shape: {formatLessonModeLabel(targetPreview.recommendedMode)}
+                Recommended shape:{" "}
+                {formatLessonModeLabel(targetPreview.recommendedMode)}
               </div>
               <div>{targetPreview.message}</div>
               {selectedLessonMode !== "single" && (
                 <div style={{ marginTop: 6, fontSize: 13 }}>
-                  Manual override active: {formatLessonModeLabel(selectedLessonMode)}
+                  Manual override active:{" "}
+                  {formatLessonModeLabel(selectedLessonMode)}
                 </div>
               )}
             </div>
@@ -301,7 +418,9 @@ export default function InputsPage() {
                   cursor: "pointer",
                 }}
               >
-                {showLessonShapeOverride ? "Hide manual lesson shape options" : "Change lesson shape manually"}
+                {showLessonShapeOverride
+                  ? "Hide manual lesson shape options"
+                  : "Change lesson shape manually"}
               </button>
             </div>
 
@@ -344,9 +463,72 @@ export default function InputsPage() {
           </div>
         </div>
 
+        <div style={{ marginTop: "var(--space-xl)" }}>
+          <div style={modeCardStyle}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
+              Requested lesson parts
+            </div>
+            <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
+              Use this when you want the system to explicitly add or prioritize
+              lesson parts beyond what your source materials already ground.
+              Leave items off unless you want them requested on purpose.
+            </div>
+
+            <div style={{ ...noticeStyle, marginTop: 12 }}>
+              {lessonRequest.requestedLessonParts.length > 0
+                ? `${lessonRequest.requestedLessonParts.length} requested lesson part(s) selected. These should be treated as explicit teacher requests, not assumed defaults.`
+                : "No extra lesson parts requested yet. The system should rely on your inputs and source materials unless you ask for more."}
+            </div>
+
+            <div style={requestGridStyle}>
+              {requestedLessonPartOptions.map((option) => (
+                <RequestToggleCard
+                  key={option.key}
+                  checked={lessonRequest.requestedLessonParts.includes(option.key)}
+                  title={option.title}
+                  description={option.description}
+                  onToggle={() => toggleRequestedLessonPart(option.key)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: "var(--space-xl)" }}>
+          <div style={modeCardStyle}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
+              Requested outputs
+            </div>
+            <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
+              Select only the deliverables you actually want. These requests are
+              captured here now so later planning and export seams can honor
+              them cleanly instead of assuming extras by default.
+            </div>
+
+            <div style={{ ...noticeStyle, marginTop: 12 }}>
+              {lessonRequest.requestedOutputs.length > 0
+                ? `${lessonRequest.requestedOutputs.length} requested output(s) selected. Unselected extras should stay optional rather than assumed.`
+                : "No optional outputs requested yet. Extra deliverables should stay off unless you ask for them."}
+            </div>
+
+            <div style={requestGridStyle}>
+              {requestedOutputOptions.map((option) => (
+                <RequestToggleCard
+                  key={option.key}
+                  checked={lessonRequest.requestedOutputs.includes(option.key)}
+                  title={option.title}
+                  description={option.description}
+                  onToggle={() => toggleRequestedOutput(option.key)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div style={{ marginTop: "var(--space-lg)" }}>
           <div style={noticeStyle}>
-            Required before Results can generate: grade, subject, standard, skill focus, lesson topic, and duration.
+            Required before Results can generate: grade, subject, standard,
+            skill focus, lesson topic, and duration.
           </div>
         </div>
 
@@ -358,7 +540,9 @@ export default function InputsPage() {
               fontWeight: 700,
             }}
           >
-            {hasRequiredInputs ? "Inputs complete" : "Complete all required lesson fields"}
+            {hasRequiredInputs
+              ? "Inputs complete"
+              : "Complete all required lesson fields"}
           </div>
 
           <button
@@ -413,8 +597,52 @@ function LessonModeOption({
         style={{ marginTop: 3 }}
       />
       <div>
+        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+          {title}
+        </div>
+        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
+          {description}
+        </div>
+      </div>
+    </label>
+  )
+}
+
+function RequestToggleCard({
+  checked,
+  title,
+  description,
+  onToggle,
+}: {
+  checked: boolean
+  title: string
+  description: string
+  onToggle: () => void
+}) {
+  return (
+    <label
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        padding: "14px 14px",
+        borderRadius: "var(--radius-md)",
+        border: checked ? "1px solid #84a98c" : "1px solid var(--border-soft)",
+        background: checked ? "#f3f8f4" : "#ffffff",
+        cursor: "pointer",
+      }}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onToggle}
+        style={{ marginTop: 3 }}
+      />
+      <div>
         <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
-        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>{description}</div>
+        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
+          {description}
+        </div>
       </div>
     </label>
   )
