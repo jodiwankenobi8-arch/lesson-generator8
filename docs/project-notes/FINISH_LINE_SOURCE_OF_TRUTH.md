@@ -134,3 +134,86 @@ As of this note:
 - repo is in a safe continuation state
 - next seam is clear
 - finish path is now ordered and practical
+## Phase B - From working to wow
+
+This second ladder starts only after the minimum working product is truly closed.
+
+The first ladder gets the product to:
+- grounded generation,
+- honest provenance,
+- trustworthy materials behavior,
+- mixed-target clarity,
+- classroom-usable exports,
+- finish-readiness validation.
+
+This second ladder takes it from "working" to "wow":
+a product that feels unmistakably teacher-authored, orchard-warm, emotionally coherent, daily-usable, and recognizably its own thing.
+
+### Phase B sequence
+
+1. Lock the product soul / canonical product rules
+   - Keep curriculum as content authority
+   - Keep exemplar as presentation / structure authority
+   - Keep Inputs -> Materials -> Results as the workflow
+   - Keep the product low-friction, teacher-first, warm, calm, and deterministic
+   - Keep provenance visible and honest
+
+2. Build a signature output style pass
+   - tighten lesson-plan tone
+   - tighten slide-copy tone
+   - preserve early-elementary teachable phrasing
+   - keep exemplar shaping flow without donating content
+   - make outputs sound like this product, not generic assembly
+
+3. Replace provenance visibility with provenance confidence
+   - make Results feel like a calm editorial review desk
+   - answer what grounded content
+   - answer what shaped structure
+   - answer where fallback stepped in
+   - answer what is safe to teach now
+   - answer what to improve next time
+
+4. Make Materials feel like a studio-quality trust workspace
+   - instant row appearance
+   - calm, truthful status progression
+   - clear curriculum vs exemplar distinction
+   - per-file reliability guidance
+   - stronger next-upload guidance
+
+5. Build the orchard interface system
+   - one shell
+   - one heading system
+   - one card language
+   - one notice/callout language
+   - one ready/caution/blocked visual language
+   - one spacing rhythm
+   - one button language
+   - one provenance panel style
+
+6. Make the app feel chaptered and sequential
+   - Inputs as the planning notebook opening
+   - Materials as the source workbench
+   - Results as the finished planning binder
+   - preview/teach mode as the teaching surface
+   - page intros and progress UI should feel guided, not dashboard-like
+
+7. Add teacher-confidence UX and daily-use refinements
+   - better calm recommendation language
+   - clearer "what improved this lesson" summaries
+   - better return-to-results and repeat-use flow
+   - stronger persistence and recovery
+   - fewer dead-end moments
+
+8. Run a vision-level QA pass
+   - source truth
+   - teacher trust
+   - output quality
+   - emotional fit
+   - daily-use fit
+   - ownership
+
+### Working rule
+
+Do not start this second ladder early.
+Finish the minimum working truth ladder first.
+Only then move into signature output, orchard system work, sequential/chaptered experience, and daily-use refinement.
