@@ -90,6 +90,10 @@ describe("useLessonStore regeneration", () => {
       lessonSpec: null,
       lessonPackage: null,
       lessonTrace: null,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: [],
+      },
       missingAreaDecisions: {},
     }))
   })
@@ -189,6 +193,10 @@ describe("useLessonStore regeneration", () => {
       lessonSpec: null,
       lessonPackage: null,
       lessonTrace: null,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: [],
+      },
       missingAreaDecisions: {},
     }))
 
@@ -253,11 +261,88 @@ describe("useLessonStore regeneration", () => {
       lessonSpec: null,
       lessonPackage: null,
       lessonTrace: null,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: [],
+      },
       missingAreaDecisions: {},
     }))
 
     await expect(useLessonStore.getState().generateLesson()).rejects.toThrow(
       "No usable materials are available for grounded generation. Add a stronger curriculum or exemplar file."
     )
+  })
+})
+describe("useLessonStore lesson request contract", () => {
+  beforeEach(() => {
+    useLessonStore.setState((state) => ({
+      ...state,
+      inputs: makeInputs(),
+      selectedLessonMode: "single",
+      materials: [
+        makeMaterial({ id: "curriculum-request-1", name: "curriculum.txt", role: "curriculum" }),
+        makeMaterial({ id: "exemplar-request-1", name: "exemplar.txt", role: "exemplar" }),
+      ],
+      blueprint: null,
+      planningIdeas: null,
+      lessonSpec: null,
+      lessonPackage: null,
+      lessonTrace: null,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: [],
+      },
+      missingAreaDecisions: {},
+    }))
+  })
+
+  it("stores requested lesson parts and clears generated content when they change", async () => {
+    await useLessonStore.getState().generateLesson()
+
+    useLessonStore.getState().setRequestedLessonParts([
+      "teach",
+      "small_group",
+      "teach",
+    ])
+
+    const state = useLessonStore.getState()
+
+    expect(state.lessonRequest.requestedLessonParts).toEqual([
+      "teach",
+      "small_group",
+    ])
+    expect(state.blueprint).toBeNull()
+    expect(state.planningIdeas).toBeNull()
+    expect(state.lessonSpec).toBeNull()
+    expect(state.lessonPackage).toBeNull()
+    expect(state.lessonTrace).toBeNull()
+    expect(state.missingAreaDecisions).toEqual({})
+  })
+
+  it("stores requested outputs independently and supports toggle updates", () => {
+    const store = useLessonStore.getState()
+
+    store.setRequestedOutputs([
+      "slides",
+      "printables",
+      "slides",
+      "assessment",
+    ])
+    store.toggleRequestedOutput("printables")
+    store.toggleRequestedOutput("intervention")
+    store.toggleRequestedLessonPart("closure")
+    store.toggleRequestedLessonPart("small_group")
+    store.toggleRequestedLessonPart("closure")
+
+    const state = useLessonStore.getState()
+
+    expect(state.lessonRequest.requestedLessonParts).toEqual([
+      "small_group",
+    ])
+    expect(state.lessonRequest.requestedOutputs).toEqual([
+      "slides",
+      "assessment",
+      "intervention",
+    ])
   })
 })

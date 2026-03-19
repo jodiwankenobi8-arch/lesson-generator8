@@ -1,4 +1,4 @@
-﻿import { create } from "zustand"
+import { create } from "zustand"
 import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
 import {
   ExemplarStyleSettings,
@@ -8,6 +8,7 @@ import {
   LessonPackage,
   LessonPlanningIdeas,
   LessonPipelineTrace,
+  LessonRequestPreferences,
   LessonSpec,
   MaterialAnalysis,
   MaterialFile,
@@ -15,6 +16,8 @@ import {
   MaterialStatus,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
+  RequestedLessonPartKey,
+  RequestedOutputKey,
 } from "../engine/types"
 
 type MaterialCounts = {
@@ -43,10 +46,15 @@ type LessonStore = {
   lessonSpec: LessonSpec | null
   lessonPackage: LessonPackage | null
   lessonTrace: LessonPipelineTrace | null
+  lessonRequest: LessonRequestPreferences
   missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
 
   setInputs: (updates: Partial<LessonInputs>) => void
   setSelectedLessonMode: (mode: LessonMode) => void
+  setRequestedLessonParts: (parts: RequestedLessonPartKey[]) => void
+  toggleRequestedLessonPart: (part: RequestedLessonPartKey) => void
+  setRequestedOutputs: (outputs: RequestedOutputKey[]) => void
+  toggleRequestedOutput: (output: RequestedOutputKey) => void
 
   addMaterial: (role: MaterialRole, name?: string) => string
   setMaterialSource: (
@@ -144,6 +152,17 @@ function defaultExemplarStyleSettings(): ExemplarStyleSettings {
   }
 }
 
+function defaultLessonRequestPreferences(): LessonRequestPreferences {
+  return {
+    requestedLessonParts: [],
+    requestedOutputs: [],
+  }
+}
+
+function uniqueValues<T extends string>(items: T[]): T[] {
+  return Array.from(new Set(items))
+}
+
 function buildTargetPreview(
   inputs: LessonInputs,
   selectedLessonMode: LessonMode
@@ -201,6 +220,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   lessonSpec: null,
   lessonPackage: null,
   lessonTrace: null,
+  lessonRequest: defaultLessonRequestPreferences(),
   missingAreaDecisions: {},
 
   setInputs: (updates) =>
@@ -216,6 +236,54 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     set({
       selectedLessonMode,
       ...clearedGeneratedState(),
+    }),
+
+  setRequestedLessonParts: (requestedLessonParts) =>
+    set((state) => ({
+      lessonRequest: {
+        ...state.lessonRequest,
+        requestedLessonParts: uniqueValues(requestedLessonParts),
+      },
+      ...clearedGeneratedState(),
+    })),
+
+  toggleRequestedLessonPart: (part) =>
+    set((state) => {
+      const requestedLessonParts = state.lessonRequest.requestedLessonParts.includes(part)
+        ? state.lessonRequest.requestedLessonParts.filter((item) => item !== part)
+        : [...state.lessonRequest.requestedLessonParts, part]
+
+      return {
+        lessonRequest: {
+          ...state.lessonRequest,
+          requestedLessonParts,
+        },
+        ...clearedGeneratedState(),
+      }
+    }),
+
+  setRequestedOutputs: (requestedOutputs) =>
+    set((state) => ({
+      lessonRequest: {
+        ...state.lessonRequest,
+        requestedOutputs: uniqueValues(requestedOutputs),
+      },
+      ...clearedGeneratedState(),
+    })),
+
+  toggleRequestedOutput: (output) =>
+    set((state) => {
+      const requestedOutputs = state.lessonRequest.requestedOutputs.includes(output)
+        ? state.lessonRequest.requestedOutputs.filter((item) => item !== output)
+        : [...state.lessonRequest.requestedOutputs, output]
+
+      return {
+        lessonRequest: {
+          ...state.lessonRequest,
+          requestedOutputs,
+        },
+        ...clearedGeneratedState(),
+      }
     }),
 
   addMaterial: (role, name) => {
