@@ -1,4 +1,4 @@
-﻿# AGENTS.md
+# AGENTS.md
 
 ## Project identity
 Lesson Generator 8 is a teacher-facing lesson generator.
@@ -61,8 +61,22 @@ When helping with implementation, prefer this structure:
 - Expected success result
 - What to send back if it fails
 
-Prefer the single best next move over many competing options.
+If the assistant wants terminal results reported back into chat, the PowerShell paste should end with a visible summary section like:
 
+===========SUMMARY=============
+Status: <brief outcome of the terminal run>
+Key result: <the main result or next-useful takeaway>
+Paste back: <exact text, output block, or short result the user should return to chat>
+===================================
+
+The status/outcome lines should appear directly under the summary heading and above the underline line of `=` characters so the user can easily copy the explanation of the terminal result for future use.
+
+The exact number of `=` characters does not matter; use enough to clearly separate the summary block, and it may be as wide as the terminal if helpful.
+
+That summary section should show:
+- whether the step succeeded
+- the key result(s) to report back
+- exactly what the user should paste back into chat if follow-up is needed
 ## Review size vs change size
 These are different:
 - Review size: use the smallest sufficient review scope for the task, unless the user asks for a full historical sweep or contradictions require broader review.
@@ -152,7 +166,7 @@ After meaningful edits, prefer this order when available:
 4. build
 5. brief manual verification
 
-After every 2–3 meaningful implementation steps, run a structured checkpoint:
+After every 2ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“3 meaningful implementation steps, run a structured checkpoint:
 - is the architecture still clean?
 - is the build still green?
 - is the system becoming fragile?
