@@ -1,9 +1,9 @@
 # Finish Line Source Of Truth
 
 **Project:** Lesson Generator 8  
-**Written:** 2026-03-18 18:34 -04:00  
+**Written:** 2026-03-19 12:21 -05:00  
 **Active branch:** work/canonical-project-consolidation  
-**Current HEAD when written:** 74b7093  
+**Current HEAD when written:** b55f5e4
 
 ## Current verified repo truth
 
@@ -12,19 +12,41 @@
 - **useLessonStore** remains the orchestration seam.
 - **Curriculum = content authority**.
 - **Exemplar = presentation / structure authority**.
-- The export/package hardening seam has been landed and verified in the current branch.
-- The current local working tree is clean except for the untracked `debug/` folder, which should be treated as local scratch unless intentionally promoted later.
+- Package fallback outputs are now more grounded in blueprint content instead of generic placeholder wording.
+- Generation now rejects **ready-but-blocked** materials and requires **usable** materials for grounded generation.
+- Source-readiness teacher wording now uses **usable** language where trust depends on actual grounding value.
+- `AGENTS.md` now requires visible, self-contained terminal summary blocks with actual outcome values.
+- The local repo path used in this chat was `C:\Users\jodiw\OneDrive\Desktop\lesson-generator8-local`.
+- The current local working tree should be rechecked before the next seam if absolute cleanliness matters, but the latest known seam checkpoint is pushed through `b55f5e4`.
+
+## Documentation / continuation discipline
+
+Before continuing in a new chat, evaluate these docs **fully, not skimmed**:
+
+1. `AGENTS.md`
+2. `PROJECT_CURRENT_STATE.md`
+3. `docs/project-notes/FINISH_LINE_SOURCE_OF_TRUTH.md`
+4. the most relevant current handoff
+5. the actual repo files involved in the seam
+
+`AGENTS.md` must be followed **religiously**.
+Do not continue from older assumptions when live repo files or newer docs say otherwise.
 
 ## What was just verified
 
 The current seam was verified with:
-- `npm run typecheck` -> PASS
-- targeted Vitest run -> PASS
+- `npm run test:engine` -> PASS
 - `npm run build` -> PASS
 
+Additional truth learned during this chat:
+- `useLessonStore` lives under `src/state/useLessonStore.ts`, not `src/store/useLessonStore.ts`
+- local path assumptions should be checked before pasting PowerShell
+- summary blocks need to be self-contained so future chats do not depend on missing terminal context
+
 Known non-blocking warnings still present:
-- `useLayoutEffect` SSR warnings in the route integration test
+- `useLayoutEffect` SSR warnings in route integration tests
 - large chunk warnings during production build
+- Vite/react-babel `esbuild` / `oxc` deprecation warnings during engine tests
 
 These are follow-up items, not the immediate next seam.
 
@@ -34,72 +56,41 @@ These are follow-up items, not the immediate next seam.
 2. The store seam is real and should remain the orchestration boundary.
 3. Materials is the trust center of the product.
 4. Curriculum and exemplar roles are clearly separated in the engine and UI.
-5. The app already has real staged pipeline structure rather than a vague one-shot generation flow.
-6. The orchard / warm / teacher-first direction is partially present and should be preserved.
+5. Package grounding is stronger than it was at the start of this chat.
+6. Runtime usable-material gating is now more honest.
+7. The orchard / warm / teacher-first direction is still worth protecting later.
 
 ## What is still weak or misleading
 
-1. `docs/STORE_SEAM_NOTE.md` is stale and still points to `main` and an older baseline.
-2. `README.md` still contains stale continuation/path guidance and a milestone emphasis that does not fully match current repo reality.
-3. `PROJECT_CURRENT_STATE.md` still needs reconciliation with the latest live branch state and the newly landed seam.
-4. Materials trust language can still overstate support by treating analyzed/ready files as more trustworthy than they may actually be.
-5. The Materials pipeline helper still has visible polish debt (`?` pipeline markers) and should be cleaned during the trust/UI seam.
-6. `debug/` exists locally and should not be treated as repo truth.
+1. Mixed-target clarification still needs a truth-first pass.
+2. Some older docs and handoffs are now superseded and should not outrank current live code plus newer docs.
+3. Exports still need a classroom-usability pass after mixed-target behavior is tightened.
+4. `debug/` exists locally and should not be treated as repo truth.
+5. Orchard convergence / polish is still not the right immediate seam.
 
 ## Finish order from here
 
-### 1. Lock repo truth first
-Use this note as the current continuation anchor until the other project docs are reconciled.
+### 1. Keep repo truth aligned
+Use this note plus `PROJECT_CURRENT_STATE.md` plus the newest current handoff as the continuation anchor.
 
-### 2. Next implementation seam: Materials trust honesty
-Make the app distinguish between:
-- analyzed
-- ready
-- usable with confidence
-- caution
-- blocked
+### 2. Next implementation seam: mixed-target clarification
+Make the app handle mixed inputs more honestly across:
+- target detection
+- selected mode
+- recommended mode
+- teacher-facing preview language
+- generation/runtime behavior
 
-The Materials Trust Summary and generate gating should reflect reliability decisions, not just completed analysis.
+The app should not casually collapse mixed signals into a misleading single-focus story.
 
-### 3. Then tighten Results trace clarity
-A teacher should be able to tell:
-- what curriculum grounded
-- what exemplar shaped
-- what fallback logic supplied
-- what is exportable now
+### 3. Then make exports genuinely classroom-usable
+After mixed-target honesty is in place:
+- tighten exported teacher materials
+- reduce weak fallback feel
+- improve classroom usability rather than just internal completeness
 
-### 4. Then reconcile stale docs
-Update:
-- `PROJECT_CURRENT_STATE.md`
-- `README.md`
-- `docs/STORE_SEAM_NOTE.md`
-
-Those files should all reflect the same current truth.
-
-### 5. Then do the orchard convergence pass
-Not a broad redesign.
-
-Do a controlled convergence pass across:
-- Inputs
-- Materials
-- Results
-- export surfaces
-- shared notices, cards, buttons, helper text, and badges
-
-Preserve:
-- warm
-- calm
-- readable
-- teacher-first
-- orchard / storybook direction
-
-Avoid:
-- generic SaaS/dashboard drift
-- flashy redesign work
-- over-decoration
-
-### 6. Final hardening pass
-Before calling the app truly finish-ready:
+### 4. Then run the final hardening / finish-readiness pass
+Before calling the app finish-ready:
 - typecheck
 - targeted tests
 - full tests
@@ -108,43 +99,50 @@ Before calling the app truly finish-ready:
 - export usefulness check
 - docs aligned with shipped reality
 
+### 5. Only then move into orchard / wow work
+Do not start the second ladder early.
+
 ## Immediate next step
 
-The single best next implementation move after this docs commit is:
+The single best next implementation move after this docs update is:
 
-**Materials trust honesty seam**
+**Mixed-target clarification**
 
 That seam should:
-- make support summaries honest
-- make generate gating honest
-- align teacher-facing trust language with the actual reliability model
-- clean obvious Materials-page trust/polish issues while staying inside that seam
+- keep detection honest
+- keep recommendation honest
+- keep selected mode vs recommended mode understandable
+- avoid overclaiming a single-focus lesson when inputs are mixed
+- preserve deterministic pipeline ownership and explainability
 
 ## What not to do next
 
 - Do not open a broad redesign track yet.
 - Do not add major new features.
-- Do not let multiple conflicting "current state" documents continue to coexist uncorrected.
+- Do not let older docs or damaged older handoffs outrank newer repo truth.
 - Do not promote `debug/` into the repo unless it is intentionally rewritten into durable project notes.
+- Do not revert from **usable** trust logic back to **ready-only** assumptions.
 
 ## Current checkpoint
 
 As of this note:
-- export/package seam is landed
-- repo is in a safe continuation state
+- package-output grounding is landed
+- usable-vs-ready runtime honesty is landed
+- AGENTS summary discipline is stricter
 - next seam is clear
-- finish path is now ordered and practical
+- finish path is still ordered and practical
+
 ## Phase B - From working to wow
 
 This second ladder starts only after the minimum working product is truly closed.
 
 The first ladder gets the product to:
-- grounded generation,
-- honest provenance,
-- trustworthy materials behavior,
-- mixed-target clarity,
-- classroom-usable exports,
-- finish-readiness validation.
+- grounded generation
+- honest provenance
+- trustworthy materials behavior
+- mixed-target clarity
+- classroom-usable exports
+- finish-readiness validation
 
 This second ladder takes it from "working" to "wow":
 a product that feels unmistakably teacher-authored, orchard-warm, emotionally coherent, daily-usable, and recognizably its own thing.
