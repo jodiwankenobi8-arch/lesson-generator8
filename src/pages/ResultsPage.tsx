@@ -318,11 +318,32 @@ export function TraceabilitySection({
     "structure",
     blueprint.sourceReadiness.selectedExemplarMaterialIds
   )
+  const cautionOrBlockedSummary = Array.from(
+    new Set(
+      [...contentMaterials, ...structureMaterials]
+        .filter((item) => item.outcome === "blocked" || item.decision === "caution")
+        .map((item) => `${item.name} (${item.outcome === "blocked" ? "blocked" : "caution"})`)
+    )
+  )
 
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Why This Lesson Was Generated This Way</h3>
       <div style={{ display: "grid", gap: 12 }}>
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Authority at a Glance</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Content authority:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Presentation authority:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+            <div><strong>Package grounding:</strong> {packageConfidenceLabel}</div>
+            <div><strong>Fallback usage:</strong> {fallbackUsageLabel}</div>
+            <div><strong>Used with caution or blocked:</strong> {joinOrFallback(cautionOrBlockedSummary, "None")}</div>
+          </div>
+          <div style={{ color: "var(--text-secondary)", marginTop: 8 }}>
+            This is the shortest teacher-facing summary of what grounded the lesson and where the engine had to be more careful.
+          </div>
+        </div>
+
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Content Authority</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{contentSourceLabel}</div>

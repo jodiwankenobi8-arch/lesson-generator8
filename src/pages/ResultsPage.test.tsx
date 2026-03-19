@@ -146,6 +146,12 @@ describe("Results explainability rendering contracts", () => {
         materials={state.materials}
       />
     )
+    expect(traceabilityMarkup).toContain("Authority at a Glance")
+    expect(traceabilityMarkup).toContain("Content authority:")
+    expect(traceabilityMarkup).toContain("Presentation authority:")
+    expect(traceabilityMarkup).toContain("Used with caution or blocked:")
+    expect(traceabilityMarkup).toContain("Fallback usage:")
+
     const traceMarkup = renderToStaticMarkup(<PipelineTraceSection trace={lessonTrace} />)
 
     blueprint.sourceReadiness.selectedCurriculumMaterialIds.forEach((id) => {
@@ -194,6 +200,12 @@ describe("Results explainability rendering contracts", () => {
         materials={state.materials}
       />
     )
+    expect(traceabilityMarkup).toContain("Authority at a Glance")
+    expect(traceabilityMarkup).toContain("Content authority:")
+    expect(traceabilityMarkup).toContain("Presentation authority:")
+    expect(traceabilityMarkup).toContain("Used with caution or blocked:")
+    expect(traceabilityMarkup).toContain("Fallback usage:")
+
     const traceMarkup = renderToStaticMarkup(<PipelineTraceSection trace={lessonTrace} />)
 
     lessonTrace.selectedSources.curriculumMaterialIds.forEach((id) => {
