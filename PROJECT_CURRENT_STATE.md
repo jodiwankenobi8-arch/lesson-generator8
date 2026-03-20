@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Latest local code seam checkpoint: 568dba0 refactor: clarify materials trust and readiness language
+- Latest local code seam checkpoint: 4ae3806 docs: clarify powershell pacing and summary reply rules
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -29,11 +29,11 @@ Anything older or not in that chain should be treated as historical unless expli
 - Step 3C complete: secondary evidence grouping landed in Results
 - Request-aware planning/package normalization committed
 - MaterialsPage trust-language normalization committed
+- Export fallback narrative normalization committed
 
 ## Validated state
-- npm run typecheck = PASS
-- npm run test = PASS
-- npm run build = PASS
+- export fallback narrative seam should already be locally verified before this docs refresh
+- use the newest handoff file as the continuation launch point in the next chat
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -52,31 +52,27 @@ Anything older or not in that chain should be treated as historical unless expli
 - useLessonStore is the orchestration seam
 
 ## What the latest seam changed
-- MaterialsPage now separates pipeline readiness wording from grounded-generation trust wording more clearly
-- analyzed-file status language is less likely to over-claim trust just because a file reached ready state
-- generate CTA copy now aligns better with usable-material gating already enforced by the store/workflow seam
-- Inputs and Results remain aligned with usable-material trust language
+- printables/export text no longer relies on empty optional placeholder copy like 'No centers defined.'
+- lesson-plan/export narrative is more consistent with the normalized request-aware contract
+- optional practice lanes are less likely to be implied by fallback wording alone
 
 ## Current risks
-- lesson-plan and export wording may still imply optional outputs more broadly than the normalized request-aware contract allows
-- final teacher-facing narrative still needs inspection for optional-output leakage
-- export/classroom-usability hardening is still ahead
+- there may still be one smaller user-facing wording seam left, but it should be chosen from live repo state instead of guessed
 - Vite build still reports large chunk warnings after minification
 - docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt was missing during earlier Step 3 audit
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
 
 ## Active execution rule
-Do not reopen Step 3C unless review finds a real regression.
-Do not reopen the request-aware planning/package seam unless inspection finds a real mismatch.
-Do not reopen the MaterialsPage trust seam unless wording review finds a real regression.
-Choose the next seam from current repo state and keep it scoped to lesson-plan/export wording alignment.
+Do not reopen prior closed seams unless live inspection finds a real regression.
+Choose the next seam from current repo state and keep it narrow.
+Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
 ## Top next steps
-1. Inspect lesson-plan/export wording for optional-output leakage
-2. Align final narrative/output wording to the normalized request-aware contract
-3. Do one end-to-end manual flow check after the wording seam
+1. Start next chat from the newest handoff file
+2. Reconfirm current branch head and full worktree status
+3. Inspect the next smallest live UX/copy seam only
 4. Keep docs small, current, and non-competing
-5. Leave visual polish and non-blocking warnings for later unless they block trust
+5. Preserve checkpoint discipline
 
 ## Local doc policy
 The active local doc set should stay small and obvious:

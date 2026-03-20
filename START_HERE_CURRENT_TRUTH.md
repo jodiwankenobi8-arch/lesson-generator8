@@ -3,9 +3,9 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Latest validated checkpoint: MaterialsPage trust-language normalization committed
+- Latest validated checkpoint: export fallback narrative normalization landed
 - Current milestone: Step 3 - trust behavior and UX wording alignment
-- Current active seam: next = lesson-plan/export wording alignment to match the normalized request-aware contract
+- Current active seam: next = identify the next smallest live seam from current repo state
 
 ## What is actually landed
 - Step 1 complete: local truth locked
@@ -14,10 +14,11 @@
 - Documentation checkpoint complete
 - Step 3A complete: Results naming and hierarchy cleanup landed
 - Step 3B complete: visible trust-language cleanup across Inputs, Materials, and Results is substantially aligned
-- Step 3C complete: traceability and pipeline evidence moved into clearly secondary Results surfaces, with coverage evidence tucked behind expandable details
+- Step 3C complete: traceability and pipeline evidence moved into clearly secondary Results surfaces
 - Request-aware planning/package normalization committed
 - MaterialsPage trust-language normalization committed
-- Optional package outputs no longer unlock from printables alone
+- Export fallback narrative normalization committed
+- Printables no longer imply optional practice sections by empty placeholder fallback text alone
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -31,9 +32,8 @@
 - materials trust depends on usable materials, not merely ready materials
 
 ## Latest validation snapshot
-- npm run typecheck = PASS
-- npm run test = PASS
-- npm run build = PASS
+- export fallback narrative seam should already be locally verified before this checkpoint
+- use the newest handoff file as the continuation launch point in the next chat
 
 ## Non-blocking warnings
 - Vite build still reports large chunk warnings after minification
@@ -43,12 +43,12 @@
 ## What to read next
 1. PROJECT_CURRENT_STATE.md
 2. newest file in docs/chat-handoffs/
-3. then inspect lesson-plan/export wording files only
+3. then inspect the next smallest live seam only
 
 ## Exact next move
-- inspect lesson-plan and export wording for optional-output leakage
-- align final narrative/output wording to the normalized request-aware contract
-- do not reopen Results or Materials trust seams unless review finds a real regression
+- start the next chat from the newest handoff file below
+- do not reopen closed seams unless live inspection finds a real regression
+- choose the next seam from current repo state with inspect-first discipline
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the listed files and treat that as higher-trust than older indexed copies.
