@@ -184,7 +184,7 @@ describe("Results explainability rendering contracts", () => {
     const packageSummaryHeadingIndex = source.indexOf('Teacher Package Summary')
     const lessonPlanIndex = source.indexOf('PreSection title="Lesson Plan"')
     const slidesIndex = source.indexOf('SimpleListSection title="Slides"')
-    const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Teacher-Led Small-Group Support"')
+    const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Intervention Support"')
     const studentCentersIndex = source.indexOf('SimpleListSection title="Student Centers"')
     const centerRotationIndex = source.indexOf('PreSection title="Student Centers Rotation Plan"')
 

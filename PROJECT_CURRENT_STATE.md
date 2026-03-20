@@ -35,6 +35,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Validated state
 - Step 4A package narrative contract seam verified with targeted package test, typecheck, and build
 - ready-vs-usable wording cleanup verified with targeted Results/App tests and typecheck
+- intervention support label cleanup verified with targeted Results/App tests and typecheck
 - use the newest handoff file as the continuation launch point in the next chat
 
 ## Product truths to preserve

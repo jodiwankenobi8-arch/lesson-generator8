@@ -237,7 +237,7 @@ function PackageSummarySection({
       <h3 style={sectionHeadingStyle}>Teacher Package Summary</h3>
       <div style={heroGridStyle}>
         <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
-        <SummaryCard label="Teacher-Led Small-Group Support" value={lessonPackage.interventions.length.toString()} />
+        <SummaryCard label="Intervention Support" value={lessonPackage.interventions.length.toString()} />
         <SummaryCard label="Student Centers" value={lessonPackage.centers.length.toString()} />
       </div>
 
@@ -965,7 +965,7 @@ function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage
     <>
       <PreSection title="Lesson Plan" content={lessonPackage.lessonPlan} />
       <SimpleListSection title="Slides" items={lessonPackage.slides} />
-      <SimpleListSection title="Teacher-Led Small-Group Support" items={lessonPackage.interventions} />
+      <SimpleListSection title="Intervention Support" items={lessonPackage.interventions} />
       <SimpleListSection title="Student Centers" items={lessonPackage.centers} />
       <PreSection title="Student Centers Rotation Plan" content={lessonPackage.rotationPlan} />
       <ExportArtifactsSection exports={lessonPackage.exports} />
