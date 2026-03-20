@@ -1,83 +1,97 @@
-# PROJECT_CURRENT_STATE.md
+﻿# PROJECT_CURRENT_STATE
 
-## Current milestone
-**Step 3 - trust behavior and UX wording alignment**
+Last refreshed: 2026-03-20
 
-## Current repo truth
-- Repo: `jodiwankenobi8-arch/lesson-generator8`
-- Branch: `work/canonical-project-consolidation`
-- Latest validated local checkpoint: `35bc248` - `copy: align results gating with usable-material trust language`
+## Purpose
+This file is the current project status board for active work.
+It should be read after AGENTS.md and START_HERE_CURRENT_TRUTH.md.
 
-## What changed most recently
-### Step 3A landed
-- Results naming was aligned to teacher-facing product language:
-  - `Teacher Package Summary`
-  - `Teacher-Led Support`
-  - `Student Centers`
-  - `Center Rotation Plan`
-  - `Source Authority and Lesson Grounding`
-  - `Teacher Decisions for Missing Lesson Parts`
-- Results ordering now keeps teacher package content earlier and pushes deeper proof later
-- Results tests were updated to lock the intended naming and ordering contracts
+## Authority order
+1. AGENTS.md = workflow and rules authority
+2. START_HERE_CURRENT_TRUTH.md = entry doc and active seam launcher
+3. PROJECT_CURRENT_STATE.md = current working status
+4. latest relevant docs/chat-handoffs/* file = seam-level execution detail
 
-### Step 3B landed
-- Results gating now uses **usable materials** instead of merely **ready materials**
-- Results blocker copy now says the user needs at least one curriculum or exemplar material usable for grounded generation
-- Results empty-state copy now says inputs are complete and at least one material is usable, but no generated lesson is currently loaded
-- Results processing copy now says `Ready status:` instead of implying readiness alone is enough
-- Results tests now lock the usable-material trust language
+Anything older or not in that chain should be treated as historical unless explicitly re-adopted.
 
-## What is done
+## Repo and branch
+- Repo: jodiwankenobi8-arch/lesson-generator8
+- Active branch: work/canonical-project-consolidation
+- Latest pushed HEAD: 669d31c — docs: refresh current truth and step 3 handoff
+
+## Current confirmed state
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
 - Step 2B complete: request-aware contract reconciled and tests green
 - Documentation checkpoint complete
-- Step 3A complete
-- Step 3B complete
+- Step 3A complete: Results naming and hierarchy cleanup landed
+- Step 3B complete: Results gating/copy aligned to usable-material trust language
+- Current active seam: Step 3C secondary evidence grouping in Results
 
-## What is not done
-- Step 3C secondary evidence grouping in Results is still open
-- Results still contains more proof surfaces than a teacher-first primary view should expose by default
-- Inputs / Materials copy was audited during Step 3B, but no broader rewrite was landed there yet
-- Step 4 export / classroom-usability alignment has not started
+## Validated state
+- 
+pm run typecheck = PASS
+- 
+pm run test = PASS
+- 
+pm run build = PASS
+- 21 test files passed
+- 104 tests passed
 
-## Verified current truths
-- Product flow: `Inputs -> Materials -> Results`
-- Engine flow: `extraction -> analysis -> blueprint -> planning -> spec -> package -> results`
-- `useLessonStore` is still the orchestration seam
+## Product truths to preserve
 - curriculum = content authority
 - exemplar = presentation / structure authority
-- centers are student-independent work
-- small group / intervention is teacher-led support
-- centers and teacher-led support are not the same lane
+- orchard / warm storybook / teacher-first direction
+- do not drift into generic SaaS/dashboard styling
+- centers = student-independent work
+- small group / intervention = teacher-led support
+- centers and teacher-led support may coexist during the same lesson block, but they are not the same lane
+- optional lesson parts and outputs should only appear when explicitly requested or strongly source-grounded
+- materials trust depends on usable materials, not merely ready materials
 
-## Current risks
-### Verified
-- Results is still information-dense even after Step 3A
-- Secondary evidence still competes with teacher-ready outputs more than it should
-- Step 3C can easily drift into generic debug-panel layout if not kept teacher-first
-- Build chunk-size warnings still exist
-- SSR-style router warnings still appear in tests
+## Flow truths
+- Product flow: Inputs -> Materials -> Results
+- Engine flow: extraction -> analysis -> blueprint -> planning -> spec -> package -> results
+- useLessonStore is the orchestration seam
 
-### Inferred
-- If Step 3C is done as visual churn instead of hierarchy cleanup, the product can drift toward generic dashboard feel
-- If future chats ignore the current doc authority rules, stale handoffs can still slow continuation
+## Step 3C scope
+Do Step 3C only.
 
-## Validation status
-- `npm run typecheck` = PASS
-- `npm run test` = PASS
-- `21` test files passed
-- `104` tests passed
-- `npm run build` = PASS
+Goal:
+- keep Results teacher-first
+- move trace / proof / selected-source evidence into clearly secondary surfaces
+- preserve trust and provenance visibility without making Results feel like a debug panel
+- do not reopen engine churn unless Step 3C exposes a real contract mismatch
 
-## Top next steps
-1. Finish **Step 3C** in `ResultsPage` by collapsing secondary evidence into clearly secondary sections
-2. Re-validate that teacher-first package content remains primary and calm after the hierarchy change
-3. Only after Step 3 is closed cleanly, move into Step 4 export / classroom-usability alignment
+Working assumptions for Step 3C:
+- PackageSummarySection and PackageOutputsSection stay primary
+- CoverageDecisionsSection stays important because it is teacher-actionable
+- SignalSection trust cues may stay visible if they remain compact
+- TraceabilitySection and PipelineTraceSection are the strongest candidates for clearly secondary / expandable presentation
+- detailed source IDs, pipeline trace, and deeper authority evidence are candidates for more secondary presentation
+- in CoverageDecisionsSection, statuses and rationales likely stay visible, while deeper inline evidence may become secondary
+- regroup trust surfaces; do not remove them
 
-## Guardrails for the next seam
-- Do not restart engine discovery
-- Do not reopen Step 2 unless Step 3C exposes a real contract mismatch
-- Keep orchard / warm storybook / teacher-first tone
-- Do not flatten the UI into generic SaaS cards or dashboard chrome
-- Preserve visible source trust cues while reducing proof-first density
+## Known checkpoint fact
+A previous Step 3C patch attempt failed before landing changes.
+- failure: Failed to replace PipelineTraceSection
+- git diff --stat -- src/pages/ResultsPage.tsx src/pages/ResultsPage.test.tsx was empty afterward
+- ResultsPage tests still passed after that failed attempt
+- treat the repo as unchanged by that failed patch attempt
+
+## Active execution rule
+Start with a tight read-only audit of the Step 3C Results surface.
+Do not redo broad repo discovery.
+Clearly separate verified findings from inferred risks.
+Keep each implementation step coherent and scoped.
+No patch-stacking.
+
+## Local doc policy
+The active local doc set should stay small and obvious:
+- AGENTS.md
+- START_HERE_CURRENT_TRUTH.md
+- PROJECT_CURRENT_STATE.md
+- README.md
+- current relevant docs/chat-handoffs/*
+
+Older docs that are no longer referenced and no longer authoritative should be removed from the local working set and preserved through Git history rather than kept as apparently-live guidance.
