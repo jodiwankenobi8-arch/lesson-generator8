@@ -60,7 +60,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Current risks
 - the next seam should be chosen from live repo state rather than guessed
 - Vite build still reports large chunk warnings after minification
-- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt is still missing and should be reconciled or removed from authority references
+- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored and should now be used as the design authority reference
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
 
 ## Active execution rule

@@ -39,7 +39,7 @@
 
 ## Non-blocking warnings
 - Vite build still reports large chunk warnings after minification
-- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt was missing during earlier Step 3 audit
+- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored as the official design authority
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
 
 ## What to read next
