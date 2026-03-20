@@ -213,13 +213,15 @@ The repo owner is completely new to development and wants beginner-safe help.
 Always work like this:
 1. inspect first
 2. explain what is being changed and why
-3. give one PowerShell paste at a time
-4. use the biggest safe coherent chunk
-5. do one clean edit
-6. verify immediately
-7. keep architecture clean
-8. checkpoint frequently
-9. push to Git after meaningful progress
+3. prefer one PowerShell paste at a time, but do not over-split work into tiny pastes
+4. prefer fewer, larger, coherent PowerShell pastes over many small ones
+5. if one coherent step naturally needs sequential terminal actions, several PowerShell pastes in one assistant message are allowed
+6. use the biggest safe coherent chunk
+7. do one clean edit
+8. verify immediately
+9. keep architecture clean
+10. checkpoint frequently
+11. push to Git after meaningful progress
 
 When helping with implementation, prefer this structure:
 - What we are doing
@@ -227,6 +229,11 @@ When helping with implementation, prefer this structure:
 - One PowerShell paste
 - Expected success result
 - What to send back if it fails
+
+PowerShell pacing preference:
+- Prefer fewer, larger, coherent PowerShell pastes over many tiny ones
+- Several sequential PowerShell pastes in one assistant message are allowed when they belong to one coherent step
+- Do not fragment work unnecessarily
 
 ## Standard repo review behavior
 When asked to review the connected GitHub repo:
@@ -317,5 +324,9 @@ Key result: <main result or next useful takeaway>
 Paste back: <exact text, output block, or short result to return>
 ============================================================
 
-That summary block must be self-contained and continuation-ready.
+That summary block must be self-contained, continuation-ready, and sufficient for the user's reply.
+Everything the assistant wants pasted back from the terminal should appear between the SUMMARY lines so the user does not need to hunt through earlier output.
+Prefer asking for the SUMMARY block only.
+If extra detail is truly required, print that detail inside the SUMMARY block as labeled lines instead of asking the user to gather it from earlier terminal output.
 Include real outcomes, not vague conditional language.
+
