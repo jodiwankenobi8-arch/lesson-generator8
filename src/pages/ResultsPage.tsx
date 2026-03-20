@@ -103,7 +103,7 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Results are blocked while materials are still processing."
-        details={`Currently processing: ${counts.uploaded + counts.extracting + counts.analyzing}. Ready status: ${counts.ready}. Errors: ${counts.error}.`}
+        details={`Currently processing: ${counts.uploaded + counts.extracting + counts.analyzing}. Ready files: ${counts.ready}. Errors: ${counts.error}.`}
         linkTo="/materials"
         linkLabel="Go to Materials"
       />

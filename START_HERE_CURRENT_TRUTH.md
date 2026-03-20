@@ -3,7 +3,7 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Latest validated checkpoint: Step 4A package narrative contract alignment landed
+- Latest validated checkpoint: ready-vs-usable wording cleanup landed
 - Current milestone: Step 4 - package/export contract follow-through
 - Current active seam: next = identify the next smallest live seam from current repo state
 
@@ -35,6 +35,7 @@
 
 ## Latest validation snapshot
 - Step 4A package narrative contract seam verified with targeted package test, typecheck, and build
+- ready-vs-usable wording cleanup verified with targeted Results/App tests and typecheck
 - use the newest handoff file as the continuation launch point in the next chat
 
 ## Non-blocking warnings

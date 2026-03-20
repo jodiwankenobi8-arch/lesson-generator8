@@ -320,7 +320,7 @@ export default function MaterialsPage() {
 
         <div style={summaryGridStyle}>
           <SummaryCard label="Total" value={counts.total} />
-          <SummaryCard label="Analyzed" value={counts.ready} />
+          <SummaryCard label="Ready" value={counts.ready} />
           <SummaryCard
             label="Processing"
             value={counts.uploaded + counts.extracting + counts.analyzing}

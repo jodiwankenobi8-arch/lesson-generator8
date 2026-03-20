@@ -225,7 +225,7 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain('Results are blocked until at least one curriculum or exemplar material is usable for grounded generation.')
     expect(source).toContain('Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one file is usable for grounded generation.')
     expect(source).toContain('Inputs are complete and at least one material is usable, but no generated lesson is currently loaded.')
-    expect(source).toContain('Ready status:')
+    expect(source).toContain('Ready files:')
 
     expect(source).not.toContain('Results are blocked until at least one material is analyzed and ready.')
     expect(source).not.toContain('Inputs and materials are ready, but no generated lesson is currently loaded.')

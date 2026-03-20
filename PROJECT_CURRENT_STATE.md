@@ -34,6 +34,7 @@ Anything older or not in that chain should be treated as historical unless expli
 
 ## Validated state
 - Step 4A package narrative contract seam verified with targeted package test, typecheck, and build
+- ready-vs-usable wording cleanup verified with targeted Results/App tests and typecheck
 - use the newest handoff file as the continuation launch point in the next chat
 
 ## Product truths to preserve
@@ -62,6 +63,7 @@ Anything older or not in that chain should be treated as historical unless expli
 - Vite build still reports large chunk warnings after minification
 - docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored and should now be used as the design authority reference
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
+- there may be a final small user-facing wording seam left, but it should be chosen from live repo state instead of guessed
 
 ## Active execution rule
 Do not reopen prior closed seams unless live inspection finds a real regression.
