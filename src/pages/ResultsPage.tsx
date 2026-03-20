@@ -66,7 +66,7 @@ export default function ResultsPage() {
   const setMissingAreaDecision = useLessonStore((state) => state.setMissingAreaDecision)
   const generateLesson = useLessonStore((state) => state.generateLesson)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
-  const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
+  const hasUsableMaterialsForGeneration = useLessonStore((state) => state.hasUsableMaterialsForGeneration)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
   const counts = useLessonStore((state) => state.getMaterialCounts)()
   const materials = useLessonStore((state) => state.materials)
@@ -103,7 +103,7 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Results are blocked while materials are still processing."
-        details={`Currently processing: ${counts.uploaded + counts.extracting + counts.analyzing}. Ready: ${counts.ready}. Errors: ${counts.error}.`}
+        details={`Currently processing: ${counts.uploaded + counts.extracting + counts.analyzing}. Ready status: ${counts.ready}. Errors: ${counts.error}.`}
         linkTo="/materials"
         linkLabel="Go to Materials"
       />
@@ -122,12 +122,12 @@ export default function ResultsPage() {
     )
   }
 
-  if (!hasReadyMaterials) {
+  if (!hasUsableMaterialsForGeneration) {
     return (
       <BlockedResultsState
         title="Results"
-        message="Results are blocked until at least one material is analyzed and ready."
-        details="Add curriculum or exemplar materials and wait for analysis to complete before generating results."
+        message="Results are blocked until at least one curriculum or exemplar material is usable for grounded generation."
+        details="Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one file is usable for grounded generation."
         linkTo="/materials"
         linkLabel="Go to Materials"
       />
@@ -138,7 +138,7 @@ export default function ResultsPage() {
     return (
       <BlockedResultsState
         title="Results"
-        message="Inputs and materials are ready, but no generated lesson is currently loaded."
+        message="Inputs are complete and at least one material is usable, but no generated lesson is currently loaded."
         details="Return to the generation flow to create a blueprint, planning ideas, lesson spec, and lesson package."
         linkTo="/inputs"
         linkLabel="Go to Inputs"
