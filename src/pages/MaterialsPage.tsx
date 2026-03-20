@@ -320,7 +320,7 @@ export default function MaterialsPage() {
 
         <div style={summaryGridStyle}>
           <SummaryCard label="Total" value={counts.total} />
-          <SummaryCard label="Ready" value={counts.ready} />
+          <SummaryCard label="Analyzed" value={counts.ready} />
           <SummaryCard
             label="Processing"
             value={counts.uploaded + counts.extracting + counts.analyzing}
@@ -338,10 +338,10 @@ export default function MaterialsPage() {
           )}
         >
           {hasProcessingMaterials
-            ? "Results stay blocked until all uploaded materials finish processing."
+            ? "Lesson generation stays blocked until all uploaded materials finish processing."
             : hasUsableMaterialsForGeneration
-              ? "At least one material is usable for grounded generation."
-              : "Add stronger curriculum or exemplar files to unlock grounded generation."}
+              ? "At least one material is usable for grounded lesson generation."
+              : "Add or replace files until at least one curriculum or exemplar material is usable for grounded lesson generation."}
         </div>
 
         <div style={{ marginTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -360,8 +360,8 @@ export default function MaterialsPage() {
               : hasProcessingMaterials
                 ? "Wait until uploaded materials finish processing."
                 : !hasUsableMaterialsForGeneration
-                  ? "At least one curriculum or exemplar material must be usable for grounded generation."
-                  : "Inputs and usable materials are ready for lesson generation."}
+                  ? "At least one curriculum or exemplar material must be usable for grounded lesson generation."
+                  : "Inputs are complete and at least one material is usable for grounded lesson generation."}
           </div>
 
           {generationError && (
@@ -697,7 +697,7 @@ function formatUseStatusLabel(material: MaterialFile): string {
   const reliability = material.analysis?.reliability
 
   if (!reliability) {
-    return "Ready, trust not scored"
+    return "Analysis complete, trust not scored"
   }
 
   if (!reliability.usableForContent && !reliability.usableForStructure) {
@@ -714,9 +714,9 @@ function formatUseStatusLabel(material: MaterialFile): string {
   const usableForContent = reliability.usableForContent
   const usableForStructure = reliability.usableForStructure
 
-  if (usableForContent && usableForStructure) return "Ready for grounded generation"
-  if (usableForContent) return "Ready for content grounding"
-  if (usableForStructure) return "Ready for structure guidance"
+  if (usableForContent && usableForStructure) return "Usable for grounded generation"
+  if (usableForContent) return "Usable for content grounding"
+  if (usableForStructure) return "Usable for structure guidance"
 
   return "Needs attention"
 }
@@ -748,7 +748,7 @@ function buildMaterialStageDetails(material: MaterialFile): MaterialStageDetails
     return {
       upload: "File source is attached to the store.",
       evaluation: "Building curriculum or exemplar lesson signals.",
-      pipeline: "Waiting for ready state.",
+      pipeline: "Waiting for analysis to finish.",
     }
   }
 
@@ -761,7 +761,7 @@ function buildMaterialStageDetails(material: MaterialFile): MaterialStageDetails
     return {
       upload: "File source is attached to the store.",
       evaluation: `Analysis complete (${extractionSummary}).`,
-      pipeline: "Ready for Results.",
+      pipeline: "Analysis complete. Check Use status for grounded-generation support.",
     }
   }
 
@@ -827,7 +827,7 @@ function getStatusExplanation(status: MaterialStatus): string {
   if (status === "uploaded") return "Waiting in intake queue"
   if (status === "extracting") return "Extracting readable text"
   if (status === "analyzing") return "Building lesson signals"
-  if (status === "ready") return "Ready for Results"
+  if (status === "ready") return "Analysis complete"
   return "Processing stopped"
 }
 
