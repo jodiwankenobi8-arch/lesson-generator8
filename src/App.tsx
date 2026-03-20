@@ -9,13 +9,13 @@ const ResultsPage = React.lazy(() => import("./pages/ResultsPage"))
 function StepNav() {
   const location = useLocation()
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
-  const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
+  const hasUsableMaterialsForGeneration = useLessonStore((state) => state.hasUsableMaterialsForGeneration)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
   const counts = useLessonStore((state) => state.getMaterialCounts)()
 
   const resultsBlockedReason = getResultsBlockedReason({
     hasRequiredInputs,
-    hasReadyMaterials,
+    hasUsableMaterialsForGeneration,
     hasProcessingMaterials,
     processingCount: counts.uploaded + counts.extracting + counts.analyzing,
   })
@@ -187,12 +187,12 @@ export default function App() {
 
 function getResultsBlockedReason({
   hasRequiredInputs,
-  hasReadyMaterials,
+  hasUsableMaterialsForGeneration,
   hasProcessingMaterials,
   processingCount,
 }: {
   hasRequiredInputs: boolean
-  hasReadyMaterials: boolean
+  hasUsableMaterialsForGeneration: boolean
   hasProcessingMaterials: boolean
   processingCount: number
 }): string | null {
@@ -204,8 +204,8 @@ function getResultsBlockedReason({
     return `Results stay locked until material processing finishes. Currently processing: ${processingCount}.`
   }
 
-  if (!hasReadyMaterials) {
-    return "Results stay locked until at least one curriculum or exemplar material is ready."
+  if (!hasUsableMaterialsForGeneration) {
+    return "Results stay locked until at least one curriculum or exemplar material is usable for grounded generation."
   }
 
   return null

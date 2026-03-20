@@ -211,6 +211,67 @@ export default function ResultsPage() {
           isRegenerating={isRegenerating}
         />
 
+        <SecondaryEvidenceSection
+          blueprint={blueprint}
+          lessonPackage={lessonPackage}
+          materials={materials}
+          planningIdeas={planningIdeas}
+          lessonTrace={lessonTrace}
+        />
+      </div>
+    </div>
+  )
+}
+
+function PackageSummarySection({
+  blueprint,
+  lessonPackage,
+  selectedLessonMode,
+}: {
+  blueprint: LessonBlueprint
+  lessonPackage: LessonPackage
+  selectedLessonMode: string
+}) {
+  return (
+    <div style={sectionStyle}>
+      <h3 style={sectionHeadingStyle}>Teacher Package Summary</h3>
+      <div style={heroGridStyle}>
+        <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
+        <SummaryCard label="Teacher-Led Small-Group Support" value={lessonPackage.interventions.length.toString()} />
+        <SummaryCard label="Student Centers" value={lessonPackage.centers.length.toString()} />
+      </div>
+
+      <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 8, color: "var(--text-secondary)" }}>
+        <div><strong>Primary Target:</strong> {blueprint.content.target.primary}</div>
+        <div><strong>Secondary Target:</strong> {blueprint.content.target.secondary || "None"}</div>
+        <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
+        <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
+        <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+            Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.
+          </div>
+      </div>
+    </div>
+  )
+}
+
+function SecondaryEvidenceSection({
+  blueprint,
+  lessonPackage,
+  materials,
+  planningIdeas,
+  lessonTrace,
+}: {
+  blueprint: LessonBlueprint
+  lessonPackage: LessonPackage
+  materials: MaterialFile[]
+  planningIdeas: LessonPlanningIdeas
+  lessonTrace: LessonPipelineTrace | null
+}) {
+  return (
+    <details style={sectionStyle}>
+      <summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>
+      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
         <SignalSection
           title="Source Support Signals"
           signals={blueprint.sourceReadiness.signals}
@@ -234,39 +295,7 @@ export default function ResultsPage() {
 
         {lessonTrace && <PipelineTraceSection trace={lessonTrace} />}
       </div>
-    </div>
-  )
-}
-
-function PackageSummarySection({
-  blueprint,
-  lessonPackage,
-  selectedLessonMode,
-}: {
-  blueprint: LessonBlueprint
-  lessonPackage: LessonPackage
-  selectedLessonMode: string
-}) {
-  return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Teacher Package Summary</h3>
-      <div style={heroGridStyle}>
-        <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
-        <SummaryCard label="Teacher-Led Support" value={lessonPackage.interventions.length.toString()} />
-        <SummaryCard label="Student Centers" value={lessonPackage.centers.length.toString()} />
-      </div>
-
-      <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 8, color: "var(--text-secondary)" }}>
-        <div><strong>Primary Target:</strong> {blueprint.content.target.primary}</div>
-        <div><strong>Secondary Target:</strong> {blueprint.content.target.secondary || "None"}</div>
-        <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
-        <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
-        <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
-          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-            Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.
-          </div>
-      </div>
-    </div>
+    </details>
   )
 }
 
@@ -936,9 +965,9 @@ function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage
     <>
       <PreSection title="Lesson Plan" content={lessonPackage.lessonPlan} />
       <SimpleListSection title="Slides" items={lessonPackage.slides} />
-      <SimpleListSection title="Teacher-Led Support" items={lessonPackage.interventions} />
+      <SimpleListSection title="Teacher-Led Small-Group Support" items={lessonPackage.interventions} />
       <SimpleListSection title="Student Centers" items={lessonPackage.centers} />
-      <PreSection title="Center Rotation Plan" content={lessonPackage.rotationPlan} />
+      <PreSection title="Student Centers Rotation Plan" content={lessonPackage.rotationPlan} />
       <ExportArtifactsSection exports={lessonPackage.exports} />
     </>
   )

@@ -184,9 +184,9 @@ describe("Results explainability rendering contracts", () => {
     const packageSummaryHeadingIndex = source.indexOf('Teacher Package Summary')
     const lessonPlanIndex = source.indexOf('PreSection title="Lesson Plan"')
     const slidesIndex = source.indexOf('SimpleListSection title="Slides"')
-    const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Teacher-Led Support"')
+    const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Teacher-Led Small-Group Support"')
     const studentCentersIndex = source.indexOf('SimpleListSection title="Student Centers"')
-    const centerRotationIndex = source.indexOf('PreSection title="Center Rotation Plan"')
+    const centerRotationIndex = source.indexOf('PreSection title="Student Centers Rotation Plan"')
 
     expect(packageSummaryCallIndex).toBeGreaterThanOrEqual(0)
     expect(packageOutputsCallIndex).toBeGreaterThan(packageSummaryCallIndex)
@@ -204,6 +204,9 @@ describe("Results explainability rendering contracts", () => {
     expect(centerRotationIndex).toBeGreaterThan(studentCentersIndex)
 
     expect(source).toContain('Teacher Package Summary')
+    expect(source).toContain('Lesson Evidence and Planning Details')
+    expect(source).toContain('<summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>')
+    expect(source).toContain('<SecondaryEvidenceSection')
     expect(source).toContain('Source Authority and Lesson Grounding')
     expect(source).toContain('Teacher Decisions for Missing Lesson Parts')
     expect(source).toContain('<summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>')
