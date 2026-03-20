@@ -327,9 +327,9 @@ export function TraceabilitySection({
   )
 
   return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Source Authority and Lesson Grounding</h3>
-      <div style={{ display: "grid", gap: 12 }}>
+    <details style={sectionStyle}>
+      <summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>
+      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Authority at a Glance</div>
           <div style={{ display: "grid", gap: 6 }}>
@@ -421,7 +421,7 @@ export function TraceabilitySection({
           )}
         </div>
       </div>
-    </div>
+    </details>
   )
 }
 
@@ -630,9 +630,9 @@ function decisionBadgeStyle(outcome: ReliabilityOutcome): React.CSSProperties {
 
 export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
   return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Pipeline Trace</h3>
-      <div style={{ display: "grid", gap: 12 }}>
+    <details style={sectionStyle}>
+      <summary style={summaryStyle}>Pipeline Trace</summary>
+      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Mode and Material Counts</div>
           <div style={{ display: "grid", gap: 6 }}>
@@ -701,7 +701,7 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
           )}
         </div>
       </div>
-    </div>
+    </details>
   )
 }
 export function CoverageDecisionsSection({
@@ -730,39 +730,51 @@ export function CoverageDecisionsSection({
           <div style={subHeadingStyle}>Major Component Coverage</div>
           {componentCoverage.length > 0 ? (
             <div style={{ display: "grid", gap: 8 }}>
-              {componentCoverage.map((entry) => (
-                <div key={entry.component} style={signalCardStyle(mapCoverageTone(entry.status))}>
-                  <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
-                    {entry.component.replace(/_/g, " ")}: {entry.status}
+              {componentCoverage.map((entry) => {
+                const hasEvidenceDetails =
+                  entry.evidence.length > 0 || Boolean(entry.sourceCoverage) || Boolean(entry.generatedCoverage)
+
+                return (
+                  <div key={entry.component} style={signalCardStyle(mapCoverageTone(entry.status))}>
+                    <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
+                      {entry.component.replace(/_/g, " ")}: {entry.status}
+                    </div>
+
+                    <div style={{ marginTop: 4 }}>{entry.rationale}</div>
+
+                    {hasEvidenceDetails ? (
+                      <details style={{ marginTop: 8 }}>
+                        <summary style={minorSummaryStyle}>Evidence details</summary>
+                        <div style={{ marginTop: 8, display: "grid", gap: 6, fontSize: 13 }}>
+                          {entry.evidence.length > 0 ? (
+                            <div>
+                              <strong>Combined evidence:</strong> {entry.evidence.join(", ")}
+                            </div>
+                          ) : null}
+
+                          {entry.sourceCoverage ? (
+                            <div>
+                              <strong>Source coverage:</strong> {entry.sourceCoverage.status}
+                              {entry.sourceCoverage.evidence.length > 0
+                                ? ` | ${entry.sourceCoverage.evidence.join(", ")}`
+                                : ""}
+                            </div>
+                          ) : null}
+
+                          {entry.generatedCoverage ? (
+                            <div>
+                              <strong>Generated support:</strong> {entry.generatedCoverage.status}
+                              {entry.generatedCoverage.evidence.length > 0
+                                ? ` | ${entry.generatedCoverage.evidence.join(", ")}`
+                                : ""}
+                            </div>
+                          ) : null}
+                        </div>
+                      </details>
+                    ) : null}
                   </div>
-
-                  <div style={{ marginTop: 4 }}>{entry.rationale}</div>
-
-                  {entry.evidence.length > 0 && (
-                    <div style={{ marginTop: 4, fontSize: 13 }}>
-                      <strong>Combined evidence:</strong> {entry.evidence.join(", ")}
-                    </div>
-                  )}
-
-                  {entry.sourceCoverage && (
-                    <div style={{ marginTop: 6, fontSize: 13 }}>
-                      <strong>Source coverage:</strong> {entry.sourceCoverage.status}
-                      {entry.sourceCoverage.evidence.length > 0
-                        ? ` | ${entry.sourceCoverage.evidence.join(", ")}`
-                        : ""}
-                    </div>
-                  )}
-
-                  {entry.generatedCoverage && (
-                    <div style={{ marginTop: 4, fontSize: 13 }}>
-                      <strong>Generated support:</strong> {entry.generatedCoverage.status}
-                      {entry.generatedCoverage.evidence.length > 0
-                        ? ` | ${entry.generatedCoverage.evidence.join(", ")}`
-                        : ""}
-                    </div>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div style={{ color: "var(--text-secondary)" }}>
@@ -782,6 +794,9 @@ export function CoverageDecisionsSection({
                   coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
                 const generatedStatus =
                   coverage?.generatedCoverage?.status ?? "missing"
+                const hasEvidenceDetails =
+                  (coverage?.sourceCoverage?.evidence?.length ?? 0) > 0 ||
+                  (coverage?.generatedCoverage?.evidence?.length ?? 0) > 0
 
                 return (
                   <div
@@ -806,16 +821,23 @@ export function CoverageDecisionsSection({
                       <strong>Generated support:</strong> {generatedStatus}
                     </div>
 
-                    {coverage?.sourceCoverage?.evidence && coverage.sourceCoverage.evidence.length > 0 ? (
-                      <div style={{ marginTop: 4, fontSize: 13 }}>
-                        <strong>Source evidence:</strong> {coverage.sourceCoverage.evidence.join(", ")}
-                      </div>
-                    ) : null}
+                    {hasEvidenceDetails ? (
+                      <details style={{ marginTop: 8 }}>
+                        <summary style={minorSummaryStyle}>Evidence details</summary>
+                        <div style={{ marginTop: 8, display: "grid", gap: 6, fontSize: 13 }}>
+                          {coverage?.sourceCoverage?.evidence && coverage.sourceCoverage.evidence.length > 0 ? (
+                            <div>
+                              <strong>Source evidence:</strong> {coverage.sourceCoverage.evidence.join(", ")}
+                            </div>
+                          ) : null}
 
-                    {coverage?.generatedCoverage?.evidence && coverage.generatedCoverage.evidence.length > 0 ? (
-                      <div style={{ marginTop: 4, fontSize: 13 }}>
-                        <strong>Generated evidence:</strong> {coverage.generatedCoverage.evidence.join(", ")}
-                      </div>
+                          {coverage?.generatedCoverage?.evidence && coverage.generatedCoverage.evidence.length > 0 ? (
+                            <div>
+                              <strong>Generated evidence:</strong> {coverage.generatedCoverage.evidence.join(", ")}
+                            </div>
+                          ) : null}
+                        </div>
+                      </details>
                     ) : null}
 
                     {sourceStatus === "missing" && generatedStatus !== "missing" ? (
@@ -854,11 +876,11 @@ export function CoverageDecisionsSection({
                       This teacher decision is applied to the current package and will remain active until you change it.
                     </div>
 
-                    {isRegenerating && (
+                    {isRegenerating ? (
                       <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
                         Refreshing the lesson package with the latest decision...
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )
               })}
@@ -1347,6 +1369,13 @@ const summaryStyle: React.CSSProperties = {
   color: "var(--orchard-green)",
 }
 
+const minorSummaryStyle: React.CSSProperties = {
+  cursor: "pointer",
+  fontWeight: 700,
+  fontSize: 13,
+  color: "var(--text-primary)",
+}
+
 const sectionHeadingStyle: React.CSSProperties = {
   marginTop: 0,
   marginBottom: "var(--space-md)",
@@ -1358,3 +1387,4 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+

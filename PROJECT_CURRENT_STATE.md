@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Latest pushed HEAD: 669d31c — docs: refresh current truth and step 3 handoff
+- Latest pushed HEAD: 669d31c - docs: refresh current truth and step 3 handoff
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -26,17 +26,15 @@ Anything older or not in that chain should be treated as historical unless expli
 - Documentation checkpoint complete
 - Step 3A complete: Results naming and hierarchy cleanup landed
 - Step 3B complete: Results gating/copy aligned to usable-material trust language
-- Current active seam: Step 3C secondary evidence grouping in Results
+- Step 3C complete: secondary evidence grouping landed in Results
 
 ## Validated state
 - 
+pm run test -- src/pages/ResultsPage.test.tsx = PASS
+- 
 pm run typecheck = PASS
 - 
-pm run test = PASS
-- 
 pm run build = PASS
-- 21 test files passed
-- 104 tests passed
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -54,37 +52,23 @@ pm run build = PASS
 - Engine flow: extraction -> analysis -> blueprint -> planning -> spec -> package -> results
 - useLessonStore is the orchestration seam
 
-## Step 3C scope
-Do Step 3C only.
+## Step 3C outcome
+Completed Results hierarchy changes:
+- PackageSummarySection and PackageOutputsSection remain primary
+- CoverageDecisionsSection remains primary and teacher-actionable
+- deeper coverage evidence now sits behind expandable details
+- TraceabilitySection is now a secondary details surface
+- PipelineTraceSection is now a secondary details surface
+- trust/provenance stayed visible without making Results feel like a debug panel
 
-Goal:
-- keep Results teacher-first
-- move trace / proof / selected-source evidence into clearly secondary surfaces
-- preserve trust and provenance visibility without making Results feel like a debug panel
-- do not reopen engine churn unless Step 3C exposes a real contract mismatch
-
-Working assumptions for Step 3C:
-- PackageSummarySection and PackageOutputsSection stay primary
-- CoverageDecisionsSection stays important because it is teacher-actionable
-- SignalSection trust cues may stay visible if they remain compact
-- TraceabilitySection and PipelineTraceSection are the strongest candidates for clearly secondary / expandable presentation
-- detailed source IDs, pipeline trace, and deeper authority evidence are candidates for more secondary presentation
-- in CoverageDecisionsSection, statuses and rationales likely stay visible, while deeper inline evidence may become secondary
-- regroup trust surfaces; do not remove them
-
-## Known checkpoint fact
-A previous Step 3C patch attempt failed before landing changes.
-- failure: Failed to replace PipelineTraceSection
-- git diff --stat -- src/pages/ResultsPage.tsx src/pages/ResultsPage.test.tsx was empty afterward
-- ResultsPage tests still passed after that failed attempt
-- treat the repo as unchanged by that failed patch attempt
+## Non-blocking warnings
+- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt was missing during the Step 3C audit
+- Vite build still reports large chunk warnings after minification
 
 ## Active execution rule
-Start with a tight read-only audit of the Step 3C Results surface.
-Do not redo broad repo discovery.
-Clearly separate verified findings from inferred risks.
-Keep each implementation step coherent and scoped.
-No patch-stacking.
+Step 3C is closed pending commit.
+Do not reopen this seam unless review finds a real regression.
+Choose the next seam from the current repo state after this checkpoint commit.
 
 ## Local doc policy
 The active local doc set should stay small and obvious:

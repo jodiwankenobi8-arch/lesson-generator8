@@ -206,6 +206,9 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain('Teacher Package Summary')
     expect(source).toContain('Source Authority and Lesson Grounding')
     expect(source).toContain('Teacher Decisions for Missing Lesson Parts')
+    expect(source).toContain('<summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>')
+    expect(source).toContain('<summary style={summaryStyle}>Pipeline Trace</summary>')
+    expect(source).toContain('<summary style={minorSummaryStyle}>Evidence details</summary>')
     expect(source).not.toContain('SimpleListSection title="Interventions"')
     expect(source).not.toContain('PreSection title="Rotation Plan"')
   })
@@ -443,6 +446,7 @@ describe("Results export download contract", () => {
     }
   })
 })
+
 
 
 
