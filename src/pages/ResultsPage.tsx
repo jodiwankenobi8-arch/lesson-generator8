@@ -202,9 +202,7 @@ export default function ResultsPage() {
           selectedLessonMode={selectedLessonMode}
         />
 
-        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />
-
-        {lessonTrace && <PipelineTraceSection trace={lessonTrace} />}
+        <PackageOutputsSection lessonPackage={lessonPackage} />
 
         <CoverageDecisionsSection
           planningIdeas={planningIdeas}
@@ -225,14 +223,16 @@ export default function ResultsPage() {
           warnings={lessonPackage.readiness.warnings}
         />
 
-        <PackageOutputsSection lessonPackage={lessonPackage} />
-
-        <BlueprintDetailsSection blueprint={blueprint} />
+        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />
 
         <PlanningDetailsSection
           slidePlans={planningIdeas.slidePlans}
           lessonPlanSections={planningIdeas.lessonPlanSections}
         />
+
+        <BlueprintDetailsSection blueprint={blueprint} />
+
+        {lessonTrace && <PipelineTraceSection trace={lessonTrace} />}
       </div>
     </div>
   )
@@ -249,11 +249,11 @@ function PackageSummarySection({
 }) {
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Package Summary</h3>
+      <h3 style={sectionHeadingStyle}>Teacher Package Summary</h3>
       <div style={heroGridStyle}>
         <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
-        <SummaryCard label="Centers" value={lessonPackage.centers.length.toString()} />
-        <SummaryCard label="Interventions" value={lessonPackage.interventions.length.toString()} />
+        <SummaryCard label="Teacher-Led Support" value={lessonPackage.interventions.length.toString()} />
+        <SummaryCard label="Student Centers" value={lessonPackage.centers.length.toString()} />
       </div>
 
       <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 8, color: "var(--text-secondary)" }}>
@@ -328,7 +328,7 @@ export function TraceabilitySection({
 
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Why This Lesson Was Generated This Way</h3>
+      <h3 style={sectionHeadingStyle}>Source Authority and Lesson Grounding</h3>
       <div style={{ display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Authority at a Glance</div>
@@ -476,7 +476,7 @@ function AuthorityDecisionList({
                 <strong>{item.name}</strong>
                 <span style={decisionBadgeStyle(item.outcome)}>{formatReliabilityOutcome(item.outcome)}</span>
                 <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>
-                  {formatReliabilityDecision(item.decision)} · score {item.score}
+                  {formatReliabilityDecision(item.decision)} - score {item.score}
                 </span>
               </div>
 
@@ -723,7 +723,7 @@ export function CoverageDecisionsSection({
 
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Coverage and Missing-Area Decisions</h3>
+      <h3 style={sectionHeadingStyle}>Teacher Decisions for Missing Lesson Parts</h3>
 
       <div style={{ display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
@@ -912,11 +912,11 @@ function SignalSection({
 function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
   return (
     <>
-      <SimpleListSection title="Slides" items={lessonPackage.slides} />
       <PreSection title="Lesson Plan" content={lessonPackage.lessonPlan} />
-      <SimpleListSection title="Centers" items={lessonPackage.centers} />
-      <PreSection title="Rotation Plan" content={lessonPackage.rotationPlan} />
-      <SimpleListSection title="Interventions" items={lessonPackage.interventions} />
+      <SimpleListSection title="Slides" items={lessonPackage.slides} />
+      <SimpleListSection title="Teacher-Led Support" items={lessonPackage.interventions} />
+      <SimpleListSection title="Student Centers" items={lessonPackage.centers} />
+      <PreSection title="Center Rotation Plan" content={lessonPackage.rotationPlan} />
       <ExportArtifactsSection exports={lessonPackage.exports} />
     </>
   )

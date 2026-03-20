@@ -1,6 +1,7 @@
 import React from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { renderToStaticMarkup } from "react-dom/server"
+import { readFileSync } from "node:fs"
 
 vi.mock("../engine/exports/exportLessonPlanDocx", () => ({
   exportLessonPlanDocx: vi.fn(),
@@ -169,10 +170,50 @@ describe("Results explainability rendering contracts", () => {
     })
   })
 
+  it("keeps the teacher-facing results package labels and order aligned", () => {
+    const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
+
+    const packageSummaryCallIndex = source.indexOf('<PackageSummarySection')
+    const packageOutputsCallIndex = source.indexOf('<PackageOutputsSection lessonPackage={lessonPackage} />')
+    const coverageDecisionsCallIndex = source.indexOf('<CoverageDecisionsSection')
+    const traceabilityCallIndex = source.indexOf('<TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />')
+    const planningDetailsCallIndex = source.indexOf('<PlanningDetailsSection')
+    const blueprintDetailsCallIndex = source.indexOf('<BlueprintDetailsSection blueprint={blueprint} />')
+    const pipelineTraceCallIndex = source.indexOf('{lessonTrace && <PipelineTraceSection trace={lessonTrace} />}')
+
+    const packageSummaryHeadingIndex = source.indexOf('Teacher Package Summary')
+    const lessonPlanIndex = source.indexOf('PreSection title="Lesson Plan"')
+    const slidesIndex = source.indexOf('SimpleListSection title="Slides"')
+    const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Teacher-Led Support"')
+    const studentCentersIndex = source.indexOf('SimpleListSection title="Student Centers"')
+    const centerRotationIndex = source.indexOf('PreSection title="Center Rotation Plan"')
+
+    expect(packageSummaryCallIndex).toBeGreaterThanOrEqual(0)
+    expect(packageOutputsCallIndex).toBeGreaterThan(packageSummaryCallIndex)
+    expect(coverageDecisionsCallIndex).toBeGreaterThan(packageOutputsCallIndex)
+    expect(traceabilityCallIndex).toBeGreaterThan(coverageDecisionsCallIndex)
+    expect(planningDetailsCallIndex).toBeGreaterThan(traceabilityCallIndex)
+    expect(blueprintDetailsCallIndex).toBeGreaterThan(planningDetailsCallIndex)
+    expect(pipelineTraceCallIndex).toBeGreaterThan(blueprintDetailsCallIndex)
+
+    expect(packageSummaryHeadingIndex).toBeGreaterThanOrEqual(0)
+    expect(lessonPlanIndex).toBeGreaterThanOrEqual(0)
+    expect(slidesIndex).toBeGreaterThan(lessonPlanIndex)
+    expect(teacherLedSupportIndex).toBeGreaterThan(slidesIndex)
+    expect(studentCentersIndex).toBeGreaterThan(teacherLedSupportIndex)
+    expect(centerRotationIndex).toBeGreaterThan(studentCentersIndex)
+
+    expect(source).toContain('Teacher Package Summary')
+    expect(source).toContain('Source Authority and Lesson Grounding')
+    expect(source).toContain('Teacher Decisions for Missing Lesson Parts')
+    expect(source).not.toContain('SimpleListSection title="Interventions"')
+    expect(source).not.toContain('PreSection title="Rotation Plan"')
+  })
+
   it("keeps support-vs-generated gap messaging visible in coverage rendering", () => {
     const coverageMarkup = renderCoverageSection()
 
-    expect(coverageMarkup).toContain("Coverage and Missing-Area Decisions")
+    expect(coverageMarkup).toContain("Teacher Decisions for Missing Lesson Parts")
     expect(coverageMarkup).toContain("Source coverage:")
     expect(coverageMarkup).toContain("Generated support:")
   })
