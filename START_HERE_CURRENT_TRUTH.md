@@ -1,10 +1,10 @@
-﻿# START_HERE_CURRENT_TRUTH.md
+# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Latest validated checkpoint: export fallback narrative normalization landed
-- Current milestone: Step 3 - trust behavior and UX wording alignment
+- Latest validated checkpoint: Step 4A package narrative contract alignment landed
+- Current milestone: Step 4 - package/export contract follow-through
 - Current active seam: next = identify the next smallest live seam from current repo state
 
 ## What is actually landed
@@ -19,6 +19,8 @@
 - MaterialsPage trust-language normalization committed
 - Export fallback narrative normalization committed
 - Printables no longer imply optional practice sections by empty placeholder fallback text alone
+- Step 4A complete: lesson-plan narrative now obeys the same requested-output contract as package arrays / exports
+- Optional centers, small-group, and intervention sections no longer appear in lesson-plan narrative unless requested or source-grounded
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -32,7 +34,7 @@
 - materials trust depends on usable materials, not merely ready materials
 
 ## Latest validation snapshot
-- export fallback narrative seam should already be locally verified before this checkpoint
+- Step 4A package narrative contract seam verified with targeted package test, typecheck, and build
 - use the newest handoff file as the continuation launch point in the next chat
 
 ## Non-blocking warnings

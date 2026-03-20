@@ -180,6 +180,40 @@ describe("buildPackageOutputs", () => {
     ])
   })
 
+  it("omits unrequested optional practice and support sections from the lesson plan narrative", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["assessment"],
+      },
+    })
+
+    expect(result.lessonPlan).toContain("Formative Assessment Ideas")
+    expect(result.lessonPlan).not.toContain("Rotation Focus:")
+    expect(result.lessonPlan).not.toContain("Small Group Ideas")
+    expect(result.lessonPlan).not.toContain("Intervention Ideas")
+    expect(result.lessonPlan).not.toContain("Small Group Support:")
+    expect(result.lessonPlan).not.toContain("Intervention Focus:")
+    expect(result.centers).toEqual([])
+    expect(result.rotationPlan).toBe("")
+    expect(result.interventions).toEqual([])
+    expect(result.exports.map((artifact) => artifact.kind)).toEqual(["slides", "lesson_plan"])
+    expect(result.exports[1].content).not.toContain("Rotation Focus:")
+    expect(result.exports[1].content).not.toContain("Small Group Ideas")
+    expect(result.exports[1].content).not.toContain("Intervention Ideas")
+  })
+
   it("falls back to grounded target-based defaults when planning ideas are absent", () => {
     const result = buildPackageOutputs({
       inputs: {

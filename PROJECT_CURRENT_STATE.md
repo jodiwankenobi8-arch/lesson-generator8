@@ -1,4 +1,4 @@
-﻿# PROJECT_CURRENT_STATE
+# PROJECT_CURRENT_STATE
 
 Last refreshed: 2026-03-20
 
@@ -30,9 +30,10 @@ Anything older or not in that chain should be treated as historical unless expli
 - Request-aware planning/package normalization committed
 - MaterialsPage trust-language normalization committed
 - Export fallback narrative normalization committed
+- Step 4A complete: lesson-plan narrative / export contract alignment landed
 
 ## Validated state
-- export fallback narrative seam should already be locally verified before this docs refresh
+- Step 4A package narrative contract seam verified with targeted package test, typecheck, and build
 - use the newest handoff file as the continuation launch point in the next chat
 
 ## Product truths to preserve
@@ -53,13 +54,13 @@ Anything older or not in that chain should be treated as historical unless expli
 
 ## What the latest seam changed
 - printables/export text no longer relies on empty optional placeholder copy like 'No centers defined.'
-- lesson-plan/export narrative is more consistent with the normalized request-aware contract
-- optional practice lanes are less likely to be implied by fallback wording alone
+- lesson-plan narrative now uses the same requested-output contract as package arrays / exports
+- unrequested centers, small-group, and intervention sections no longer quietly appear in lesson-plan narrative
 
 ## Current risks
-- there may still be one smaller user-facing wording seam left, but it should be chosen from live repo state instead of guessed
+- the next seam should be chosen from live repo state rather than guessed
 - Vite build still reports large chunk warnings after minification
-- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt was missing during earlier Step 3 audit
+- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt is still missing and should be reconciled or removed from authority references
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
 
 ## Active execution rule
@@ -71,7 +72,7 @@ Prefer continuation from the newest handoff file to avoid lag and repeated redis
 1. Start next chat from the newest handoff file
 2. Reconfirm current branch head and full worktree status
 3. Inspect the next smallest live UX/copy seam only
-4. Keep docs small, current, and non-competing
+4. Reconcile the missing design-source reference in docs
 5. Preserve checkpoint discipline
 
 ## Local doc policy

@@ -23,6 +23,17 @@ type DecisionAwareListOptions = {
   defaultItems?: string[]
 }
 
+type LessonPlanOutputOptions = {
+  includeCentersOutput: boolean
+  includeSmallGroupOutput: boolean
+  includeInterventionOutput: boolean
+}
+
+type SupportBlockOutputOptions = {
+  includeSmallGroupOutput: boolean
+  includeInterventionOutput: boolean
+}
+
 export function buildPackageOutputs(args: {
   inputs: LessonInputs
   blueprint: LessonBlueprint
@@ -63,7 +74,12 @@ export function buildPackageOutputs(args: {
     blueprint,
     spec,
     planningIdeas,
-    missingAreaDecisions
+    missingAreaDecisions,
+    {
+      includeCentersOutput,
+      includeSmallGroupOutput,
+      includeInterventionOutput,
+    }
   )
   const centers = includeCentersOutput
     ? buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions)
@@ -130,8 +146,19 @@ function buildLessonPlan(
   blueprint: LessonBlueprint,
   spec: LessonSpec,
   planningIdeas?: LessonPlanningIdeas,
-  missingAreaDecisions: MissingAreaDecisionMap = {}
+  missingAreaDecisions: MissingAreaDecisionMap = {},
+  lessonPlanOutputs: LessonPlanOutputOptions = {
+    includeCentersOutput: true,
+    includeSmallGroupOutput: true,
+    includeInterventionOutput: true,
+  }
 ): string {
+  const {
+    includeCentersOutput,
+    includeSmallGroupOutput,
+    includeInterventionOutput,
+  } = lessonPlanOutputs
+
   const header = [
     `Grade: ${inputs.grade}`,
     `Subject: ${inputs.subject}`,
@@ -180,20 +207,14 @@ function buildLessonPlan(
     )}`,
   ], spec.independentPractice.steps)
 
-  const centersBlock = buildSectionNarrativeBlock(spec.centers.title, [
-    `Rotation Focus: ${joinOrFallback(
-      planningIdeas?.centerIdeas.map((idea) => idea.title).slice(0, 3) ?? [],
-      "teacher table, partner practice, independent practice"
-    )}`,
-    `Small Group Support: ${joinOrFallback(
-      planningIdeas?.smallGroupIdeas.map((idea) => idea.title).slice(0, 2) ?? [],
-      "targeted reteach or extension"
-    )}`,
-    `Intervention Focus: ${joinOrFallback(
-      planningIdeas?.interventionIdeas.map((idea) => idea.title).slice(0, 2) ?? [],
-      "targeted support for the lesson need"
-    )}`,
-  ], spec.centers.steps)
+  const centersBlock = includeCentersOutput
+    ? buildSectionNarrativeBlock(spec.centers.title, [
+        `Rotation Focus: ${joinOrFallback(
+          planningIdeas?.centerIdeas.map((idea) => idea.title).slice(0, 3) ?? [],
+          "student-independent practice, partner practice, independent application"
+        )}`,
+      ], spec.centers.steps)
+    : ""
 
   const closureBlock = buildSectionNarrativeBlock(spec.closure.title, [
     `Review Focus: ${selectClosureResources(blueprint)}`,
@@ -204,7 +225,15 @@ function buildLessonPlan(
   ], spec.closure.steps)
 
   const planningBlock = buildPlanningBlock(planningIdeas)
-  const supportBlock = buildSupportBlock(blueprint, planningIdeas, missingAreaDecisions)
+  const supportBlock = buildSupportBlock(
+    blueprint,
+    planningIdeas,
+    missingAreaDecisions,
+    {
+      includeSmallGroupOutput,
+      includeInterventionOutput,
+    }
+  )
 
   return [
     header,
@@ -413,35 +442,45 @@ function buildPlanningBlock(planningIdeas?: LessonPlanningIdeas): string {
 function buildSupportBlock(
   blueprint: LessonBlueprint,
   planningIdeas?: LessonPlanningIdeas,
-  missingAreaDecisions: MissingAreaDecisionMap = {}
+  missingAreaDecisions: MissingAreaDecisionMap = {},
+  supportOutputs: SupportBlockOutputOptions = {
+    includeSmallGroupOutput: true,
+    includeInterventionOutput: true,
+  }
 ): string {
   if (!planningIdeas) {
     return ""
   }
 
+  const { includeSmallGroupOutput, includeInterventionOutput } = supportOutputs
+
   const formative = planningIdeas.formativeAssessmentIdeas.map(
     (idea) => `- ${idea.title}: ${idea.description}`
   )
 
-  const smallGroup = resolveDecisionAwareList({
-    component: "small_group",
-    plannedItems: planningIdeas.smallGroupIdeas.map(
-      (idea) => `- ${idea.title}: ${idea.description}`
-    ),
-    missingAreaDecisions,
-    addFallbackItems: [`- ${buildAddSmallGroupSupportLine(blueprint)}`],
-  })
+  const smallGroup = includeSmallGroupOutput
+    ? resolveDecisionAwareList({
+        component: "small_group",
+        plannedItems: planningIdeas.smallGroupIdeas.map(
+          (idea) => `- ${idea.title}: ${idea.description}`
+        ),
+        missingAreaDecisions,
+        addFallbackItems: [`- ${buildAddSmallGroupSupportLine(blueprint)}`],
+      })
+    : []
 
-  const interventions = resolveDecisionAwareList({
-    component: "intervention",
-    plannedItems: planningIdeas.interventionIdeas.map(
-      (idea) => `- ${idea.title}: ${idea.description}`
-    ),
-    missingAreaDecisions,
-    addFallbackItems: buildAddFallbackInterventions(blueprint).map(
-      (item) => `- ${item}`
-    ),
-  })
+  const interventions = includeInterventionOutput
+    ? resolveDecisionAwareList({
+        component: "intervention",
+        plannedItems: planningIdeas.interventionIdeas.map(
+          (idea) => `- ${idea.title}: ${idea.description}`
+        ),
+        missingAreaDecisions,
+        addFallbackItems: buildAddFallbackInterventions(blueprint).map(
+          (item) => `- ${item}`
+        ),
+      })
+    : []
 
   const sections: string[] = []
 
