@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Latest local code seam checkpoint: a151036 refactor: normalize request-aware planning and package outputs
+- Latest local code seam checkpoint: 568dba0 refactor: clarify materials trust and readiness language
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -25,15 +25,15 @@ Anything older or not in that chain should be treated as historical unless expli
 - Step 2B complete: request-aware contract reconciled and tests green
 - Documentation checkpoint complete
 - Step 3A complete: Results naming and hierarchy cleanup landed
-- Step 3B complete: Results gating/copy aligned to usable-material trust language
+- Step 3B complete: visible trust-language cleanup across Inputs, Materials, and Results is substantially aligned
 - Step 3C complete: secondary evidence grouping landed in Results
-- Request-aware planning/package normalization committed locally
+- Request-aware planning/package normalization committed
+- MaterialsPage trust-language normalization committed
 
 ## Validated state
 - npm run typecheck = PASS
-- npm run test -- src/engine/package-outputs.test.ts src/engine/package-decisions.test.ts src/engine/request-aware-pipeline.test.ts = PASS
-- npm run build = PASS
 - npm run test = PASS
+- npm run build = PASS
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -52,30 +52,31 @@ Anything older or not in that chain should be treated as historical unless expli
 - useLessonStore is the orchestration seam
 
 ## What the latest seam changed
-- planning now applies request-aware inclusion for optional components
-- package outputs now align with the same request-aware / source-grounded contract
-- printables no longer act as a broad unlock for centers, small group, or intervention
-- pipeline and package threading carry lessonRequest through the seam
-- request-aware tests were updated and the full suite now passes
+- MaterialsPage now separates pipeline readiness wording from grounded-generation trust wording more clearly
+- analyzed-file status language is less likely to over-claim trust just because a file reached ready state
+- generate CTA copy now aligns better with usable-material gating already enforced by the store/workflow seam
+- Inputs and Results remain aligned with usable-material trust language
 
 ## Current risks
-- route and button gating may still carry ready-versus-usable drift
-- user-facing trust language may still lag behind engine truth in some Inputs / Materials / Results surfaces
+- lesson-plan and export wording may still imply optional outputs more broadly than the normalized request-aware contract allows
+- final teacher-facing narrative still needs inspection for optional-output leakage
 - export/classroom-usability hardening is still ahead
 - Vite build still reports large chunk warnings after minification
 - docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt was missing during earlier Step 3 audit
+- SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
 
 ## Active execution rule
 Do not reopen Step 3C unless review finds a real regression.
-Do not reopen the request-aware planning/package seam unless full inspection finds a real mismatch.
-Choose the next seam from current repo state and keep it scoped to user-facing trust alignment.
+Do not reopen the request-aware planning/package seam unless inspection finds a real mismatch.
+Do not reopen the MaterialsPage trust seam unless wording review finds a real regression.
+Choose the next seam from current repo state and keep it scoped to lesson-plan/export wording alignment.
 
 ## Top next steps
-1. Inspect ready-versus-usable gating across Inputs, Materials, Results, and generate actions
-2. Align user-facing trust language to usable materials
-3. Verify lesson-plan/export wording still matches the normalized optional-output contract
-4. Do one end-to-end manual flow check after the trust-alignment seam
-5. Keep docs small, current, and non-competing
+1. Inspect lesson-plan/export wording for optional-output leakage
+2. Align final narrative/output wording to the normalized request-aware contract
+3. Do one end-to-end manual flow check after the wording seam
+4. Keep docs small, current, and non-competing
+5. Leave visual polish and non-blocking warnings for later unless they block trust
 
 ## Local doc policy
 The active local doc set should stay small and obvious:
