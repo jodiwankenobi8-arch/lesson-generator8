@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Latest pushed HEAD: 669d31c - docs: refresh current truth and step 3 handoff
+- Latest local code seam checkpoint: a151036 refactor: normalize request-aware planning and package outputs
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -27,14 +27,13 @@ Anything older or not in that chain should be treated as historical unless expli
 - Step 3A complete: Results naming and hierarchy cleanup landed
 - Step 3B complete: Results gating/copy aligned to usable-material trust language
 - Step 3C complete: secondary evidence grouping landed in Results
+- Request-aware planning/package normalization committed locally
 
 ## Validated state
-- 
-pm run test -- src/pages/ResultsPage.test.tsx = PASS
-- 
-pm run typecheck = PASS
-- 
-pm run build = PASS
+- npm run typecheck = PASS
+- npm run test -- src/engine/package-outputs.test.ts src/engine/package-decisions.test.ts src/engine/request-aware-pipeline.test.ts = PASS
+- npm run build = PASS
+- npm run test = PASS
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -52,23 +51,31 @@ pm run build = PASS
 - Engine flow: extraction -> analysis -> blueprint -> planning -> spec -> package -> results
 - useLessonStore is the orchestration seam
 
-## Step 3C outcome
-Completed Results hierarchy changes:
-- PackageSummarySection and PackageOutputsSection remain primary
-- CoverageDecisionsSection remains primary and teacher-actionable
-- deeper coverage evidence now sits behind expandable details
-- TraceabilitySection is now a secondary details surface
-- PipelineTraceSection is now a secondary details surface
-- trust/provenance stayed visible without making Results feel like a debug panel
+## What the latest seam changed
+- planning now applies request-aware inclusion for optional components
+- package outputs now align with the same request-aware / source-grounded contract
+- printables no longer act as a broad unlock for centers, small group, or intervention
+- pipeline and package threading carry lessonRequest through the seam
+- request-aware tests were updated and the full suite now passes
 
-## Non-blocking warnings
-- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt was missing during the Step 3C audit
+## Current risks
+- route and button gating may still carry ready-versus-usable drift
+- user-facing trust language may still lag behind engine truth in some Inputs / Materials / Results surfaces
+- export/classroom-usability hardening is still ahead
 - Vite build still reports large chunk warnings after minification
+- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt was missing during earlier Step 3 audit
 
 ## Active execution rule
-Step 3C is closed pending commit.
-Do not reopen this seam unless review finds a real regression.
-Choose the next seam from the current repo state after this checkpoint commit.
+Do not reopen Step 3C unless review finds a real regression.
+Do not reopen the request-aware planning/package seam unless full inspection finds a real mismatch.
+Choose the next seam from current repo state and keep it scoped to user-facing trust alignment.
+
+## Top next steps
+1. Inspect ready-versus-usable gating across Inputs, Materials, Results, and generate actions
+2. Align user-facing trust language to usable materials
+3. Verify lesson-plan/export wording still matches the normalized optional-output contract
+4. Do one end-to-end manual flow check after the trust-alignment seam
+5. Keep docs small, current, and non-competing
 
 ## Local doc policy
 The active local doc set should stay small and obvious:

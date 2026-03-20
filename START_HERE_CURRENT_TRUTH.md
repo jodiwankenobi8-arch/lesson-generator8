@@ -1,11 +1,11 @@
 ﻿# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
-- Repo: `jodiwankenobi8-arch/lesson-generator8`
-- Branch: `work/canonical-project-consolidation`
-- Latest validated local checkpoint: `Step 3C local validation complete`
-- Current milestone: **Step 3 - trust behavior and UX wording alignment**
-- Current active seam: **Step 3C complete - secondary evidence grouping in Results**
+- Repo: jodiwankenobi8-arch/lesson-generator8
+- Branch: work/canonical-project-consolidation
+- Latest validated checkpoint: request-aware planning/package normalization committed
+- Current milestone: Step 3 - trust behavior and UX wording alignment
+- Current active seam: next = usable-material trust alignment across Inputs / Materials / Results
 
 ## What is actually landed
 - Step 1 complete: local truth locked
@@ -15,6 +15,8 @@
 - Step 3A complete: Results naming and hierarchy cleanup landed
 - Step 3B complete: Results gating/copy aligned to usable-material trust language
 - Step 3C complete: traceability and pipeline evidence moved into clearly secondary Results surfaces, with coverage evidence tucked behind expandable details
+- Request-aware planning/package normalization committed
+- Optional package outputs no longer unlock from printables alone
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -25,27 +27,27 @@
 - small group / intervention = teacher-led support
 - centers and teacher-led support may coexist during the same lesson block, but they are not the same lane
 - optional lesson parts and outputs should only appear when explicitly requested or strongly source-grounded
-- Materials trust depends on usable materials, not merely ready materials
+- materials trust depends on usable materials, not merely ready materials
 
 ## Latest validation snapshot
-- `npm run test -- src/pages/ResultsPage.test.tsx` = PASS
-- `npm run typecheck` = PASS
-- `npm run build` = PASS
+- npm run typecheck = PASS
+- npm run test -- src/engine/package-outputs.test.ts src/engine/package-decisions.test.ts src/engine/request-aware-pipeline.test.ts = PASS
+- npm run build = PASS
+- npm run test = PASS
 
 ## Non-blocking warnings
 - Vite build still reports large chunk warnings after minification
-- Neither warning blocked Step 3C validation
+- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt was missing during earlier Step 3 audit
 
 ## What to read next
-1. `PROJECT_CURRENT_STATE.md`
-2. newest file in `docs/chat-handoffs/`
-3. then inspect the next active seam files only
+1. PROJECT_CURRENT_STATE.md
+2. newest file in docs/chat-handoffs/
+3. then inspect the next active trust-alignment seam files only
 
 ## Exact next move
-Checkpoint Step 3C cleanly:
-- review the final diff in `src/pages/ResultsPage.tsx` and `src/pages/ResultsPage.test.tsx`
-- commit the Step 3C Results hierarchy change
-- then decide the next narrow seam from the updated repo state rather than guessing ahead
+- inspect route, button, and Results gating/copy for ready-versus-usable drift
+- align user-facing trust language to usable materials
+- do not reopen Step 3C unless review finds a real regression
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the listed files and treat that as higher-trust than older indexed copies.
