@@ -444,6 +444,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
             inputs: current.inputs,
             materials: current.materials,
             selectedLessonMode: current.selectedLessonMode,
+            lessonRequest: current.lessonRequest,
             missingAreaDecisions: current.missingAreaDecisions,
           }
         },

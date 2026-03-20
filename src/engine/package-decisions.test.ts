@@ -133,7 +133,7 @@ describe("buildPackageOutputs decision handling", () => {
     })
 
     expect(result.centers).toEqual([])
-    expect(result.rotationPlan).toContain("No centers defined.")
+    expect(result.rotationPlan).toBe("")
     expect(result.lessonPlan).not.toContain("Small Group Ideas")
     expect(result.lessonPlan).not.toContain("Intervention Ideas")
     expect(result.interventions).toEqual([])

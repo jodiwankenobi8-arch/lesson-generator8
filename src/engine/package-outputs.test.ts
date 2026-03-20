@@ -139,6 +139,10 @@ describe("buildPackageOutputs", () => {
       blueprint,
       spec,
       planningIdeas,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["assessment", "centers", "small_group", "intervention", "printables"],
+      },
     })
 
     expect(result.slides.length).toBeGreaterThan(0)
@@ -188,6 +192,10 @@ describe("buildPackageOutputs", () => {
       },
       blueprint,
       spec,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["centers", "small_group", "intervention", "printables"],
+      },
     })
 
     expect(result.centers).toEqual([

@@ -131,7 +131,11 @@ describe("planning coverage and missing-area prompts", () => {
             toneShell: ["clear instructional tone"],
           },
         },
-      })
+      }),
+      {
+        requestedLessonParts: ["centers", "small_group", "intervention"],
+        requestedOutputs: ["centers", "small_group", "intervention"],
+      }
     )
 
     const coverage = planning.componentCoverage ?? []
@@ -195,7 +199,11 @@ describe("planning coverage and missing-area prompts", () => {
             toneShell: ["clear instructional tone"],
           },
         },
-      })
+      }),
+      {
+        requestedLessonParts: ["centers", "small_group", "intervention"],
+        requestedOutputs: ["centers", "small_group", "intervention"],
+      }
     )
 
     const coverage = planning.componentCoverage ?? []
@@ -206,7 +214,7 @@ describe("planning coverage and missing-area prompts", () => {
     )
 
     expect(planning.lessonPlanSections.length).toBeGreaterThan(0)
-    expect(planning.formativeAssessmentIdeas.length).toBeGreaterThan(0)
+    expect(planning.formativeAssessmentIdeas).toEqual([])
 
     expect(isCoverageStatus(byComponent.get("teach")?.status)).toBe(true)
     expect(isCoverageStatus(byComponent.get("guided_practice")?.status)).toBe(true)
@@ -271,7 +279,11 @@ describe("planning coverage and missing-area prompts", () => {
             toneShell: ["clear instructional tone"],
           },
         },
-      })
+      }),
+      {
+        requestedLessonParts: ["centers", "small_group", "intervention"],
+        requestedOutputs: ["centers", "small_group", "intervention"],
+      }
     )
 
     const coverage = planning.componentCoverage ?? []

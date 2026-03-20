@@ -3,9 +3,11 @@ import {
   LessonBlueprint,
   LessonInputs,
   LessonPlanningIdeas,
+  LessonRequestPreferences,
   LessonSpec,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
+  RequestedOutputKey,
 } from "../types"
 import { assembleSlideDeck } from "../slides/assembleSlideDeck"
 
@@ -26,9 +28,34 @@ export function buildPackageOutputs(args: {
   blueprint: LessonBlueprint
   spec: LessonSpec
   planningIdeas?: LessonPlanningIdeas
+  lessonRequest?: LessonRequestPreferences
   missingAreaDecisions?: MissingAreaDecisionMap
 }) {
-  const { inputs, blueprint, spec, planningIdeas, missingAreaDecisions = {} } = args
+  const {
+    inputs,
+    blueprint,
+    spec,
+    planningIdeas,
+    lessonRequest = {
+      requestedLessonParts: [],
+      requestedOutputs: [],
+    },
+    missingAreaDecisions = {},
+  } = args
+
+  const requestedOutputs = new Set<RequestedOutputKey>(lessonRequest.requestedOutputs)
+  const includeCentersOutput =
+    requestedOutputs.has("centers") ||
+    requestedOutputs.has("printables") ||
+    missingAreaDecisions.centers === "add"
+  const includeSmallGroupOutput =
+    requestedOutputs.has("small_group") ||
+    requestedOutputs.has("printables") ||
+    missingAreaDecisions.small_group === "add"
+  const includeInterventionOutput =
+    requestedOutputs.has("intervention") ||
+    requestedOutputs.has("printables") ||
+    missingAreaDecisions.intervention === "add"
 
   const slides = buildSlides(blueprint, spec)
   const lessonPlan = buildLessonPlan(
@@ -38,19 +65,34 @@ export function buildPackageOutputs(args: {
     planningIdeas,
     missingAreaDecisions
   )
-  const centers = buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions)
-  const rotationPlan = buildRotationPlan(
-    blueprint,
+  const centers = includeCentersOutput
+    ? buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions)
+    : []
+  const rotationPlan =
+    includeCentersOutput || includeSmallGroupOutput
+      ? buildRotationPlan(
+          blueprint,
+          centers,
+          planningIdeas,
+          missingAreaDecisions
+        )
+      : ""
+  const interventions = includeInterventionOutput
+    ? buildInterventions(
+        blueprint,
+        planningIdeas,
+        missingAreaDecisions
+      )
+    : []
+  const exports = buildExports(
+    inputs,
+    slides,
+    lessonPlan,
     centers,
-    planningIdeas,
-    missingAreaDecisions
+    rotationPlan,
+    interventions,
+    requestedOutputs.has("printables")
   )
-  const interventions = buildInterventions(
-    blueprint,
-    planningIdeas,
-    missingAreaDecisions
-  )
-  const exports = buildExports(inputs, slides, lessonPlan, centers, rotationPlan, interventions)
 
   return {
     slides,
@@ -807,23 +849,18 @@ function buildExports(
   lessonPlan: string,
   centers: string[],
   rotationPlan: string,
-  interventions: string[]
+  interventions: string[],
+  includePrintablesExport: boolean
 ): ExportArtifact[] {
   const safeSubject = sanitizeExportSubject(inputs.subject)
-  const slidesContent = buildSlidesExportText(slides)
-  const printablesContent = buildPrintablesExportText(
-    centers,
-    rotationPlan,
-    interventions
-  )
 
-  return [
+  const artifacts: ExportArtifact[] = [
     {
       kind: "slides",
       label: "Slides Export",
       fileName: `${safeSubject}-slides-export.txt`,
       mimeType: "text/plain;charset=utf-8",
-      content: slidesContent,
+      content: buildSlidesExportText(slides),
     },
     {
       kind: "lesson_plan",
@@ -832,14 +869,19 @@ function buildExports(
       mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       content: lessonPlan,
     },
-    {
+  ]
+
+  if (includePrintablesExport) {
+    artifacts.push({
       kind: "printables",
       label: "Printables Export",
       fileName: `${safeSubject}-printables-export.txt`,
       mimeType: "text/plain;charset=utf-8",
-      content: printablesContent,
-    },
-  ]
+      content: buildPrintablesExportText(centers, rotationPlan, interventions),
+    })
+  }
+
+  return artifacts
 }
 
 function buildSlidesExportText(slides: string[]): string {

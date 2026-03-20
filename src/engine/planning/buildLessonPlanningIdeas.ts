@@ -4,16 +4,20 @@ import {
   LessonPlanIdea,
   LessonPlanSectionIdeas,
   LessonPlanningIdeas,
+  LessonRequestPreferences,
   MissingAreaPromptCandidate,
   PlanningComponentCoverage,
   PlanningComponentKey,
   PlanningCoverageDetail,
   PlanningCoverageStatus,
+  RequestedLessonPartKey,
+  RequestedOutputKey,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonPlanningIdeas(
-  blueprint: LessonBlueprint
+  blueprint: LessonBlueprint,
+  lessonRequest: LessonRequestPreferences = createEmptyLessonRequest()
 ): LessonPlanningIdeas {
   const shell = resolveTemplateShell(blueprint, {
     lessonSegmentsCount: 8,
@@ -31,6 +35,13 @@ export function buildLessonPlanningIdeas(
   const standards = blueprint.content.standards
   const lessonSegments = blueprint.structure.lessonSegments
 
+  const requestedLessonParts = new Set<RequestedLessonPartKey>(
+    lessonRequest.requestedLessonParts
+  )
+  const requestedOutputs = new Set<RequestedOutputKey>(
+    lessonRequest.requestedOutputs
+  )
+
   const lessonPlanSections = buildLessonPlanSections(
     blueprint,
     standards,
@@ -39,16 +50,44 @@ export function buildLessonPlanningIdeas(
     practiceIdeas,
     wordLists
   )
-  const formativeAssessmentIdeas = buildFormativeIdeas(
+  const formativeAssessmentIdeas = shouldIncludeOptionalComponent(
+    "formative_assessment",
     blueprint,
-    vocabulary,
-    practiceIdeas,
-    texts,
-    wordLists
+    requestedLessonParts,
+    requestedOutputs
   )
-  const centerIdeas = buildCenterIdeas(blueprint, practiceIdeas, texts, wordLists)
-  const smallGroupIdeas = buildSmallGroupIdeas(blueprint, vocabulary, texts, wordLists)
-  const interventionIdeas = buildInterventionIdeas(blueprint, vocabulary, texts, wordLists)
+    ? buildFormativeIdeas(
+        blueprint,
+        vocabulary,
+        practiceIdeas,
+        texts,
+        wordLists
+      )
+    : []
+  const centerIdeas = shouldIncludeOptionalComponent(
+    "centers",
+    blueprint,
+    requestedLessonParts,
+    requestedOutputs
+  )
+    ? buildCenterIdeas(blueprint, practiceIdeas, texts, wordLists)
+    : []
+  const smallGroupIdeas = shouldIncludeOptionalComponent(
+    "small_group",
+    blueprint,
+    requestedLessonParts,
+    requestedOutputs
+  )
+    ? buildSmallGroupIdeas(blueprint, vocabulary, texts, wordLists)
+    : []
+  const interventionIdeas = shouldIncludeOptionalComponent(
+    "intervention",
+    blueprint,
+    requestedLessonParts,
+    requestedOutputs
+  )
+    ? buildInterventionIdeas(blueprint, vocabulary, texts, wordLists)
+    : []
 
   const componentCoverage = buildComponentCoverage({
     blueprint,
@@ -87,6 +126,86 @@ export function buildLessonPlanningIdeas(
     componentCoverage,
     missingAreaPrompts: buildMissingAreaPromptCandidates(blueprint, componentCoverage),
   }
+}
+
+function createEmptyLessonRequest(): LessonRequestPreferences {
+  return {
+    requestedLessonParts: [],
+    requestedOutputs: [],
+  }
+}
+
+function shouldIncludeOptionalComponent(
+  component: "formative_assessment" | "centers" | "small_group" | "intervention",
+  blueprint: LessonBlueprint,
+  requestedLessonParts: Set<RequestedLessonPartKey>,
+  requestedOutputs: Set<RequestedOutputKey>
+): boolean {
+  if (requestedLessonParts.has(component)) {
+    return true
+  }
+
+  const relatedOutput = resolveRequestedOutputForComponent(component)
+  if (relatedOutput && requestedOutputs.has(relatedOutput)) {
+    return true
+  }
+
+  return resolveOptionalSourceCoverageStatus(component, blueprint) === "covered"
+}
+
+function resolveRequestedOutputForComponent(
+  component: "formative_assessment" | "centers" | "small_group" | "intervention"
+): RequestedOutputKey | null {
+  if (component === "formative_assessment") return "assessment"
+  if (component === "centers") return "centers"
+  if (component === "small_group") return "small_group"
+  if (component === "intervention") return "intervention"
+  return null
+}
+
+function resolveOptionalSourceCoverageStatus(
+  component: "formative_assessment" | "centers" | "small_group" | "intervention",
+  blueprint: LessonBlueprint
+): PlanningCoverageStatus {
+  const coverage = getBlueprintContentCoverage(blueprint)
+
+  if (component === "formative_assessment") {
+    return inferSourceCoverageStatus(
+      component,
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["check", "formative", "assessment", "exit", "monitor"],
+      })
+    )
+  }
+
+  if (component === "centers") {
+    return inferSourceCoverageStatus(
+      component,
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["center", "rotation", "station"],
+      })
+    )
+  }
+
+  if (component === "small_group") {
+    return inferSourceCoverageStatus(
+      component,
+      collectCoverageSignals({
+        coverage,
+        lessonSegmentTerms: ["small group", "teacher table", "guided group", "reteach group"],
+      })
+    )
+  }
+
+  return inferSourceCoverageStatus(
+    component,
+    collectCoverageSignals({
+      coverage,
+      lessonSegmentTerms: ["intervention", "reteach", "support", "reteaching"],
+    })
+  )
 }
 
 function inferSlideAction(shellLabel: string): "reuse" | "adapt" | "create_new" {
@@ -129,7 +248,7 @@ function inferSlidePurpose(
   }
 
   if (lowerSegment.includes("guided")) {
-    return "Support students through scaffolded practice using the exemplar’s structure and prompts."
+    return "Support students through scaffolded practice using the exemplarâ€™s structure and prompts."
   }
 
   if (lowerSegment.includes("independent")) {
@@ -908,31 +1027,7 @@ function buildMissingAreaPromptCandidates(
     rationale: "Closure is instructionally meaningful and worth asking about when it seems absent.",
   })
 
-  addPromptIfSourceCoverageMissing(prompts, byComponent, "formative_assessment", {
-    importance: "high",
-    prompt: "I did not detect a formative check in the source materials. Add a quick understanding check?",
-    rationale: "A formative check helps the lesson stay teacher-friendly and trustworthy.",
-  })
 
-  if (isMixedFull) {
-    addPromptIfSourceCoverageMissing(prompts, byComponent, "centers", {
-      importance: "medium",
-      prompt: "This looks like a two-part lesson with limited center support in the source materials. Add targeted centers or rotation work?",
-      rationale: "Mixed lessons often benefit from clearer downstream practice structures.",
-    })
-  }
-
-  addPromptIfSourceCoverageMissing(prompts, byComponent, "small_group", {
-    importance: "medium",
-    prompt: "I did not detect a clear small-group support plan in the source materials. Add one?",
-    rationale: "Small-group follow-through is often important when the lesson includes differentiation or reteach needs.",
-  })
-
-  addPromptIfSourceCoverageMissing(prompts, byComponent, "intervention", {
-    importance: "medium",
-    prompt: "I did not detect a clear intervention or reteach plan in the source materials. Add one?",
-    rationale: "Intervention planning helps the lesson avoid stopping at whole-group instruction only.",
-  })
 
   return prompts
 }

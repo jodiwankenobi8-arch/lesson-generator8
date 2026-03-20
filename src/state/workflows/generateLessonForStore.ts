@@ -6,6 +6,7 @@ import {
   LessonPackage,
   LessonPipelineTrace,
   LessonPlanningIdeas,
+  LessonRequestPreferences,
   LessonSpec,
   MaterialFile,
   MissingAreaDecisionChoice,
@@ -18,6 +19,7 @@ type GenerateLessonDependencies = {
     inputs: LessonInputs
     materials: MaterialFile[]
     selectedLessonMode: LessonMode
+    lessonRequest: LessonRequestPreferences
     missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
   }
 }
@@ -100,6 +102,7 @@ export async function generateLessonForStore(
     refreshed.inputs,
     readyMaterials,
     refreshed.selectedLessonMode,
+    refreshed.lessonRequest,
     refreshed.missingAreaDecisions
   )
 
