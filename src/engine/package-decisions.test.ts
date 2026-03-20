@@ -134,8 +134,8 @@ describe("buildPackageOutputs decision handling", () => {
 
     expect(result.centers).toEqual([])
     expect(result.rotationPlan).toBe("")
-    expect(result.lessonPlan).not.toContain("Small Group Ideas")
-    expect(result.lessonPlan).not.toContain("Intervention Ideas")
+    expect(result.lessonPlan).not.toContain("Teacher-Led Support")
+    expect(result.lessonPlan).not.toContain("Intervention Support")
     expect(result.interventions).toEqual([])
   })
 
@@ -174,11 +174,11 @@ describe("buildPackageOutputs decision handling", () => {
     expect(result.rotationPlan).toContain(
       "Teacher Table Focus: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
     )
-    expect(result.lessonPlan).toContain("Small Group Ideas")
+    expect(result.lessonPlan).toContain("Teacher-Led Support")
     expect(result.lessonPlan).toContain(
       "Teacher Table Support: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
     )
-    expect(result.lessonPlan).toContain("Intervention Ideas")
+    expect(result.lessonPlan).toContain("Intervention Support")
     expect(result.lessonPlan).toContain(
       "Add a targeted intervention block using cake, game, same, late."
     )

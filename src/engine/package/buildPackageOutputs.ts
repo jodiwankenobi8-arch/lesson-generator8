@@ -489,11 +489,11 @@ function buildSupportBlock(
   }
 
   if (smallGroup.length > 0) {
-    sections.push("Small Group Ideas", ...smallGroup)
+    sections.push("Teacher-Led Support", ...smallGroup)
   }
 
   if (interventions.length > 0) {
-    sections.push("Intervention Ideas", ...interventions)
+    sections.push("Intervention Support", ...interventions)
   }
 
   return sections.length > 0 ? sections.join("\n") : ""
@@ -941,12 +941,12 @@ function buildPrintablesExportText(
   const centerLines =
     centers.length > 0
       ? centers.map((center) => `- ${center}`)
-      : ["- No centers defined."]
+      : ["- No student centers defined."]
 
   const interventionLines =
     interventions.length > 0
       ? interventions.map((item) => `- ${item}`)
-      : ["- No interventions defined."]
+      : ["- No intervention support defined."]
 
   return [
     "Printables Export",
@@ -957,7 +957,7 @@ function buildPrintablesExportText(
     "Rotation Plan",
     rotationPlan || "No rotation plan defined.",
     "",
-    "Interventions",
+    "Intervention Support",
     ...interventionLines,
   ].join("\n")
 }
@@ -1038,3 +1038,6 @@ function joinOrFallback(items: string[], fallback: string): string {
 
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
+
+
+

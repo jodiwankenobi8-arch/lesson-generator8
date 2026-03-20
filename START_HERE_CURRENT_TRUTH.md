@@ -3,9 +3,9 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Latest validated checkpoint: Results output visibility seam validated after conditional Results rendering cleanup
+- Latest validated checkpoint: export support parity seam validated after lesson-plan, printables, DOCX heading, and decision-test alignment
 - Current milestone: Step 4 - package/export contract follow-through
-- Current active seam: next = manual full-flow Inputs -> Materials -> Results -> export check, then inspect only one final Step 4 seam if the live flow exposes one
+- Current active seam: next = manual full-flow Inputs -> Materials -> Results -> export check only; inspect one final Step 4 seam only if the live flow exposes it
 
 ## What is actually landed
 - Step 1 complete: local truth locked
@@ -22,7 +22,8 @@
 - Step 4A complete: lesson-plan narrative now obeys the same requested-output contract as package arrays / exports
 - Optional centers, small-group, and intervention sections no longer appear in lesson-plan narrative unless requested or source-grounded
 - Step 4B complete: teacher-facing Results now hides empty optional output sections unless the current package actually contains them
-- Documentation checkpoint refreshed after the validated Results visibility seam
+- Step 4C complete: export support wording parity aligned across lesson-plan support blocks, printables export headings, DOCX heading recognition, and decision/package tests
+- Documentation checkpoint refreshed after the validated export support parity seam
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -32,21 +33,23 @@
 - centers = student-independent work
 - small group / intervention = teacher-led support
 - centers and teacher-led support may coexist during the same lesson block, but they are not the same lane
+- I/E is the umbrella block where centers and teacher-led support can run at the same time without collapsing those lanes
 - optional lesson parts and outputs should only appear when explicitly requested or strongly source-grounded
 - materials trust depends on usable materials, not merely ready materials
 
 ## Latest validation snapshot
-- Results output visibility seam verified with targeted ResultsPage tests, targeted package-output tests, targeted request-aware pipeline tests, and typecheck
-- Step 4A package narrative contract seam verified with targeted package test, typecheck, and build
-- ready-vs-usable wording cleanup verified with targeted Results/App tests and typecheck
-- intervention support label cleanup verified with targeted Results/App tests and typecheck
-- repo-wide stale-wording sweep found only current intended strings for Results support and ready-file wording
+- npm test passed
+- npm run build passed
+- npm run typecheck passed
+- export support parity seam verified with full suite coverage, including package-output, package-decision, DOCX heading, ResultsPage, and request-aware flows
+- repo-wide stale-wording sweep is now green for the current support-heading contract
 - use the newest handoff file as the continuation launch point in the next chat
 
 ## Non-blocking warnings
 - Vite build still reports large chunk warnings after minification
 - docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored as the official design authority
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
+- Vite still reports esbuild/oxc deprecation warnings during test runs
 
 ## What to read next
 1. PROJECT_CURRENT_STATE.md

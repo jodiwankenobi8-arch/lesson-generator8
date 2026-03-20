@@ -148,9 +148,10 @@ describe("buildPackageOutputs", () => {
     expect(result.slides.length).toBeGreaterThan(0)
     expect(result.lessonPlan).toContain("Blueprint Readiness")
     expect(result.lessonPlan).toContain("Planning Notes")
+    expect(result.lessonPlan).toContain("Centers")
     expect(result.lessonPlan).toContain("Formative Assessment Ideas")
-    expect(result.lessonPlan).toContain("Small Group Ideas")
-    expect(result.lessonPlan).toContain("Intervention Ideas")
+    expect(result.lessonPlan).toContain("Teacher-Led Support")
+    expect(result.lessonPlan).toContain("Intervention Support")
     expect(result.centers).toEqual(["Word Sort: Sort long a and short a words."])
     expect(result.rotationPlan).toContain("Rotation 1: Word Sort: Sort long a and short a words.")
     expect(result.rotationPlan).toContain("Teacher Table Focus: Targeted Blending - Reteach blending with a reduced list.")
@@ -201,8 +202,8 @@ describe("buildPackageOutputs", () => {
 
     expect(result.lessonPlan).toContain("Formative Assessment Ideas")
     expect(result.lessonPlan).not.toContain("Rotation Focus:")
-    expect(result.lessonPlan).not.toContain("Small Group Ideas")
-    expect(result.lessonPlan).not.toContain("Intervention Ideas")
+    expect(result.lessonPlan).not.toContain("Teacher-Led Support")
+    expect(result.lessonPlan).not.toContain("Intervention Support")
     expect(result.lessonPlan).not.toContain("Small Group Support:")
     expect(result.lessonPlan).not.toContain("Intervention Focus:")
     expect(result.centers).toEqual([])
@@ -210,8 +211,8 @@ describe("buildPackageOutputs", () => {
     expect(result.interventions).toEqual([])
     expect(result.exports.map((artifact) => artifact.kind)).toEqual(["slides", "lesson_plan"])
     expect(result.exports[1].content).not.toContain("Rotation Focus:")
-    expect(result.exports[1].content).not.toContain("Small Group Ideas")
-    expect(result.exports[1].content).not.toContain("Intervention Ideas")
+    expect(result.exports[1].content).not.toContain("Teacher-Led Support")
+    expect(result.exports[1].content).not.toContain("Intervention Support")
   })
 
   it("falls back to grounded target-based defaults when planning ideas are absent", () => {
@@ -251,6 +252,39 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Minor warning for visibility.")
   })
 
+
+  it("keeps export support labels aligned without forcing results-page center wording", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["centers", "small_group", "intervention", "printables"],
+      },
+    })
+
+    expect(result.lessonPlan).toContain("Centers")
+    expect(result.lessonPlan).toContain("Teacher-Led Support")
+    expect(result.lessonPlan).toContain("Intervention Support")
+    expect(result.lessonPlan).not.toContain("Small Group Ideas")
+    expect(result.lessonPlan).not.toContain("Intervention Ideas")
+
+    const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
+    expect(printablesExport).toBeDefined()
+    expect(printablesExport!.content).toContain("Centers")
+    expect(printablesExport!.content).toContain("Rotation Plan")
+    expect(printablesExport!.content).toContain("Intervention Support")
+    expect(printablesExport!.content).not.toContain("\nInterventions\n")
+  })
   it("keeps canonical exports free of banned hub language", () => {
     const result = buildPackageOutputs({
       inputs: {
