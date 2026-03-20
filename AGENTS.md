@@ -1,4 +1,4 @@
-﻿# AGENTS.md
+# AGENTS.md
 
 ## Project identity
 Lesson Generator 8 is a teacher-facing lesson generator.
@@ -328,5 +328,9 @@ That summary block must be self-contained, continuation-ready, and sufficient fo
 Everything the assistant wants pasted back from the terminal should appear between the SUMMARY lines so the user does not need to hunt through earlier output.
 Prefer asking for the SUMMARY block only.
 If extra detail is truly required, print that detail inside the SUMMARY block as labeled lines instead of asking the user to gather it from earlier terminal output.
+When requesting follow-up terminal output, ask for only the smallest necessary information needed for the next move.
+Prefer narrow match lists, exact labeled sections, or one compact summary over broad file dumps.
+Do not ask for full files or large output blocks unless they are truly required to avoid guessing.
+If a request turns out broader than needed, narrow it immediately in the next step.
 Include real outcomes, not vague conditional language.
 

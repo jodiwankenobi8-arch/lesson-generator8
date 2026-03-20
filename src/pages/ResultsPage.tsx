@@ -960,15 +960,50 @@ function SignalSection({
   )
 }
 
+function hasVisibleText(content: string): boolean {
+  return content.trim().length > 0
+}
+
+function sanitizeListItems(items: string[]): string[] {
+  return items
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+}
+
 function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
+  const lessonPlan = lessonPackage.lessonPlan.trim()
+  const slides = sanitizeListItems(lessonPackage.slides)
+  const interventions = sanitizeListItems(lessonPackage.interventions)
+  const centers = sanitizeListItems(lessonPackage.centers)
+  const rotationPlan = lessonPackage.rotationPlan.trim()
+  const exports = lessonPackage.exports ?? []
+
+  const hasVisibleOutputs =
+    lessonPlan.length > 0 ||
+    slides.length > 0 ||
+    interventions.length > 0 ||
+    centers.length > 0 ||
+    rotationPlan.length > 0 ||
+    exports.length > 0
+
   return (
     <>
-      <PreSection title="Lesson Plan" content={lessonPackage.lessonPlan} />
-      <SimpleListSection title="Slides" items={lessonPackage.slides} />
-      <SimpleListSection title="Intervention Support" items={lessonPackage.interventions} />
-      <SimpleListSection title="Student Centers" items={lessonPackage.centers} />
-      <PreSection title="Student Centers Rotation Plan" content={lessonPackage.rotationPlan} />
-      <ExportArtifactsSection exports={lessonPackage.exports} />
+      {lessonPlan.length > 0 ? <PreSection title="Lesson Plan" content={lessonPlan} /> : null}
+      {slides.length > 0 ? <SimpleListSection title="Slides" items={slides} /> : null}
+      {interventions.length > 0 ? <SimpleListSection title="Intervention Support" items={interventions} /> : null}
+      {centers.length > 0 ? <SimpleListSection title="Student Centers" items={centers} /> : null}
+      {rotationPlan.length > 0 ? <PreSection title="Student Centers Rotation Plan" content={rotationPlan} /> : null}
+      {exports.length > 0 ? <ExportArtifactsSection exports={exports} /> : null}
+
+      {!hasVisibleOutputs ? (
+        <div style={sectionStyle}>
+          <h3 style={sectionHeadingStyle}>Package Outputs</h3>
+          <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+            No teacher-facing outputs are included in the current package yet. Request the outputs you want or add
+            stronger source support, then regenerate if you need more materials.
+          </p>
+        </div>
+      ) : null}
     </>
   )
 }

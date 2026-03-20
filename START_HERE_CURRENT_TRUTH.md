@@ -3,9 +3,9 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Latest validated checkpoint: repo-wide stale-wording sweep clean after intervention label cleanup
+- Latest validated checkpoint: Results output visibility seam validated after conditional Results rendering cleanup
 - Current milestone: Step 4 - package/export contract follow-through
-- Current active seam: next = identify the next smallest live seam from current repo state
+- Current active seam: next = manual full-flow Inputs -> Materials -> Results -> export check, then inspect only one final Step 4 seam if the live flow exposes one
 
 ## What is actually landed
 - Step 1 complete: local truth locked
@@ -21,6 +21,8 @@
 - Printables no longer imply optional practice sections by empty placeholder fallback text alone
 - Step 4A complete: lesson-plan narrative now obeys the same requested-output contract as package arrays / exports
 - Optional centers, small-group, and intervention sections no longer appear in lesson-plan narrative unless requested or source-grounded
+- Step 4B complete: teacher-facing Results now hides empty optional output sections unless the current package actually contains them
+- Documentation checkpoint refreshed after the validated Results visibility seam
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -34,6 +36,7 @@
 - materials trust depends on usable materials, not merely ready materials
 
 ## Latest validation snapshot
+- Results output visibility seam verified with targeted ResultsPage tests, targeted package-output tests, targeted request-aware pipeline tests, and typecheck
 - Step 4A package narrative contract seam verified with targeted package test, typecheck, and build
 - ready-vs-usable wording cleanup verified with targeted Results/App tests and typecheck
 - intervention support label cleanup verified with targeted Results/App tests and typecheck
@@ -48,12 +51,14 @@
 ## What to read next
 1. PROJECT_CURRENT_STATE.md
 2. newest file in docs/chat-handoffs/
-3. then inspect the next smallest live seam only
+3. then run the smallest manual full-flow Step 4 check only
 
 ## Exact next move
 - start the next chat from the newest handoff file below
-- do not reopen closed seams unless live inspection finds a real regression
-- choose the next seam from current repo state with inspect-first discipline
+- confirm pushed HEAD and clean worktree
+- run one manual full-flow Inputs -> Materials -> Results -> export check
+- only inspect one final Step 4 seam if the live flow exposes one
+- do not reopen closed seams without proof
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the listed files and treat that as higher-trust than older indexed copies.
