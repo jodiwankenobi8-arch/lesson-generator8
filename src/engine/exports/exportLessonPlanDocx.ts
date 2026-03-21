@@ -10,6 +10,8 @@ const SECTION_HEADINGS = new Set([
   "Planning Notes",
   "Formative Assessment Ideas",
   "Teacher-Led Support",
+  "Student Centers",
+  "Student Centers Rotation Plan",
   "Intervention Support",
   "Small Group Ideas",
   "Intervention Ideas",

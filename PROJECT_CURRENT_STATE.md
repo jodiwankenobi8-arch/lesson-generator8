@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Latest local code seam checkpoint: export support parity alignment landed and validated broadly; docs checkpoint ready
+- Latest local code seam checkpoint: local DOCX Student Centers heading parity seam validated; docs checkpoint needed before manual Step 4 flow
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -33,13 +33,15 @@ Anything older or not in that chain should be treated as historical unless expli
 - Step 4A complete: lesson-plan narrative / export contract alignment landed
 - Step 4B complete: Results output visibility contract alignment landed
 - Step 4C complete: export support wording parity alignment landed
+- Local follow-through: DOCX heading recognition now also covers Student Centers and Student Centers Rotation Plan with targeted test coverage
 - AGENTS concise follow-up request rule update landed
 
 ## Validated state
 - npm test passed
 - npm run build passed
 - npm run typecheck passed
-- export support wording parity verified with package-output, package-decision, DOCX heading, ResultsPage, and request-aware test coverage
+- committed export support wording parity verified with package-output, package-decision, DOCX heading, ResultsPage, and request-aware test coverage
+- local DOCX Student Centers heading parity verified with targeted exportLessonPlanDocx vitest coverage and npm run typecheck
 - repo-wide stale-wording sweep found only current intended support/output wording for the active Step 4 seam
 - use the newest handoff file as the continuation launch point in the next chat
 
@@ -63,12 +65,13 @@ Anything older or not in that chain should be treated as historical unless expli
 ## What the latest seam changed
 - lesson-plan support sections now use current teacher-facing headings instead of legacy small-group/intervention idea labels
 - printables export now uses current intervention support wording and clearer empty-state wording
-- DOCX export heading recognition now includes the current teacher-facing support headings
+- DOCX export heading recognition now includes the current teacher-facing support headings, including Student Centers and Student Centers Rotation Plan
 - package-output and package-decision tests now assert the current support-heading contract
 - AGENTS still prefers the smallest necessary terminal output in follow-up requests
 
 ## Current risks
 - Step 4 still needs one manual full-flow check across Inputs -> Materials -> Results -> export
+- local DOCX Student Centers parity seam is validated but not yet committed / pushed
 - Vite build still reports large chunk warnings after minification
 - docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored and should now be used as the design authority reference
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes

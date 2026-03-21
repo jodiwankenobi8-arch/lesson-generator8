@@ -3,7 +3,7 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Latest validated checkpoint: export support parity seam validated after lesson-plan, printables, DOCX heading, and decision-test alignment
+- Latest validated checkpoint: local DOCX Student Centers heading parity seam validated after targeted export test coverage and typecheck
 - Current milestone: Step 4 - package/export contract follow-through
 - Current active seam: next = manual full-flow Inputs -> Materials -> Results -> export check only; inspect one final Step 4 seam only if the live flow exposes it
 
@@ -41,7 +41,7 @@
 - npm test passed
 - npm run build passed
 - npm run typecheck passed
-- export support parity seam verified with full suite coverage, including package-output, package-decision, DOCX heading, ResultsPage, and request-aware flows
+- local DOCX Student Centers heading parity seam verified with targeted export test coverage and typecheck
 - repo-wide stale-wording sweep is now green for the current support-heading contract
 - use the newest handoff file as the continuation launch point in the next chat
 
@@ -58,7 +58,7 @@
 
 ## Exact next move
 - start the next chat from the newest handoff file below
-- confirm pushed HEAD and clean worktree
+- confirm local branch / worktree and note that the DOCX parity seam is still uncommitted
 - run one manual full-flow Inputs -> Materials -> Results -> export check
 - only inspect one final Step 4 seam if the live flow exposes one
 - do not reopen closed seams without proof
