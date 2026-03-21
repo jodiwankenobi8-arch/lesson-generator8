@@ -3,9 +3,9 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Latest validated checkpoint: local DOCX Student Centers heading parity seam validated after targeted export test coverage and typecheck
+- - Latest validated checkpoint: DOCX Student Centers parity seam pushed at 94d924e; export contract tests remain green
 - Current milestone: Step 4 - package/export contract follow-through
-- Current active seam: next = manual full-flow Inputs -> Materials -> Results -> export check only; inspect one final Step 4 seam only if the live flow exposes it
+- Current active seam: next = add one automated Step 4 Results/export flow test so manual-only verification is no longer the sole remaining guardrail
 
 ## What is actually landed
 - Step 1 complete: local truth locked
@@ -54,14 +54,16 @@
 ## What to read next
 1. PROJECT_CURRENT_STATE.md
 2. newest file in docs/chat-handoffs/
-3. then run the smallest manual full-flow Step 4 check only
+3. then inspect the smallest automated Step 4 Results/export test seam before any remaining manual check
 
 ## Exact next move
 - start the next chat from the newest handoff file below
 - confirm local branch / worktree and note that the DOCX parity seam is still uncommitted
-- run one manual full-flow Inputs -> Materials -> Results -> export check
+- add one automated Results/export flow test that covers the current Step 4 parity contract
 - only inspect one final Step 4 seam if the live flow exposes one
 - do not reopen closed seams without proof
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the listed files and treat that as higher-trust than older indexed copies.
+- Latest validated checkpoint: DOCX Student Centers parity seam pushed at 94d924e; next seam is one automated Step 4 Results/export flow test
+

@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Latest local code seam checkpoint: local DOCX Student Centers heading parity seam validated; docs checkpoint needed before manual Step 4 flow
+- - Latest local code seam checkpoint: DOCX Student Centers parity seam pushed at 94d924e; next seam is automated Step 4 flow coverage
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -70,7 +70,8 @@ Anything older or not in that chain should be treated as historical unless expli
 - AGENTS still prefers the smallest necessary terminal output in follow-up requests
 
 ## Current risks
-- Step 4 still needs one manual full-flow check across Inputs -> Materials -> Results -> export
+- Step 4 still needs one full-flow verification across Inputs -> Materials -> Results -> export
+- next best seam: add one automated Results/export flow test so only the smallest true browser gap remains manual
 - local DOCX Student Centers parity seam is validated but not yet committed / pushed
 - Vite build still reports large chunk warnings after minification
 - docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored and should now be used as the design authority reference
@@ -85,8 +86,8 @@ Prefer continuation from the newest handoff file to avoid lag and repeated redis
 ## Top next steps
 1. Start the next chat from the newest handoff file
 2. Confirm pushed HEAD and clean worktree
-3. Run one manual full-flow Inputs -> Materials -> Results -> export check
-4. Only fix one final Step 4 wording/export parity seam if the live flow reveals one
+3. Add one automated Results/export flow test for the current Step 4 contract
+4. Only keep a manual Step 4 check for the gap that the automated test still cannot cover
 5. Preserve checkpoint discipline and avoid reopening closed seams
 
 ## Local doc policy
@@ -98,3 +99,5 @@ The active local doc set should stay small and obvious:
 - current relevant docs/chat-handoffs/*
 
 Older docs that are no longer referenced and no longer authoritative should be removed from the local working set and preserved through Git history rather than kept as apparently-live guidance.
+
+
