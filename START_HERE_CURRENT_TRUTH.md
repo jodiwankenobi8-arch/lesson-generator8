@@ -3,9 +3,9 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current checkpoint in working repo: last meaningful code checkpoint committed at de29da1
+- Current checkpoint in working repo: last meaningful code checkpoint committed at cffc666
 - Current milestone: Step 5 orchard lesson-flow surface system complete for the active teacher flow
-- Current active seam: Step 6A source-intake wording cleanup complete; doc sync now follows de29da1
+- Current active seam: Results terminology cleanup
 
 ## What is actually landed
 - Step 1 complete: local truth locked
@@ -58,7 +58,7 @@
 
 ## Exact next move
 - start the next chat from the newest handoff file below
-- confirm HEAD de29da1 as the last meaningful code checkpoint, then choose the next single implementation seam from live repo state only; do not assume dashboard work exists
+- confirm HEAD cffc666 as the last meaningful code checkpoint, then Confirm whether any remaining visible copy drift exists, then stop reopening closed seams unless live regression evidence appears
 - do not assume dashboard route work exists in this repo
 - treat dashboard/mockup ideas as donor material only
 - choose the next single seam from live repo files and current product priorities

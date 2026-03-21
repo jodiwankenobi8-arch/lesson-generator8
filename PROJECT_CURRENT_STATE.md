@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current checkpoint in working repo: last meaningful code checkpoint committed at de29da1
+- Current checkpoint in working repo: last meaningful code checkpoint committed at cffc666
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
