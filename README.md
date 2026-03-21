@@ -4,7 +4,11 @@ Teacher-facing lesson generation studio with a 3-step flow:
 
 **Inputs -> Materials -> Results**
 
-The app takes teacher lesson inputs plus uploaded curriculum and exemplar materials, analyzes them, builds a blueprint, and generates a classroom-ready lesson package.
+The app takes teacher lesson inputs plus **multiple uploaded curriculum materials and multiple uploaded exemplar materials**, analyzes them, builds a blueprint, and generates a classroom-ready lesson package.
+
+Curriculum uploads can include several source types together when that helps build stronger content grounding, such as lesson slides, worksheets, screenshots, teacher text companion pages, and other curriculum artifacts.
+
+Exemplar uploads can also include several source types together when that helps shape presentation and structure, such as slide decks, lesson plans, centers examples, and other model materials.
 
 ## Current product direction
 
@@ -24,11 +28,12 @@ Current focus:
 
 - **Curriculum = content authority**
 - **Exemplar = presentation / structure authority**
+- Teachers may upload **multiple materials in each lane**, not just one curriculum file and one exemplar file
 - Detect what uploaded materials already cover
 - Avoid duplicating strong source coverage
 - Ask before adding meaningful missing areas unless the teacher explicitly requests them
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
-- Optional outputs should appear only when requested or strongly source-grounded
+- Optional lesson parts and outputs should appear only when requested or strongly source-grounded
 - Centers = student-independent work
 - Small group / intervention = teacher-led support
 - Centers and teacher-led support may coexist during the same lesson block, but they are not the same lane
@@ -42,19 +47,28 @@ The repo already includes:
 - planning / spec / package layers
 - results rendering with teacher-readable trust, traceability, and pipeline evidence surfaces
 - typed export artifact contracts
+- request-aware planning / package behavior
+- Results visibility alignment for optional teacher-facing outputs
+- export support wording parity across lesson-plan, printables, DOCX headings, and related tests
+- automated generated-artifact Results/export flow coverage through `useLessonStore` plus `downloadExportArtifact`
+
+Current validated checkpoint:
+- **generated-artifact Results/export flow seam pushed at `1fab6c2`**
+- `npm test` passed
+- `npm run build` passed
+- `npm run typecheck` passed
 
 Current active seam:
-- **Step 3C: secondary evidence grouping in Results**
-- keep Results teacher-first
-- keep PackageSummarySection, PackageOutputsSection, and CoverageDecisionsSection primary
-- move deeper trace / proof / selected-source evidence into clearly secondary surfaces
-- preserve trust and provenance without making Results feel like a debug panel
+- **docs/status alignment after pushed checkpoint `1fab6c2`**
+- keep README and continuation docs aligned with current repo truth
+- treat any remaining export follow-up as **optional browser/UI-only work**
+- do not reopen prior closed seams without proof
 
 ## Active documentation chain
 
 For current continuation, use this order:
-1. START_HERE_CURRENT_TRUTH.md
-2. AGENTS.md
+1. AGENTS.md
+2. START_HERE_CURRENT_TRUTH.md
 3. PROJECT_CURRENT_STATE.md
 4. docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
 5. the latest relevant file in docs/chat-handoffs/
@@ -118,3 +132,4 @@ npm run build
 - Use the repo files in the current working tree as code truth
 - Use the active documentation chain above for continuation
 - If notes conflict with live code/tests, trust the live repo first
+- Keep the worktree free of unrelated staging before the next seam
