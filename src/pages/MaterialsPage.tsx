@@ -338,7 +338,7 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
             ? "Lesson generation stays blocked until all uploaded materials finish processing."
             : hasUsableMaterialsForGeneration
               ? "At least one material is usable for grounded lesson generation."
-              : "Add or replace files until at least one curriculum or exemplar material is usable for grounded lesson generation."}
+              : "Add or replace source uploads until at least one curriculum or exemplar material is usable for grounded lesson generation."}
         </div>
 
         <div style={{ marginTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -628,11 +628,11 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
   }
 
   if (!hasCurriculumSupport) {
-    guidance.push("Add at least one usable curriculum file so lesson content is grounded in actual standards, texts, word lists, and tasks.")
+    guidance.push("Add at least one usable curriculum source so lesson content is grounded in actual standards, texts, word lists, and tasks.")
   }
 
   if (!hasExemplarSupport) {
-    guidance.push("Add at least one usable exemplar file so pacing, slide flow, prompts, and structure are grounded in a real model.")
+    guidance.push("Add at least one usable exemplar source so pacing, slide flow, prompts, and structure are grounded in a real model.")
   }
 
   const message =
