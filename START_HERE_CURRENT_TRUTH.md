@@ -3,9 +3,9 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- - Latest validated checkpoint: DOCX Student Centers parity seam pushed at 94d924e; export contract tests remain green
+- Latest pushed checkpoint: generated-artifact Results/export flow seam pushed at 1fab6c2
 - Current milestone: Step 4 - package/export contract follow-through
-- Current active seam: docs/status refresh after the generated-artifact Step 4 Results/export flow test passed locally; any remaining gap should be treated as a true browser-only Results/export check
+- Current active seam: docs/status alignment after pushed checkpoint 1fab6c2; any remaining export gap should be treated as an optional true browser/UI-only follow-up
 
 ## What is actually landed
 - Step 1 complete: local truth locked
@@ -24,7 +24,7 @@
 - Step 4B complete: teacher-facing Results now hides empty optional output sections unless the current package actually contains them
 - Step 4C complete: export support wording parity aligned across lesson-plan support blocks, printables export headings, DOCX heading recognition, and decision/package tests
 - Documentation checkpoint refreshed after the validated export support parity seam
-- Step 4D complete locally: generated-artifact Results/export flow test now covers the lesson-plan DOCX export path through useLessonStore and downloadExportArtifact without changing product code
+- Step 4D complete and pushed: generated-artifact Results/export flow test now covers the lesson-plan DOCX export path through useLessonStore and downloadExportArtifact without changing product code
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -43,7 +43,7 @@
 - npm run build passed
 - npm run typecheck passed
 - local DOCX Student Centers heading parity seam verified with targeted export test coverage and typecheck
-- local generated-artifact Step 4 Results/export seam verified with targeted ResultsPage vitest and typecheck
+- generated-artifact Step 4 Results/export seam verified with targeted ResultsPage vitest and typecheck, then pushed at 1fab6c2
 - repo-wide stale-wording sweep is now green for the current support-heading contract
 - use the newest handoff file as the continuation launch point in the next chat
 
@@ -56,16 +56,16 @@
 ## What to read next
 1. PROJECT_CURRENT_STATE.md
 2. newest file in docs/chat-handoffs/
-3. then inspect the smallest automated Step 4 Results/export test seam before any remaining manual check
+3. then inspect README/status alignment and treat any remaining export follow-up as optional browser/UI-only work
 
 ## Exact next move
 - start the next chat from the newest handoff file below
-- confirm local branch / worktree and note that the DOCX parity seam is still uncommitted
-- refresh status docs to record the passing generated-artifact Results/export seam before deciding whether any true browser-only gap still needs coverage
+- confirm pushed HEAD at 1fab6c2 and keep the worktree free of unrelated staging
+- keep README and continuation docs aligned with the pushed generated-artifact Results/export seam
 - only inspect one final Step 4 seam if the live flow exposes one
 - do not reopen closed seams without proof
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the listed files and treat that as higher-trust than older indexed copies.
-- Latest validated checkpoint: DOCX Student Centers parity seam pushed at 94d924e; generated-artifact Step 4 Results/export flow test now also passes locally and is awaiting checkpoint/commit discipline
+- Latest validated checkpoint: generated-artifact Results/export flow seam pushed at 1fab6c2; browser/UI export remains optional follow-up only if a live gap matters
 

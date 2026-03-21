@@ -1,4 +1,4 @@
-﻿# lesson-generator8
+# lesson-generator8
 
 Teacher-facing lesson generation studio with a 3-step flow:
 

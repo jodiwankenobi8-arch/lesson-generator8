@@ -1,6 +1,6 @@
 # PROJECT_CURRENT_STATE
 
-Last refreshed: 2026-03-20
+Last refreshed: 2026-03-21
 
 ## Purpose
 This file is the current project status board for active work.
@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- - Latest local code seam checkpoint: DOCX Student Centers parity seam pushed at 94d924e; next seam is automated Step 4 flow coverage
+- Latest pushed code seam checkpoint: generated-artifact Results/export flow seam pushed at 1fab6c2
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -35,6 +35,7 @@ Anything older or not in that chain should be treated as historical unless expli
 - Step 4C complete: export support wording parity alignment landed
 - Local follow-through: DOCX heading recognition now also covers Student Centers and Student Centers Rotation Plan with targeted test coverage
 - AGENTS concise follow-up request rule update landed
+- Step 4D complete and pushed: generated-artifact Results/export flow now has committed automated guardrail coverage through useLessonStore plus downloadExportArtifact
 
 ## Validated state
 - npm test passed
@@ -72,7 +73,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Current risks
 - Step 4 generated-artifact export flow is now covered locally by automated test coverage through useLessonStore plus downloadExportArtifact
 - remaining Step 4 risk, if any, should now be treated as the smallest true browser/UI gap rather than a missing repo-level export-flow guardrail
-- local generated-artifact Results/export seam is validated but not yet checkpointed / committed; preserve working-tree hygiene before any push
+- pushed generated-artifact Results/export seam is in place; preserve working-tree hygiene so unrelated local artifacts do not get mixed into the next seam
 - Vite build still reports large chunk warnings after minification
 - docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored and should now be used as the design authority reference
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
@@ -86,8 +87,8 @@ Prefer continuation from the newest handoff file to avoid lag and repeated redis
 ## Top next steps
 1. Start the next chat from the newest handoff file
 2. Confirm pushed HEAD and clean worktree
-3. Refresh START_HERE_CURRENT_TRUTH.md and PROJECT_CURRENT_STATE.md to record the passing local generated-artifact Results/export seam
-4. Only pursue a manual or UI-harness Step 4 follow-up if a true browser-only Results/export gap still matters after the docs refresh
+3. Keep README and continuation docs aligned with pushed checkpoint 1fab6c2
+4. Only pursue a manual or UI-harness Step 4 follow-up if a true browser/UI export gap still matters in the live app
 5. Preserve checkpoint discipline and avoid reopening closed seams
 
 ## Local doc policy
