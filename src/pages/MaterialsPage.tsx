@@ -221,10 +221,13 @@ export default function MaterialsPage() {
       </h2>
       <div style={pageIntroStyle}>
         <p style={introStyle}>
-          Add curriculum sources and exemplar sources to the workbench. Files stay visible while they move through upload, extraction, analysis, and ready states.
+          Add curriculum files and exemplar files to the workbench. Uploaded files stay visible while they move through upload, extraction, analysis, and ready states.
         </p>
         <p style={introStyle}>
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
+        </p>
+        <p style={introStyle}>
+          Current intake is upload-file based. Add source files here, then generate only from usable curriculum and exemplar files.
         </p>
       </div>
 
@@ -258,7 +261,7 @@ Content authority for standards, word lists, texts, examples, and practice activ
             style={buttonStyle}
             onClick={() => curriculumInputRef.current?.click()}
           >
-            Add Curriculum Sources
+            Add Curriculum Files
           </button>
         </div>
 
@@ -275,7 +278,7 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
             style={buttonStyle}
             onClick={() => exemplarInputRef.current?.click()}
           >
-            Add Exemplar Sources
+            Add Exemplar Files
           </button>
         </div>
       </div>
