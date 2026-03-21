@@ -1,4 +1,4 @@
-﻿# START_HERE_CURRENT_TRUTH.md
+# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
