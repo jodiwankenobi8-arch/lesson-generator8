@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Latest pushed code seam checkpoint: generated-artifact Results/export flow seam pushed at 1fab6c2
+- Current checkpoint in working repo: orchard lesson-flow surface system committed at 6e144f5
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -25,26 +25,26 @@ Anything older or not in that chain should be treated as historical unless expli
 - Step 2B complete: request-aware contract reconciled and tests green
 - Documentation checkpoint complete
 - Step 3A complete: Results naming and hierarchy cleanup landed
-- Step 3B complete: visible trust-language cleanup across Inputs, Materials, and Results is substantially aligned
+- Step 3B complete: visible trust-language cleanup across Inputs, Materials, and Results substantially aligned
 - Step 3C complete: secondary evidence grouping landed in Results
-- Request-aware planning/package normalization committed
-- MaterialsPage trust-language normalization committed
-- Export fallback narrative normalization committed
 - Step 4A complete: lesson-plan narrative / export contract alignment landed
 - Step 4B complete: Results output visibility contract alignment landed
 - Step 4C complete: export support wording parity alignment landed
-- Local follow-through: DOCX heading recognition now also covers Student Centers and Student Centers Rotation Plan with targeted test coverage
-- AGENTS concise follow-up request rule update landed
-- Step 4D complete and pushed: generated-artifact Results/export flow now has committed automated guardrail coverage through useLessonStore plus downloadExportArtifact
+- Step 4D complete: generated-artifact Results/export flow has committed automated guardrail coverage through useLessonStore plus downloadExportArtifact
+- Step 5A complete: orchard surface foundation landed
+- Step 5B complete: Inputs and Materials translated onto the shared orchard surface system
+- Step 5C complete: Results translated onto orchard-native surfaces while keeping teacher package first and evidence secondary
+- src/pages/orchardUi.ts now exists as the shared orchard UI seam
+- src/styles/theme.css now holds the orchard token / surface layer for the active lesson flow
+- src/App.tsx now uses the shared orchard shell
+- the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- npm test passed
-- npm run build passed
-- npm run typecheck passed
-- committed export support wording parity verified with package-output, package-decision, DOCX heading, ResultsPage, and request-aware test coverage
-- local DOCX Student Centers heading parity verified with targeted exportLessonPlanDocx vitest coverage and npm run typecheck
-- repo-wide stale-wording sweep found only current intended support/output wording for the active Step 4 seam
-- use the newest handoff file as the continuation launch point in the next chat
+- current orchard lesson-flow seam at 6e144f5 was verified with npm run typecheck before commit
+- worktree was clean immediately after the orchard lesson-flow seam commit
+- earlier export seam checkpoint at 1fab6c2 had explicitly confirmed npm test, npm run build, and npm run typecheck passing
+- local audit confirmed there is no src/app/routes/dashboard.tsx in the current repo and no dashboard route match under src
+- local doc audit confirmed START_HERE_CURRENT_TRUTH.md and PROJECT_CURRENT_STATE.md had drifted behind the current continuation point and needed refresh
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -61,23 +61,24 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Flow truths
 - Product flow: Inputs -> Materials -> Results
 - Engine flow: extraction -> analysis -> blueprint -> planning -> spec -> package -> results
-- useLessonStore is the orchestration seam
+- useLessonStore remains the orchestration seam
 
 ## What the latest seam changed
-- lesson-plan support sections now use current teacher-facing headings instead of legacy small-group/intervention idea labels
-- printables export now uses current intervention support wording and clearer empty-state wording
-- DOCX export heading recognition now includes the current teacher-facing support headings, including Student Centers and Student Centers Rotation Plan
-- package-output and package-decision tests now assert the current support-heading contract
-- AGENTS still prefers the smallest necessary terminal output in follow-up requests
+- created src/pages/orchardUi.ts as the shared orchard helper layer
+- expanded src/styles/theme.css from starter tokens into the real orchard token / surface system
+- moved src/App.tsx onto the shared orchard shell
+- translated Inputs into the orchard planning-notebook surface language
+- translated Materials into orchard-native source-workbench language, including multi-source wording and removal of blue/purple accent remnants
+- translated Results into an orchard planning-binder surface while keeping teacher package first and evidence secondary
+- preserved existing flow and compile safety through the orchard lesson-flow pass
 
 ## Current risks
-- Step 4 generated-artifact export flow is now covered locally by automated test coverage through useLessonStore plus downloadExportArtifact
-- remaining Step 4 risk, if any, should now be treated as the smallest true browser/UI gap rather than a missing repo-level export-flow guardrail
-- pushed generated-artifact Results/export seam is in place; preserve working-tree hygiene so unrelated local artifacts do not get mixed into the next seam
+- confirm remote push status for 6e144f5 before treating it as the latest pushed checkpoint
+- README.md may still lag the active continuation docs and should not be used as the continuation authority
 - Vite build still reports large chunk warnings after minification
-- docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored and should now be used as the design authority reference
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
-- the only remaining Step 4 risk should now come from the live flow, not from a known code-side wording mismatch
+- dashboard/mockup specs from earlier chats should be treated as donor guidance only; they are not current repo truth and must not override live file inspection
+- the next seam is not automatically dashboard work, because no dashboard route/file currently exists under src in this working repo
 
 ## Active execution rule
 Do not reopen prior closed seams unless live inspection finds a real regression.
@@ -86,10 +87,11 @@ Prefer continuation from the newest handoff file to avoid lag and repeated redis
 
 ## Top next steps
 1. Start the next chat from the newest handoff file
-2. Confirm pushed HEAD and clean worktree
-3. Keep README and continuation docs aligned with pushed checkpoint 1fab6c2
-4. Only pursue a manual or UI-harness Step 4 follow-up if a true browser/UI export gap still matters in the live app
-5. Preserve checkpoint discipline and avoid reopening closed seams
+2. Confirm HEAD 6e144f5 and clean worktree
+3. Treat the orchard lesson-flow seam as complete unless a live regression appears
+4. Do not assume dashboard work exists; inspect the actual repo target first
+5. Choose the next smallest real seam from live repo state and current hardening priorities
+6. Keep continuation docs authoritative and small
 
 ## Local doc policy
 The active local doc set should stay small and obvious:
@@ -100,5 +102,3 @@ The active local doc set should stay small and obvious:
 - current relevant docs/chat-handoffs/*
 
 Older docs that are no longer referenced and no longer authoritative should be removed from the local working set and preserved through Git history rather than kept as apparently-live guidance.
-
-
