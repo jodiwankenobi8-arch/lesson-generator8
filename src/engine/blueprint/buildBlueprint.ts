@@ -53,6 +53,9 @@ export function buildBlueprint(
     curriculumAnalyses,
     inputs: {
       standard: inputs.standard,
+      grade: inputs.grade,
+      subject: inputs.subject,
+      skill: inputs.skill,
       topic: inputs.topic,
     },
     target,

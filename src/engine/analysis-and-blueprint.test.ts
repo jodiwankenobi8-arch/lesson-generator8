@@ -398,4 +398,76 @@ describe("buildBlueprint source readiness", () => {
     expect(blueprint.sourceReadiness.exemplarSupport).toBe("strong")
     expect(blueprint.sourceReadiness.overall).toBe("balanced")
   })
-})
+})
+
+describe("buildBlueprint standards hint ranking", () => {
+  it("teacher-entered lesson info helps rank curriculum-derived standards when standard is blank", () => {
+    const inputs = {
+      ...makeInputs(),
+      standard: "",
+      skill: "Long A phonics",
+      topic: "Long a words in connected text",
+    }
+
+    const blueprint = buildBlueprint(
+      inputs,
+      [
+        {
+          id: "curriculum-comprehension",
+          role: "curriculum",
+          analysis: {
+            curriculum: {
+              standards: ["RL.1.2"],
+              vocabulary: ["retell", "story events"],
+              wordLists: [],
+              texts: ["Story events passage"],
+              practiceTasks: ["Discuss character actions with a partner."],
+              instructionalTargets: ["Retell story events and answer comprehension questions."],
+              examples: [],
+              coverage: {
+                standards: ["RL.1.2"],
+                instructionalTargets: ["Retell story events and answer comprehension questions."],
+                foundationalSkills: [],
+                sightWords: [],
+                vocabulary: ["retell", "story events"],
+                wordLists: [],
+                texts: ["Story events passage"],
+                practiceTasks: ["Discuss character actions with a partner."],
+                lessonSegments: [],
+              },
+            },
+          },
+        } as any,
+        {
+          id: "curriculum-phonics",
+          role: "curriculum",
+          analysis: {
+            curriculum: {
+              standards: ["RF.1.3"],
+              vocabulary: ["long a", "silent e"],
+              wordLists: ["long a words"],
+              texts: ["Long a words in connected text"],
+              practiceTasks: ["Read long a words in connected text."],
+              instructionalTargets: ["Decode long a words with silent e."],
+              examples: [],
+              coverage: {
+                standards: ["RF.1.3"],
+                instructionalTargets: ["Decode long a words with silent e."],
+                foundationalSkills: ["silent e"],
+                sightWords: [],
+                vocabulary: ["long a", "silent e"],
+                wordLists: ["long a words"],
+                texts: ["Long a words in connected text"],
+                practiceTasks: ["Read long a words in connected text."],
+                lessonSegments: [],
+              },
+            },
+          },
+        } as any,
+      ],
+      "single"
+    )
+
+    expect(blueprint.content.standards).toEqual(["RF.1.3", "RL.1.2"])
+  })
+})

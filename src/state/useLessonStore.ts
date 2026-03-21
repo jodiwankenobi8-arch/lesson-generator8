@@ -465,7 +465,6 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return (
       isFilled(inputs.grade) &&
       isFilled(inputs.subject) &&
-      isFilled(inputs.standard) &&
       isFilled(inputs.skill) &&
       isFilled(inputs.topic) &&
       isFilled(inputs.duration)

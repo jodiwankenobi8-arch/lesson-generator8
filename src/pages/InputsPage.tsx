@@ -59,38 +59,38 @@ const requestedLessonPartOptions: RequestOption<RequestedLessonPartKey>[] = [
 const requestedOutputOptions: RequestOption<RequestedOutputKey>[] = [
   {
     key: "slides",
-    title: "Slides",
-    description: "Presentation slides or screen-ready lesson visuals.",
+    title: "Lesson slides",
+    description: "Core teaching slides for whole-group instruction or display.",
   },
   {
     key: "lesson_plan",
-    title: "Lesson plan",
-    description: "A teacher-facing lesson plan version of the work.",
+    title: "Teacher lesson plan doc",
+    description: "Core teacher-facing written lesson plan document.",
+  },
+  {
+    key: "printables",
+    title: "Printables pack",
+    description: "A broader printable packet when you want more than one printable artifact.",
   },
   {
     key: "assessment",
-    title: "Assessment",
-    description: "A requested assessment or exit-check style deliverable.",
+    title: "Assessment printable",
+    description: "A printable assessment or exit-check artifact.",
   },
   {
     key: "centers",
-    title: "Centers materials",
-    description: "Requested center materials only when you actually want them.",
+    title: "Centers printables",
+    description: "Student-facing center printables or materials, separate from selecting Centers as a lesson part.",
   },
   {
     key: "small_group",
     title: "Small-group support",
-    description: "Requested small-group materials or follow-up supports.",
+    description: "Teacher-led small-group materials or follow-up supports.",
   },
   {
     key: "intervention",
     title: "Intervention support",
-    description: "Requested reteach or intervention-oriented supports.",
-  },
-  {
-    key: "printables",
-    title: "Printables",
-    description: "Printable handouts, student-facing pages, or takeaways.",
+    description: "Teacher-led reteach or intervention supports.",
   },
 ]
 
@@ -307,6 +307,9 @@ export default function InputsPage() {
               placeholder="RF.K.3"
               style={inputStyle}
             />
+<div style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 6 }}>
+  Optional. Enter a standard if you know it. Otherwise the app will use standards detected from ready curriculum materials when available.
+</div>
           </div>
 
           <div>
@@ -497,18 +500,16 @@ export default function InputsPage() {
         <div style={{ marginTop: "var(--space-xl)" }}>
           <div style={modeCardStyle}>
             <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
-              Requested outputs
+              Requested deliverables
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-              Select only the deliverables you actually want. These requests are
-              captured here now so later planning and export seams can honor
-              them cleanly instead of assuming extras by default.
+              Choose the core artifacts first, then add specific support materials only when you want them. Lesson parts above shape the lesson; deliverables here control which files or printables get generated.
             </div>
 
             <div style={{ ...noticeStyle, marginTop: 12 }}>
               {lessonRequest.requestedOutputs.length > 0
-                ? `${lessonRequest.requestedOutputs.length} requested output(s) selected. Unselected extras should stay optional rather than assumed.`
-                : "No optional outputs requested yet. Extra deliverables should stay off unless you ask for them."}
+                ? `${lessonRequest.requestedOutputs.length} requested deliverable(s) selected. Core artifacts come first; support artifacts stay optional unless you ask for them.`
+                : "No optional deliverables requested yet. Start with core artifacts, then add specific support materials only when needed."}
             </div>
 
             <div style={requestGridStyle}>
@@ -527,8 +528,7 @@ export default function InputsPage() {
 
         <div style={{ marginTop: "var(--space-lg)" }}>
           <div style={noticeStyle}>
-            Required before Results can generate: grade, subject, standard,
-            skill focus, lesson topic, and duration.
+            Required before Results can generate: grade, subject, skill focus, lesson topic, and duration. Standard is optional here; if left blank, the app will use standards detected from ready curriculum materials when available.
           </div>
         </div>
 

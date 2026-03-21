@@ -115,7 +115,7 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Results are blocked until all required lesson inputs are completed."
-        details="Complete grade, subject, standard, skill focus, lesson topic, and duration before generating results."
+        details="Complete grade, subject, skill focus, lesson topic, and duration before generating results. Standard is optional here; if left blank, the app will use standards detected from ready curriculum materials when available."
         linkTo="/inputs"
         linkLabel="Go to Inputs"
       />

@@ -10,13 +10,16 @@ export function resolveBlueprintContent(args: {
   curriculumAnalyses: CurriculumAnalysis[]
   inputs: {
     standard: string
+    grade: string
+    subject: string
+    skill: string
     topic: string
   }
   target: LessonBlueprint["content"]["target"]
 }): Omit<LessonBlueprint["content"], "target"> {
   const { curriculumMaterials, curriculumAnalyses, inputs, target } = args
 
-  const standards = resolveStandards(curriculumAnalyses, inputs.standard)
+  const standards = resolveStandards(curriculumAnalyses, inputs)
   const vocabulary = resolveVocabulary(curriculumMaterials, curriculumAnalyses, target.primary)
   const wordLists = resolveWordLists(curriculumMaterials, curriculumAnalyses, target.primary)
   const texts = resolveTexts(curriculumMaterials, curriculumAnalyses, inputs.topic)
@@ -94,11 +97,19 @@ function resolveBlueprintContentCoverage(
   }
 }
 
+type StandardResolutionInputs = {
+  standard: string
+  grade: string
+  subject: string
+  skill: string
+  topic: string
+}
+
 function resolveStandards(
   curriculumAnalyses: CurriculumAnalysis[],
-  inputStandard: string
+  inputs: StandardResolutionInputs
 ): string[] {
-  const explicitStandard = inputStandard.trim()
+  const explicitStandard = inputs.standard.trim()
   if (explicitStandard.length > 0) {
     return [explicitStandard]
   }
@@ -110,12 +121,136 @@ function resolveStandards(
     })
   ).filter((value) => !isWeakFallbackValue(value))
 
-  if (analyzedStandards.length > 0) {
+  if (analyzedStandards.length === 0) {
+    return ["teacher-selected standard"]
+  }
+
+  const hintTerms = buildStandardHintTerms(inputs)
+  if (hintTerms.length === 0) {
     return analyzedStandards.slice(0, 6)
   }
 
-  return ["teacher-selected standard"]
+  const standardScores = new Map<string, number>()
+  analyzedStandards.forEach((standard) => standardScores.set(standard, 0))
+
+  curriculumAnalyses.forEach((analysis) => {
+    const coverage = getCoverage(analysis)
+    const analysisStandards = cleanUnique([...coverage.standards, ...analysis.standards]).filter(
+      (value) => !isWeakFallbackValue(value)
+    )
+
+    if (analysisStandards.length === 0) {
+      return
+    }
+
+    const evidence = cleanUnique([
+      ...coverage.instructionalTargets,
+      ...analysis.instructionalTargets,
+      ...coverage.foundationalSkills,
+      ...coverage.sightWords,
+      ...coverage.vocabulary,
+      ...analysis.vocabulary,
+      ...coverage.wordLists,
+      ...analysis.wordLists,
+      ...coverage.texts,
+      ...analysis.texts,
+      ...coverage.practiceTasks,
+      ...analysis.practiceTasks,
+      ...coverage.lessonSegments,
+    ])
+      .join(" ")
+      .toLowerCase()
+
+    const score = scoreStandardHintAlignment(evidence, hintTerms)
+    if (score <= 0) {
+      return
+    }
+
+    analysisStandards.forEach((standard) => {
+      standardScores.set(standard, (standardScores.get(standard) ?? 0) + score)
+    })
+  })
+
+  return analyzedStandards
+    .slice()
+    .sort((left, right) => (standardScores.get(right) ?? 0) - (standardScores.get(left) ?? 0))
+    .slice(0, 6)
 }
+
+function buildStandardHintTerms(inputs: StandardResolutionInputs): string[] {
+  const phrases = [
+    inputs.grade,
+    inputs.subject,
+    inputs.skill,
+    inputs.topic,
+    ...buildHintWindows(inputs.skill),
+    ...buildHintWindows(inputs.topic),
+  ]
+
+  return cleanUnique(
+    phrases
+      .map((value) => value.trim().toLowerCase())
+      .map((value) => value.replace(/[^a-z0-9\s]/g, " "))
+      .map((value) => value.replace(/\s+/g, " ").trim())
+      .filter((value) => value.length >= 2)
+      .filter((value) => !STANDARD_HINT_STOPWORDS.has(value))
+  )
+}
+
+function buildHintWindows(value: string): string[] {
+  const terms = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((term) => term.length >= 2)
+    .filter((term) => !STANDARD_HINT_STOPWORDS.has(term))
+
+  const windows: string[] = []
+  for (let index = 0; index < terms.length; index += 1) {
+    windows.push(terms[index])
+    if (index < terms.length - 1) {
+      windows.push(`${terms[index]} ${terms[index + 1]}`)
+    }
+  }
+
+  return windows
+}
+
+function scoreStandardHintAlignment(evidence: string, hintTerms: string[]): number {
+  return hintTerms.reduce((score, term) => {
+    if (!evidence.includes(term)) {
+      return score
+    }
+
+    return score + (term.includes(" ") ? 3 : 1)
+  }, 0)
+}
+
+const STANDARD_HINT_STOPWORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "with",
+  "from",
+  "into",
+  "your",
+  "lesson",
+  "lessons",
+  "topic",
+  "focus",
+  "grade",
+  "subject",
+  "student",
+  "students",
+  "teacher",
+  "ready",
+  "materials",
+  "material",
+  "text",
+  "texts",
+  "words",
+])
 
 function resolveVocabulary(
   curriculumMaterials: MaterialFile[],
