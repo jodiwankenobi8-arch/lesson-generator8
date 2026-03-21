@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current checkpoint in working repo: orchard lesson-flow surface system committed at 6e144f5
+- Current checkpoint in working repo: last meaningful code checkpoint committed at de29da1
 
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -40,11 +40,12 @@ Anything older or not in that chain should be treated as historical unless expli
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- current orchard lesson-flow seam at 6e144f5 was verified with npm run typecheck before commit
+- last explicitly documented seam validation remains orchard lesson-flow at 6e144f5, where npm run typecheck passed before commit
 - worktree was clean immediately after the orchard lesson-flow seam commit
 - earlier export seam checkpoint at 1fab6c2 had explicitly confirmed npm test, npm run build, and npm run typecheck passing
 - local audit confirmed there is no src/app/routes/dashboard.tsx in the current repo and no dashboard route match under src
 - local doc audit confirmed START_HERE_CURRENT_TRUTH.md and PROJECT_CURRENT_STATE.md had drifted behind the current continuation point and needed refresh
+- live local inspect on cf70aa5 confirmed MaterialsPage already has multi-file lane support, usable-material generation gating, and no dashboard route/file under src
 
 ## Product truths to preserve
 - curriculum = content authority
