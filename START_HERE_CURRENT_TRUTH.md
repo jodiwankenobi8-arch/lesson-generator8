@@ -5,7 +5,7 @@
 - Branch: work/canonical-project-consolidation
 - - Latest validated checkpoint: DOCX Student Centers parity seam pushed at 94d924e; export contract tests remain green
 - Current milestone: Step 4 - package/export contract follow-through
-- Current active seam: next = add one automated Step 4 Results/export flow test so manual-only verification is no longer the sole remaining guardrail
+- Current active seam: docs/status refresh after the generated-artifact Step 4 Results/export flow test passed locally; any remaining gap should be treated as a true browser-only Results/export check
 
 ## What is actually landed
 - Step 1 complete: local truth locked
@@ -24,6 +24,7 @@
 - Step 4B complete: teacher-facing Results now hides empty optional output sections unless the current package actually contains them
 - Step 4C complete: export support wording parity aligned across lesson-plan support blocks, printables export headings, DOCX heading recognition, and decision/package tests
 - Documentation checkpoint refreshed after the validated export support parity seam
+- Step 4D complete locally: generated-artifact Results/export flow test now covers the lesson-plan DOCX export path through useLessonStore and downloadExportArtifact without changing product code
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -42,6 +43,7 @@
 - npm run build passed
 - npm run typecheck passed
 - local DOCX Student Centers heading parity seam verified with targeted export test coverage and typecheck
+- local generated-artifact Step 4 Results/export seam verified with targeted ResultsPage vitest and typecheck
 - repo-wide stale-wording sweep is now green for the current support-heading contract
 - use the newest handoff file as the continuation launch point in the next chat
 
@@ -59,11 +61,11 @@
 ## Exact next move
 - start the next chat from the newest handoff file below
 - confirm local branch / worktree and note that the DOCX parity seam is still uncommitted
-- add one automated Results/export flow test that covers the current Step 4 parity contract
+- refresh status docs to record the passing generated-artifact Results/export seam before deciding whether any true browser-only gap still needs coverage
 - only inspect one final Step 4 seam if the live flow exposes one
 - do not reopen closed seams without proof
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the listed files and treat that as higher-trust than older indexed copies.
-- Latest validated checkpoint: DOCX Student Centers parity seam pushed at 94d924e; next seam is one automated Step 4 Results/export flow test
+- Latest validated checkpoint: DOCX Student Centers parity seam pushed at 94d924e; generated-artifact Step 4 Results/export flow test now also passes locally and is awaiting checkpoint/commit discipline
 

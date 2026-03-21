@@ -15,6 +15,10 @@ It should feel teacher-first, trustworthy, source-grounded, and finishable.
 ## Instruction priority
 If the user gives a direct request in the current chat that conflicts with a default preference here, follow the user's current request.
 
+## Citation preference
+Default response preference for this repo:
+- do not include citations unless the user specifically asks for them
+- if a higher-priority system, tool, or policy instruction requires citations, follow that higher-priority requirement
 ## Current product phase
 This project is in hardening / finishing mode.
 

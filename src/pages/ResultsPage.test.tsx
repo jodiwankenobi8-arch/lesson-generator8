@@ -379,6 +379,45 @@ afterEach(() => {
 })
 
 describe("Results export download contract", () => {
+  it("uses the generated lesson-plan export artifact and downloads the generated DOCX artifact", async () => {
+    await seedAndGenerate()
+
+    const state = useLessonStore.getState()
+    const artifact = state.lessonPackage?.exports?.find(
+      (item) => item.kind === "lesson_plan" && item.mimeType === DOCX_MIME && Boolean(item.content?.trim())
+    )
+
+    expect(artifact).toBeTruthy()
+
+    expect(state.blueprint).toBeTruthy()
+    expect(state.planningIdeas).toBeTruthy()
+    expect(state.lessonPackage).toBeTruthy()
+    expect(artifact!.kind).toBe("lesson_plan")
+    expect(artifact!.mimeType).toBe(DOCX_MIME)
+    expect(artifact!.label).toContain("Lesson Plan")
+    expect(artifact!.fileName.endsWith(".docx")).toBe(true)
+
+    const docxBlob = new Blob(["docx-binary"], { type: DOCX_MIME })
+    vi.mocked(exportLessonPlanDocx).mockResolvedValue(docxBlob)
+
+    const harness = installDownloadDomHarness("blob:generated-docx")
+
+    try {
+      await downloadExportArtifact(artifact!)
+
+      expect(exportLessonPlanDocx).toHaveBeenCalledWith(artifact!.label, artifact!.content)
+      expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
+      expect(harness.createdLinks).toHaveLength(1)
+
+      const appendedLink = harness.createdLinks[0]!
+      expect(appendedLink.download).toBe(artifact!.fileName)
+      expect(appendedLink.href).toBe("blob:generated-docx")
+      expect(appendedLink.click).toHaveBeenCalledTimes(1)
+    } finally {
+      harness.restore()
+    }
+  })
+
   it("routes DOCX lesson-plan artifacts through exportLessonPlanDocx before download", async () => {
     const docxBlob = new Blob(["docx-binary"], { type: DOCX_MIME })
     vi.mocked(exportLessonPlanDocx).mockResolvedValue(docxBlob)

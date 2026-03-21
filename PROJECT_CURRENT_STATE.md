@@ -70,9 +70,9 @@ Anything older or not in that chain should be treated as historical unless expli
 - AGENTS still prefers the smallest necessary terminal output in follow-up requests
 
 ## Current risks
-- Step 4 still needs one full-flow verification across Inputs -> Materials -> Results -> export
-- next best seam: add one automated Results/export flow test so only the smallest true browser gap remains manual
-- local DOCX Student Centers parity seam is validated but not yet committed / pushed
+- Step 4 generated-artifact export flow is now covered locally by automated test coverage through useLessonStore plus downloadExportArtifact
+- remaining Step 4 risk, if any, should now be treated as the smallest true browser/UI gap rather than a missing repo-level export-flow guardrail
+- local generated-artifact Results/export seam is validated but not yet checkpointed / committed; preserve working-tree hygiene before any push
 - Vite build still reports large chunk warnings after minification
 - docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt has been restored and should now be used as the design authority reference
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
@@ -86,8 +86,8 @@ Prefer continuation from the newest handoff file to avoid lag and repeated redis
 ## Top next steps
 1. Start the next chat from the newest handoff file
 2. Confirm pushed HEAD and clean worktree
-3. Add one automated Results/export flow test for the current Step 4 contract
-4. Only keep a manual Step 4 check for the gap that the automated test still cannot cover
+3. Refresh START_HERE_CURRENT_TRUTH.md and PROJECT_CURRENT_STATE.md to record the passing local generated-artifact Results/export seam
+4. Only pursue a manual or UI-harness Step 4 follow-up if a true browser-only Results/export gap still matters after the docs refresh
 5. Preserve checkpoint discipline and avoid reopening closed seams
 
 ## Local doc policy
