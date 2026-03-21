@@ -14,6 +14,17 @@ import {
   SlidePlan,
   MaterialFile,
 } from "../engine/types"
+import {
+  orchardButtonStyle,
+  orchardCardStyle,
+  orchardNoticeStyle,
+  orchardPageIntroBlockStyle,
+  orchardSectionLabelStyle,
+  orchardSectionTitleStyle,
+  orchardSoftCardStyle,
+  orchardStatusBadgeStyle,
+  orchardTagStyle,
+} from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 
 const pageStyle: React.CSSProperties = {
@@ -22,18 +33,12 @@ const pageStyle: React.CSSProperties = {
 }
 
 const sectionStyle: React.CSSProperties = {
-  border: "1px solid var(--border-soft)",
-  borderRadius: "var(--radius-lg)",
-  padding: "var(--space-lg)",
-  background: "var(--paper-white)",
-  boxShadow: "var(--shadow-card)",
+  ...orchardCardStyle,
 }
 
 const subCardStyle: React.CSSProperties = {
-  border: "1px solid var(--border-soft)",
-  borderRadius: "var(--radius-md)",
+  ...orchardSoftCardStyle,
   padding: 12,
-  background: "#fcfbf8",
 }
 
 const heroGridStyle: React.CSSProperties = {
@@ -43,16 +48,24 @@ const heroGridStyle: React.CSSProperties = {
 }
 
 const sectionLabelStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "6px 12px",
-  marginBottom: "var(--space-sm)",
-  borderRadius: "999px",
-  background: "rgba(230, 201, 143, 0.28)",
-  color: "var(--warm-brown)",
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: 0.3,
-  textTransform: "uppercase",
+  ...orchardSectionLabelStyle,
+}
+
+const sectionTitleStyle: React.CSSProperties = {
+  ...orchardSectionTitleStyle,
+  fontSize: 32,
+}
+
+const pageIntroStyle: React.CSSProperties = {
+  ...orchardPageIntroBlockStyle,
+  marginBottom: "var(--space-lg)",
+}
+
+const introStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  fontSize: 16,
+  lineHeight: 1.6,
+  margin: 0,
 }
 
 export default function ResultsPage() {
@@ -148,21 +161,18 @@ export default function ResultsPage() {
 
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Generated Lesson</div>
-      <h2
-        style={{
-          marginTop: 0,
-          marginBottom: "var(--space-sm)",
-          fontFamily: "var(--font-heading)",
-          fontSize: 32,
-          color: "var(--orchard-green)",
-        }}
-      >
+      <div style={sectionLabelStyle}>Planning Binder</div>
+      <h2 style={sectionTitleStyle}>
         Results
       </h2>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-lg)", fontSize: 16 }}>
-        Teacher-facing lesson package first. Review the generated package, confirm the standards and source support, open the planning details when needed, and export only the pieces you want to use.
-      </p>
+      <div style={pageIntroStyle}>
+        <p style={introStyle}>
+          Teacher-facing lesson package first. Review the generated package, confirm standards and source support, and export only the pieces you want to use.
+        </p>
+        <p style={introStyle}>
+          Evidence and planning details stay available below as secondary review surfaces when you need to inspect grounding more closely.
+        </p>
+      </div>
 
       {(isRegenerating || regenerationError || lastDecisionSummary) && (
         <div style={{ marginBottom: "var(--space-md)", display: "grid", gap: 8 }}>
@@ -177,10 +187,7 @@ export default function ResultsPage() {
           {!isRegenerating && !regenerationError && lastDecisionSummary && (
             <div
               style={{
-                ...noticeStyle,
-                background: "#ecfdf5",
-                borderColor: "#a7f3d0",
-                color: "#065f46",
+                ...noticeStyle, background: "rgba(110, 139, 107, 0.14)", border: "1px solid var(--border-moss)", color: "var(--deep-orchard)",
               }}
             >
               {lastDecisionSummary} The package has been refreshed with your latest teacher decision.
@@ -234,7 +241,7 @@ function PackageSummarySection({
 }) {
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Teacher Package Summary</h3>
+      <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
       <div style={heroGridStyle}>
         <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
         <SummaryCard label="Intervention Support" value={lessonPackage.interventions.length.toString()} />
@@ -637,24 +644,10 @@ function formatReliabilityDecision(decision: string): string {
 }
 
 function decisionBadgeStyle(outcome: ReliabilityOutcome): React.CSSProperties {
-  const palette =
-    outcome === "used"
-      ? { background: "#ecfdf5", color: "#065f46" }
-      : outcome === "down-ranked"
-        ? { background: "#fff7ed", color: "#9a3412" }
-        : outcome === "blocked"
-          ? { background: "#fef2f2", color: "#991b1b" }
-          : { background: "#f3f4f6", color: "#374151" }
-
-  return {
-    display: "inline-block",
-    padding: "4px 8px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: palette.background,
-    color: palette.color,
-  }
+  if (outcome === "used") return orchardStatusBadgeStyle("moss")
+  if (outcome === "down-ranked") return orchardStatusBadgeStyle("honey")
+  if (outcome === "blocked") return orchardStatusBadgeStyle("cranberry")
+  return orchardStatusBadgeStyle("neutral")
 }
 
 export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
@@ -1157,12 +1150,8 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
                 type="button"
                 onClick={() => void downloadExportArtifact(artifact)}
                 style={{
+                  ...orchardButtonStyle({ subtle: true }),
                   marginTop: 10,
-                  border: "1px solid var(--border)",
-                  background: "var(--surface)",
-                  color: "var(--text-primary)",
-                  padding: "8px 12px",
-                  borderRadius: 8,
                   cursor: "pointer",
                   fontWeight: 600,
                 }}
@@ -1190,10 +1179,8 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div
       style={{
-        border: "1px solid #f3efe6",
-        borderRadius: "var(--radius-md)",
+        ...orchardSoftCardStyle,
         padding: 12,
-        background: "#fcfbf8",
       }}
     >
       <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>{label}</div>
@@ -1260,16 +1247,12 @@ function DecisionButton({
       onClick={onClick}
       disabled={disabled}
       style={{
-        padding: "8px 10px",
-        borderRadius: "var(--radius-sm)",
-        border: active ? "1px solid var(--orchard-green)" : "1px solid var(--border-soft)",
-        background: active ? "var(--orchard-green)" : "var(--paper-white)",
-        color: active ? "var(--paper-white)" : "var(--text-primary)",
+        ...(active ? orchardButtonStyle({ active: true }) : orchardButtonStyle({ subtle: true })),
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         fontSize: 12,
         fontWeight: 700,
-        boxShadow: active ? "var(--shadow-soft)" : "none",
+        boxShadow: disabled ? "none" : active ? "var(--shadow-soft)" : "var(--shadow-soft)",
       }}
     >
       {label}
@@ -1292,7 +1275,7 @@ function BlockedResultsState({
 }) {
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Generated Lesson</div>
+      <div style={sectionLabelStyle}>Planning Binder</div>
       <h2
         style={{
           marginTop: 0,
@@ -1363,37 +1346,43 @@ function mapCoverageTone(status: "covered" | "partial" | "missing"): "good" | "w
 }
 
 function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties {
-  const palette =
-    tone === "good"
-      ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
-      : tone === "warn"
-        ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
-        : { background: "#fcfbf8", border: "var(--border-soft)", color: "var(--text-secondary)" }
+  if (tone === "good") {
+    return {
+      ...orchardSoftCardStyle,
+      background: "rgba(110, 139, 107, 0.14)",
+      border: "1px solid var(--border-moss)",
+      color: "var(--deep-orchard)",
+      padding: 12,
+    }
+  }
+
+  if (tone === "warn") {
+    return {
+      ...orchardSoftCardStyle,
+      background: "rgba(242, 192, 120, 0.20)",
+      border: "1px solid var(--border-honey)",
+      color: "var(--warm-brown)",
+      padding: 12,
+    }
+  }
 
   return {
-    border: `1px solid ${palette.border}`,
-    background: palette.background,
-    color: palette.color,
-    borderRadius: "var(--radius-md)",
+    ...orchardSoftCardStyle,
+    color: "var(--text-secondary)",
     padding: 12,
   }
 }
 
 const warningStyle: React.CSSProperties = {
-  border: "1px solid #fed7aa",
-  background: "#fff7ed",
-  color: "#9a3412",
-  borderRadius: "var(--radius-md)",
-  padding: 12,
+  ...orchardNoticeStyle,
+  border: "1px solid var(--border-cranberry)",
+  background: "rgba(184, 84, 90, 0.12)",
+  color: "var(--cranberry)",
   fontSize: 14,
 }
 
 const noticeStyle: React.CSSProperties = {
-  padding: "12px 14px",
-  borderRadius: "var(--radius-md)",
-  border: "1px solid var(--border-soft)",
-  background: "#fcfbf8",
-  color: "var(--text-secondary)",
+  ...orchardNoticeStyle,
 }
 
 const actionsStyle: React.CSSProperties = {
@@ -1416,15 +1405,9 @@ const preStyle: React.CSSProperties = {
 }
 
 const linkStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "10px 14px",
-  borderRadius: "var(--radius-md)",
+  ...orchardButtonStyle({ subtle: true }),
+  display: "inline-flex",
   textDecoration: "none",
-  border: "1px solid var(--moss-green)",
-  color: "var(--orchard-green)",
-  background: "#fcfbf8",
-  fontWeight: 700,
-  boxShadow: "var(--shadow-soft)",
 }
 
 const summaryStyle: React.CSSProperties = {
@@ -1444,6 +1427,7 @@ const sectionHeadingStyle: React.CSSProperties = {
   marginTop: 0,
   marginBottom: "var(--space-md)",
   color: "var(--orchard-green)",
+  fontFamily: "var(--font-heading)",
 }
 
 const subHeadingStyle: React.CSSProperties = {
@@ -1451,4 +1435,5 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
 

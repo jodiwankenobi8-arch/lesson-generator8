@@ -1,5 +1,17 @@
 import React, { Suspense } from "react"
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom"
+import {
+  orchardHeroBodyStyle,
+  orchardHeroCardStyle,
+  orchardHeroRibbonStyle,
+  orchardHeroTitleStyle,
+  orchardMetaRowStyle,
+  orchardNoticeStyle,
+  orchardPageShellStyle,
+  orchardPanelStyle,
+  orchardStepLinkStyle,
+  orchardWrapStyle,
+} from "./pages/orchardUi"
 import { useLessonStore } from "./state/useLessonStore"
 
 const InputsPage = React.lazy(() => import("./pages/InputsPage"))
@@ -20,158 +32,60 @@ function StepNav() {
     processingCount: counts.uploaded + counts.extracting + counts.analyzing,
   })
 
-  const linkStyle = (path: string, disabled = false): React.CSSProperties => ({
-    padding: "10px 16px",
-    borderRadius: "999px",
-    textDecoration: "none",
-    border: `1px solid ${disabled ? "var(--border-soft)" : "var(--moss-green)"}`,
-    background: location.pathname === path ? "var(--orchard-green)" : "var(--paper-white)",
-    color: disabled
-      ? "var(--text-secondary)"
-      : location.pathname === path
-        ? "var(--paper-white)"
-        : "var(--orchard-green)",
-    fontWeight: 600,
-    pointerEvents: disabled ? "none" : "auto",
-    opacity: disabled ? 0.65 : 1,
-    boxShadow: "var(--shadow-soft)",
-    transition: "all 0.15s ease",
-  })
+  const navStyle: React.CSSProperties = {
+    ...orchardMetaRowStyle,
+    marginBottom: resultsBlockedReason ? "var(--space-sm)" : 0,
+  }
+
+  const panelFallbackStyle: React.CSSProperties = {
+    ...orchardNoticeStyle,
+  }
 
   return (
     <div style={{ marginBottom: "var(--space-xl)" }}>
-      <nav
-        style={{
-          display: "flex",
-          gap: "var(--space-sm)",
-          flexWrap: "wrap",
-          marginBottom: resultsBlockedReason ? "var(--space-sm)" : 0,
-        }}
-      >
-        <Link to="/inputs" style={linkStyle("/inputs")}>
+      <nav style={navStyle}>
+        <Link to="/inputs" style={orchardStepLinkStyle(location.pathname === "/inputs")}>
           Inputs
         </Link>
-        <Link to="/materials" style={linkStyle("/materials")}>
+        <Link to="/materials" style={orchardStepLinkStyle(location.pathname === "/materials")}>
           Materials
         </Link>
-        <Link to="/results" style={linkStyle("/results", Boolean(resultsBlockedReason))}>
+        <Link
+          to="/results"
+          style={orchardStepLinkStyle(location.pathname === "/results", Boolean(resultsBlockedReason))}
+        >
           Results
         </Link>
       </nav>
 
-      {resultsBlockedReason && (
-        <div
-          style={{
-            padding: "12px 14px",
-            borderRadius: "var(--radius-md)",
-            border: "1px solid var(--border-soft)",
-            background: "var(--paper-white)",
-            color: "var(--text-secondary)",
-            fontSize: 14,
-            boxShadow: "var(--shadow-soft)",
-          }}
-        >
-          {resultsBlockedReason}
-        </div>
-      )}
+      {resultsBlockedReason && <div style={panelFallbackStyle}>{resultsBlockedReason}</div>}
     </div>
   )
 }
 
 export default function App() {
+  const loadingNoticeStyle: React.CSSProperties = {
+    ...orchardNoticeStyle,
+  }
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "32px 20px",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1080,
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            marginBottom: "var(--space-lg)",
-            padding: "var(--space-lg)",
-            borderRadius: "var(--radius-lg)",
-            background: "linear-gradient(135deg, var(--paper-white), #fdfaf3)",
-            border: "1px solid var(--border-soft)",
-            boxShadow: "var(--shadow-card)",
-          }}
-        >
-          <div
-            style={{
-              display: "inline-block",
-              padding: "6px 12px",
-              marginBottom: "var(--space-sm)",
-              borderRadius: "999px",
-              background: "rgba(230, 201, 143, 0.28)",
-              color: "var(--warm-brown)",
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: 0.3,
-              textTransform: "uppercase",
-            }}
-          >
-            Teacher Planning Studio
-          </div>
+    <div style={orchardPageShellStyle}>
+      <div style={orchardWrapStyle}>
+        <div style={orchardHeroCardStyle}>
+          <div style={orchardHeroRibbonStyle}>Teacher Planning Studio</div>
 
-          <h1
-            style={{
-              marginTop: 0,
-              marginBottom: "var(--space-xs)",
-              fontFamily: "var(--font-heading)",
-              fontSize: 40,
-              lineHeight: 1.1,
-              color: "var(--orchard-green)",
-            }}
-          >
-            Lesson Generator 8
-          </h1>
+          <h1 style={orchardHeroTitleStyle}>Lesson Generator 8</h1>
 
-          <p
-            style={{
-              marginTop: 0,
-              marginBottom: 0,
-              color: "var(--text-secondary)",
-              fontSize: 16,
-              maxWidth: 720,
-            }}
-          >
-            Build teacher-friendly lesson packages from lesson inputs, curriculum materials, and exemplar materials with clear traceability.
+          <p style={orchardHeroBodyStyle}>
+            Build teacher-friendly lesson packages from lesson inputs, curriculum materials, and exemplar materials with
+            clear traceability.
           </p>
         </div>
 
-        <div
-          style={{
-            background: "var(--paper-white)",
-            border: "1px solid var(--border-soft)",
-            borderRadius: 24,
-            boxShadow: "var(--shadow-card)",
-            padding: "var(--space-xl)",
-          }}
-        >
+        <div style={orchardPanelStyle}>
           <StepNav />
 
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: "var(--radius-md)",
-                  border: "1px solid var(--border-soft)",
-                  background: "var(--paper-white)",
-                  color: "var(--text-secondary)",
-                  fontSize: 14,
-                }}
-              >
-                Loading page...
-              </div>
-            }
-          >
+          <Suspense fallback={<div style={loadingNoticeStyle}>Loading page...</div>}>
             <Routes>
               <Route path="/" element={<Navigate to="/inputs" replace />} />
               <Route path="/inputs" element={<InputsPage />} />

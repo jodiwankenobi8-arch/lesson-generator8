@@ -1,67 +1,317 @@
 :root {
+  /* Approved orchard palette */
+  --orchard-cream: #FFF6E9;
+  --apple-blush: #F7D6D0;
+  --cranberry: #B8545A;
+  --moss: #6E8B6B;
+  --deep-orchard: #3F5A40;
+  --honey: #F2C078;
+  --paper-white: #FFFFFF;
+  --warm-gray: #E7E2DA;
+  --charcoal: #2F2F2F;
+  --muted: #6B7280;
 
-  /* Orchard Color System */
+  /* Compatibility aliases for existing app code */
+  --orchard-green: var(--deep-orchard);
+  --moss-green: var(--moss);
+  --warm-brown: #7A5B1B;
+  --soft-amber: var(--honey);
+  --text-primary: var(--charcoal);
+  --text-secondary: var(--muted);
+  --border-soft: var(--warm-gray);
 
-  --orchard-cream: #f7f4ed;
-  --paper-white: #ffffff;
+  /* Surfaces */
+  --surface-canvas:
+    radial-gradient(circle at top left, rgba(247, 214, 208, 0.34), transparent 26%),
+    radial-gradient(circle at top right, rgba(242, 192, 120, 0.18), transparent 24%),
+    linear-gradient(180deg, #FFF6E9 0%, #FDF9F2 52%, #FFFDF8 100%);
+  --surface-paper: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 246, 233, 0.76));
+  --surface-paper-soft: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 244, 0.92));
+  --surface-blush: linear-gradient(180deg, rgba(247, 214, 208, 0.26), rgba(255, 255, 255, 0.72));
+  --surface-honey: linear-gradient(180deg, rgba(242, 192, 120, 0.18), rgba(255, 255, 255, 0.84));
 
-  --orchard-green: #2f5d3a;
-  --moss-green: #4f7a57;
+  /* Borders */
+  --border-paper: rgba(231, 226, 218, 0.98);
+  --border-moss: rgba(110, 139, 107, 0.30);
+  --border-cranberry: rgba(184, 84, 90, 0.24);
+  --border-honey: rgba(242, 192, 120, 0.40);
 
-  --warm-brown: #6a4e3a;
-  --soft-amber: #e6c98f;
+  /* Shadows */
+  --shadow-card: 0 10px 26px rgba(63, 90, 64, 0.08);
+  --shadow-soft: 0 4px 12px rgba(63, 90, 64, 0.05);
+  --shadow-panel: 0 14px 32px rgba(63, 90, 64, 0.09);
+  --shadow-inset-soft: inset 0 1px 2px rgba(63, 90, 64, 0.04);
 
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-
-  --border-soft: #e5e7eb;
+  /* Texture helpers */
+  --texture-paper-dots:
+    radial-gradient(rgba(63, 90, 64, 0.04) 0.6px, transparent 0.7px);
+  --texture-paper-grid:
+    linear-gradient(rgba(255,255,255,0.24) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
 
   /* Layout */
+  --radius-xl: 28px;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
 
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
-
+  --space-2xs: 4px;
   --space-xs: 6px;
   --space-sm: 10px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
-
-  /* Shadows */
-
-  --shadow-card: 0 4px 12px rgba(0,0,0,0.06);
-  --shadow-soft: 0 2px 6px rgba(0,0,0,0.05);
+  --space-2xl: 40px;
 
   /* Typography */
-
   --font-heading: Georgia, "Times New Roman", serif;
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-size-ribbon: 12px;
+  --font-size-body: 16px;
+  --font-size-title: 28px;
+  --font-size-hero: 40px;
 }
 
-/* Global Page Background */
+html,
+body,
+#root {
+  min-height: 100%;
+}
 
 body {
   margin: 0;
   font-family: var(--font-body);
-  background: var(--orchard-cream);
   color: var(--text-primary);
+  background: var(--surface-canvas);
+  background-color: var(--orchard-cream);
+  line-height: 1.5;
 }
 
-/* Shared Card Style */
+/* Global texture / tactile helpers */
+
+.orchard-canvas-texture {
+  position: relative;
+}
+
+.orchard-canvas-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  background-image: var(--texture-paper-dots);
+  background-size: 14px 14px;
+  mix-blend-mode: multiply;
+}
+
+.orchard-paper {
+  background: var(--surface-paper);
+  border: 1px solid var(--border-paper);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.orchard-paper-soft {
+  background: var(--surface-paper-soft);
+  border: 1px solid var(--border-paper);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.orchard-panel {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--border-paper);
+  border-radius: 24px;
+  box-shadow: var(--shadow-panel);
+  padding: var(--space-xl);
+}
 
 .orchard-card {
   background: var(--paper-white);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--border-paper);
   box-shadow: var(--shadow-card);
   padding: var(--space-lg);
 }
 
-/* Page Title */
+.orchard-card-soft {
+  background: var(--surface-paper-soft);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-paper);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-lg);
+}
+
+/* Typography */
 
 .page-title {
   font-family: var(--font-heading);
-  font-size: 28px;
-  margin-bottom: var(--space-md);
+  font-size: var(--font-size-title);
+  line-height: 1.15;
+  margin: 0 0 var(--space-md);
+  color: var(--orchard-green);
+}
+
+.orchard-hero-title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-hero);
+  line-height: 1.08;
+  margin: 0 0 var(--space-xs);
+  color: var(--orchard-green);
+}
+
+.orchard-body-copy {
+  color: var(--text-secondary);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+}
+
+/* Ribbon / stitched motifs */
+
+.orchard-ribbon {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-honey);
+  background: rgba(242, 192, 120, 0.22);
+  color: var(--warm-brown);
+  font-size: var(--font-size-ribbon);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.orchard-ribbon--blush {
+  border-color: var(--border-cranberry);
+  background: rgba(247, 214, 208, 0.34);
+  color: var(--cranberry);
+}
+
+.orchard-stitched-divider {
+  height: 0;
+  border: 0;
+  border-top: 2px dashed rgba(110, 139, 107, 0.28);
+  margin: var(--space-md) 0;
+}
+
+/* Badges / tags */
+
+.orchard-badge,
+.orchard-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.orchard-badge {
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--charcoal);
+  border: 1px solid var(--border-paper);
+}
+
+.orchard-badge--moss,
+.orchard-tag--moss {
+  background: rgba(110, 139, 107, 0.14);
+  color: var(--deep-orchard);
+  border: 1px solid var(--border-moss);
+}
+
+.orchard-badge--honey,
+.orchard-tag--honey {
+  background: rgba(242, 192, 120, 0.20);
+  color: var(--warm-brown);
+  border: 1px solid var(--border-honey);
+}
+
+.orchard-badge--cranberry,
+.orchard-tag--cranberry {
+  background: rgba(184, 84, 90, 0.12);
+  color: var(--cranberry);
+  border: 1px solid var(--border-cranberry);
+}
+
+.orchard-tag {
+  padding: 4px 9px;
+  font-weight: 600;
+}
+
+/* Inputs / controls */
+
+.orchard-input,
+.orchard-select,
+.orchard-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-paper);
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-inset-soft);
+}
+
+.orchard-input:focus,
+.orchard-select:focus,
+.orchard-textarea:focus {
+  outline: 2px solid rgba(110, 139, 107, 0.18);
+  outline-offset: 1px;
+  border-color: rgba(110, 139, 107, 0.42);
+}
+
+/* Buttons */
+
+.orchard-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--moss-green);
+  background: var(--paper-white);
+  color: var(--orchard-green);
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.orchard-button:hover {
+  transform: translateY(-1px);
+}
+
+.orchard-button--primary {
+  background: var(--orchard-green);
+  color: var(--paper-white);
+  border-color: var(--orchard-green);
+}
+
+.orchard-button--subtle {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: var(--border-paper);
+}
+
+/* Layout helpers */
+
+.orchard-stack {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.orchard-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.orchard-page-intro {
+  display: grid;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
 }

@@ -5,6 +5,17 @@ import {
   RequestedLessonPartKey,
   RequestedOutputKey,
 } from "../engine/types"
+import {
+  orchardButtonStyle,
+  orchardCardStyle,
+  orchardInputStyle,
+  orchardNoticeStyle,
+  orchardPageIntroBlockStyle,
+  orchardSectionLabelStyle,
+  orchardSectionTitleStyle,
+  orchardSoftCardStyle,
+  orchardTagStyle,
+} from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 
 type RequestOption<T extends string> = {
@@ -99,19 +110,21 @@ const pageStyle: React.CSSProperties = {
   margin: "0 auto",
 }
 
+const pageIntroStyle: React.CSSProperties = {
+  ...orchardPageIntroBlockStyle,
+}
+
 const introStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
-  marginBottom: "var(--space-lg)",
   fontSize: 16,
   maxWidth: 720,
+  margin: 0,
+  lineHeight: 1.6,
 }
 
 const cardStyle: React.CSSProperties = {
-  border: "1px solid var(--border-soft)",
-  borderRadius: "var(--radius-lg)",
+  ...orchardCardStyle,
   padding: "var(--space-xl)",
-  background: "var(--paper-white)",
-  boxShadow: "var(--shadow-card)",
 }
 
 const gridStyle: React.CSSProperties = {
@@ -125,16 +138,12 @@ const fullWidthStyle: React.CSSProperties = {
 }
 
 const sectionLabelStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "6px 12px",
-  marginBottom: "var(--space-sm)",
-  borderRadius: "999px",
-  background: "rgba(230, 201, 143, 0.28)",
-  color: "var(--warm-brown)",
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: 0.3,
-  textTransform: "uppercase",
+  ...orchardSectionLabelStyle,
+}
+
+const sectionTitleStyle: React.CSSProperties = {
+  ...orchardSectionTitleStyle,
+  fontSize: 32,
 }
 
 const labelStyle: React.CSSProperties = {
@@ -145,14 +154,8 @@ const labelStyle: React.CSSProperties = {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "12px 14px",
-  borderRadius: "var(--radius-md)",
-  border: "1px solid var(--border-soft)",
+  ...orchardInputStyle,
   fontSize: 14,
-  boxSizing: "border-box",
-  background: "#fffdfa",
-  color: "var(--text-primary)",
 }
 
 const helpStyle: React.CSSProperties = {
@@ -172,39 +175,27 @@ const buttonRowStyle: React.CSSProperties = {
 }
 
 const buttonStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  borderRadius: "var(--radius-md)",
-  border: "1px solid var(--orchard-green)",
-  background: "var(--orchard-green)",
-  color: "var(--paper-white)",
+  ...orchardButtonStyle({ active: true }),
   cursor: "pointer",
-  fontWeight: 700,
-  boxShadow: "var(--shadow-soft)",
 }
 
 const disabledButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
+  ...orchardButtonStyle({ subtle: true }),
   border: "1px solid var(--border-soft)",
-  background: "#e5e7eb",
+  background: "var(--warm-gray)",
   color: "var(--text-secondary)",
   cursor: "not-allowed",
   boxShadow: "none",
+  opacity: 0.8,
 }
 
 const noticeStyle: React.CSSProperties = {
-  padding: "12px 14px",
-  borderRadius: "var(--radius-md)",
-  border: "1px solid var(--border-soft)",
-  background: "#fcfbf8",
-  color: "var(--text-secondary)",
-  fontSize: 14,
+  ...orchardNoticeStyle,
 }
 
 const modeCardStyle: React.CSSProperties = {
-  border: "1px solid var(--border-soft)",
-  borderRadius: "var(--radius-lg)",
+  ...orchardSoftCardStyle,
   padding: "var(--space-lg)",
-  background: "#fcfbf8",
 }
 
 const modeOptionStyle: React.CSSProperties = {
@@ -212,7 +203,7 @@ const modeOptionStyle: React.CSSProperties = {
   alignItems: "flex-start",
   gap: 10,
   padding: "12px 0",
-  borderTop: "1px solid #ece7df",
+  borderTop: "1px solid var(--border-paper)",
 }
 
 const requestGridStyle: React.CSSProperties = {
@@ -250,23 +241,31 @@ export default function InputsPage() {
       setInputs({ [field]: event.target.value })
     }
 
+  const targetNoticeStyle: React.CSSProperties = targetPreview.isMixedTarget
+    ? {
+        ...orchardNoticeStyle,
+        background: "rgba(242, 192, 120, 0.20)",
+        border: "1px solid var(--border-honey)",
+        color: "var(--warm-brown)",
+      }
+    : {
+        ...orchardNoticeStyle,
+      }
+
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Lesson Setup</div>
-      <h2
-        style={{
-          marginTop: 0,
-          marginBottom: "var(--space-sm)",
-          fontFamily: "var(--font-heading)",
-          fontSize: 32,
-          color: "var(--orchard-green)",
-        }}
-      >
-        Inputs
-      </h2>
-      <p style={introStyle}>
-        Define the lesson intent before adding curriculum and exemplar materials.
-      </p>
+      <div style={sectionLabelStyle}>Planning Notebook</div>
+      <h2 style={sectionTitleStyle}>Inputs</h2>
+
+      <div style={pageIntroStyle}>
+        <p style={introStyle}>
+          Define the lesson intent before adding curriculum and exemplar sources.
+        </p>
+        <p style={introStyle}>
+          Optional lesson parts and deliverables stay optional unless you request
+          them on purpose.
+        </p>
+      </div>
 
       <div style={cardStyle}>
         <div style={gridStyle}>
@@ -307,9 +306,10 @@ export default function InputsPage() {
               placeholder="RF.K.3"
               style={inputStyle}
             />
-<div style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 6 }}>
-  Optional. Enter a standard if you know it. Otherwise the app will use standards detected from ready curriculum materials when available.
-</div>
+            <div style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 6 }}>
+              Optional. Enter a standard if you know it. Otherwise the app will use
+              standards detected from ready curriculum materials when available.
+            </div>
           </div>
 
           <div>
@@ -366,19 +366,7 @@ export default function InputsPage() {
               recommendation.
             </div>
 
-            <div
-              style={{
-                ...noticeStyle,
-                marginBottom: 12,
-                background: targetPreview.isMixedTarget ? "#fff7ed" : "#fcfbf8",
-                borderColor: targetPreview.isMixedTarget
-                  ? "#fed7aa"
-                  : "var(--border-soft)",
-                color: targetPreview.isMixedTarget
-                  ? "#9a3412"
-                  : "var(--text-secondary)",
-              }}
-            >
+            <div style={{ ...targetNoticeStyle, marginBottom: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>
                 Recommended shape:{" "}
                 {formatLessonModeLabel(targetPreview.recommendedMode)}
@@ -412,12 +400,7 @@ export default function InputsPage() {
                 type="button"
                 onClick={() => setShowLessonShapeOverride((value) => !value)}
                 style={{
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid var(--border-soft)",
-                  background: "#ffffff",
-                  color: "var(--text-primary)",
-                  fontWeight: 600,
+                  ...orchardButtonStyle({ subtle: true }),
                   cursor: "pointer",
                 }}
               >
@@ -503,7 +486,9 @@ export default function InputsPage() {
               Requested deliverables
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-              Choose the core artifacts first, then add specific support materials only when you want them. Lesson parts above shape the lesson; deliverables here control which files or printables get generated.
+              Choose the core artifacts first, then add specific support materials
+              only when you want them. Lesson parts above shape the lesson;
+              deliverables here control which files or printables get generated.
             </div>
 
             <div style={{ ...noticeStyle, marginTop: 12 }}>
@@ -528,15 +513,17 @@ export default function InputsPage() {
 
         <div style={{ marginTop: "var(--space-lg)" }}>
           <div style={noticeStyle}>
-            Required before Results can generate: grade, subject, skill focus, lesson topic, and duration. Standard is optional here; if left blank, the app will use standards detected from ready curriculum materials when available.
+            Required before Results can generate: grade, subject, skill focus,
+            lesson topic, and duration. Standard is optional here; if left blank,
+            the app will use standards detected from ready curriculum materials
+            when available.
           </div>
         </div>
 
         <div style={buttonRowStyle}>
           <div
             style={{
-              color: hasRequiredInputs ? "#047857" : "var(--text-secondary)",
-              fontSize: 14,
+              ...orchardTagStyle(hasRequiredInputs ? "moss" : "honey"),
               fontWeight: 700,
             }}
           >
@@ -619,16 +606,25 @@ function RequestToggleCard({
   description: string
   onToggle: () => void
 }) {
+  const activeStyle: React.CSSProperties = checked
+    ? {
+        background: "rgba(110, 139, 107, 0.12)",
+        border: "1px solid var(--border-moss)",
+      }
+    : {
+        background: "rgba(255, 255, 255, 0.98)",
+        border: "1px solid var(--border-paper)",
+      }
+
   return (
     <label
       style={{
+        ...orchardSoftCardStyle,
+        ...activeStyle,
         display: "flex",
         alignItems: "flex-start",
         gap: 12,
         padding: "14px 14px",
-        borderRadius: "var(--radius-md)",
-        border: checked ? "1px solid #84a98c" : "1px solid var(--border-soft)",
-        background: checked ? "#f3f8f4" : "#ffffff",
         cursor: "pointer",
       }}
     >
