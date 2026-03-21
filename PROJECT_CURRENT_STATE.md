@@ -1,4 +1,4 @@
-# PROJECT_CURRENT_STATE
+﻿# PROJECT_CURRENT_STATE
 
 Last refreshed: 2026-03-21
 
@@ -17,8 +17,8 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current checkpoint in working repo: last meaningful code checkpoint committed at cffc666
-
+- Current published continuation point: 51ed805 docs: refresh current truth after cffc666
+- Last meaningful code checkpoint: cffc666 refactor: align results terminology with teacher-first package
 ## Current confirmed state
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -40,13 +40,14 @@ Anything older or not in that chain should be treated as historical unless expli
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- last explicitly documented seam validation remains orchard lesson-flow at 6e144f5, where npm run typecheck passed before commit
-- worktree was clean immediately after the orchard lesson-flow seam commit
-- earlier export seam checkpoint at 1fab6c2 had explicitly confirmed npm test, npm run build, and npm run typecheck passing
+- last meaningful code checkpoint remains cffc666, where npm run typecheck passed
+- targeted tests passed: 9/9 at the cffc666 checkpoint
+- current published continuation point is 51ed805, which refreshed docs after cffc666
+- live local inspect confirmed branch work/canonical-project-consolidation at HEAD 51ed805
+- live local inspect confirmed the worktree is clean at 51ed805
 - local audit confirmed there is no src/app/routes/dashboard.tsx in the current repo and no dashboard route match under src
-- local doc audit confirmed START_HERE_CURRENT_TRUTH.md and PROJECT_CURRENT_STATE.md had drifted behind the current continuation point and needed refresh
-- live local inspect on cf70aa5 confirmed MaterialsPage already has multi-file lane support, usable-material generation gating, and no dashboard route/file under src
-
+- local inspection confirmed the active orchard lesson-flow files are present: src/pages/orchardUi.ts, src/styles/theme.css, src/App.tsx, src/pages/InputsPage.tsx, src/pages/MaterialsPage.tsx, and src/pages/ResultsPage.tsx
+- local inspection confirmed the Results terminology seam should be treated as closed unless a live regression appears
 ## Product truths to preserve
 - curriculum = content authority
 - exemplar = presentation / structure authority
@@ -87,13 +88,11 @@ Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
 ## Top next steps
-1. Start the next chat from the newest handoff file
-2. Confirm HEAD 6e144f5 and clean worktree
-3. Treat the orchard lesson-flow seam as complete unless a live regression appears
-4. Do not assume dashboard work exists; inspect the actual repo target first
-5. Choose the next smallest real seam from live repo state and current hardening priorities
-6. Keep continuation docs authoritative and small
-
+1. Refresh the continuation docs to match the live repo truth at 51ed805
+2. Add one new handoff file for the 51ed805 continuation point
+3. Inspect README.md and fix it only if it conflicts with the active continuation docs
+4. Inspect the next real implementation seam from live repo files only
+5. Keep continuation docs authoritative and small
 ## Local doc policy
 The active local doc set should stay small and obvious:
 - AGENTS.md
@@ -103,3 +102,4 @@ The active local doc set should stay small and obvious:
 - current relevant docs/chat-handoffs/*
 
 Older docs that are no longer referenced and no longer authoritative should be removed from the local working set and preserved through Git history rather than kept as apparently-live guidance.
+

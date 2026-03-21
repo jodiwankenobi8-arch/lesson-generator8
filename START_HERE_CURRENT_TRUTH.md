@@ -1,12 +1,12 @@
-# START_HERE_CURRENT_TRUTH.md
+﻿# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current checkpoint in working repo: last meaningful code checkpoint committed at cffc666
+- Current published continuation point: 51ed805 docs: refresh current truth after cffc666
+- Last meaningful code checkpoint: cffc666 refactor: align results terminology with teacher-first package
 - Current milestone: Step 5 orchard lesson-flow surface system complete for the active teacher flow
-- Current active seam: Results terminology cleanup
-
+- Current active seam: continuation-doc truth alignment, then inspect the next live seam
 ## What is actually landed
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -37,12 +37,13 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- orchard lesson-flow seam committed at 6e144f5
-- npm run typecheck passed for the orchard lesson-flow seam immediately before commit
-- worktree was clean immediately after commit
-- last explicitly confirmed broader validation checkpoint remains the earlier 1fab6c2 export seam, where npm test, npm run build, and npm run typecheck were green
+- last meaningful code checkpoint remains cffc666
+- npm run typecheck passed at the cffc666 checkpoint
+- targeted tests passed: 9/9 at the cffc666 checkpoint
+- published continuation point is now 51ed805, which refreshed docs after cffc666
+- local live inspect confirmed branch work/canonical-project-consolidation at HEAD 51ed805
+- worktree is clean at the current published continuation point
 - local inspection confirmed there is no src/app/routes/dashboard.tsx in the current repo and no dashboard match under src
-
 ## Non-blocking warnings
 - Vite build still reports large chunk warnings after minification
 - SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
@@ -57,12 +58,13 @@
 4. then inspect the actual repo files involved in the next seam
 
 ## Exact next move
-- start the next chat from the newest handoff file below
-- confirm HEAD cffc666 as the last meaningful code checkpoint, then Confirm whether any remaining visible copy drift exists, then stop reopening closed seams unless live regression evidence appears
+- treat the Results terminology seam as closed unless live regression evidence appears
+- refresh START_HERE_CURRENT_TRUTH.md and PROJECT_CURRENT_STATE.md so they reflect 51ed805 as the current published continuation point and cffc666 as the last meaningful code checkpoint
+- add one new handoff file for the 51ed805 continuation point
+- inspect README.md only after the continuation docs are corrected
+- then choose the next single seam from live repo files and current product priorities
 - do not assume dashboard route work exists in this repo
-- treat dashboard/mockup ideas as donor material only
-- choose the next single seam from live repo files and current product priorities
 - do not reopen closed export or orchard seams without proof
-
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the exact missing file(s) and treat that as higher-trust than older indexed copies.
+
