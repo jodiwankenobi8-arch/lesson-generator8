@@ -244,8 +244,8 @@ function PackageSummarySection({
       <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
       <div style={heroGridStyle}>
         <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
-        <SummaryCard label="Intervention Support" value={lessonPackage.interventions.length.toString()} />
-        <SummaryCard label="Student Centers" value={lessonPackage.centers.length.toString()} />
+        <SummaryCard label="Teacher-Led Support" value={lessonPackage.interventions.length.toString()} />
+        <SummaryCard label="Centers / Independent Work" value={lessonPackage.centers.length.toString()} />
       </div>
 
       <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 8, color: "var(--text-secondary)" }}>
@@ -983,9 +983,9 @@ function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage
     <>
       {lessonPlan.length > 0 ? <PreSection title="Lesson Plan" content={lessonPlan} /> : null}
       {slides.length > 0 ? <SimpleListSection title="Slides" items={slides} /> : null}
-      {interventions.length > 0 ? <SimpleListSection title="Intervention Support" items={interventions} /> : null}
-      {centers.length > 0 ? <SimpleListSection title="Student Centers" items={centers} /> : null}
-      {rotationPlan.length > 0 ? <PreSection title="Student Centers Rotation Plan" content={rotationPlan} /> : null}
+      {interventions.length > 0 ? <SimpleListSection title="Teacher-Led Support" items={interventions} /> : null}
+      {centers.length > 0 ? <SimpleListSection title="Centers / Independent Work" items={centers} /> : null}
+      {rotationPlan.length > 0 ? <PreSection title="Centers / Independent Work Rotation" content={rotationPlan} /> : null}
       {exports.length > 0 ? <ExportArtifactsSection exports={exports} /> : null}
 
       {!hasVisibleOutputs ? (

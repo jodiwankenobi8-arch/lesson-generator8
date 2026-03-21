@@ -181,12 +181,12 @@ describe("Results explainability rendering contracts", () => {
     const blueprintDetailsCallIndex = source.indexOf('<BlueprintDetailsSection blueprint={blueprint} />')
     const pipelineTraceCallIndex = source.indexOf('{lessonTrace && <PipelineTraceSection trace={lessonTrace} />}')
 
-    const packageSummaryHeadingIndex = source.indexOf('Teacher Package Summary')
+    const packageSummaryHeadingIndex = source.indexOf('Teacher-facing lesson package first.')
     const lessonPlanIndex = source.indexOf('PreSection title="Lesson Plan"')
     const slidesIndex = source.indexOf('SimpleListSection title="Slides"')
-    const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Intervention Support"')
-    const studentCentersIndex = source.indexOf('SimpleListSection title="Student Centers"')
-    const centerRotationIndex = source.indexOf('PreSection title="Student Centers Rotation Plan"')
+    const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Teacher-Led Support"')
+    const studentCentersIndex = source.indexOf('SimpleListSection title="Centers / Independent Work"')
+    const centerRotationIndex = source.indexOf('PreSection title="Centers / Independent Work Rotation"')
 
     expect(packageSummaryCallIndex).toBeGreaterThanOrEqual(0)
     expect(packageOutputsCallIndex).toBeGreaterThan(packageSummaryCallIndex)
@@ -203,7 +203,7 @@ describe("Results explainability rendering contracts", () => {
     expect(studentCentersIndex).toBeGreaterThan(teacherLedSupportIndex)
     expect(centerRotationIndex).toBeGreaterThan(studentCentersIndex)
 
-    expect(source).toContain('Teacher Package Summary')
+    expect(source).toContain('Teacher-facing lesson package first.')
     expect(source).toContain('Lesson Evidence and Planning Details')
     expect(source).toContain('<summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>')
     expect(source).toContain('<SecondaryEvidenceSection')
