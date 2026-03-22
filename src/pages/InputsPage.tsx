@@ -85,8 +85,8 @@ const requestedOutputOptions: RequestOption<RequestedOutputKey>[] = [
   },
   {
     key: "assessment",
-    title: "Assessment printable",
-    description: "A printable assessment or exit-check artifact.",
+    title: "Assessment support",
+    description: "Add assessment or exit-check support inside the lesson package when you want a clearer check-for-understanding plan.",
   },
   {
     key: "centers",
