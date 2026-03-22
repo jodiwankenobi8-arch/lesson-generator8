@@ -269,7 +269,7 @@ describe("useLessonStore regeneration", () => {
     }))
 
     await expect(useLessonStore.getState().generateLesson()).rejects.toThrow(
-      "No usable materials are available for grounded generation. Add a stronger curriculum or exemplar file."
+      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source file."
     )
   })
 })

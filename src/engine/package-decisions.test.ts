@@ -172,11 +172,11 @@ describe("buildPackageOutputs decision handling", () => {
       "Teacher support center: Reteach the target phonics pattern with cake, game, same, late.",
     ])
     expect(result.rotationPlan).toContain(
-      "Teacher Table Focus: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
+      "Teacher-Led Support Focus: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
     )
     expect(result.lessonPlan).toContain("Teacher-Led Support")
     expect(result.lessonPlan).toContain(
-      "Teacher Table Support: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
+      "Teacher-Led Support: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
     )
     expect(result.lessonPlan).toContain("Intervention Support")
     expect(result.lessonPlan).toContain(
@@ -213,7 +213,7 @@ describe("buildPackageOutputs decision handling", () => {
 
     expect(result.centers).toEqual(["Word Sort: Sort long a and short a words."])
     expect(result.rotationPlan).toContain(
-      "Teacher Table Focus: Targeted Blending - Reteach blending with a reduced list."
+      "Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list."
     )
     expect(result.lessonPlan).toContain(
       "Targeted Blending: Reteach blending with a reduced list."
