@@ -3,20 +3,20 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 273560e
-- Current milestone: Step 5 continuation from the live orchard surface already present in the repo
-- Current active seam: Step 5 Results chrome consolidation is pushed on main; Step 5 hardening validation is next
+- Current published continuation point: 865ca2b
+- Current milestone: Step 6A source-intake contract from a green Step 5 checkpoint
+- Current active seam: teacher-facing source-intake contract tightening in MaterialsPage.tsx, with InputsPage.tsx only if needed for wording consistency
 
 ## What is actually landed
-- src/pages/orchardUi.ts exists in the live repo
-- src/styles/theme.css contains orchard token coverage
-- src/pages/ResultsPage.tsx remains the canonical Results surface
-- InputsPage.tsx orchard shell refit is landed
-- MaterialsPage.tsx orchard shell refit is landed
-- ResultsPage.tsx now has a first Results chrome consolidation pass:
-  - helper styles extracted for feedback stack, success notice, section stack, meta list, small note, details grid, and blocked-state title/message
-  - teacher-first package-first hierarchy is preserved
-  - evidence and planning details remain secondary
+- orchard shell direction is already present in the live repo
+- Results chrome consolidation and continuation-doc checkpoint are already pushed on main
+- validation at checkpoint 865ca2b was green:
+  - npm run typecheck = PASS
+  - npm run test = PASS
+  - npm run build = PASS
+- blueprint source selection already has reliability-aware helpers in src/engine/blueprint/materialSelection.ts
+- accepted upload-file type truth currently lives in src/engine/materials/extractTextFromFile.ts
+- MaterialsPage already describes the current intake as upload-file based and multi-source by lane, but the teacher-facing contract still needs tightening
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -27,28 +27,43 @@
 - small group / intervention = teacher-led support
 - optional lesson parts and outputs should only appear when explicitly requested or strongly source-grounded
 - materials trust depends on usable materials, not merely ready materials
+- AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- Targeted Results helper/usage inspect passed in live local ResultsPage.tsx
-- npm run typecheck passed after the seam
-- npm run build passed after the seam
-- The full test suite was last known green at pushed checkpoint b2cc872 and has still not been rerun after the pushed Results seam at 273560e
-- Continue from live repo files and newest handoff, not older notes
+- checkpoint 865ca2b was validated green on main
+- npm run typecheck = PASS
+- npm run test = PASS
+- npm run build = PASS
+- working tree was clean after validation at that checkpoint
+- continue from live repo files and the newest handoff, not older stale notes
 
 ## What to read next
 1. AGENTS.md
 2. PROJECT_CURRENT_STATE.md
 3. docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
 4. newest file in docs/chat-handoffs/
-5. then inspect src/pages/ResultsPage.tsx and its local diff
+5. then inspect:
+   - src/pages/MaterialsPage.tsx
+   - src/pages/InputsPage.tsx
+   - src/engine/materials/extractTextFromFile.ts
 
 ## Exact next move
-- run the Step 5 hardening validation sweep on current main:
-  - targeted inspect
-  - typecheck
-  - relevant tests
-  - full tests
-  - build
-- fix only the failures that the validation sweep proves are real
-- keep Results teacher-first and do not reopen closed request-aware / Results / export seams without proof
-- keep the active continuation docs small and truthful
+- do one narrow Step 6A source-intake contract pass
+- primary target: src/pages/MaterialsPage.tsx
+- secondary target only if needed for consistency: src/pages/InputsPage.tsx
+- make the current intake model explicit and honest
+- keep accepted visible file types aligned with src/engine/materials/extractTextFromFile.ts:
+  - .txt
+  - .pdf
+  - .docx
+  - .pptx
+  - .html
+  - .htm
+- keep trust language aligned with usable / caution / blocked behavior, not just ready-state wording
+- do not reopen blueprint / reliability / Results seams unless fresh inspect proves a real gap
+- after the seam, verify in this order:
+  1. targeted inspect
+  2. npm run typecheck
+  3. relevant tests
+  4. npm run build
+  5. brief manual copy check
