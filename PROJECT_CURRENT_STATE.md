@@ -1,4 +1,4 @@
-﻿# PROJECT_CURRENT_STATE
+# PROJECT_CURRENT_STATE
 
 Last refreshed: 2026-03-21
 
@@ -17,8 +17,8 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current published continuation point: 51ed805 docs: refresh current truth after cffc666
-- Last meaningful code checkpoint: cffc666 refactor: align results terminology with teacher-first package
+- Current published continuation point: 49af196 docs: refresh current truth after 519f65c materials wording seam
+- Last meaningful code checkpoint: 519f65c copy: align materials intake wording with upload-file contract
 ## Current confirmed state
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -40,14 +40,10 @@ Anything older or not in that chain should be treated as historical unless expli
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- last meaningful code checkpoint remains cffc666, where npm run typecheck passed
-- targeted tests passed: 9/9 at the cffc666 checkpoint
-- current published continuation point is 51ed805, which refreshed docs after cffc666
-- live local inspect confirmed branch work/canonical-project-consolidation at HEAD 51ed805
-- live local inspect confirmed the worktree is clean at 51ed805
-- local audit confirmed there is no src/app/routes/dashboard.tsx in the current repo and no dashboard route match under src
-- local inspection confirmed the active orchard lesson-flow files are present: src/pages/orchardUi.ts, src/styles/theme.css, src/App.tsx, src/pages/InputsPage.tsx, src/pages/MaterialsPage.tsx, and src/pages/ResultsPage.tsx
-- local inspection confirmed the Results terminology seam should be treated as closed unless a live regression appears
+- current published continuation point is 49af196 docs: refresh current truth after 519f65c materials wording seam
+- last meaningful code checkpoint is 519f65c copy: align materials intake wording with upload-file contract
+- npm run typecheck passed for 519f65c; current repo head before this doc repair run was 49af196
+- doc refresh was run from branch work/canonical-project-consolidation
 ## Product truths to preserve
 - curriculum = content authority
 - exemplar = presentation / structure authority
@@ -87,12 +83,11 @@ Do not reopen prior closed seams unless live inspection finds a real regression.
 Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
-## Top next steps
-1. Refresh the continuation docs to match the live repo truth at 51ed805
-2. Add one new handoff file for the 51ed805 continuation point
-3. Inspect README.md and fix it only if it conflicts with the active continuation docs
-4. Inspect the next real implementation seam from live repo files only
-5. Keep continuation docs authoritative and small
+$11. Continue from the newest handoff file and live repo files
+2. Treat the current active seam as: doc automation compatibility aligned to current continuation schema
+3. review the refreshed docs and newest handoff, then commit and push the automation repair if the diff looks correct
+4. Keep continuation docs authoritative and small
+5. Do not let overridden notes compete with the active continuation set
 ## Local doc policy
 The active local doc set should stay small and obvious:
 - AGENTS.md
