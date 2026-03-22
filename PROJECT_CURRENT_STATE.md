@@ -17,8 +17,8 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: main
-- Current published continuation point: f7bd493 refine Inputs materials terminology and close the seam on current main
-- Current validated local state: Materials upload-type visibility is closed on current main, the README current-truth summary is pushed, Inputs terminology alignment is pushed, and this docs refresh matches the pushed repo truth
+- Current published continuation point: 9e4e457 refine Results blocked-state materials terminology and close the seam on current main
+- Current validated local state: Materials upload-type visibility is closed on current main, the README current-truth summary is pushed, Inputs terminology alignment is pushed, Results blocked-state terminology alignment is pushed, and this docs refresh matches the pushed repo truth
 
 ## Current confirmed state
 - Active product flow remains Inputs -> Materials -> Results
