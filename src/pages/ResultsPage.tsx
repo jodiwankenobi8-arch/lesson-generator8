@@ -140,7 +140,7 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Results are blocked until at least one curriculum or exemplar material is usable for grounded generation."
-        details="Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one file is usable for grounded generation."
+        details="Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one material is usable for grounded generation."
         linkTo="/materials"
         linkLabel="Go to Materials"
       />
