@@ -252,7 +252,7 @@ export default function InputsPage() {
 
       <div style={pageIntroStyle}>
         <p style={introStyle}>
-          Define the lesson intent before adding curriculum and exemplar sources.
+          Define the lesson intent before adding curriculum and exemplar materials.
         </p>
         <p style={introStyle}>
           Lesson slides and the teacher lesson plan are always included. Optional support materials stay optional unless you request them on purpose.
