@@ -3,7 +3,8 @@ import {
   LessonInputs,
   LessonPackage,
   LessonPlanningIdeas,
-  LessonRequestPreferences,
+  LessonOutputContents,
+  createDefaultOutputContents,
   LessonSpec,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
@@ -16,10 +17,7 @@ export function buildLessonPackage(
   blueprint: LessonBlueprint,
   spec: LessonSpec,
   planningIdeas?: LessonPlanningIdeas,
-  lessonRequest: LessonRequestPreferences = {
-    requestedLessonParts: [],
-    requestedOutputs: [],
-  },
+  outputContents: LessonOutputContents = createDefaultOutputContents(),
   missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>> = {}
 ): LessonPackage {
   const outputs = buildPackageOutputs({
@@ -27,7 +25,7 @@ export function buildLessonPackage(
     blueprint,
     spec,
     planningIdeas,
-    lessonRequest,
+    outputContents,
     missingAreaDecisions,
   })
 

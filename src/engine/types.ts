@@ -16,7 +16,7 @@ export type LessonInputs = {
 
 
 
-export type RequestedLessonPartKey =
+export type LessonPlanContentPartKey =
 
   | "teach"
 
@@ -26,7 +26,13 @@ export type RequestedLessonPartKey =
 
   | "closure"
 
-  | "formative_assessment"
+
+
+export type AssessmentOutputTypeKey = "formative_assessment"
+
+
+
+export type GroupOutputKindKey =
 
   | "centers"
 
@@ -36,29 +42,259 @@ export type RequestedLessonPartKey =
 
 
 
-export type RequestedOutputKey =
-
-  | "slides"
-
-  | "lesson_plan"
-
-  | "assessment"
-
-  | "centers"
-
-  | "small_group"
-
-  | "intervention"
-
-  | "printables"
+export type OtherOutputKey = "printables"
 
 
 
-export type LessonRequestPreferences = {
+export type LessonOutputContents = {
 
-  requestedLessonParts: RequestedLessonPartKey[]
+  lessonPlan: {
 
-  requestedOutputs: RequestedOutputKey[]
+    selected: boolean
+
+    parts: Record<LessonPlanContentPartKey, boolean>
+
+  }
+
+  lessonSlides: {
+
+    selected: boolean
+
+  }
+
+  assessments: {
+
+    selected: boolean
+
+    types: Record<AssessmentOutputTypeKey, boolean>
+
+  }
+
+  groups: {
+
+    selected: boolean
+
+    byTier: {
+
+      T1: {
+
+        centers: boolean
+
+      }
+
+      T2: {
+
+        small_group: boolean
+
+      }
+
+      T3: {
+
+        intervention: boolean
+
+      }
+
+      Extension: Record<string, never>
+
+    }
+
+  }
+
+  other: {
+
+    printables: boolean
+
+  }
+
+}
+
+
+
+export function createDefaultOutputContents(): LessonOutputContents {
+
+  return {
+
+    lessonPlan: {
+
+      selected: true,
+
+      parts: {
+
+        teach: true,
+
+        guided_practice: true,
+
+        independent_practice: true,
+
+        closure: true,
+
+      },
+
+    },
+
+    lessonSlides: {
+
+      selected: true,
+
+    },
+
+    assessments: {
+
+      selected: false,
+
+      types: {
+
+        formative_assessment: false,
+
+      },
+
+    },
+
+    groups: {
+
+      selected: false,
+
+      byTier: {
+
+        T1: {
+
+          centers: false,
+
+        },
+
+        T2: {
+
+          small_group: false,
+
+        },
+
+        T3: {
+
+          intervention: false,
+
+        },
+
+        Extension: {},
+
+      },
+
+    },
+
+    other: {
+
+      printables: false,
+
+    },
+
+  }
+
+}
+
+
+
+export function normalizeOutputContents(
+
+  outputContents: LessonOutputContents
+
+): LessonOutputContents {
+
+  const lessonPlanParts = {
+
+    teach: Boolean(outputContents.lessonPlan.parts.teach),
+
+    guided_practice: Boolean(outputContents.lessonPlan.parts.guided_practice),
+
+    independent_practice: Boolean(outputContents.lessonPlan.parts.independent_practice),
+
+    closure: Boolean(outputContents.lessonPlan.parts.closure),
+
+  }
+
+
+
+  const assessmentTypes = {
+
+    formative_assessment: Boolean(
+
+      outputContents.assessments.types.formative_assessment
+
+    ),
+
+  }
+
+
+
+  const groupByTier = {
+
+    T1: {
+
+      centers: Boolean(outputContents.groups.byTier.T1.centers),
+
+    },
+
+    T2: {
+
+      small_group: Boolean(outputContents.groups.byTier.T2.small_group),
+
+    },
+
+    T3: {
+
+      intervention: Boolean(outputContents.groups.byTier.T3.intervention),
+
+    },
+
+    Extension: {},
+
+  }
+
+
+
+  return {
+
+    lessonPlan: {
+
+      selected: true,
+
+      parts: lessonPlanParts,
+
+    },
+
+    lessonSlides: {
+
+      selected: true,
+
+    },
+
+    assessments: {
+
+      selected: assessmentTypes.formative_assessment,
+
+      types: assessmentTypes,
+
+    },
+
+    groups: {
+
+      selected:
+
+        groupByTier.T1.centers ||
+
+        groupByTier.T2.small_group ||
+
+        groupByTier.T3.intervention,
+
+      byTier: groupByTier,
+
+    },
+
+    other: {
+
+      printables: Boolean(outputContents.other.printables),
+
+    },
+
+  }
 
 }
 
@@ -669,6 +905,127 @@ export type PlanningComponentKey =
   | "small_group"
 
   | "intervention"
+
+
+export function isLessonPlanPartSelected(
+
+  outputContents: LessonOutputContents,
+
+  part: LessonPlanContentPartKey
+
+): boolean {
+
+  return Boolean(outputContents.lessonPlan.parts[part])
+
+}
+
+
+
+export function isAssessmentTypeSelected(
+
+  outputContents: LessonOutputContents,
+
+  type: AssessmentOutputTypeKey
+
+): boolean {
+
+  return Boolean(outputContents.assessments.types[type])
+
+}
+
+
+
+export function isGroupOutputSelected(
+
+  outputContents: LessonOutputContents,
+
+  kind: GroupOutputKindKey
+
+): boolean {
+
+  if (kind === "centers") {
+
+    return Boolean(outputContents.groups.byTier.T1.centers)
+
+  }
+
+
+
+  if (kind === "small_group") {
+
+    return Boolean(outputContents.groups.byTier.T2.small_group)
+
+  }
+
+
+
+  return Boolean(outputContents.groups.byTier.T3.intervention)
+
+}
+
+
+
+export function isPlanningComponentSelected(
+
+  outputContents: LessonOutputContents,
+
+  component: PlanningComponentKey
+
+): boolean {
+
+  if (
+
+    component === "teach" ||
+
+    component === "guided_practice" ||
+
+    component === "independent_practice" ||
+
+    component === "closure"
+
+  ) {
+
+    return isLessonPlanPartSelected(outputContents, component)
+
+  }
+
+
+
+  if (component === "formative_assessment") {
+
+    return isAssessmentTypeSelected(outputContents, "formative_assessment")
+
+  }
+
+
+
+  return isGroupOutputSelected(outputContents, component)
+
+}
+
+
+
+export function countSelectedOutputSections(
+
+  outputContents: LessonOutputContents
+
+): number {
+
+  return [
+
+    outputContents.lessonPlan.selected,
+
+    outputContents.lessonSlides.selected,
+
+    outputContents.assessments.selected,
+
+    outputContents.groups.selected,
+
+    outputContents.other.printables,
+
+  ].filter(Boolean).length
+
+}
 
 
 

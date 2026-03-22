@@ -1,37 +1,50 @@
 import React from "react"
+import { useNavigate } from "react-router-dom"
 import {
-  useNavigate } from "react-router-dom"
-import {
+  AssessmentOutputTypeKey,
+  GroupOutputKindKey,
   LessonMode,
-  RequestedLessonPartKey,
-  RequestedOutputKey,
-  } from "../engine/types"
+  LessonPlanContentPartKey,
+  countSelectedOutputSections,
+} from "../engine/types"
 import {
   orchardButtonStyle,
   orchardCardStyle,
+  orchardHeroCardStyle,
   orchardInputStyle,
   orchardNoticeStyle,
   orchardPageIntroBlockStyle,
+  orchardPageShellStyle,
   orchardSectionLabelStyle,
   orchardSectionTitleStyle,
   orchardSoftCardStyle,
   orchardTagStyle,
-  orchardPageShellStyle,
-  orchardHeroCardStyle
 } from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 
-type RequestOption<T extends string> = {
-  key: T
+type LessonPlanPartOption = {
+  key: LessonPlanContentPartKey
   title: string
   description: string
 }
 
-const requestedLessonPartOptions: RequestOption<RequestedLessonPartKey>[] = [
+type AssessmentOption = {
+  key: AssessmentOutputTypeKey
+  title: string
+  description: string
+}
+
+type GroupOption = {
+  key: GroupOutputKindKey
+  title: string
+  description: string
+}
+
+const lessonPlanPartOptions: LessonPlanPartOption[] = [
   {
     key: "teach",
     title: "Teach / mini-lesson",
-    description: "Direct instruction or modeled teaching you want included on purpose.",
+    description: "Direct instruction or modeled teaching in the teacher lesson plan.",
   },
   {
     key: "guided_practice",
@@ -46,55 +59,52 @@ const requestedLessonPartOptions: RequestOption<RequestedLessonPartKey>[] = [
   {
     key: "closure",
     title: "Closure",
-    description: "A wrap-up, synthesis, or end-of-lesson reflection.",
-  },
-  {
-    key: "formative_assessment",
-    title: "Formative assessment",
-    description: "A quick check for understanding, exit check, or mastery signal.",
-  },
-  {
-    key: "centers",
-    title: "Centers",
-    description: "Include centers or station work as part of the lesson design.",
-  },
-  {
-    key: "small_group",
-    title: "Small group",
-    description: "Include a teacher-led small-group plan as part of the lesson design.",
-  },
-  {
-    key: "intervention",
-    title: "Intervention",
-    description: "Include targeted reteach or intervention time as part of the lesson design.",
+    description: "A wrap-up, recap, or end-of-lesson reflection in the lesson plan.",
   },
 ]
 
-const requestedOutputOptions: RequestOption<RequestedOutputKey>[] = [
+const assessmentOptions: AssessmentOption[] = [
   {
-    key: "printables",
-    title: "Printables pack",
-    description: "A broader printable packet when you want more than one printable artifact.",
+    key: "formative_assessment",
+    title: "Formative assessment / exit check",
+    description:
+      "Add a quick check for understanding or exit-check support inside the lesson package.",
   },
-  {
-    key: "assessment",
-    title: "Assessment support",
-    description: "Add assessment or exit-check support inside the lesson package when you want a clearer check-for-understanding plan.",
-  },
+]
+
+const t1GroupOptions: GroupOption[] = [
   {
     key: "centers",
-    title: "Centers printables",
-    description: "Generate student-facing center materials when you want printable support for independent centers work.",
+    title: "Student-independent groups / centers",
+    description:
+      "Printable or rotation-ready support for student-independent centers or station work.",
   },
+]
+
+const t2GroupOptions: GroupOption[] = [
   {
     key: "small_group",
-    title: "Small-group support",
-    description: "Generate teacher-facing small-group supports when you want materials for a teacher-led support plan.",
+    title: "Teacher-led support group",
+    description:
+      "Teacher-facing support for a guided small-group or teacher-table follow-through.",
   },
+]
+
+const t3GroupOptions: GroupOption[] = [
   {
     key: "intervention",
-    title: "Intervention support",
-    description: "Generate teacher-facing intervention supports when you want materials for a teacher-led support plan.",
+    title: "Teacher-led intervention",
+    description:
+      "Targeted reteach or intervention support when students need extra help.",
+  },
+]
+
+const otherOutputOptions = [
+  {
+    key: "printables" as const,
+    title: "Printables pack",
+    description:
+      "A broader printable packet when you want extra printable artifacts beyond the core lesson package.",
   },
 ]
 
@@ -208,6 +218,20 @@ const requestGridStyle: React.CSSProperties = {
   marginTop: "var(--space-md)",
 }
 
+const outputSectionCardStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: "var(--space-lg)",
+  display: "grid",
+  gap: "var(--space-sm)",
+}
+
+const tierCardStyle: React.CSSProperties = {
+  border: "1px solid var(--border-paper)",
+  borderRadius: "var(--radius-md)",
+  padding: "12px 14px",
+  background: "rgba(255, 255, 255, 0.78)",
+}
+
 export default function InputsPage() {
   const navigate = useNavigate()
 
@@ -215,11 +239,11 @@ export default function InputsPage() {
   const setInputs = useLessonStore((state) => state.setInputs)
   const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
   const setSelectedLessonMode = useLessonStore((state) => state.setSelectedLessonMode)
-  const lessonRequest = useLessonStore((state) => state.lessonRequest)
-  const toggleRequestedLessonPart = useLessonStore(
-    (state) => state.toggleRequestedLessonPart
-  )
-  const toggleRequestedOutput = useLessonStore((state) => state.toggleRequestedOutput)
+  const outputContents = useLessonStore((state) => state.outputContents)
+  const toggleLessonPlanPart = useLessonStore((state) => state.toggleLessonPlanPart)
+  const toggleAssessmentType = useLessonStore((state) => state.toggleAssessmentType)
+  const toggleGroupOutput = useLessonStore((state) => state.toggleGroupOutput)
+  const toggleOtherOutput = useLessonStore((state) => state.toggleOtherOutput)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const targetPreview = useLessonStore((state) => state.getTargetPreview)()
   const [showLessonShapeOverride, setShowLessonShapeOverride] = React.useState(
@@ -246,9 +270,19 @@ export default function InputsPage() {
     : {
         ...orchardNoticeStyle,
       }
-  const optionalRequestedOutputs = lessonRequest.requestedOutputs.filter(
-    (key) => key !== "slides" && key !== "lesson_plan",
-  )
+
+  const selectedOutputSections = countSelectedOutputSections(outputContents)
+  const selectedLessonPlanParts = lessonPlanPartOptions.filter(
+    (option) => outputContents.lessonPlan.parts[option.key]
+  ).length
+  const selectedAssessmentTypes = assessmentOptions.filter(
+    (option) => outputContents.assessments.types[option.key]
+  ).length
+  const selectedGroupKinds = [
+    outputContents.groups.byTier.T1.centers,
+    outputContents.groups.byTier.T2.small_group,
+    outputContents.groups.byTier.T3.intervention,
+  ].filter(Boolean).length
 
   return (
     <div style={pageStyle}>
@@ -260,7 +294,14 @@ export default function InputsPage() {
           Define the lesson intent before adding curriculum and exemplar materials.
         </p>
         <p style={introStyle}>
-          Lesson slides and the teacher lesson plan are always included. Optional support materials stay optional unless you request them on purpose.
+          The next step is upload-file intake only. Materials accepts .txt, .pdf,
+          .docx, .pptx, .html, and .htm source files. Curriculum grounds content.
+          Exemplar grounds presentation and structure.
+        </p>
+        <p style={introStyle}>
+          Use Output Contents below as the single place to decide what belongs in
+          the package. Core lesson plan and slides stay included. Optional
+          assessments, groups, and printables stay out unless you select them here.
         </p>
       </div>
 
@@ -365,14 +406,12 @@ export default function InputsPage() {
 
             <div style={{ ...targetNoticeStyle, marginBottom: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                Recommended shape:{" "}
-                {formatLessonModeLabel(targetPreview.recommendedMode)}
+                Recommended shape: {formatLessonModeLabel(targetPreview.recommendedMode)}
               </div>
               <div>{targetPreview.message}</div>
               {selectedLessonMode !== "single" && (
                 <div style={{ marginTop: 6, fontSize: 13 }}>
-                  Manual override active:{" "}
-                  {formatLessonModeLabel(selectedLessonMode)}
+                  Manual override active: {formatLessonModeLabel(selectedLessonMode)}
                 </div>
               )}
             </div>
@@ -449,59 +488,145 @@ export default function InputsPage() {
         <div style={{ marginTop: "var(--space-xl)" }}>
           <div style={modeCardStyle}>
             <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
-              Requested lesson parts
+              Output Contents
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-              Use this when you want the system to explicitly add or prioritize
-              lesson parts beyond what your source materials already ground.
-              Leave items off unless you want them requested on purpose.
+              This is the only Inputs-page place where output inclusion is decided.
+              Choose lesson-plan sections, optional assessments, group supports,
+              and extra printables here.
             </div>
 
             <div style={{ ...noticeStyle, marginTop: 12 }}>
-              {lessonRequest.requestedLessonParts.length > 0
-                ? `${lessonRequest.requestedLessonParts.length} requested lesson part(s) selected. These should be treated as explicit teacher requests, not assumed defaults.`
-                : "No extra lesson parts requested yet. The system should rely on your inputs and source materials unless you ask for more."}
+              {selectedOutputSections} output section(s) currently included. Lesson
+              plan sections selected: {selectedLessonPlanParts}. Assessment types:
+              {" "}
+              {selectedAssessmentTypes}. Group kinds: {selectedGroupKinds}. Printables:
+              {outputContents.other.printables ? " selected" : " not selected"}.
             </div>
 
-            <div style={requestGridStyle}>
-              {requestedLessonPartOptions.map((option) => (
-                <RequestToggleCard
-                  key={option.key}
-                  checked={lessonRequest.requestedLessonParts.includes(option.key)}
-                  title={option.title}
-                  description={option.description}
-                  onToggle={() => toggleRequestedLessonPart(option.key)}
+            <div style={{ display: "grid", gap: "var(--space-md)", marginTop: "var(--space-md)" }}>
+              <OutputSectionCard
+                title="Lesson Plan"
+                description="Core teacher lesson-plan output. Turn sections on or off to control what appears in the lesson plan document."
+                statusLabel="Included"
+                active
+              >
+                <div style={requestGridStyle}>
+                  {lessonPlanPartOptions.map((option) => (
+                    <RequestToggleCard
+                      key={option.key}
+                      checked={outputContents.lessonPlan.parts[option.key]}
+                      title={option.title}
+                      description={option.description}
+                      onToggle={() => toggleLessonPlanPart(option.key)}
+                    />
+                  ))}
+                </div>
+              </OutputSectionCard>
+
+              <OutputSectionCard
+                title="Lesson Slides"
+                description="Core slide-deck output. Slides stay included and continue to follow exemplar-grounded structure and presentation."
+                statusLabel="Included"
+                active
+              >
+                <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
+                  Slides are part of the default package in this build. Their
+                  structure comes from the selected exemplar materials.
+                </div>
+              </OutputSectionCard>
+
+              <OutputSectionCard
+                title="Assessments"
+                description="Optional assessment support inside the lesson package. Select only the types you want included."
+                statusLabel={outputContents.assessments.selected ? "Selected" : "Optional"}
+                active={outputContents.assessments.selected}
+              >
+                <div style={requestGridStyle}>
+                  {assessmentOptions.map((option) => (
+                    <RequestToggleCard
+                      key={option.key}
+                      checked={outputContents.assessments.types[option.key]}
+                      title={option.title}
+                      description={option.description}
+                      onToggle={() => toggleAssessmentType(option.key)}
+                    />
+                  ))}
+                </div>
+              </OutputSectionCard>
+
+              <OutputSectionCard
+                title="Groups"
+                description="Optional group-related supports. Choose the kinds you want, organized by tier so the teacher-facing contract stays clear."
+                statusLabel={outputContents.groups.selected ? "Selected" : "Optional"}
+                active={outputContents.groups.selected}
+              >
+                <TierSection
+                  tier="T1"
+                  title="Student-independent groups / centers"
+                  description="Student-facing or rotation-ready support for independent work."
+                  options={t1GroupOptions}
+                  isSelected={(key) => {
+                    if (key === "centers") return outputContents.groups.byTier.T1.centers
+                    return false
+                  }}
+                  onToggle={toggleGroupOutput}
                 />
-              ))}
-            </div>
-          </div>
-        </div>
 
-        <div style={{ marginTop: "var(--space-xl)" }}>
-          <div style={modeCardStyle}>
-            <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
-              Optional support materials
-            </div>
-            <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-              Lesson slides and the teacher lesson plan are always included. Add printables or assessment support only when you want extra support materials. Lesson parts above still shape the lesson itself.
-            </div>
-
-            <div style={{ ...noticeStyle, marginTop: 12 }}>
-              {optionalRequestedOutputs.length > 0
-                ? optionalRequestedOutputs.length + " optional support material(s) selected. Lesson slides and the teacher lesson plan are already included."
-                : "No optional support materials requested yet. Lesson slides and the teacher lesson plan will still be included."}
-            </div>
-
-            <div style={requestGridStyle}>
-              {requestedOutputOptions.map((option) => (
-                <RequestToggleCard
-                  key={option.key}
-                  checked={lessonRequest.requestedOutputs.includes(option.key)}
-                  title={option.title}
-                  description={option.description}
-                  onToggle={() => toggleRequestedOutput(option.key)}
+                <TierSection
+                  tier="T2"
+                  title="Teacher-led support"
+                  description="Teacher-facing small-group follow-through and guided support."
+                  options={t2GroupOptions}
+                  isSelected={(key) => {
+                    if (key === "small_group") return outputContents.groups.byTier.T2.small_group
+                    return false
+                  }}
+                  onToggle={toggleGroupOutput}
                 />
-              ))}
+
+                <TierSection
+                  tier="T3"
+                  title="Teacher-led intervention"
+                  description="More targeted reteach or intervention support."
+                  options={t3GroupOptions}
+                  isSelected={(key) => {
+                    if (key === "intervention") return outputContents.groups.byTier.T3.intervention
+                    return false
+                  }}
+                  onToggle={toggleGroupOutput}
+                />
+
+                <div style={tierCardStyle}>
+                  <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                    Extension
+                  </div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 4 }}>
+                    No separate extension-specific group output is currently supported
+                    in the uploaded code. Extension remains a planning concept rather
+                    than a standalone packaged group artifact in this build.
+                  </div>
+                </div>
+              </OutputSectionCard>
+
+              <OutputSectionCard
+                title="Other Support Materials"
+                description="Additional support artifacts that still belong to the same output contract."
+                statusLabel={outputContents.other.printables ? "Selected" : "Optional"}
+                active={outputContents.other.printables}
+              >
+                <div style={requestGridStyle}>
+                  {otherOutputOptions.map((option) => (
+                    <RequestToggleCard
+                      key={option.key}
+                      checked={outputContents.other[option.key]}
+                      title={option.title}
+                      description={option.description}
+                      onToggle={() => toggleOtherOutput(option.key)}
+                    />
+                  ))}
+                </div>
+              </OutputSectionCard>
             </div>
           </div>
         </div>
@@ -509,9 +634,9 @@ export default function InputsPage() {
         <div style={{ marginTop: "var(--space-lg)" }}>
           <div style={noticeStyle}>
             Required before Results can generate: grade, subject, skill focus,
-            lesson topic, and duration. Standard is optional here; if left blank,
-            the app will use standards detected from usable curriculum materials
-            when available.
+            lesson topic, and duration. Standard is optional here. Source files are
+            added on Materials, where upload intake currently accepts .txt, .pdf,
+            .docx, .pptx, .html, and .htm files.
           </div>
         </div>
 
@@ -522,9 +647,7 @@ export default function InputsPage() {
               fontWeight: 700,
             }}
           >
-            {hasRequiredInputs
-              ? "Inputs complete"
-              : "Complete all required lesson fields"}
+            {hasRequiredInputs ? "Inputs complete" : "Complete all required lesson fields"}
           </div>
 
           <button
@@ -579,14 +702,89 @@ function LessonModeOption({
         style={{ marginTop: 3 }}
       />
       <div>
-        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-          {title}
-        </div>
+        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
         <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
           {description}
         </div>
       </div>
     </label>
+  )
+}
+
+function OutputSectionCard({
+  title,
+  description,
+  statusLabel,
+  active,
+  children,
+}: {
+  title: string
+  description: string
+  statusLabel: string
+  active: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div style={outputSectionCardStyle}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
+          <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
+            {description}
+          </div>
+        </div>
+        <span style={{ ...orchardTagStyle(active ? "moss" : "honey"), fontWeight: 700 }}>
+          {statusLabel}
+        </span>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function TierSection({
+  tier,
+  title,
+  description,
+  options,
+  isSelected,
+  onToggle,
+}: {
+  tier: "T1" | "T2" | "T3"
+  title: string
+  description: string
+  options: GroupOption[]
+  isSelected: (key: GroupOutputKindKey) => boolean
+  onToggle: (key: GroupOutputKindKey) => void
+}) {
+  return (
+    <div style={tierCardStyle}>
+      <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+        {tier} · {title}
+      </div>
+      <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 4 }}>
+        {description}
+      </div>
+      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+        {options.map((option) => (
+          <RequestToggleCard
+            key={option.key}
+            checked={isSelected(option.key)}
+            title={option.title}
+            description={option.description}
+            onToggle={() => onToggle(option.key)}
+          />
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -638,4 +836,3 @@ function RequestToggleCard({
     </label>
   )
 }
-

@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest"
 import { buildLessonPlanningIdeas } from "./planning/buildLessonPlanningIdeas"
 import { buildPackageOutputs } from "./package/buildPackageOutputs"
 import {
+  createDefaultOutputContents,
+  normalizeOutputContents,
   LessonBlueprint,
+  LessonOutputContents,
   LessonPlanningIdeas,
   LessonSpec,
 } from "./types"
@@ -124,12 +127,27 @@ const planningIdeas: LessonPlanningIdeas = {
   ],
 }
 
-describe("request-aware planning", () => {
-  it("keeps optional planning components out when they are neither requested nor strongly grounded", () => {
-    const result = buildLessonPlanningIdeas(makeBlueprint(), {
-      requestedLessonParts: [],
-      requestedOutputs: [],
-    })
+function makeOutputContents(options: {
+  assessment?: boolean
+  centers?: boolean
+  smallGroup?: boolean
+  intervention?: boolean
+  printables?: boolean
+} = {}): LessonOutputContents {
+  const outputContents = createDefaultOutputContents()
+
+  outputContents.assessments.types.formative_assessment = Boolean(options.assessment)
+  outputContents.groups.byTier.T1.centers = Boolean(options.centers)
+  outputContents.groups.byTier.T2.small_group = Boolean(options.smallGroup)
+  outputContents.groups.byTier.T3.intervention = Boolean(options.intervention)
+  outputContents.other.printables = Boolean(options.printables)
+
+  return normalizeOutputContents(outputContents)
+}
+
+describe("outputContents-aware planning", () => {
+  it("keeps optional planning components out when they are not selected", () => {
+    const result = buildLessonPlanningIdeas(makeBlueprint(), makeOutputContents())
 
     expect(result.formativeAssessmentIdeas).toEqual([])
     expect(result.centerIdeas).toEqual([])
@@ -137,8 +155,8 @@ describe("request-aware planning", () => {
     expect(result.interventionIdeas).toEqual([])
   })
 
-  it("includes optional planning components when they are strongly grounded or explicitly requested", () => {
-    const grounded = buildLessonPlanningIdeas(
+  it("includes optional planning components when their outputContents groups are selected", () => {
+    const selected = buildLessonPlanningIdeas(
       makeBlueprint([
         "Formative Check",
         "Exit Ticket",
@@ -149,30 +167,22 @@ describe("request-aware planning", () => {
         "Intervention Block",
         "Reteach",
       ]),
-      {
-        requestedLessonParts: [],
-        requestedOutputs: [],
-      }
+      makeOutputContents({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+      })
     )
 
-    expect(grounded.formativeAssessmentIdeas.length).toBeGreaterThan(0)
-    expect(grounded.centerIdeas.length).toBeGreaterThan(0)
-    expect(grounded.smallGroupIdeas.length).toBeGreaterThan(0)
-    expect(grounded.interventionIdeas.length).toBeGreaterThan(0)
-
-    const requested = buildLessonPlanningIdeas(makeBlueprint(), {
-      requestedLessonParts: ["small_group"],
-      requestedOutputs: ["assessment", "centers", "intervention"],
-    })
-
-    expect(requested.formativeAssessmentIdeas.length).toBeGreaterThan(0)
-    expect(requested.centerIdeas.length).toBeGreaterThan(0)
-    expect(requested.smallGroupIdeas.length).toBeGreaterThan(0)
-    expect(requested.interventionIdeas.length).toBeGreaterThan(0)
+    expect(selected.formativeAssessmentIdeas.length).toBeGreaterThan(0)
+    expect(selected.centerIdeas.length).toBeGreaterThan(0)
+    expect(selected.smallGroupIdeas.length).toBeGreaterThan(0)
+    expect(selected.interventionIdeas.length).toBeGreaterThan(0)
   })
 })
 
-describe("request-aware package outputs", () => {
+describe("outputContents-aware package outputs", () => {
   it("does not assemble optional package outputs by default", () => {
     const result = buildPackageOutputs({
       inputs: {
@@ -186,10 +196,7 @@ describe("request-aware package outputs", () => {
       blueprint: makeBlueprint(),
       spec,
       planningIdeas,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: [],
-      },
+      outputContents: makeOutputContents(),
     })
 
     expect(result.centers).toEqual([])
@@ -201,7 +208,7 @@ describe("request-aware package outputs", () => {
     ])
   })
 
-  it("assembles optional package outputs when they are explicitly requested", () => {
+  it("assembles optional package outputs when their outputContents groups are selected", () => {
     const result = buildPackageOutputs({
       inputs: {
         grade: "1",
@@ -214,10 +221,12 @@ describe("request-aware package outputs", () => {
       blueprint: makeBlueprint(),
       spec,
       planningIdeas,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: ["centers", "small_group", "intervention", "printables"],
-      },
+      outputContents: makeOutputContents({
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        printables: true,
+      }),
     })
 
     expect(result.centers).toEqual([
@@ -249,10 +258,7 @@ describe("request-aware package outputs", () => {
       blueprint: makeBlueprint(),
       spec,
       planningIdeas,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: ["printables"],
-      },
+      outputContents: makeOutputContents({ printables: true }),
     })
 
     expect(result.centers).toEqual([])
@@ -267,5 +273,4 @@ describe("request-aware package outputs", () => {
       "printables",
     ])
   })
-
 })

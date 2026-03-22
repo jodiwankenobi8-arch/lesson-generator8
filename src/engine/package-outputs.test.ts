@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest"
 import { buildPackageOutputs } from "./package/buildPackageOutputs"
-import { LessonBlueprint, LessonPlanningIdeas, LessonSpec } from "./types"
+import {
+  createDefaultOutputContents,
+  normalizeOutputContents,
+  LessonBlueprint,
+  LessonOutputContents,
+  LessonPlanningIdeas,
+  LessonSpec,
+} from "./types"
 
 const blueprint: LessonBlueprint = {
   content: {
@@ -73,60 +80,93 @@ const spec: LessonSpec = {
   },
 }
 
-const planningIdeas: LessonPlanningIdeas = {
-  slidePlans: [
-    {
-      shellLabel: "Opening",
-      action: "adapt",
-      purpose: "Launch the lesson",
-      notes: "Use exemplar pacing",
-    },
-  ],
-  lessonPlanSections: [
-    {
-      section: "teach",
-      title: "Teaching Moves",
-      ideas: [
-        {
-          title: "Model and mark vowels",
-          description: "Underline the vowel team before blending.",
-          rationale: "Makes the sound-spelling pattern visible.",
-        },
-      ],
-    },
-  ],
-  formativeAssessmentIdeas: [
-    {
-      title: "Quick Check",
-      description: "Listen to each student read one target word.",
-      rationale: "Checks immediate transfer.",
-    },
-  ],
-  centerIdeas: [
-    {
-      title: "Word Sort",
-      description: "Sort long a and short a words.",
-      rationale: "Reinforces discrimination.",
-    },
-  ],
-  smallGroupIdeas: [
-    {
-      title: "Targeted Blending",
-      description: "Reteach blending with a reduced list.",
-      rationale: "Supports students needing more modeling.",
-    },
-  ],
-  interventionIdeas: [
-    {
-      title: "Phonics Reteach",
-      description: "Practice decoding with teacher support.",
-      rationale: "Builds confidence and accuracy.",
-    },
-  ],
+function makeOutputContents(options: {
+  assessment?: boolean
+  centers?: boolean
+  smallGroup?: boolean
+  intervention?: boolean
+  printables?: boolean
+} = {}): LessonOutputContents {
+  const outputContents = createDefaultOutputContents()
+
+  outputContents.assessments.types.formative_assessment = Boolean(options.assessment)
+  outputContents.groups.byTier.T1.centers = Boolean(options.centers)
+  outputContents.groups.byTier.T2.small_group = Boolean(options.smallGroup)
+  outputContents.groups.byTier.T3.intervention = Boolean(options.intervention)
+  outputContents.other.printables = Boolean(options.printables)
+
+  return normalizeOutputContents(outputContents)
+}
+
+function makePlanningIdeas(options: {
+  assessment?: boolean
+  centers?: boolean
+  smallGroup?: boolean
+  intervention?: boolean
+} = {}): LessonPlanningIdeas {
+  return {
+    slidePlans: [
+      {
+        shellLabel: "Opening",
+        action: "adapt",
+        purpose: "Launch the lesson",
+        notes: "Use exemplar pacing",
+      },
+    ],
+    lessonPlanSections: [
+      {
+        section: "teach",
+        title: "Teaching Moves",
+        ideas: [
+          {
+            title: "Model and mark vowels",
+            description: "Underline the vowel team before blending.",
+            rationale: "Makes the sound-spelling pattern visible.",
+          },
+        ],
+      },
+    ],
+    formativeAssessmentIdeas: options.assessment
+      ? [
+          {
+            title: "Quick Check",
+            description: "Listen to each student read one target word.",
+            rationale: "Checks immediate transfer.",
+          },
+        ]
+      : [],
+    centerIdeas: options.centers
+      ? [
+          {
+            title: "Word Sort",
+            description: "Sort long a and short a words.",
+            rationale: "Reinforces discrimination.",
+          },
+        ]
+      : [],
+    smallGroupIdeas: options.smallGroup
+      ? [
+          {
+            title: "Targeted Blending",
+            description: "Reteach blending with a reduced list.",
+            rationale: "Supports students needing more modeling.",
+          },
+        ]
+      : [],
+    interventionIdeas: options.intervention
+      ? [
+          {
+            title: "Phonics Reteach",
+            description: "Practice decoding with teacher support.",
+            rationale: "Builds confidence and accuracy.",
+          },
+        ]
+      : [],
+  }
 }
 
 describe("buildPackageOutputs", () => {
-  it("builds package outputs using planning ideas when available", () => {
+  it("builds package outputs using outputContents-selected planning ideas when available", () => {
     const result = buildPackageOutputs({
       inputs: {
         grade: "1",
@@ -138,11 +178,19 @@ describe("buildPackageOutputs", () => {
       },
       blueprint,
       spec,
-      planningIdeas,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: ["assessment", "centers", "small_group", "intervention", "printables"],
-      },
+      planningIdeas: makePlanningIdeas({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+      }),
+      outputContents: makeOutputContents({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        printables: true,
+      }),
     })
 
     expect(result.slides.length).toBeGreaterThan(0)
@@ -154,8 +202,12 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Intervention Support")
     expect(result.centers).toEqual(["Word Sort: Sort long a and short a words."])
     expect(result.rotationPlan).toContain("Rotation 1: Word Sort: Sort long a and short a words.")
-    expect(result.rotationPlan).toContain("Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list.")
-    expect(result.interventions).toEqual(["Phonics Reteach: Practice decoding with teacher support."])
+    expect(result.rotationPlan).toContain(
+      "Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list."
+    )
+    expect(result.interventions).toEqual([
+      "Phonics Reteach: Practice decoding with teacher support.",
+    ])
     expect(result.exports).toEqual([
       {
         kind: "slides",
@@ -181,7 +233,7 @@ describe("buildPackageOutputs", () => {
     ])
   })
 
-  it("omits unrequested optional practice and support sections from the lesson plan narrative", () => {
+  it("omits unselected optional group sections from the lesson plan narrative", () => {
     const result = buildPackageOutputs({
       inputs: {
         grade: "1",
@@ -193,11 +245,8 @@ describe("buildPackageOutputs", () => {
       },
       blueprint,
       spec,
-      planningIdeas,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: ["assessment"],
-      },
+      planningIdeas: makePlanningIdeas({ assessment: true }),
+      outputContents: makeOutputContents({ assessment: true }),
     })
 
     expect(result.lessonPlan).toContain("Formative Assessment Ideas")
@@ -227,10 +276,12 @@ describe("buildPackageOutputs", () => {
       },
       blueprint,
       spec,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: ["centers", "small_group", "intervention", "printables"],
-      },
+      outputContents: makeOutputContents({
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        printables: true,
+      }),
     })
 
     expect(result.centers).toEqual([
@@ -252,7 +303,6 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Minor warning for visibility.")
   })
 
-
   it("keeps export support labels aligned without forcing results-page center wording", () => {
     const result = buildPackageOutputs({
       inputs: {
@@ -265,11 +315,19 @@ describe("buildPackageOutputs", () => {
       },
       blueprint,
       spec,
-      planningIdeas,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: ["centers", "small_group", "intervention", "printables"],
-      },
+      planningIdeas: makePlanningIdeas({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+      }),
+      outputContents: makeOutputContents({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        printables: true,
+      }),
     })
 
     expect(result.lessonPlan).toContain("Centers")
@@ -285,6 +343,7 @@ describe("buildPackageOutputs", () => {
     expect(printablesExport!.content).toContain("Intervention Support")
     expect(printablesExport!.content).not.toContain("\nInterventions\n")
   })
+
   it("does not let printables alone unlock optional centers or teacher-led support lanes", () => {
     const result = buildPackageOutputs({
       inputs: {
@@ -297,11 +356,8 @@ describe("buildPackageOutputs", () => {
       },
       blueprint,
       spec,
-      planningIdeas,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: ["printables"],
-      },
+      planningIdeas: makePlanningIdeas(),
+      outputContents: makeOutputContents({ printables: true }),
     })
 
     expect(result.lessonPlan).not.toContain("Centers")
@@ -325,6 +381,7 @@ describe("buildPackageOutputs", () => {
     expect(printablesExport!.content).toContain("Intervention Support")
     expect(printablesExport!.content).toContain("- No intervention support defined.")
   })
+
   it("keeps canonical exports free of banned hub language", () => {
     const result = buildPackageOutputs({
       inputs: {
@@ -337,7 +394,8 @@ describe("buildPackageOutputs", () => {
       },
       blueprint,
       spec,
-      planningIdeas,
+      planningIdeas: makePlanningIdeas(),
+      outputContents: makeOutputContents(),
     })
 
     const exportContent = result.exports

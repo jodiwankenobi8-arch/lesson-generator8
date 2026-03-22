@@ -4,20 +4,20 @@ import {
   LessonPlanIdea,
   LessonPlanSectionIdeas,
   LessonPlanningIdeas,
-  LessonRequestPreferences,
+  LessonOutputContents,
   MissingAreaPromptCandidate,
   PlanningComponentCoverage,
   PlanningComponentKey,
   PlanningCoverageDetail,
   PlanningCoverageStatus,
-  RequestedLessonPartKey,
-  RequestedOutputKey,
+  createDefaultOutputContents,
+  isPlanningComponentSelected,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 export function buildLessonPlanningIdeas(
   blueprint: LessonBlueprint,
-  lessonRequest: LessonRequestPreferences = createEmptyLessonRequest()
+  outputContents: LessonOutputContents = createDefaultOutputContents()
 ): LessonPlanningIdeas {
   const shell = resolveTemplateShell(blueprint, {
     lessonSegmentsCount: 8,
@@ -35,13 +35,6 @@ export function buildLessonPlanningIdeas(
   const standards = blueprint.content.standards
   const lessonSegments = blueprint.structure.lessonSegments
 
-  const requestedLessonParts = new Set<RequestedLessonPartKey>(
-    lessonRequest.requestedLessonParts
-  )
-  const requestedOutputs = new Set<RequestedOutputKey>(
-    lessonRequest.requestedOutputs
-  )
-
   const lessonPlanSections = buildLessonPlanSections(
     blueprint,
     standards,
@@ -49,12 +42,10 @@ export function buildLessonPlanningIdeas(
     texts,
     practiceIdeas,
     wordLists
-  )
+  ).filter((section) => isPlanningComponentSelected(outputContents, section.section))
   const formativeAssessmentIdeas = shouldIncludeOptionalComponent(
     "formative_assessment",
-    blueprint,
-    requestedLessonParts,
-    requestedOutputs
+    outputContents
   )
     ? buildFormativeIdeas(
         blueprint,
@@ -66,25 +57,19 @@ export function buildLessonPlanningIdeas(
     : []
   const centerIdeas = shouldIncludeOptionalComponent(
     "centers",
-    blueprint,
-    requestedLessonParts,
-    requestedOutputs
+    outputContents
   )
     ? buildCenterIdeas(blueprint, practiceIdeas, texts, wordLists)
     : []
   const smallGroupIdeas = shouldIncludeOptionalComponent(
     "small_group",
-    blueprint,
-    requestedLessonParts,
-    requestedOutputs
+    outputContents
   )
     ? buildSmallGroupIdeas(blueprint, vocabulary, texts, wordLists)
     : []
   const interventionIdeas = shouldIncludeOptionalComponent(
     "intervention",
-    blueprint,
-    requestedLessonParts,
-    requestedOutputs
+    outputContents
   )
     ? buildInterventionIdeas(blueprint, vocabulary, texts, wordLists)
     : []
@@ -96,7 +81,7 @@ export function buildLessonPlanningIdeas(
     centerIdeas,
     smallGroupIdeas,
     interventionIdeas,
-  })
+  }).filter((entry) => isPlanningComponentSelected(outputContents, entry.component))
 
   return {
     slidePlans: shell.slideShell.map((shellLabel, index) => {
@@ -124,88 +109,19 @@ export function buildLessonPlanningIdeas(
     smallGroupIdeas,
     interventionIdeas,
     componentCoverage,
-    missingAreaPrompts: buildMissingAreaPromptCandidates(blueprint, componentCoverage),
-  }
-}
-
-function createEmptyLessonRequest(): LessonRequestPreferences {
-  return {
-    requestedLessonParts: [],
-    requestedOutputs: [],
+    missingAreaPrompts: buildMissingAreaPromptCandidates(
+      blueprint,
+      componentCoverage,
+      outputContents
+    ),
   }
 }
 
 function shouldIncludeOptionalComponent(
   component: "formative_assessment" | "centers" | "small_group" | "intervention",
-  blueprint: LessonBlueprint,
-  requestedLessonParts: Set<RequestedLessonPartKey>,
-  requestedOutputs: Set<RequestedOutputKey>
+  outputContents: LessonOutputContents
 ): boolean {
-  if (requestedLessonParts.has(component)) {
-    return true
-  }
-
-  const relatedOutput = resolveRequestedOutputForComponent(component)
-  if (relatedOutput && requestedOutputs.has(relatedOutput)) {
-    return true
-  }
-
-  return resolveOptionalSourceCoverageStatus(component, blueprint) === "covered"
-}
-
-function resolveRequestedOutputForComponent(
-  component: "formative_assessment" | "centers" | "small_group" | "intervention"
-): RequestedOutputKey | null {
-  if (component === "formative_assessment") return "assessment"
-  if (component === "centers") return "centers"
-  if (component === "small_group") return "small_group"
-  if (component === "intervention") return "intervention"
-  return null
-}
-
-function resolveOptionalSourceCoverageStatus(
-  component: "formative_assessment" | "centers" | "small_group" | "intervention",
-  blueprint: LessonBlueprint
-): PlanningCoverageStatus {
-  const coverage = getBlueprintContentCoverage(blueprint)
-
-  if (component === "formative_assessment") {
-    return inferSourceCoverageStatus(
-      component,
-      collectCoverageSignals({
-        coverage,
-        lessonSegmentTerms: ["check", "formative", "assessment", "exit", "monitor"],
-      })
-    )
-  }
-
-  if (component === "centers") {
-    return inferSourceCoverageStatus(
-      component,
-      collectCoverageSignals({
-        coverage,
-        lessonSegmentTerms: ["center", "rotation", "station"],
-      })
-    )
-  }
-
-  if (component === "small_group") {
-    return inferSourceCoverageStatus(
-      component,
-      collectCoverageSignals({
-        coverage,
-        lessonSegmentTerms: ["small group", "teacher table", "guided group", "reteach group"],
-      })
-    )
-  }
-
-  return inferSourceCoverageStatus(
-    component,
-    collectCoverageSignals({
-      coverage,
-      lessonSegmentTerms: ["intervention", "reteach", "support", "reteaching"],
-    })
-  )
+  return isPlanningComponentSelected(outputContents, component)
 }
 
 function inferSlideAction(shellLabel: string): "reuse" | "adapt" | "create_new" {
@@ -999,7 +915,8 @@ function collectCoverageSignals(args: {
 
 function buildMissingAreaPromptCandidates(
   blueprint: LessonBlueprint,
-  componentCoverage: PlanningComponentCoverage[]
+  componentCoverage: PlanningComponentCoverage[],
+  outputContents: LessonOutputContents
 ): MissingAreaPromptCandidate[] {
   const target = blueprint.content.target
   const isMixedFull = target.isMixedTarget && target.recommendedMode === "full"
@@ -1009,19 +926,19 @@ function buildMissingAreaPromptCandidates(
     componentCoverage.map((entry) => [entry.component, entry] as const)
   )
 
-  addPromptIfSourceCoverageMissing(prompts, byComponent, "guided_practice", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, outputContents, "guided_practice", {
     importance: "high",
     prompt: "I did not detect strong guided practice in the source materials. Add a scaffolded guided-practice block?",
     rationale: "Guided practice is a core lesson component and should usually be explicit before independent work.",
   })
 
-  addPromptIfSourceCoverageMissing(prompts, byComponent, "independent_practice", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, outputContents, "independent_practice", {
     importance: "high",
     prompt: "I did not detect clear independent practice in the source materials. Add an independent application task?",
     rationale: "Independent practice is important for transfer and should not be silently skipped in most lessons.",
   })
 
-  addPromptIfSourceCoverageMissing(prompts, byComponent, "closure", {
+  addPromptIfSourceCoverageMissing(prompts, byComponent, outputContents, "closure", {
     importance: "medium",
     prompt: "I did not detect a clear closure in the source materials. Add a short recap or exit check?",
     rationale: "Closure is instructionally meaningful and worth asking about when it seems absent.",
@@ -1035,9 +952,14 @@ function buildMissingAreaPromptCandidates(
 function addPromptIfSourceCoverageMissing(
   prompts: MissingAreaPromptCandidate[],
   byComponent: Map<PlanningComponentKey, PlanningComponentCoverage>,
+  outputContents: LessonOutputContents,
   component: PlanningComponentKey,
   candidate: Omit<MissingAreaPromptCandidate, "component">
 ): void {
+  if (!isPlanningComponentSelected(outputContents, component)) {
+    return
+  }
+
   const coverage = byComponent.get(component)
   const sourceStatus = coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
 

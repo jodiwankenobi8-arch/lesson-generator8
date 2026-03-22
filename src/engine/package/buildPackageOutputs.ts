@@ -2,12 +2,14 @@ import {
   ExportArtifact,
   LessonBlueprint,
   LessonInputs,
+  LessonOutputContents,
   LessonPlanningIdeas,
-  LessonRequestPreferences,
   LessonSpec,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
-  RequestedOutputKey,
+  createDefaultOutputContents,
+  isGroupOutputSelected,
+  isLessonPlanPartSelected,
 } from "../types"
 import { assembleSlideDeck } from "../slides/assembleSlideDeck"
 
@@ -24,6 +26,7 @@ type DecisionAwareListOptions = {
 }
 
 type LessonPlanOutputOptions = {
+  outputContents: LessonOutputContents
   includeCentersOutput: boolean
   includeSmallGroupOutput: boolean
   includeInterventionOutput: boolean
@@ -39,7 +42,7 @@ export function buildPackageOutputs(args: {
   blueprint: LessonBlueprint
   spec: LessonSpec
   planningIdeas?: LessonPlanningIdeas
-  lessonRequest?: LessonRequestPreferences
+  outputContents?: LessonOutputContents
   missingAreaDecisions?: MissingAreaDecisionMap
 }) {
   const {
@@ -47,37 +50,32 @@ export function buildPackageOutputs(args: {
     blueprint,
     spec,
     planningIdeas,
-    lessonRequest = {
-      requestedLessonParts: [],
-      requestedOutputs: [],
-    },
+    outputContents = createDefaultOutputContents(),
     missingAreaDecisions = {},
   } = args
 
-  const requestedOutputs = new Set<RequestedOutputKey>(lessonRequest.requestedOutputs)
-  const includeCentersOutput =
-    requestedOutputs.has("centers") ||
-    missingAreaDecisions.centers === "add"
-  const includeSmallGroupOutput =
-    requestedOutputs.has("small_group") ||
-    missingAreaDecisions.small_group === "add"
-  const includeInterventionOutput =
-    requestedOutputs.has("intervention") ||
-    missingAreaDecisions.intervention === "add"
+  const includeLessonSlidesOutput = outputContents.lessonSlides.selected
+  const includeLessonPlanOutput = outputContents.lessonPlan.selected
+  const includeCentersOutput = isGroupOutputSelected(outputContents, "centers")
+  const includeSmallGroupOutput = isGroupOutputSelected(outputContents, "small_group")
+  const includeInterventionOutput = isGroupOutputSelected(outputContents, "intervention")
 
-  const slides = buildSlides(blueprint, spec)
-  const lessonPlan = buildLessonPlan(
-    inputs,
-    blueprint,
-    spec,
-    planningIdeas,
-    missingAreaDecisions,
-    {
-      includeCentersOutput,
-      includeSmallGroupOutput,
-      includeInterventionOutput,
-    }
-  )
+  const slides = includeLessonSlidesOutput ? buildSlides(blueprint, spec) : []
+  const lessonPlan = includeLessonPlanOutput
+    ? buildLessonPlan(
+        inputs,
+        blueprint,
+        spec,
+        planningIdeas,
+        missingAreaDecisions,
+        {
+          outputContents,
+          includeCentersOutput,
+          includeSmallGroupOutput,
+          includeInterventionOutput,
+        }
+      )
+    : ""
   const centers = includeCentersOutput
     ? buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions)
     : []
@@ -104,7 +102,11 @@ export function buildPackageOutputs(args: {
     centers,
     rotationPlan,
     interventions,
-    requestedOutputs.has("printables")
+    {
+      includeLessonSlidesExport: includeLessonSlidesOutput,
+      includeLessonPlanExport: includeLessonPlanOutput,
+      includePrintablesExport: outputContents.other.printables,
+    }
   )
 
   return {
@@ -145,12 +147,14 @@ function buildLessonPlan(
   planningIdeas?: LessonPlanningIdeas,
   missingAreaDecisions: MissingAreaDecisionMap = {},
   lessonPlanOutputs: LessonPlanOutputOptions = {
+    outputContents: createDefaultOutputContents(),
     includeCentersOutput: true,
     includeSmallGroupOutput: true,
     includeInterventionOutput: true,
   }
 ): string {
   const {
+    outputContents,
     includeCentersOutput,
     includeSmallGroupOutput,
     includeInterventionOutput,
@@ -169,7 +173,8 @@ function buildLessonPlan(
   const readinessBlock = buildBlueprintReadinessBlock(blueprint)
   const coverageBlock = buildCoverageDecisionBlock(planningIdeas, missingAreaDecisions)
 
-  const teachBlock = buildSectionNarrativeBlock(spec.teach.title, [
+  const teachBlock = isLessonPlanPartSelected(outputContents, "teach")
+    ? buildSectionNarrativeBlock(spec.teach.title, [
     `Model Resources: ${selectModelResources(blueprint)}`,
     `Teacher Moves: ${joinOrFallback(
       blueprint.structure.teacherMoves.slice(0, 3),
@@ -180,8 +185,10 @@ function buildLessonPlan(
       "Objective -> Teach -> Guided Practice"
     )}`,
   ], spec.teach.steps)
+    : ""
 
-  const guidedBlock = buildSectionNarrativeBlock(spec.guidedPractice.title, [
+  const guidedBlock = isLessonPlanPartSelected(outputContents, "guided_practice")
+    ? buildSectionNarrativeBlock(spec.guidedPractice.title, [
     `Practice Anchor: ${joinOrFallback(
       blueprint.content.practiceIdeas.slice(0, 3),
       "curriculum-aligned guided practice"
@@ -195,14 +202,17 @@ function buildLessonPlan(
       "Mini-lesson | Practice | Closure"
     )}`,
   ], spec.guidedPractice.steps)
+    : ""
 
-  const independentBlock = buildSectionNarrativeBlock(spec.independentPractice.title, [
+  const independentBlock = isLessonPlanPartSelected(outputContents, "independent_practice")
+    ? buildSectionNarrativeBlock(spec.independentPractice.title, [
     `Transfer Task: ${selectIndependentResources(blueprint)}`,
     `Student Practice: ${joinOrFallback(
       blueprint.content.practiceIdeas.slice(0, 2),
       "independent application"
     )}`,
   ], spec.independentPractice.steps)
+    : ""
 
   const centersBlock = includeCentersOutput
     ? buildSectionNarrativeBlock(spec.centers.title, [
@@ -213,13 +223,15 @@ function buildLessonPlan(
       ], spec.centers.steps)
     : ""
 
-  const closureBlock = buildSectionNarrativeBlock(spec.closure.title, [
+  const closureBlock = isLessonPlanPartSelected(outputContents, "closure")
+    ? buildSectionNarrativeBlock(spec.closure.title, [
     `Review Focus: ${selectClosureResources(blueprint)}`,
     `Delivery Tone: ${joinOrFallback(
       blueprint.structure.tone.slice(0, 2),
       "clear instructional tone"
     )}`,
   ], spec.closure.steps)
+    : ""
 
   const planningBlock = buildPlanningBlock(planningIdeas)
   const supportBlock = buildSupportBlock(
@@ -886,28 +898,37 @@ function buildExports(
   centers: string[],
   rotationPlan: string,
   interventions: string[],
-  includePrintablesExport: boolean
+  exportOptions: {
+    includeLessonSlidesExport: boolean
+    includeLessonPlanExport: boolean
+    includePrintablesExport: boolean
+  }
 ): ExportArtifact[] {
   const safeSubject = sanitizeExportSubject(inputs.subject)
 
-  const artifacts: ExportArtifact[] = [
-    {
+  const artifacts: ExportArtifact[] = []
+
+  if (exportOptions.includeLessonSlidesExport) {
+    artifacts.push({
       kind: "slides",
       label: "Slides Export",
       fileName: `${safeSubject}-slides-export.txt`,
       mimeType: "text/plain;charset=utf-8",
       content: buildSlidesExportText(slides),
-    },
-    {
+    })
+  }
+
+  if (exportOptions.includeLessonPlanExport) {
+    artifacts.push({
       kind: "lesson_plan",
       label: "Lesson Plan Export",
       fileName: `${safeSubject}-lesson-plan-export.docx`,
       mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       content: lessonPlan,
-    },
-  ]
+    })
+  }
 
-  if (includePrintablesExport) {
+  if (exportOptions.includePrintablesExport) {
     artifacts.push({
       kind: "printables",
       label: "Printables Export",

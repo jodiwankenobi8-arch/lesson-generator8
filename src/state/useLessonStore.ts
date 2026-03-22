@@ -1,23 +1,27 @@
 import { create } from "zustand"
 import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
 import {
+  AssessmentOutputTypeKey,
   ExemplarStyleSettings,
+  GroupOutputKindKey,
   LessonBlueprint,
   LessonInputs,
   LessonMode,
+  LessonOutputContents,
   LessonPackage,
+  LessonPlanContentPartKey,
   LessonPlanningIdeas,
   LessonPipelineTrace,
-  LessonRequestPreferences,
   LessonSpec,
   MaterialAnalysis,
   MaterialFile,
   MaterialRole,
   MaterialStatus,
   MissingAreaDecisionChoice,
+  OtherOutputKey,
   PlanningComponentKey,
-  RequestedLessonPartKey,
-  RequestedOutputKey,
+  createDefaultOutputContents,
+  normalizeOutputContents,
 } from "../engine/types"
 
 type MaterialCounts = {
@@ -46,15 +50,16 @@ type LessonStore = {
   lessonSpec: LessonSpec | null
   lessonPackage: LessonPackage | null
   lessonTrace: LessonPipelineTrace | null
-  lessonRequest: LessonRequestPreferences
+  outputContents: LessonOutputContents
   missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
 
   setInputs: (updates: Partial<LessonInputs>) => void
   setSelectedLessonMode: (mode: LessonMode) => void
-  setRequestedLessonParts: (parts: RequestedLessonPartKey[]) => void
-  toggleRequestedLessonPart: (part: RequestedLessonPartKey) => void
-  setRequestedOutputs: (outputs: RequestedOutputKey[]) => void
-  toggleRequestedOutput: (output: RequestedOutputKey) => void
+  setOutputContents: (outputContents: LessonOutputContents) => void
+  toggleLessonPlanPart: (part: LessonPlanContentPartKey) => void
+  toggleAssessmentType: (type: AssessmentOutputTypeKey) => void
+  toggleGroupOutput: (output: GroupOutputKindKey) => void
+  toggleOtherOutput: (output: OtherOutputKey) => void
 
   addMaterial: (role: MaterialRole, name?: string) => string
   setMaterialSource: (
@@ -152,15 +157,8 @@ function defaultExemplarStyleSettings(): ExemplarStyleSettings {
   }
 }
 
-function defaultLessonRequestPreferences(): LessonRequestPreferences {
-  return {
-    requestedLessonParts: [],
-    requestedOutputs: [],
-  }
-}
-
-function uniqueValues<T extends string>(items: T[]): T[] {
-  return Array.from(new Set(items))
+function defaultOutputContents(): LessonOutputContents {
+  return createDefaultOutputContents()
 }
 
 function buildTargetPreview(
@@ -220,7 +218,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   lessonSpec: null,
   lessonPackage: null,
   lessonTrace: null,
-  lessonRequest: defaultLessonRequestPreferences(),
+  outputContents: defaultOutputContents(),
   missingAreaDecisions: {},
 
   setInputs: (updates) =>
@@ -238,53 +236,95 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
       ...clearedGeneratedState(),
     }),
 
-  setRequestedLessonParts: (requestedLessonParts) =>
+  setOutputContents: (outputContents) =>
+    set({
+      outputContents: normalizeOutputContents(outputContents),
+      ...clearedGeneratedState(),
+    }),
+
+  toggleLessonPlanPart: (part) =>
     set((state) => ({
-      lessonRequest: {
-        ...state.lessonRequest,
-        requestedLessonParts: uniqueValues(requestedLessonParts),
-      },
+      outputContents: normalizeOutputContents({
+        ...state.outputContents,
+        lessonPlan: {
+          ...state.outputContents.lessonPlan,
+          parts: {
+            ...state.outputContents.lessonPlan.parts,
+            [part]: !state.outputContents.lessonPlan.parts[part],
+          },
+        },
+      }),
       ...clearedGeneratedState(),
     })),
 
-  toggleRequestedLessonPart: (part) =>
+  toggleAssessmentType: (type) =>
+    set((state) => ({
+      outputContents: normalizeOutputContents({
+        ...state.outputContents,
+        assessments: {
+          ...state.outputContents.assessments,
+          types: {
+            ...state.outputContents.assessments.types,
+            [type]: !state.outputContents.assessments.types[type],
+          },
+        },
+      }),
+      ...clearedGeneratedState(),
+    })),
+
+  toggleGroupOutput: (output) =>
     set((state) => {
-      const requestedLessonParts = state.lessonRequest.requestedLessonParts.includes(part)
-        ? state.lessonRequest.requestedLessonParts.filter((item) => item !== part)
-        : [...state.lessonRequest.requestedLessonParts, part]
+      const nextByTier = {
+        ...state.outputContents.groups.byTier,
+        T1: {
+          ...state.outputContents.groups.byTier.T1,
+        },
+        T2: {
+          ...state.outputContents.groups.byTier.T2,
+        },
+        T3: {
+          ...state.outputContents.groups.byTier.T3,
+        },
+        Extension: {
+          ...state.outputContents.groups.byTier.Extension,
+        },
+      }
+
+      if (output === "centers") {
+        nextByTier.T1.centers = !state.outputContents.groups.byTier.T1.centers
+      }
+
+      if (output === "small_group") {
+        nextByTier.T2.small_group = !state.outputContents.groups.byTier.T2.small_group
+      }
+
+      if (output === "intervention") {
+        nextByTier.T3.intervention = !state.outputContents.groups.byTier.T3.intervention
+      }
 
       return {
-        lessonRequest: {
-          ...state.lessonRequest,
-          requestedLessonParts,
-        },
+        outputContents: normalizeOutputContents({
+          ...state.outputContents,
+          groups: {
+            ...state.outputContents.groups,
+            byTier: nextByTier,
+          },
+        }),
         ...clearedGeneratedState(),
       }
     }),
 
-  setRequestedOutputs: (requestedOutputs) =>
+  toggleOtherOutput: (output) =>
     set((state) => ({
-      lessonRequest: {
-        ...state.lessonRequest,
-        requestedOutputs: uniqueValues(requestedOutputs),
-      },
+      outputContents: normalizeOutputContents({
+        ...state.outputContents,
+        other: {
+          ...state.outputContents.other,
+          [output]: !state.outputContents.other[output],
+        },
+      }),
       ...clearedGeneratedState(),
     })),
-
-  toggleRequestedOutput: (output) =>
-    set((state) => {
-      const requestedOutputs = state.lessonRequest.requestedOutputs.includes(output)
-        ? state.lessonRequest.requestedOutputs.filter((item) => item !== output)
-        : [...state.lessonRequest.requestedOutputs, output]
-
-      return {
-        lessonRequest: {
-          ...state.lessonRequest,
-          requestedOutputs,
-        },
-        ...clearedGeneratedState(),
-      }
-    }),
 
   addMaterial: (role, name) => {
     const timestamp = Date.now().toString()
@@ -444,7 +484,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
             inputs: current.inputs,
             materials: current.materials,
             selectedLessonMode: current.selectedLessonMode,
-            lessonRequest: current.lessonRequest,
+            outputContents: current.outputContents,
             missingAreaDecisions: current.missingAreaDecisions,
           }
         },
