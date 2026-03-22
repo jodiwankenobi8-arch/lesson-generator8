@@ -227,7 +227,7 @@ export default function MaterialsPage() {
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
         </p>
         <p style={introStyle}>
-          Current intake is upload-file based. Add source files here, then generate only from usable curriculum and exemplar files.
+          Current intake is upload-file based. Supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm. Add source files here, then generate only from usable curriculum and exemplar files.
         </p>
       </div>
 
@@ -235,6 +235,7 @@ export default function MaterialsPage() {
         ref={curriculumInputRef}
         type="file"
         multiple
+        accept=".txt,.pdf,.docx,.pptx,.html,.htm"
         onChange={(event) => handleFilesSelected("curriculum", event)}
         style={hiddenInputStyle}
       />
@@ -243,6 +244,7 @@ export default function MaterialsPage() {
         ref={exemplarInputRef}
         type="file"
         multiple
+        accept=".txt,.pdf,.docx,.pptx,.html,.htm"
         onChange={(event) => handleFilesSelected("exemplar", event)}
         style={hiddenInputStyle}
       />
