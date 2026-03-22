@@ -69,16 +69,6 @@ const requestedLessonPartOptions: RequestOption<RequestedLessonPartKey>[] = [
 
 const requestedOutputOptions: RequestOption<RequestedOutputKey>[] = [
   {
-    key: "slides",
-    title: "Lesson slides",
-    description: "Core teaching slides for whole-group instruction or display.",
-  },
-  {
-    key: "lesson_plan",
-    title: "Teacher lesson plan doc",
-    description: "Core teacher-facing written lesson plan document.",
-  },
-  {
     key: "printables",
     title: "Printables pack",
     description: "A broader printable packet when you want more than one printable artifact.",
@@ -251,6 +241,9 @@ export default function InputsPage() {
     : {
         ...orchardNoticeStyle,
       }
+  const optionalRequestedOutputs = lessonRequest.requestedOutputs.filter(
+    (key) => key !== "slides" && key !== "lesson_plan",
+  )
 
   return (
     <div style={pageStyle}>
@@ -262,8 +255,7 @@ export default function InputsPage() {
           Define the lesson intent before adding curriculum and exemplar sources.
         </p>
         <p style={introStyle}>
-          Optional lesson parts and deliverables stay optional unless you request
-          them on purpose.
+          Lesson slides and the teacher lesson plan are always included. Optional support materials stay optional unless you request them on purpose.
         </p>
       </div>
 
@@ -483,18 +475,16 @@ export default function InputsPage() {
         <div style={{ marginTop: "var(--space-xl)" }}>
           <div style={modeCardStyle}>
             <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
-              Requested deliverables
+              Optional support materials
             </div>
             <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-              Choose the core artifacts first, then add specific support materials
-              only when you want them. Lesson parts above shape the lesson;
-              Lesson parts shape the lesson. Deliverables here control which files or printables get generated.
+              Lesson slides and the teacher lesson plan are always included. Add printables or assessment support only when you want extra support materials. Lesson parts above still shape the lesson itself.
             </div>
 
             <div style={{ ...noticeStyle, marginTop: 12 }}>
-              {lessonRequest.requestedOutputs.length > 0
-                ? `${lessonRequest.requestedOutputs.length} requested deliverable(s) selected. Lesson parts shape the lesson itself; deliverables add files or printables when you want extra support materials.`
-                : "No optional deliverables requested yet. Start with the lesson itself, then add files or printables only when you need extra support materials."}
+              {optionalRequestedOutputs.length > 0
+                ? optionalRequestedOutputs.length + " optional support material(s) selected. Lesson slides and the teacher lesson plan are already included."
+                : "No optional support materials requested yet. Lesson slides and the teacher lesson plan will still be included."}
             </div>
 
             <div style={requestGridStyle}>
