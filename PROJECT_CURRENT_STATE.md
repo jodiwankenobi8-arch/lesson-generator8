@@ -17,8 +17,8 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: main
-- Current published continuation point: 1408023 copy: align Materials teacher-facing terminology with the usable-materials contract
-- Current local working seam: README truth-alignment repair is verified locally on main and pending commit/push with docs closeout
+- Current published continuation point: c6d4d0d docs: close out README truth-alignment seam
+- Current validated local state: README truth-alignment seam is committed and pushed on main at c6d4d0d
 
 ## Current confirmed state
 - Active product flow remains Inputs -> Materials -> Results
@@ -56,7 +56,7 @@ Anything older or not in that chain should be treated as historical unless expli
 - useLessonStore remains the orchestration seam
 
 ## Current risks
-- the README seam is still local until commit/push completes
+- the README seam is published, but the next product seam still needs a fresh inspect-first pick from live current main
 - older handoffs can mislaunch work if treated as current
 - after this closeout, re-pick the next narrow finishing seam from live current main without reopening closed seams
 - do not reopen closed seams unless live regression evidence appears
@@ -67,7 +67,7 @@ Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
 ## Top next steps
-1. Commit and push the README truth-alignment seam with docs closeout
+1. Do one inspect-first current-main review to choose the next narrow finishing seam
 2. Re-pick the next narrow finishing seam from live current main
 3. Keep the active continuation set small and obvious
 4. Do not let overridden notes compete with the active continuation set
@@ -80,3 +80,7 @@ The active local doc set should stay small and obvious:
 - PROJECT_CURRENT_STATE.md
 - README.md
 - current relevant docs/chat-handoffs/*
+
+
+
+

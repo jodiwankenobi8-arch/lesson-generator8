@@ -3,10 +3,10 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 1408023 copy: align Materials teacher-facing terminology with the usable-materials contract
+- Current published continuation point: c6d4d0d docs: close out README truth-alignment seam
 - Current local working state: README current-truth summary is aligned locally on main after live inspect and replacement verification; this seam is not published until the closeout commit is pushed
-- Current milestone: README truth-alignment seam is verified locally and ready for docs closeout + publish
-- Current active seam: close out and publish the narrow README truth-alignment seam, then re-pick the next narrow finishing seam from live current main
+- Current milestone: README truth-alignment seam is committed and pushed on main at c6d4d0d
+- Current active seam: inspect current main after the pushed README truth-alignment seam to choose the next narrow finishing seam
 
 ## What is actually landed
 - Active product flow remains Inputs -> Materials -> Results
@@ -59,3 +59,6 @@
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, trust live local git output and live local source files first.
+
+
+
