@@ -135,6 +135,20 @@ export function getAxisDecision(
     : reliability.structureDecision ?? "allow"
 }
 
+function getAxisDecisionPriority(material: MaterialFile, axis: ReliabilityAxis): number {
+  const decision = getAxisDecision(material, axis)
+
+  if (decision === "allow") {
+    return 2
+  }
+
+  if (decision === "caution") {
+    return 1
+  }
+
+  return 0
+}
+
 export function isUsableForAxis(material: MaterialFile, axis: ReliabilityAxis): boolean {
   if (axis === "content") {
     if (material.role !== "curriculum" || !material.analysis?.curriculum) {
@@ -178,6 +192,12 @@ export function sortByAxisPriority(
   const reliabilityDelta = getReliabilityScore(b) - getReliabilityScore(a)
   if (reliabilityDelta !== 0) {
     return reliabilityDelta
+  }
+
+  const decisionDelta =
+    getAxisDecisionPriority(b, axis) - getAxisDecisionPriority(a, axis)
+  if (decisionDelta !== 0) {
+    return decisionDelta
   }
 
   if (axis === "content") {

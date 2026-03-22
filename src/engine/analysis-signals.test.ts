@@ -41,6 +41,80 @@ describe("material analysis signals", () => {
     )
   })
 
+  it("harvests curriculum coverage signals from noisy slide and PDF-style extraction lines", async () => {
+    const result = await analyzeMaterial({
+      materialId: "curr-2",
+      role: "curriculum",
+      name: "noisy-curriculum.txt",
+      extractedText: [
+        "Notes: Slide 4/12: Practice Words: cake, game, same, late",
+        "Text: Let's read together: Jake made a cake at the lake.",
+        "Slide 5: Phonemic Awareness: blend the sounds in cake and late.",
+        "Slide 6: Segment & Spell: map the sounds in game.",
+        "Activity Roadmap",
+        "Celebration",
+      ],
+    })
+
+    const curriculum = result.analysis.curriculum
+    expect(curriculum).toBeTruthy()
+    expect(curriculum?.wordLists).not.toContain("teacher-selected word list")
+    expect(curriculum?.texts).not.toContain("teacher-provided lesson text")
+    expect(curriculum?.practiceTasks).not.toContain("curriculum-aligned practice task")
+    expect(curriculum?.wordLists.length ?? 0).toBeGreaterThan(0)
+    expect(curriculum?.texts.length ?? 0).toBeGreaterThan(0)
+    expect(curriculum?.practiceTasks.length ?? 0).toBeGreaterThan(0)
+  })
+
+  it("harvests noisy curriculum vocabulary and practice cues from slide-style extraction", async () => {
+    const result = await analyzeMaterial({
+      materialId: "curr-3",
+      role: "curriculum",
+      name: "noisy-curriculum-vocab.txt",
+      extractedText: [
+        "Notes: Slide 3/12: Vocabulary: vowel team - two letters that make one sound",
+        "Slide 4: Guided Practice: Sort ai and ay words with a partner",
+        "Text: Read Aloud: Gail waited for the train.",
+      ],
+    })
+
+    const curriculum = result.analysis.curriculum
+    expect(curriculum).toBeTruthy()
+    expect(curriculum?.vocabulary).not.toContain("key vocabulary")
+    expect(curriculum?.practiceTasks).not.toContain("curriculum-aligned practice task")
+    expect(curriculum?.texts).not.toContain("teacher-provided lesson text")
+    expect(curriculum?.vocabulary.length ?? 0).toBeGreaterThan(0)
+    expect(curriculum?.practiceTasks.length ?? 0).toBeGreaterThan(0)
+    expect(curriculum?.texts.length ?? 0).toBeGreaterThan(0)
+  })
+
+  it("prefers cleaned curriculum candidates over raw noisy slide lines", async () => {
+    const result = await analyzeMaterial({
+      materialId: "curr-4",
+      role: "curriculum",
+      name: "cleaned-curriculum-candidates.txt",
+      extractedText: [
+        "Notes: Slide 3/12: Vocabulary: vowel team - two letters that make one sound",
+        "Slide 4: Guided Practice: Sort ai and ay words with a partner",
+        "Text: Read Aloud: Gail waited for the train. Page 3 of 12",
+      ],
+    })
+
+    const curriculum = result.analysis.curriculum
+    expect(curriculum).toBeTruthy()
+
+    const joinedVocabulary = (curriculum?.vocabulary ?? []).join(" ").toLowerCase()
+    const joinedPractice = (curriculum?.practiceTasks ?? []).join(" ").toLowerCase()
+    const joinedTexts = (curriculum?.texts ?? []).join(" ").toLowerCase()
+
+    expect(joinedVocabulary).toContain("vocabulary: vowel team")
+    expect(joinedVocabulary).not.toContain("notes: slide 3/12")
+    expect(joinedPractice).toContain("guided practice: sort ai and ay words with a partner")
+    expect(joinedPractice).not.toContain("slide 4:")
+    expect(joinedTexts).toContain("read aloud: gail waited for the train")
+    expect(joinedTexts).not.toContain("text:")
+    expect(joinedTexts).not.toContain("page 3 of 12")
+  })
   it("detects richer exemplar signals and detected features from lesson-delivery text", async () => {
     const result = await analyzeMaterial({
       materialId: "ex-1",
@@ -127,6 +201,42 @@ describe("material analysis signals", () => {
     expect(turnAndTalk?.evidence.join(" ").toLowerCase()).toContain("turn and talk")
   })
 
+  it("detects teacher-delivery cues from note-style exemplar text", async () => {
+    const result = await analyzeMaterial({
+      materialId: "ex-3",
+      role: "exemplar",
+      name: "teacher-notes-exemplar.txt",
+      extractedText: [
+        "Teacher Note: Preview lesson steps before students begin.",
+        "Notes: Students echo the target word after you model it.",
+        "Watch and listen.",
+        "My turn, your turn.",
+        "Say it with me.",
+        "Circulate and give fast feedback.",
+        "Guided Practice",
+        "Closure",
+      ],
+    })
+
+    const exemplar = result.analysis.exemplar
+    expect(exemplar).toBeTruthy()
+
+    const joinedMoves = (exemplar?.teacherMoves ?? []).join(" ").toLowerCase()
+    const joinedPrompts = (exemplar?.promptStyle ?? []).join(" ").toLowerCase()
+    const keys = (exemplar?.detectedFeatures?.items ?? []).map((item) => item.key)
+
+    expect(joinedMoves).toMatch(/teacher note|watch and listen|my turn|say it with me|circulate|echo/)
+    expect(joinedPrompts).toMatch(/watch and listen|my turn|your turn|say it with me|preview lesson steps/)
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        "teacher_prompt_blocks",
+        "teacher_scripts",
+        "guided_practice",
+        "closure",
+      ])
+    )
+  })
+
   it("adds sensible warnings when exemplar text is too thin for strong feature detection", async () => {
     const result = await analyzeMaterial({
       materialId: "ex-2",
@@ -145,3 +255,5 @@ describe("material analysis signals", () => {
     expect(detected?.warnings.join(" ")).toContain("Visual/style features may be under-detected")
   })
 })
+
+

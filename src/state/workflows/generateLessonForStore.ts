@@ -1,4 +1,4 @@
-import { runLessonPipeline } from "../../engine/pipeline/runLessonPipeline"
+﻿import { runLessonPipeline } from "../../engine/pipeline/runLessonPipeline"
 import {
   LessonBlueprint,
   LessonInputs,
@@ -6,6 +6,7 @@ import {
   LessonPackage,
   LessonPipelineTrace,
   LessonPlanningIdeas,
+  LessonRequestPreferences,
   LessonSpec,
   MaterialFile,
   MissingAreaDecisionChoice,
@@ -18,6 +19,7 @@ type GenerateLessonDependencies = {
     inputs: LessonInputs
     materials: MaterialFile[]
     selectedLessonMode: LessonMode
+    lessonRequest: LessonRequestPreferences
     missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
   }
 }
@@ -44,6 +46,19 @@ function isReady(material: MaterialFile): boolean {
   return material.status === "ready" && Boolean(material.analysis)
 }
 
+function isUsableForGeneration(material: MaterialFile): boolean {
+  if (!isReady(material)) {
+    return false
+  }
+
+  const reliability = material.analysis?.reliability
+  if (!reliability) {
+    return true
+  }
+
+  return reliability.usableForContent || reliability.usableForStructure
+}
+
 export async function generateLessonForStore(
   store: GenerateLessonInput,
   dependencies: GenerateLessonDependencies
@@ -56,7 +71,8 @@ export async function generateLessonForStore(
     throw new Error("Wait for current material processing to finish before generating.")
   }
 
-  const materialsToPrepare = store.materials.filter((material) => {
+  const current = dependencies.getCurrentStoreData()
+  const materialsToPrepare = current.materials.filter((material) => {
     if (isReady(material)) {
       return false
     }
@@ -68,18 +84,26 @@ export async function generateLessonForStore(
     await dependencies.processMaterial(material.id)
   }
 
-  const current = dependencies.getCurrentStoreData()
-  const readyMaterials = current.materials.filter(isReady)
+  const refreshed = dependencies.getCurrentStoreData()
+  const readyMaterials = refreshed.materials.filter(isReady)
+  const usableMaterials = readyMaterials.filter(isUsableForGeneration)
 
   if (readyMaterials.length === 0) {
     throw new Error("No analyzed materials are ready for lesson generation.")
   }
 
+  if (usableMaterials.length === 0) {
+    throw new Error(
+      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source file."
+    )
+  }
+
   const result = runLessonPipeline(
-    current.inputs,
+    refreshed.inputs,
     readyMaterials,
-    current.selectedLessonMode,
-    current.missingAreaDecisions
+    refreshed.selectedLessonMode,
+    refreshed.lessonRequest,
+    refreshed.missingAreaDecisions
   )
 
   return {

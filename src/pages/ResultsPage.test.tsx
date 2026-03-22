@@ -1,20 +1,16 @@
 import React from "react"
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { renderToStaticMarkup } from "react-dom/server"
-import {
-  CoverageDecisionsSection,
-  PipelineTraceSection,
-  TraceabilitySection,
-} from "./ResultsPage"
+import { readFileSync } from "node:fs"
+
+vi.mock("../engine/exports/exportLessonPlanDocx", () => ({
+  exportLessonPlanDocx: vi.fn(),
+}))
+
+import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
+import { CoverageDecisionsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
-import type {
-  LessonInputs,
-  MaterialAnalysis,
-  MaterialFile,
-  MaterialRole,
-  MissingAreaDecisionChoice,
-  PlanningComponentKey,
-} from "../engine/types"
+import type { ExportArtifact, LessonInputs, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
 
 function makeInputs(overrides: Partial<LessonInputs> = {}): LessonInputs {
   return {
@@ -151,6 +147,12 @@ describe("Results explainability rendering contracts", () => {
         materials={state.materials}
       />
     )
+    expect(traceabilityMarkup).toContain("Authority at a Glance")
+    expect(traceabilityMarkup).toContain("Content authority:")
+    expect(traceabilityMarkup).toContain("Presentation authority:")
+    expect(traceabilityMarkup).toContain("Used with caution or blocked:")
+    expect(traceabilityMarkup).toContain("Fallback usage:")
+
     const traceMarkup = renderToStaticMarkup(<PipelineTraceSection trace={lessonTrace} />)
 
     blueprint.sourceReadiness.selectedCurriculumMaterialIds.forEach((id) => {
@@ -168,10 +170,71 @@ describe("Results explainability rendering contracts", () => {
     })
   })
 
+  it("keeps the teacher-facing results package labels and order aligned", () => {
+    const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
+
+    const packageSummaryCallIndex = source.indexOf('<PackageSummarySection')
+    const packageOutputsCallIndex = source.indexOf('<PackageOutputsSection lessonPackage={lessonPackage} />')
+    const coverageDecisionsCallIndex = source.indexOf('<CoverageDecisionsSection')
+    const traceabilityCallIndex = source.indexOf('<TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />')
+    const planningDetailsCallIndex = source.indexOf('<PlanningDetailsSection')
+    const blueprintDetailsCallIndex = source.indexOf('<BlueprintDetailsSection blueprint={blueprint} />')
+    const pipelineTraceCallIndex = source.indexOf('{lessonTrace && <PipelineTraceSection trace={lessonTrace} />}')
+
+    const packageSummaryHeadingIndex = source.indexOf('Teacher-facing lesson package first.')
+    const lessonPlanIndex = source.indexOf('PreSection title="Lesson Plan"')
+    const slidesIndex = source.indexOf('SimpleListSection title="Slides"')
+    const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Teacher-Led Support"')
+    const studentCentersIndex = source.indexOf('SimpleListSection title="Centers / Independent Work"')
+    const centerRotationIndex = source.indexOf('PreSection title="Centers / Independent Work Rotation"')
+
+    expect(packageSummaryCallIndex).toBeGreaterThanOrEqual(0)
+    expect(packageOutputsCallIndex).toBeGreaterThan(packageSummaryCallIndex)
+    expect(coverageDecisionsCallIndex).toBeGreaterThan(packageOutputsCallIndex)
+    expect(traceabilityCallIndex).toBeGreaterThan(coverageDecisionsCallIndex)
+    expect(planningDetailsCallIndex).toBeGreaterThan(traceabilityCallIndex)
+    expect(blueprintDetailsCallIndex).toBeGreaterThan(planningDetailsCallIndex)
+    expect(pipelineTraceCallIndex).toBeGreaterThan(blueprintDetailsCallIndex)
+
+    expect(packageSummaryHeadingIndex).toBeGreaterThanOrEqual(0)
+    expect(lessonPlanIndex).toBeGreaterThanOrEqual(0)
+    expect(slidesIndex).toBeGreaterThan(lessonPlanIndex)
+    expect(teacherLedSupportIndex).toBeGreaterThan(slidesIndex)
+    expect(studentCentersIndex).toBeGreaterThan(teacherLedSupportIndex)
+    expect(centerRotationIndex).toBeGreaterThan(studentCentersIndex)
+
+    expect(source).toContain('Teacher-facing lesson package first.')
+    expect(source).toContain('Lesson Evidence and Planning Details')
+    expect(source).toContain('<summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>')
+    expect(source).toContain('<SecondaryEvidenceSection')
+    expect(source).toContain('Source Authority and Lesson Grounding')
+    expect(source).toContain('Teacher Decisions for Missing Lesson Parts')
+    expect(source).toContain('<summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>')
+    expect(source).toContain('<summary style={summaryStyle}>Pipeline Trace</summary>')
+    expect(source).toContain('<summary style={minorSummaryStyle}>Evidence details</summary>')
+    expect(source).not.toContain('SimpleListSection title="Interventions"')
+    expect(source).not.toContain('PreSection title="Rotation Plan"')
+  })
+
+  it("uses usable-material trust language for results gating", () => {
+    const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
+
+    expect(source).toContain('const hasUsableMaterialsForGeneration = useLessonStore((state) => state.hasUsableMaterialsForGeneration)()')
+    expect(source).not.toContain('const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()')
+
+    expect(source).toContain('Results are blocked until at least one curriculum or exemplar material is usable for grounded generation.')
+    expect(source).toContain('Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one file is usable for grounded generation.')
+    expect(source).toContain('Inputs are complete and at least one material is usable, but no generated lesson is currently loaded.')
+    expect(source).toContain('Ready files:')
+
+    expect(source).not.toContain('Results are blocked until at least one material is analyzed and ready.')
+    expect(source).not.toContain('Inputs and materials are ready, but no generated lesson is currently loaded.')
+  })
+
   it("keeps support-vs-generated gap messaging visible in coverage rendering", () => {
     const coverageMarkup = renderCoverageSection()
 
-    expect(coverageMarkup).toContain("Coverage and Missing-Area Decisions")
+    expect(coverageMarkup).toContain("Teacher Decisions for Missing Lesson Parts")
     expect(coverageMarkup).toContain("Source coverage:")
     expect(coverageMarkup).toContain("Generated support:")
   })
@@ -199,6 +262,12 @@ describe("Results explainability rendering contracts", () => {
         materials={state.materials}
       />
     )
+    expect(traceabilityMarkup).toContain("Authority at a Glance")
+    expect(traceabilityMarkup).toContain("Content authority:")
+    expect(traceabilityMarkup).toContain("Presentation authority:")
+    expect(traceabilityMarkup).toContain("Used with caution or blocked:")
+    expect(traceabilityMarkup).toContain("Fallback usage:")
+
     const traceMarkup = renderToStaticMarkup(<PipelineTraceSection trace={lessonTrace} />)
 
     lessonTrace.selectedSources.curriculumMaterialIds.forEach((id) => {
@@ -220,3 +289,207 @@ describe("Results explainability rendering contracts", () => {
     expect(coverageMarkup).toContain("Generated support:")
   })
 })
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+function makeExportArtifact(
+  overrides: Partial<ExportArtifact> = {}
+): ExportArtifact {
+  return {
+    kind: "lesson_plan",
+    label: "Lesson Plan Export",
+    fileName: "ELA-lesson-plan-export.docx",
+        mimeType: DOCX_MIME,
+    content: "Blueprint Readiness`nTeach",
+    ...overrides,
+  }
+}
+
+function installDownloadDomHarness(objectUrlValue: string) {
+  const createdLinks: Array<{
+    href: string
+    download: string
+    click: ReturnType<typeof vi.fn>
+  }> = []
+
+  let createdObjectUrlArg: unknown
+
+  const body = {
+    appendChild: vi.fn((node: unknown) => node),
+    removeChild: vi.fn((node: unknown) => node),
+  }
+
+  const documentStub = {
+    body,
+    createElement: vi.fn((tag: string) => {
+      if (tag !== "a") {
+        throw new Error(`Unexpected element request: ${tag}`)
+      }
+
+      const link = {
+        href: "",
+        download: "",
+        click: vi.fn(),
+      }
+
+      createdLinks.push(link)
+      return link
+    }),
+  }
+
+  const urlStub = {
+    createObjectURL: vi.fn((value: unknown) => {
+      createdObjectUrlArg = value
+      return objectUrlValue
+    }),
+    revokeObjectURL: vi.fn(),
+  }
+
+  const previousWindow = (globalThis as Record<string, unknown>).window
+  const previousDocument = (globalThis as Record<string, unknown>).document
+
+  ;(globalThis as Record<string, unknown>).window = { URL: urlStub }
+  ;(globalThis as Record<string, unknown>).document = documentStub
+
+  return {
+    createdLinks,
+    body,
+    documentStub,
+    urlStub,
+    getCreatedObjectUrlArg() {
+      return createdObjectUrlArg
+    },
+    restore() {
+      if (typeof previousWindow === "undefined") {
+        delete (globalThis as Record<string, unknown>).window
+      } else {
+        ;(globalThis as Record<string, unknown>).window = previousWindow
+      }
+
+      if (typeof previousDocument === "undefined") {
+        delete (globalThis as Record<string, unknown>).document
+      } else {
+        ;(globalThis as Record<string, unknown>).document = previousDocument
+      }
+    },
+  }
+}
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+describe("Results export download contract", () => {
+  it("uses the generated lesson-plan export artifact and downloads the generated DOCX artifact", async () => {
+    await seedAndGenerate()
+
+    const state = useLessonStore.getState()
+    const artifact = state.lessonPackage?.exports?.find(
+      (item) => item.kind === "lesson_plan" && item.mimeType === DOCX_MIME && Boolean(item.content?.trim())
+    )
+
+    expect(artifact).toBeTruthy()
+
+    expect(state.blueprint).toBeTruthy()
+    expect(state.planningIdeas).toBeTruthy()
+    expect(state.lessonPackage).toBeTruthy()
+    expect(artifact!.kind).toBe("lesson_plan")
+    expect(artifact!.mimeType).toBe(DOCX_MIME)
+    expect(artifact!.label).toContain("Lesson Plan")
+    expect(artifact!.fileName.endsWith(".docx")).toBe(true)
+
+    const docxBlob = new Blob(["docx-binary"], { type: DOCX_MIME })
+    vi.mocked(exportLessonPlanDocx).mockResolvedValue(docxBlob)
+
+    const harness = installDownloadDomHarness("blob:generated-docx")
+
+    try {
+      await downloadExportArtifact(artifact!)
+
+      expect(exportLessonPlanDocx).toHaveBeenCalledWith(artifact!.label, artifact!.content)
+      expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
+      expect(harness.createdLinks).toHaveLength(1)
+
+      const appendedLink = harness.createdLinks[0]!
+      expect(appendedLink.download).toBe(artifact!.fileName)
+      expect(appendedLink.href).toBe("blob:generated-docx")
+      expect(appendedLink.click).toHaveBeenCalledTimes(1)
+    } finally {
+      harness.restore()
+    }
+  })
+
+  it("routes DOCX lesson-plan artifacts through exportLessonPlanDocx before download", async () => {
+    const docxBlob = new Blob(["docx-binary"], { type: DOCX_MIME })
+    vi.mocked(exportLessonPlanDocx).mockResolvedValue(docxBlob)
+
+    const harness = installDownloadDomHarness("blob:docx")
+
+    try {
+      const artifact = makeExportArtifact()
+
+      await downloadExportArtifact(artifact)
+
+      expect(exportLessonPlanDocx).toHaveBeenCalledWith(artifact.label, artifact.content)
+      expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
+
+      const blobArg = harness.getCreatedObjectUrlArg()
+      expect(blobArg).toBeTruthy()
+      expect(blobArg).toBe(docxBlob)
+
+      expect(harness.createdLinks).toHaveLength(1)
+      const appendedLink = harness.createdLinks[0]!
+
+      expect(appendedLink.download).toBe(artifact.fileName)
+      expect(appendedLink.href).toBe("blob:docx")
+      expect(appendedLink.click).toHaveBeenCalledTimes(1)
+      expect(harness.body.appendChild).toHaveBeenCalledWith(appendedLink)
+      expect(harness.body.removeChild).toHaveBeenCalledWith(appendedLink)
+      expect(harness.urlStub.revokeObjectURL).toHaveBeenCalledWith("blob:docx")
+    } finally {
+      harness.restore()
+    }
+  })
+
+  it("downloads plain-text exports directly without DOCX conversion", async () => {
+    vi.mocked(exportLessonPlanDocx).mockReset()
+
+    const harness = installDownloadDomHarness("blob:text")
+
+    try {
+      const artifact = makeExportArtifact({
+        kind: "slides",
+        label: "Slides Export",
+        fileName: "ELA-slides-export.txt",
+        mimeType: "text/plain;charset=utf-8",
+        content: "Slides Export`n1. Opening",
+      })
+
+      await downloadExportArtifact(artifact)
+
+      expect(exportLessonPlanDocx).not.toHaveBeenCalled()
+      expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
+
+      const blobArg = harness.getCreatedObjectUrlArg()
+      expect(blobArg).toBeTruthy()
+      expect(blobArg).toBeInstanceOf(Blob)
+      expect((blobArg as Blob).type).toBe("text/plain;charset=utf-8")
+
+      expect(harness.createdLinks).toHaveLength(1)
+      const appendedLink = harness.createdLinks[0]!
+
+      expect(appendedLink.download).toBe(artifact.fileName)
+      expect(appendedLink.href).toBe("blob:text")
+      expect(appendedLink.click).toHaveBeenCalledTimes(1)
+      expect(harness.body.appendChild).toHaveBeenCalledWith(appendedLink)
+      expect(harness.body.removeChild).toHaveBeenCalledWith(appendedLink)
+      expect(harness.urlStub.revokeObjectURL).toHaveBeenCalledWith("blob:text")
+    } finally {
+      harness.restore()
+    }
+  })
+})
+
+
+
+
+

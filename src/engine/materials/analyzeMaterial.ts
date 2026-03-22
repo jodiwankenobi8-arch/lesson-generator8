@@ -1,3 +1,5 @@
+import { extractCurriculumCoverageCandidates } from "./extractCurriculumCoverageCandidates"
+
 import {
   CurriculumAnalysis,
   ExemplarAnalysis,
@@ -335,17 +337,52 @@ function buildExemplarSummary(name: string, lines: string[]): string {
   return `Exemplar material ${name} analyzed with ${lines.length} usable lines, ${flow} slide-flow signals, ${pacing} pacing signals, ${moves} teacher-move signals, ${structure} reusable structure signals, and ${detectedFeatureCount} detected exemplar features.`
 }
 
-function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
-  const standards = findStandards(lines)
-  const instructionalTargets = selectInstructionalTargets(lines)
-  const vocabulary = selectVocabulary(lines)
-  const wordLists = selectWordLists(lines)
-  const texts = selectTexts(lines)
-  const practiceTasks = selectPracticeTasks(lines)
-  const examples = selectExamples(lines)
-  const foundationalSkills = selectFoundationalSkills(lines)
-  const sightWords = selectSightWords(lines)
-  const lessonSegments = selectCoveredLessonSegments(lines)
+function normalizeCoverageSelections(items: string[]): string[] {
+  const cleanedItems: string[] = []
+  const seen = new Set<string>()
+
+  for (const item of items) {
+    const cleaned = item
+      .replace(/^notes:\s*slide\s*\d+\s*\/\s*\d+\s*:\s*/i, "")
+      .replace(/^notes:\s*/i, "")
+      .replace(/^text:\s*/i, "")
+      .replace(/^slide\s*\d+\s*:\s*/i, "")
+      .replace(/\s*(?:\bpage\s*\d+\s*(?:of\s*\d+)?\b)\s*$/i, "")
+      .replace(/\s*-?\s*continued\s*$/i, "")
+      .replace(/\s*-?\s*cont\.?\s*$/i, "")
+      .replace(/\s+/g, " ")
+      .trim()
+
+    if (!cleaned) {
+      continue
+    }
+
+    const key = cleaned.toLowerCase()
+    if (seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    cleanedItems.push(cleaned)
+  }
+
+  return cleanedItems
+}
+
+function buildCurriculumAnalysis(lines: string[]): CurriculumAnalysis {
+  const coverageCandidates = extractCurriculumCoverageCandidates(lines)
+  const coverageLines = unique([...coverageCandidates, ...lines])
+
+  const standards = normalizeCoverageSelections(findStandards(coverageLines))
+  const instructionalTargets = normalizeCoverageSelections(selectInstructionalTargets(coverageLines))
+  const vocabulary = normalizeCoverageSelections(selectVocabulary(coverageLines))
+  const wordLists = normalizeCoverageSelections(selectWordLists(coverageLines))
+  const texts = normalizeCoverageSelections(selectTexts(coverageLines))
+  const practiceTasks = normalizeCoverageSelections(selectPracticeTasks(coverageLines))
+  const examples = normalizeCoverageSelections(selectExamples(coverageLines))
+  const foundationalSkills = normalizeCoverageSelections(selectFoundationalSkills(coverageLines))
+  const sightWords = normalizeCoverageSelections(selectSightWords(coverageLines))
+  const lessonSegments = normalizeCoverageSelections(selectCoveredLessonSegments(coverageLines))
 
   return {
     standards: standards.length ? standards : ["teacher-selected standard"],
@@ -414,8 +451,8 @@ function detectExemplarFeatures(lines: string[]) {
     evidence: takeBestMatches(
       lines,
       (line) =>
-        startsWithAny(line, ["prompt", "question stem", "sentence stem"]) ||
-        containsAny(line, ["prompt students", "question stem", "sentence stem", "what do you notice"]),
+        startsWithAny(line, ["prompt", "question stem", "sentence stem", "teacher note", "notes:", "watch and listen", "my turn", "your turn", "say it with me"]) ||
+        containsAny(line, ["prompt students", "question stem", "sentence stem", "what do you notice", "teacher note", "notes:", "watch and listen", "my turn", "your turn", "say it with me", "preview lesson steps", "students echo", "echo"]),
       3
     ),
   })
@@ -428,8 +465,8 @@ function detectExemplarFeatures(lines: string[]) {
     evidence: takeBestMatches(
       lines,
       (line) =>
-        startsWithAny(line, ["teacher says", "teacher will", "say", "model", "explain"]) ||
-        containsAny(line, ["teacher says", "teacher will", "think aloud", "show students"]),
+        startsWithAny(line, ["teacher says", "teacher will", "teacher note", "notes:", "say", "model", "explain", "watch and listen", "my turn", "your turn", "say it with me"]) ||
+        containsAny(line, ["teacher says", "teacher will", "teacher note", "notes:", "think aloud", "show students", "watch and listen", "students echo", "echo", "my turn", "your turn", "say it with me", "preview lesson steps", "circulate"]),
       3
     ),
   })
@@ -1012,22 +1049,36 @@ function selectTeacherMoves(lines: string[]): string[] {
       startsWithAny(line, [
         "teacher says",
         "teacher will",
+        "teacher note",
+        "notes:",
         "model",
         "guide",
         "ask",
         "say",
         "show students",
         "explain",
+        "watch and listen",
+        "my turn",
+        "your turn",
+        "say it with me",
         "turn and talk",
       ]) ||
       containsAny(line, [
         "teacher says",
         "teacher will",
+        "teacher note",
+        "notes:",
         "model",
         "think aloud",
         "guide",
         "circulate",
         "listen for",
+        "watch and listen",
+        "my turn",
+        "your turn",
+        "say it with me",
+        "students echo",
+        "echo",
         "turn and talk",
       ]),
     8
@@ -1042,16 +1093,31 @@ function selectPromptStyle(lines: string[]): string[] {
         "prompt",
         "question stem",
         "sentence stem",
+        "teacher note",
+        "notes:",
+        "watch and listen",
+        "my turn",
+        "your turn",
+        "say it with me",
         "turn and talk",
       ]) ||
       containsAny(line, [
         "prompt students",
         "question stem",
         "sentence stem",
+        "teacher note",
+        "notes:",
+        "watch and listen",
+        "my turn",
+        "your turn",
+        "say it with me",
+        "preview lesson steps",
         "turn and talk",
         "discuss",
         "share with a partner",
         "what do you notice",
+        "students echo",
+        "echo",
       ]),
     8
   )
@@ -1139,6 +1205,12 @@ function scoreLine(line: string): number {
   if (containsAny(lower, ["phonics", "syllable", "cvce", "cvc", "long a", "short a", "vowel team", "silent e", "decode"])) score += 3
   if (containsAny(lower, ["vocabulary", "define", "meaning", "example", "model"])) score += 2
 
+  if (/^notes:\s*slide\s*\d+(?:\s*\/\s*\d+)?\s*:/i.test(line)) score -= 6
+  else if (/^notes:\s*/i.test(line)) score -= 3
+
+  if (/^slide\s*\d+\s*:/i.test(line)) score -= 5
+  if (/^text:\s*/i.test(line)) score -= 3
+  if (/\bpage\s*\d+(?:\s*of\s*\d+)?\b/i.test(line)) score -= 3
   const wordCount = lower.split(/\s+/).filter(Boolean).length
   if (wordCount >= 3 && wordCount <= 18) score += 2
   if (wordCount > 30) score -= 2
@@ -1280,3 +1352,5 @@ function computeExemplarSignalStrength(e: ExemplarAnalysis): number {
 
 
 
+
+

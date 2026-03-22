@@ -14,6 +14,17 @@ import {
   SlidePlan,
   MaterialFile,
 } from "../engine/types"
+import {
+  orchardButtonStyle,
+  orchardCardStyle,
+  orchardNoticeStyle,
+  orchardPageIntroBlockStyle,
+  orchardSectionLabelStyle,
+  orchardSectionTitleStyle,
+  orchardSoftCardStyle,
+  orchardStatusBadgeStyle,
+  orchardTagStyle,
+} from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 
 const pageStyle: React.CSSProperties = {
@@ -22,18 +33,12 @@ const pageStyle: React.CSSProperties = {
 }
 
 const sectionStyle: React.CSSProperties = {
-  border: "1px solid var(--border-soft)",
-  borderRadius: "var(--radius-lg)",
-  padding: "var(--space-lg)",
-  background: "var(--paper-white)",
-  boxShadow: "var(--shadow-card)",
+  ...orchardCardStyle,
 }
 
 const subCardStyle: React.CSSProperties = {
-  border: "1px solid var(--border-soft)",
-  borderRadius: "var(--radius-md)",
+  ...orchardSoftCardStyle,
   padding: 12,
-  background: "#fcfbf8",
 }
 
 const heroGridStyle: React.CSSProperties = {
@@ -43,16 +48,24 @@ const heroGridStyle: React.CSSProperties = {
 }
 
 const sectionLabelStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "6px 12px",
-  marginBottom: "var(--space-sm)",
-  borderRadius: "999px",
-  background: "rgba(230, 201, 143, 0.28)",
-  color: "var(--warm-brown)",
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: 0.3,
-  textTransform: "uppercase",
+  ...orchardSectionLabelStyle,
+}
+
+const sectionTitleStyle: React.CSSProperties = {
+  ...orchardSectionTitleStyle,
+  fontSize: 32,
+}
+
+const pageIntroStyle: React.CSSProperties = {
+  ...orchardPageIntroBlockStyle,
+  marginBottom: "var(--space-lg)",
+}
+
+const introStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  fontSize: 16,
+  lineHeight: 1.6,
+  margin: 0,
 }
 
 export default function ResultsPage() {
@@ -66,7 +79,7 @@ export default function ResultsPage() {
   const setMissingAreaDecision = useLessonStore((state) => state.setMissingAreaDecision)
   const generateLesson = useLessonStore((state) => state.generateLesson)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
-  const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
+  const hasUsableMaterialsForGeneration = useLessonStore((state) => state.hasUsableMaterialsForGeneration)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
   const counts = useLessonStore((state) => state.getMaterialCounts)()
   const materials = useLessonStore((state) => state.materials)
@@ -103,7 +116,7 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Results are blocked while materials are still processing."
-        details={`Currently processing: ${counts.uploaded + counts.extracting + counts.analyzing}. Ready: ${counts.ready}. Errors: ${counts.error}.`}
+        details={`Currently processing: ${counts.uploaded + counts.extracting + counts.analyzing}. Ready files: ${counts.ready}. Errors: ${counts.error}.`}
         linkTo="/materials"
         linkLabel="Go to Materials"
       />
@@ -115,19 +128,19 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Results are blocked until all required lesson inputs are completed."
-        details="Complete grade, subject, standard, skill focus, lesson topic, and duration before generating results."
+        details="Complete grade, subject, skill focus, lesson topic, and duration before generating results. Standard is optional here; if left blank, the app will use standards detected from ready curriculum materials when available."
         linkTo="/inputs"
         linkLabel="Go to Inputs"
       />
     )
   }
 
-  if (!hasReadyMaterials) {
+  if (!hasUsableMaterialsForGeneration) {
     return (
       <BlockedResultsState
         title="Results"
-        message="Results are blocked until at least one material is analyzed and ready."
-        details="Add curriculum or exemplar materials and wait for analysis to complete before generating results."
+        message="Results are blocked until at least one curriculum or exemplar material is usable for grounded generation."
+        details="Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one file is usable for grounded generation."
         linkTo="/materials"
         linkLabel="Go to Materials"
       />
@@ -138,7 +151,7 @@ export default function ResultsPage() {
     return (
       <BlockedResultsState
         title="Results"
-        message="Inputs and materials are ready, but no generated lesson is currently loaded."
+        message="Inputs are complete and at least one material is usable, but no generated lesson is currently loaded."
         details="Return to the generation flow to create a blueprint, planning ideas, lesson spec, and lesson package."
         linkTo="/inputs"
         linkLabel="Go to Inputs"
@@ -148,21 +161,18 @@ export default function ResultsPage() {
 
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Generated Lesson</div>
-      <h2
-        style={{
-          marginTop: 0,
-          marginBottom: "var(--space-sm)",
-          fontFamily: "var(--font-heading)",
-          fontSize: 32,
-          color: "var(--orchard-green)",
-        }}
-      >
+      <div style={sectionLabelStyle}>Planning Binder</div>
+      <h2 style={sectionTitleStyle}>
         Results
       </h2>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-lg)", fontSize: 16 }}>
-        Teacher-facing lesson package first. Supporting planning details are available below.
-      </p>
+      <div style={pageIntroStyle}>
+        <p style={introStyle}>
+          Teacher-facing lesson package first. Review the generated package, confirm standards and source support, and export only the pieces you want to use.
+        </p>
+        <p style={introStyle}>
+          Evidence and planning details stay available below as secondary review surfaces when you need to inspect grounding more closely.
+        </p>
+      </div>
 
       {(isRegenerating || regenerationError || lastDecisionSummary) && (
         <div style={{ marginBottom: "var(--space-md)", display: "grid", gap: 8 }}>
@@ -177,10 +187,7 @@ export default function ResultsPage() {
           {!isRegenerating && !regenerationError && lastDecisionSummary && (
             <div
               style={{
-                ...noticeStyle,
-                background: "#ecfdf5",
-                borderColor: "#a7f3d0",
-                color: "#065f46",
+                ...noticeStyle, background: "rgba(110, 139, 107, 0.14)", border: "1px solid var(--border-moss)", color: "var(--deep-orchard)",
               }}
             >
               {lastDecisionSummary} The package has been refreshed with your latest teacher decision.
@@ -202,9 +209,7 @@ export default function ResultsPage() {
           selectedLessonMode={selectedLessonMode}
         />
 
-        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />
-
-        {lessonTrace && <PipelineTraceSection trace={lessonTrace} />}
+        <PackageOutputsSection lessonPackage={lessonPackage} />
 
         <CoverageDecisionsSection
           planningIdeas={planningIdeas}
@@ -213,25 +218,12 @@ export default function ResultsPage() {
           isRegenerating={isRegenerating}
         />
 
-        <SignalSection
-          title="Source Support Signals"
-          signals={blueprint.sourceReadiness.signals}
-          warnings={blueprint.sourceReadiness.warnings}
-        />
-
-        <SignalSection
-          title="Package Quality Signals"
-          signals={lessonPackage.readiness.signals}
-          warnings={lessonPackage.readiness.warnings}
-        />
-
-        <PackageOutputsSection lessonPackage={lessonPackage} />
-
-        <BlueprintDetailsSection blueprint={blueprint} />
-
-        <PlanningDetailsSection
-          slidePlans={planningIdeas.slidePlans}
-          lessonPlanSections={planningIdeas.lessonPlanSections}
+        <SecondaryEvidenceSection
+          blueprint={blueprint}
+          lessonPackage={lessonPackage}
+          materials={materials}
+          planningIdeas={planningIdeas}
+          lessonTrace={lessonTrace}
         />
       </div>
     </div>
@@ -249,11 +241,11 @@ function PackageSummarySection({
 }) {
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Package Summary</h3>
+      <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
       <div style={heroGridStyle}>
         <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
-        <SummaryCard label="Centers" value={lessonPackage.centers.length.toString()} />
-        <SummaryCard label="Interventions" value={lessonPackage.interventions.length.toString()} />
+        <SummaryCard label="Teacher-Led Support" value={lessonPackage.interventions.length.toString()} />
+        <SummaryCard label="Centers / Independent Work" value={lessonPackage.centers.length.toString()} />
       </div>
 
       <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 8, color: "var(--text-secondary)" }}>
@@ -262,8 +254,55 @@ function PackageSummarySection({
         <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
         <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+            Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.
+          </div>
       </div>
     </div>
+  )
+}
+
+function SecondaryEvidenceSection({
+  blueprint,
+  lessonPackage,
+  materials,
+  planningIdeas,
+  lessonTrace,
+}: {
+  blueprint: LessonBlueprint
+  lessonPackage: LessonPackage
+  materials: MaterialFile[]
+  planningIdeas: LessonPlanningIdeas
+  lessonTrace: LessonPipelineTrace | null
+}) {
+  return (
+    <details style={sectionStyle}>
+      <summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>
+      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+        <SignalSection
+          title="Source Support Signals"
+          signals={blueprint.sourceReadiness.signals}
+          warnings={blueprint.sourceReadiness.warnings}
+        />
+
+        <SignalSection
+          title="Package Quality Signals"
+          signals={lessonPackage.readiness.signals}
+          warnings={lessonPackage.readiness.warnings}
+        />
+
+        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />
+
+        <PlanningDetailsSection
+          slidePlans={planningIdeas.slidePlans}
+          lessonPlanSections={planningIdeas.lessonPlanSections}
+        />
+
+        <BlueprintDetailsSection blueprint={blueprint} />
+
+        {lessonTrace && <PipelineTraceSection trace={lessonTrace} />}
+      </div>
+    </details>
   )
 }
 
@@ -278,7 +317,9 @@ export function TraceabilitySection({
 }) {
   const contentSourceLabel =
     blueprint.sourceReadiness.curriculumSupport === "strong"
-      ? "Curriculum materials strongly influenced the lesson content."
+      ? blueprint.sourceReadiness.selectedCurriculumMaterialIds.length > 1
+        ? "Curriculum materials strongly influenced the lesson content. The strongest curriculum source led content grounding, with secondary curriculum support threaded in where useful."
+        : "A curriculum material strongly influenced the lesson content."
       : "Curriculum support is limited, so some content may rely on fallback lesson logic."
 
   const structureSourceLabel =
@@ -313,17 +354,38 @@ export function TraceabilitySection({
     "structure",
     blueprint.sourceReadiness.selectedExemplarMaterialIds
   )
+  const cautionOrBlockedSummary = Array.from(
+    new Set(
+      [...contentMaterials, ...structureMaterials]
+        .filter((item) => item.outcome === "blocked" || item.decision === "caution")
+        .map((item) => `${item.name} (${item.outcome === "blocked" ? "blocked" : "caution"})`)
+    )
+  )
 
   return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Why This Lesson Was Generated This Way</h3>
-      <div style={{ display: "grid", gap: 12 }}>
+    <details style={sectionStyle}>
+      <summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>
+      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Authority at a Glance</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <div><strong>Content authority:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Presentation authority:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+            <div><strong>Package grounding:</strong> {packageConfidenceLabel}</div>
+            <div><strong>Fallback usage:</strong> {fallbackUsageLabel}</div>
+            <div><strong>Used with caution or blocked:</strong> {joinOrFallback(cautionOrBlockedSummary, "None")}</div>
+          </div>
+          <div style={{ color: "var(--text-secondary)", marginTop: 8 }}>
+            This is the shortest teacher-facing summary of what grounded the lesson and where the engine had to be more careful.
+          </div>
+        </div>
+
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Content Authority</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{contentSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Curriculum Support:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
-            <div><strong>Selected Curriculum Source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Selected Curriculum Source(s):</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
             <div><strong>Standards Source:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
             <div><strong>Vocabulary Source:</strong> {joinOrFallback(blueprint.content.vocabulary, "Key vocabulary")}</div>
             <div><strong>Text/Topic Source:</strong> {joinOrFallback(blueprint.content.texts, "Teacher-provided lesson text")}</div>
@@ -395,7 +457,7 @@ export function TraceabilitySection({
           )}
         </div>
       </div>
-    </div>
+    </details>
   )
 }
 
@@ -450,7 +512,7 @@ function AuthorityDecisionList({
                 <strong>{item.name}</strong>
                 <span style={decisionBadgeStyle(item.outcome)}>{formatReliabilityOutcome(item.outcome)}</span>
                 <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>
-                  {formatReliabilityDecision(item.decision)} Ã‚Â· score {item.score}
+                  {formatReliabilityDecision(item.decision)} - score {item.score}
                 </span>
               </div>
 
@@ -505,7 +567,7 @@ function buildReliabilityDecisions(
       outcome,
       decision,
       score: getReliabilityScore(material),
-      note: buildReliabilityNote(material, axis, outcome),
+      note: buildReliabilityNote(material, axis, outcome, selectedMaterialIds.indexOf(material.id)),
       reasons: collectReliabilityReasons(material),
     }
   })
@@ -522,12 +584,17 @@ function getSelectedMaterialNames(materials: MaterialFile[], selectedIds: string
 function buildReliabilityNote(
   material: MaterialFile,
   axis: ReliabilityAxis,
-  outcome: ReliabilityOutcome
+  outcome: ReliabilityOutcome,
+  selectedIndex: number
 ): string {
   if (outcome === "used") {
-    return axis === "content"
-      ? "Used to ground lesson content because it was the strongest eligible curriculum source."
-      : "Used to shape pacing, flow, and teacher-facing structure because it was the strongest eligible exemplar source."
+    if (axis === "content") {
+      return selectedIndex === 0
+        ? "Used as the primary curriculum grounding source because it ranked strongest for content on this axis."
+        : "Used as a secondary curriculum support source because it added additional eligible content signals."
+    }
+
+    return "Used to shape pacing, flow, and teacher-facing structure because it was the strongest eligible exemplar source."
   }
 
   if (outcome === "down-ranked") {
@@ -577,31 +644,17 @@ function formatReliabilityDecision(decision: string): string {
 }
 
 function decisionBadgeStyle(outcome: ReliabilityOutcome): React.CSSProperties {
-  const palette =
-    outcome === "used"
-      ? { background: "#ecfdf5", color: "#065f46" }
-      : outcome === "down-ranked"
-        ? { background: "#fff7ed", color: "#9a3412" }
-        : outcome === "blocked"
-          ? { background: "#fef2f2", color: "#991b1b" }
-          : { background: "#f3f4f6", color: "#374151" }
-
-  return {
-    display: "inline-block",
-    padding: "4px 8px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: palette.background,
-    color: palette.color,
-  }
+  if (outcome === "used") return orchardStatusBadgeStyle("moss")
+  if (outcome === "down-ranked") return orchardStatusBadgeStyle("honey")
+  if (outcome === "blocked") return orchardStatusBadgeStyle("cranberry")
+  return orchardStatusBadgeStyle("neutral")
 }
 
 export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
   return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Pipeline Trace</h3>
-      <div style={{ display: "grid", gap: 12 }}>
+    <details style={sectionStyle}>
+      <summary style={summaryStyle}>Pipeline Trace</summary>
+      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Mode and Material Counts</div>
           <div style={{ display: "grid", gap: 6 }}>
@@ -670,7 +723,7 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
           )}
         </div>
       </div>
-    </div>
+    </details>
   )
 }
 export function CoverageDecisionsSection({
@@ -692,46 +745,58 @@ export function CoverageDecisionsSection({
 
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Coverage and Missing-Area Decisions</h3>
+      <h3 style={sectionHeadingStyle}>Teacher Decisions for Missing Lesson Parts</h3>
 
       <div style={{ display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Major Component Coverage</div>
           {componentCoverage.length > 0 ? (
             <div style={{ display: "grid", gap: 8 }}>
-              {componentCoverage.map((entry) => (
-                <div key={entry.component} style={signalCardStyle(mapCoverageTone(entry.status))}>
-                  <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
-                    {entry.component.replace(/_/g, " ")}: {entry.status}
+              {componentCoverage.map((entry) => {
+                const hasEvidenceDetails =
+                  entry.evidence.length > 0 || Boolean(entry.sourceCoverage) || Boolean(entry.generatedCoverage)
+
+                return (
+                  <div key={entry.component} style={signalCardStyle(mapCoverageTone(entry.status))}>
+                    <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
+                      {entry.component.replace(/_/g, " ")}: {entry.status}
+                    </div>
+
+                    <div style={{ marginTop: 4 }}>{entry.rationale}</div>
+
+                    {hasEvidenceDetails ? (
+                      <details style={{ marginTop: 8 }}>
+                        <summary style={minorSummaryStyle}>Evidence details</summary>
+                        <div style={{ marginTop: 8, display: "grid", gap: 6, fontSize: 13 }}>
+                          {entry.evidence.length > 0 ? (
+                            <div>
+                              <strong>Combined evidence:</strong> {entry.evidence.join(", ")}
+                            </div>
+                          ) : null}
+
+                          {entry.sourceCoverage ? (
+                            <div>
+                              <strong>Source coverage:</strong> {entry.sourceCoverage.status}
+                              {entry.sourceCoverage.evidence.length > 0
+                                ? ` | ${entry.sourceCoverage.evidence.join(", ")}`
+                                : ""}
+                            </div>
+                          ) : null}
+
+                          {entry.generatedCoverage ? (
+                            <div>
+                              <strong>Generated support:</strong> {entry.generatedCoverage.status}
+                              {entry.generatedCoverage.evidence.length > 0
+                                ? ` | ${entry.generatedCoverage.evidence.join(", ")}`
+                                : ""}
+                            </div>
+                          ) : null}
+                        </div>
+                      </details>
+                    ) : null}
                   </div>
-
-                  <div style={{ marginTop: 4 }}>{entry.rationale}</div>
-
-                  {entry.evidence.length > 0 && (
-                    <div style={{ marginTop: 4, fontSize: 13 }}>
-                      <strong>Combined evidence:</strong> {entry.evidence.join(", ")}
-                    </div>
-                  )}
-
-                  {entry.sourceCoverage && (
-                    <div style={{ marginTop: 6, fontSize: 13 }}>
-                      <strong>Source coverage:</strong> {entry.sourceCoverage.status}
-                      {entry.sourceCoverage.evidence.length > 0
-                        ? ` | ${entry.sourceCoverage.evidence.join(", ")}`
-                        : ""}
-                    </div>
-                  )}
-
-                  {entry.generatedCoverage && (
-                    <div style={{ marginTop: 4, fontSize: 13 }}>
-                      <strong>Generated support:</strong> {entry.generatedCoverage.status}
-                      {entry.generatedCoverage.evidence.length > 0
-                        ? ` | ${entry.generatedCoverage.evidence.join(", ")}`
-                        : ""}
-                    </div>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div style={{ color: "var(--text-secondary)" }}>
@@ -751,6 +816,9 @@ export function CoverageDecisionsSection({
                   coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
                 const generatedStatus =
                   coverage?.generatedCoverage?.status ?? "missing"
+                const hasEvidenceDetails =
+                  (coverage?.sourceCoverage?.evidence?.length ?? 0) > 0 ||
+                  (coverage?.generatedCoverage?.evidence?.length ?? 0) > 0
 
                 return (
                   <div
@@ -775,16 +843,23 @@ export function CoverageDecisionsSection({
                       <strong>Generated support:</strong> {generatedStatus}
                     </div>
 
-                    {coverage?.sourceCoverage?.evidence && coverage.sourceCoverage.evidence.length > 0 ? (
-                      <div style={{ marginTop: 4, fontSize: 13 }}>
-                        <strong>Source evidence:</strong> {coverage.sourceCoverage.evidence.join(", ")}
-                      </div>
-                    ) : null}
+                    {hasEvidenceDetails ? (
+                      <details style={{ marginTop: 8 }}>
+                        <summary style={minorSummaryStyle}>Evidence details</summary>
+                        <div style={{ marginTop: 8, display: "grid", gap: 6, fontSize: 13 }}>
+                          {coverage?.sourceCoverage?.evidence && coverage.sourceCoverage.evidence.length > 0 ? (
+                            <div>
+                              <strong>Source evidence:</strong> {coverage.sourceCoverage.evidence.join(", ")}
+                            </div>
+                          ) : null}
 
-                    {coverage?.generatedCoverage?.evidence && coverage.generatedCoverage.evidence.length > 0 ? (
-                      <div style={{ marginTop: 4, fontSize: 13 }}>
-                        <strong>Generated evidence:</strong> {coverage.generatedCoverage.evidence.join(", ")}
-                      </div>
+                          {coverage?.generatedCoverage?.evidence && coverage.generatedCoverage.evidence.length > 0 ? (
+                            <div>
+                              <strong>Generated evidence:</strong> {coverage.generatedCoverage.evidence.join(", ")}
+                            </div>
+                          ) : null}
+                        </div>
+                      </details>
                     ) : null}
 
                     {sourceStatus === "missing" && generatedStatus !== "missing" ? (
@@ -823,11 +898,11 @@ export function CoverageDecisionsSection({
                       This teacher decision is applied to the current package and will remain active until you change it.
                     </div>
 
-                    {isRegenerating && (
+                    {isRegenerating ? (
                       <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
                         Refreshing the lesson package with the latest decision...
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )
               })}
@@ -878,15 +953,50 @@ function SignalSection({
   )
 }
 
+function hasVisibleText(content: string): boolean {
+  return content.trim().length > 0
+}
+
+function sanitizeListItems(items: string[]): string[] {
+  return items
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+}
+
 function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
+  const lessonPlan = lessonPackage.lessonPlan.trim()
+  const slides = sanitizeListItems(lessonPackage.slides)
+  const interventions = sanitizeListItems(lessonPackage.interventions)
+  const centers = sanitizeListItems(lessonPackage.centers)
+  const rotationPlan = lessonPackage.rotationPlan.trim()
+  const exports = lessonPackage.exports ?? []
+
+  const hasVisibleOutputs =
+    lessonPlan.length > 0 ||
+    slides.length > 0 ||
+    interventions.length > 0 ||
+    centers.length > 0 ||
+    rotationPlan.length > 0 ||
+    exports.length > 0
+
   return (
     <>
-      <SimpleListSection title="Slides" items={lessonPackage.slides} />
-      <PreSection title="Lesson Plan" content={lessonPackage.lessonPlan} />
-      <SimpleListSection title="Centers" items={lessonPackage.centers} />
-      <PreSection title="Rotation Plan" content={lessonPackage.rotationPlan} />
-      <SimpleListSection title="Interventions" items={lessonPackage.interventions} />
-      <SimpleListSection title="Exports" items={lessonPackage.exports} />
+      {lessonPlan.length > 0 ? <PreSection title="Lesson Plan" content={lessonPlan} /> : null}
+      {slides.length > 0 ? <SimpleListSection title="Slides" items={slides} /> : null}
+      {interventions.length > 0 ? <SimpleListSection title="Teacher-Led Support" items={interventions} /> : null}
+      {centers.length > 0 ? <SimpleListSection title="Centers / Independent Work" items={centers} /> : null}
+      {rotationPlan.length > 0 ? <PreSection title="Centers / Independent Work Rotation" content={rotationPlan} /> : null}
+      {exports.length > 0 ? <ExportArtifactsSection exports={exports} /> : null}
+
+      {!hasVisibleOutputs ? (
+        <div style={sectionStyle}>
+          <h3 style={sectionHeadingStyle}>Package Outputs</h3>
+          <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+            No teacher-facing outputs are included in the current package yet. Request the outputs you want or add
+            stronger source support, then regenerate if you need more materials.
+          </p>
+        </div>
+      ) : null}
     </>
   )
 }
@@ -969,28 +1079,53 @@ function SimpleListSection({
   items,
 }: {
   title: string
-  items: Array<string | ExportArtifact>
+  items: string[]
 }) {
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>{title}</h3>
       <ul style={listStyle}>
-        {items.map((item) => {
-          const key = typeof item === "string" ? item : `${item.kind}-${item.fileName}`
-          const label =
-            typeof item === "string" ? item : `${item.label} (${item.fileName})`
-
-          return <li key={key}>{label}</li>
-        })}
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
       </ul>
     </div>
   )
+}
+
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+export async function downloadExportArtifact(artifact: ExportArtifact) {
+  if (!artifact.content) return
+
+  let blob: Blob
+
+  if (artifact.mimeType === DOCX_MIME) {
+    const { exportLessonPlanDocx } = await import("../engine/exports/exportLessonPlanDocx")
+    blob = await exportLessonPlanDocx(artifact.label, artifact.content)
+  } else {
+    blob = new Blob([artifact.content], {
+      type: artifact.mimeType ?? "text/plain;charset=utf-8",
+    })
+  }
+
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = artifact.fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
 }
 
 function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Exports</h3>
+      <p style={{ color: "var(--text-secondary)", margin: "0 0 var(--space-sm) 0" }}>
+        Export only what you need, or download the full lesson package once the artifacts are ready.
+      </p>
       <div style={{ display: "grid", gap: 10 }}>
         {exports.map((artifact) => (
           <div
@@ -999,11 +1134,31 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
           >
             <div style={{ fontWeight: 700 }}>{artifact.label}</div>
             <div style={{ marginTop: 4, fontSize: 13 }}>
-              <strong>Status:</strong> {artifact.status === "placeholder" ? "Placeholder" : artifact.status}
+              <strong>Format:</strong> {artifact.mimeType === DOCX_MIME ? "DOCX" : "Plain text"}
+            </div>
+            <div style={{ marginTop: 4, fontSize: 13 }}>
+              <strong>Filename:</strong> {artifact.fileName}
             </div>
             <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-              Export generation is not fully implemented yet for this artifact.
+              {artifact.mimeType === DOCX_MIME
+                ? "This export is generated from the current lesson package and downloads as a DOCX lesson plan."
+                : "This export is generated from the current lesson package and downloads as plain text."}
             </div>
+
+            {artifact.content ? (
+              <button
+                type="button"
+                onClick={() => void downloadExportArtifact(artifact)}
+                style={{
+                  ...orchardButtonStyle({ subtle: true }),
+                  marginTop: 10,
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Download
+              </button>
+            ) : null}
           </div>
         ))}
       </div>
@@ -1024,10 +1179,8 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div
       style={{
-        border: "1px solid #f3efe6",
-        borderRadius: "var(--radius-md)",
+        ...orchardSoftCardStyle,
         padding: 12,
-        background: "#fcfbf8",
       }}
     >
       <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>{label}</div>
@@ -1094,16 +1247,12 @@ function DecisionButton({
       onClick={onClick}
       disabled={disabled}
       style={{
-        padding: "8px 10px",
-        borderRadius: "var(--radius-sm)",
-        border: active ? "1px solid var(--orchard-green)" : "1px solid var(--border-soft)",
-        background: active ? "var(--orchard-green)" : "var(--paper-white)",
-        color: active ? "var(--paper-white)" : "var(--text-primary)",
+        ...(active ? orchardButtonStyle({ active: true }) : orchardButtonStyle({ subtle: true })),
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         fontSize: 12,
         fontWeight: 700,
-        boxShadow: active ? "var(--shadow-soft)" : "none",
+        boxShadow: disabled ? "none" : active ? "var(--shadow-soft)" : "var(--shadow-soft)",
       }}
     >
       {label}
@@ -1126,7 +1275,7 @@ function BlockedResultsState({
 }) {
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Generated Lesson</div>
+      <div style={sectionLabelStyle}>Planning Binder</div>
       <h2
         style={{
           marginTop: 0,
@@ -1197,37 +1346,43 @@ function mapCoverageTone(status: "covered" | "partial" | "missing"): "good" | "w
 }
 
 function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties {
-  const palette =
-    tone === "good"
-      ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
-      : tone === "warn"
-        ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
-        : { background: "#fcfbf8", border: "var(--border-soft)", color: "var(--text-secondary)" }
+  if (tone === "good") {
+    return {
+      ...orchardSoftCardStyle,
+      background: "rgba(110, 139, 107, 0.14)",
+      border: "1px solid var(--border-moss)",
+      color: "var(--deep-orchard)",
+      padding: 12,
+    }
+  }
+
+  if (tone === "warn") {
+    return {
+      ...orchardSoftCardStyle,
+      background: "rgba(242, 192, 120, 0.20)",
+      border: "1px solid var(--border-honey)",
+      color: "var(--warm-brown)",
+      padding: 12,
+    }
+  }
 
   return {
-    border: `1px solid ${palette.border}`,
-    background: palette.background,
-    color: palette.color,
-    borderRadius: "var(--radius-md)",
+    ...orchardSoftCardStyle,
+    color: "var(--text-secondary)",
     padding: 12,
   }
 }
 
 const warningStyle: React.CSSProperties = {
-  border: "1px solid #fed7aa",
-  background: "#fff7ed",
-  color: "#9a3412",
-  borderRadius: "var(--radius-md)",
-  padding: 12,
+  ...orchardNoticeStyle,
+  border: "1px solid var(--border-cranberry)",
+  background: "rgba(184, 84, 90, 0.12)",
+  color: "var(--cranberry)",
   fontSize: 14,
 }
 
 const noticeStyle: React.CSSProperties = {
-  padding: "12px 14px",
-  borderRadius: "var(--radius-md)",
-  border: "1px solid var(--border-soft)",
-  background: "#fcfbf8",
-  color: "var(--text-secondary)",
+  ...orchardNoticeStyle,
 }
 
 const actionsStyle: React.CSSProperties = {
@@ -1250,15 +1405,9 @@ const preStyle: React.CSSProperties = {
 }
 
 const linkStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "10px 14px",
-  borderRadius: "var(--radius-md)",
+  ...orchardButtonStyle({ subtle: true }),
+  display: "inline-flex",
   textDecoration: "none",
-  border: "1px solid var(--moss-green)",
-  color: "var(--orchard-green)",
-  background: "#fcfbf8",
-  fontWeight: 700,
-  boxShadow: "var(--shadow-soft)",
 }
 
 const summaryStyle: React.CSSProperties = {
@@ -1267,10 +1416,18 @@ const summaryStyle: React.CSSProperties = {
   color: "var(--orchard-green)",
 }
 
+const minorSummaryStyle: React.CSSProperties = {
+  cursor: "pointer",
+  fontWeight: 700,
+  fontSize: 13,
+  color: "var(--text-primary)",
+}
+
 const sectionHeadingStyle: React.CSSProperties = {
   marginTop: 0,
   marginBottom: "var(--space-md)",
   color: "var(--orchard-green)",
+  fontFamily: "var(--font-heading)",
 }
 
 const subHeadingStyle: React.CSSProperties = {
@@ -1278,17 +1435,5 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
