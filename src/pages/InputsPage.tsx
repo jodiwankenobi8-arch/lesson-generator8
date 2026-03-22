@@ -53,17 +53,17 @@ const requestedLessonPartOptions: RequestOption<RequestedLessonPartKey>[] = [
   {
     key: "centers",
     title: "Centers",
-    description: "Station or rotation-based work beyond the main lesson flow.",
+    description: "Include centers or station work as part of the lesson design.",
   },
   {
     key: "small_group",
     title: "Small group",
-    description: "A teacher-led follow-up group for extra support or extension.",
+    description: "Include a teacher-led small-group plan as part of the lesson design.",
   },
   {
     key: "intervention",
     title: "Intervention",
-    description: "Targeted reteach or support beyond the core lesson.",
+    description: "Include targeted reteach or intervention time as part of the lesson design.",
   },
 ]
 
@@ -91,17 +91,17 @@ const requestedOutputOptions: RequestOption<RequestedOutputKey>[] = [
   {
     key: "centers",
     title: "Centers printables",
-    description: "Student-facing center printables or materials, separate from selecting Centers as a lesson part.",
+    description: "Generate student-facing center materials when you want printable support for a centers plan.",
   },
   {
     key: "small_group",
     title: "Small-group support",
-    description: "Teacher-led small-group materials or follow-up supports.",
+    description: "Generate teacher-facing small-group supports when you want materials for a small-group plan.",
   },
   {
     key: "intervention",
     title: "Intervention support",
-    description: "Teacher-led reteach or intervention supports.",
+    description: "Generate teacher-facing intervention supports when you want materials for an intervention plan.",
   },
 ]
 
@@ -488,13 +488,13 @@ export default function InputsPage() {
             <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
               Choose the core artifacts first, then add specific support materials
               only when you want them. Lesson parts above shape the lesson;
-              deliverables here control which files or printables get generated.
+              Lesson parts shape the lesson. Deliverables here control which files or printables get generated.
             </div>
 
             <div style={{ ...noticeStyle, marginTop: 12 }}>
               {lessonRequest.requestedOutputs.length > 0
-                ? `${lessonRequest.requestedOutputs.length} requested deliverable(s) selected. Core artifacts come first; support artifacts stay optional unless you ask for them.`
-                : "No optional deliverables requested yet. Start with core artifacts, then add specific support materials only when needed."}
+                ? `${lessonRequest.requestedOutputs.length} requested deliverable(s) selected. Lesson parts shape the lesson itself; deliverables add files or printables when you want extra support materials.`
+                : "No optional deliverables requested yet. Start with the lesson itself, then add files or printables only when you need extra support materials."}
             </div>
 
             <div style={requestGridStyle}>
