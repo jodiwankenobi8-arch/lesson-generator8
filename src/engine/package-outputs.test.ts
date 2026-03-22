@@ -285,6 +285,46 @@ describe("buildPackageOutputs", () => {
     expect(printablesExport!.content).toContain("Intervention Support")
     expect(printablesExport!.content).not.toContain("\nInterventions\n")
   })
+  it("does not let printables alone unlock optional centers or teacher-led support lanes", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["printables"],
+      },
+    })
+
+    expect(result.lessonPlan).not.toContain("Centers")
+    expect(result.lessonPlan).not.toContain("Teacher-Led Support")
+    expect(result.lessonPlan).not.toContain("Intervention Support")
+    expect(result.centers).toEqual([])
+    expect(result.rotationPlan).toBe("")
+    expect(result.interventions).toEqual([])
+    expect(result.exports.map((artifact) => artifact.kind)).toEqual([
+      "slides",
+      "lesson_plan",
+      "printables",
+    ])
+
+    const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
+    expect(printablesExport).toBeDefined()
+    expect(printablesExport!.content).toContain("Centers")
+    expect(printablesExport!.content).toContain("- No student centers defined.")
+    expect(printablesExport!.content).toContain("Rotation Plan")
+    expect(printablesExport!.content).toContain("No rotation plan defined.")
+    expect(printablesExport!.content).toContain("Intervention Support")
+    expect(printablesExport!.content).toContain("- No intervention support defined.")
+  })
   it("keeps canonical exports free of banned hub language", () => {
     const result = buildPackageOutputs({
       inputs: {
