@@ -154,7 +154,7 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Intervention Support")
     expect(result.centers).toEqual(["Word Sort: Sort long a and short a words."])
     expect(result.rotationPlan).toContain("Rotation 1: Word Sort: Sort long a and short a words.")
-    expect(result.rotationPlan).toContain("Teacher Table Focus: Targeted Blending - Reteach blending with a reduced list.")
+    expect(result.rotationPlan).toContain("Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list.")
     expect(result.interventions).toEqual(["Phonics Reteach: Practice decoding with teacher support."])
     expect(result.exports).toEqual([
       {
@@ -242,7 +242,7 @@ describe("buildPackageOutputs", () => {
       "Rotation 1: Word sort center: Sort, read, and revisit cake, game, same, late."
     )
     expect(result.rotationPlan).toContain(
-      "Teacher Table Focus: Reteach the target phonics pattern with cake, game, same, late and guide students through this practice: Read the word list aloud."
+      "Teacher-Led Support Focus: Reteach the target phonics pattern with cake, game, same, late and guide students through this practice: Read the word list aloud."
     )
     expect(result.interventions).toEqual([
       "Reteach the target phonics pattern with cake, game, same, late.",

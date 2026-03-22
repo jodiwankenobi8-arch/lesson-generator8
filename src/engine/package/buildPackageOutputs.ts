@@ -722,7 +722,7 @@ function buildAddSmallGroupSupportLine(blueprint: LessonBlueprint): string {
   const primary = blueprint.content.target.primary.toLowerCase()
 
   if (isMixed) {
-    return `Teacher Table Support: Add a targeted small-group block that connects ${selectWordListFocus(
+    return `Teacher-Led Support: Add a targeted small-group block that connects ${selectWordListFocus(
       blueprint,
       "teacher-selected examples"
     )} to ${selectTextFocus(
@@ -732,7 +732,7 @@ function buildAddSmallGroupSupportLine(blueprint: LessonBlueprint): string {
   }
 
   if (primary === "phonics") {
-    return `Teacher Table Support: Add a targeted phonics reteach using ${selectWordListFocus(
+    return `Teacher-Led Support: Add a targeted phonics reteach using ${selectWordListFocus(
       blueprint,
       "target words"
     )} and guide students through this practice: ${selectPracticeFocus(
@@ -741,7 +741,7 @@ function buildAddSmallGroupSupportLine(blueprint: LessonBlueprint): string {
     )}.`
   }
 
-  return `Teacher Table Support: Add a guided small-group reread using ${selectTextFocus(
+  return `Teacher-Led Support: Add a guided small-group reread using ${selectTextFocus(
     blueprint,
     "teacher-provided text"
   )} and reinforce ${selectVocabularyFocus(
@@ -756,13 +756,13 @@ function resolveTeacherTableLine(
   missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string {
   if (shouldLeaveOut("small_group", missingAreaDecisions)) {
-    return "Teacher Table Focus: No small-group block selected."
+    return "Teacher-Led Support Focus: No small-group block selected."
   }
 
   const firstSmallGroupIdea = planningIdeas?.smallGroupIdeas[0]
 
   if (firstSmallGroupIdea) {
-    return `Teacher Table Focus: ${firstSmallGroupIdea.title} - ${firstSmallGroupIdea.description}`
+    return `Teacher-Led Support Focus: ${firstSmallGroupIdea.title} - ${firstSmallGroupIdea.description}`
   }
 
   if (shouldAdd("small_group", missingAreaDecisions)) {
@@ -777,7 +777,7 @@ function buildAddTeacherTableLine(blueprint: LessonBlueprint): string {
   const primary = blueprint.content.target.primary.toLowerCase()
 
   if (isMixed) {
-    return `Teacher Table Focus: Add a targeted small-group block that connects ${selectWordListFocus(
+    return `Teacher-Led Support Focus: Add a targeted small-group block that connects ${selectWordListFocus(
       blueprint,
       "teacher-selected examples"
     )} to ${selectTextFocus(
@@ -787,7 +787,7 @@ function buildAddTeacherTableLine(blueprint: LessonBlueprint): string {
   }
 
   if (primary === "phonics") {
-    return `Teacher Table Focus: Add a targeted phonics reteach using ${selectWordListFocus(
+    return `Teacher-Led Support Focus: Add a targeted phonics reteach using ${selectWordListFocus(
       blueprint,
       "target words"
     )} and guide students through this practice: ${selectPracticeFocus(
@@ -796,7 +796,7 @@ function buildAddTeacherTableLine(blueprint: LessonBlueprint): string {
     )}.`
   }
 
-  return `Teacher Table Focus: Add a guided small-group reread using ${selectTextFocus(
+  return `Teacher-Led Support Focus: Add a guided small-group reread using ${selectTextFocus(
     blueprint,
     "teacher-provided text"
   )} and reinforce ${selectVocabularyFocus(
@@ -810,7 +810,7 @@ function buildDefaultTeacherTableLine(blueprint: LessonBlueprint): string {
   const primary = blueprint.content.target.primary.toLowerCase()
 
   if (isMixed) {
-    return `Teacher Table Focus: Support both word work and meaning using ${selectWordListFocus(
+    return `Teacher-Led Support Focus: Support both word work and meaning using ${selectWordListFocus(
       blueprint,
       "teacher-selected examples"
     )} and ${selectTextFocus(
@@ -820,7 +820,7 @@ function buildDefaultTeacherTableLine(blueprint: LessonBlueprint): string {
   }
 
   if (primary === "phonics") {
-    return `Teacher Table Focus: Reteach the target phonics pattern with ${selectWordListFocus(
+    return `Teacher-Led Support Focus: Reteach the target phonics pattern with ${selectWordListFocus(
       blueprint,
       "target words"
     )} and guide students through this practice: ${selectPracticeFocus(
@@ -829,7 +829,7 @@ function buildDefaultTeacherTableLine(blueprint: LessonBlueprint): string {
     )}.`
   }
 
-  return `Teacher Table Focus: Reread ${selectTextFocus(
+  return `Teacher-Led Support Focus: Reread ${selectTextFocus(
     blueprint,
     "teacher-provided text"
   )} and reinforce ${selectVocabularyFocus(
