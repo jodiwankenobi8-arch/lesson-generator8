@@ -68,6 +68,54 @@ const introStyle: React.CSSProperties = {
   margin: 0,
 }
 
+const binderFeedbackStackStyle: React.CSSProperties = {
+  marginBottom: "var(--space-md)",
+  display: "grid",
+  gap: 8,
+}
+
+const binderSuccessNoticeStyle: React.CSSProperties = {
+  ...orchardNoticeStyle,
+  background: "rgba(110, 139, 107, 0.14)",
+  border: "1px solid var(--border-moss)",
+  color: "var(--deep-orchard)",
+}
+
+const binderSectionStackStyle: React.CSSProperties = {
+  display: "grid",
+  gap: "var(--space-md)",
+}
+
+const binderMetaListStyle: React.CSSProperties = {
+  marginTop: "var(--space-md)",
+  display: "grid",
+  gap: 8,
+  color: "var(--text-secondary)",
+}
+
+const binderSmallNoteStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: "var(--text-secondary)",
+}
+
+const detailsSectionGridStyle: React.CSSProperties = {
+  marginTop: 12,
+  display: "grid",
+  gap: 12,
+}
+
+const blockedTitleStyle: React.CSSProperties = {
+  ...orchardSectionTitleStyle,
+  fontSize: 32,
+  marginTop: 0,
+  marginBottom: "var(--space-sm)",
+}
+
+const blockedMessageStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  marginBottom: "var(--space-md)",
+}
+
 export default function ResultsPage() {
   const blueprint = useLessonStore((state) => state.blueprint)
   const planningIdeas = useLessonStore((state) => state.planningIdeas)
@@ -175,7 +223,7 @@ export default function ResultsPage() {
       </div>
 
       {(isRegenerating || regenerationError || lastDecisionSummary) && (
-        <div style={{ marginBottom: "var(--space-md)", display: "grid", gap: 8 }}>
+        <div style={binderFeedbackStackStyle}>
           {isRegenerating && (
             <div style={noticeStyle}>
               {lastDecisionSummary
@@ -185,11 +233,7 @@ export default function ResultsPage() {
           )}
 
           {!isRegenerating && !regenerationError && lastDecisionSummary && (
-            <div
-              style={{
-                ...noticeStyle, background: "rgba(110, 139, 107, 0.14)", border: "1px solid var(--border-moss)", color: "var(--deep-orchard)",
-              }}
-            >
+            <div style={binderSuccessNoticeStyle}>
               {lastDecisionSummary} The package has been refreshed with your latest teacher decision.
             </div>
           )}
@@ -202,7 +246,7 @@ export default function ResultsPage() {
         </div>
       )}
 
-      <div style={{ display: "grid", gap: "var(--space-md)" }}>
+      <div style={binderSectionStackStyle}>
         <PackageSummarySection
           blueprint={blueprint}
           lessonPackage={lessonPackage}
@@ -248,15 +292,13 @@ function PackageSummarySection({
         <SummaryCard label="Centers / Independent Work" value={lessonPackage.centers.length.toString()} />
       </div>
 
-      <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 8, color: "var(--text-secondary)" }}>
+      <div style={binderMetaListStyle}>
         <div><strong>Primary Target:</strong> {blueprint.content.target.primary}</div>
         <div><strong>Secondary Target:</strong> {blueprint.content.target.secondary || "None"}</div>
         <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
         <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
-          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-            Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.
-          </div>
+          <div style={binderSmallNoteStyle}>Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.</div>
       </div>
     </div>
   )
@@ -278,7 +320,7 @@ function SecondaryEvidenceSection({
   return (
     <details style={sectionStyle}>
       <summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>
-      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+      <div style={detailsSectionGridStyle}>
         <SignalSection
           title="Source Support Signals"
           signals={blueprint.sourceReadiness.signals}
@@ -365,7 +407,7 @@ export function TraceabilitySection({
   return (
     <details style={sectionStyle}>
       <summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>
-      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+      <div style={detailsSectionGridStyle}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Authority at a Glance</div>
           <div style={{ display: "grid", gap: 6 }}>
@@ -654,7 +696,7 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
   return (
     <details style={sectionStyle}>
       <summary style={summaryStyle}>Pipeline Trace</summary>
-      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+      <div style={detailsSectionGridStyle}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Mode and Material Counts</div>
           <div style={{ display: "grid", gap: 6 }}>
@@ -1276,18 +1318,10 @@ function BlockedResultsState({
   return (
     <div style={pageStyle}>
       <div style={sectionLabelStyle}>Planning Binder</div>
-      <h2
-        style={{
-          marginTop: 0,
-          marginBottom: "var(--space-sm)",
-          fontFamily: "var(--font-heading)",
-          fontSize: 32,
-          color: "var(--orchard-green)",
-        }}
-      >
+      <h2 style={blockedTitleStyle}>
         {title}
       </h2>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-md)" }}>{message}</p>
+      <p style={blockedMessageStyle}>{message}</p>
       <div style={noticeStyle}>{details}</div>
       <div style={actionsStyle}>
         <Link to={linkTo} style={linkStyle}>
