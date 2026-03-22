@@ -3,20 +3,21 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: d8fafad current main checkpoint after consolidation fast-forward
-- Current validated local seam: Materials upload-type visibility is now surfaced in MaterialsPage.tsx and both upload inputs use aligned accept values
-- Current milestone: current-main truth is refreshed after consolidation and the upload-type visibility seam is locally landed
-- Current active seam: docs closeout and commit-ready checkpoint for the landed Materials upload-type visibility seam
+- Current published continuation point: 40d192d docs: refresh current truth after Materials upload-type visibility seam push
+- Current validated local state: Materials upload-type visibility is closed on current main and the continuation docs now match the pushed repo truth
+- Current milestone: current-main truth is aligned after the Materials upload-type visibility seam push
+- Current active seam: inspect-first current-main review to choose the next narrow finishing seam
 
 ## What is actually landed
 - Active product flow remains Inputs -> Materials -> Results
 - Current local branch is main
-- Current local HEAD during this refresh is d8fafad
-- origin/main matched local during this refresh at d8fafad
-- Materials intro now explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
+- Current local HEAD during this refresh is 40d192d
+- origin/main matched local during this refresh at 40d192d
+- Materials intro explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
 - Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
-- npm run typecheck passed after the Materials seam edit
+- npm run typecheck passed for the Materials upload-type visibility seam before this refresh
 - src/pages/orchardUi.ts exists on current main
+- Results uses the newer teacher-first support lane structure
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -33,18 +34,15 @@
 
 ## Latest validation snapshot
 - Live local branch was main during this refresh
-- Live local HEAD was d8fafad during this refresh
-- origin/main matched local at d8fafad during this refresh
-- Materials upload-type visibility seam was edited and verified locally
-- Verification already completed for this seam:
-  - supported source files copy present in MaterialsPage.tsx
-  - both upload inputs have aligned accept values
-  - npm run typecheck passed
+- Live local HEAD was 40d192d during this refresh
+- origin/main matched local at 40d192d during this refresh
+- Materials upload-type visibility seam is committed and pushed
+- Continuation docs were refreshed after the push so future launches start from current main truth
 
 ## Non-blocking warnings
 - README.md may still lag the active continuation docs
-- older handoffs that still launch from work/canonical-project-consolidation and 04a9b08 are now historical
-- do not reopen the upload-type visibility seam unless live regression evidence appears
+- older handoffs that still launch from work/canonical-project-consolidation and 04a9b08 are historical
+- do not reopen the Materials upload-type visibility seam unless live regression evidence appears
 
 ## What to read next
 1. AGENTS.md
@@ -54,9 +52,9 @@
 5. then inspect the actual current-main repo files for the next narrow finishing seam
 
 ## Exact next move
-- Commit and push the landed Materials upload-type visibility seam together with this docs refresh
-- Then do one inspect-first current-main review to choose the next narrow finishing seam
-- Prefer current main repo files over older continuation notes if they conflict
+- Do one inspect-first current-main review to choose the next narrow finishing seam
+- Refresh README.md only if it conflicts with the active continuation docs
+- Prefer live local git output and live local source files over older continuation notes if they conflict
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, trust live local git output and live local source files first.

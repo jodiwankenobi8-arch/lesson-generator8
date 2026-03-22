@@ -17,25 +17,25 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: main
-- Current published continuation point: d8fafad current main checkpoint after consolidation fast-forward
-- Current validated local seam: Materials upload-type visibility landed locally on main and is ready for commit closeout
+- Current published continuation point: 40d192d docs: refresh current truth after Materials upload-type visibility seam push
+- Current validated local state: Materials upload-type visibility is closed on current main and this docs refresh matches the pushed repo truth
 
 ## Current confirmed state
 - Active product flow remains Inputs -> Materials -> Results
 - Current local branch is main
-- Current local HEAD during this refresh is d8fafad
-- origin/main matched local during this refresh at d8fafad
-- Materials intro now explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
+- Current local HEAD during this refresh is 40d192d
+- origin/main matched local during this refresh at 40d192d
+- Materials intro explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
 - Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
 - src/pages/orchardUi.ts exists on current main
 - Results uses the newer teacher-first support lane structure
 
 ## Validated state
-- The Materials upload-type visibility seam was edited and verified locally
-- npm run typecheck passed after the seam edit
+- The Materials upload-type visibility seam is committed and pushed
+- npm run typecheck passed for the seam before this refresh
 - The seam remained narrow and UI-contract focused
-- Engine behavior was not broadened during this seam
-- The previous continuation docs were stale on work/canonical-project-consolidation and 04a9b08 before this refresh
+- Engine behavior was not broadened during the seam
+- The previous continuation docs on work/canonical-project-consolidation and 04a9b08 are historical
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -57,7 +57,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Current risks
 - README.md may still lag the active continuation docs
 - older handoffs can mislaunch work if treated as current
-- the next finishing seam has not yet been re-picked from current main after the consolidation merge
+- the next narrow finishing seam has not yet been re-picked from current main
 - do not reopen closed seams unless live regression evidence appears
 
 ## Active execution rule
@@ -66,11 +66,11 @@ Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
 ## Top next steps
-1. Commit and push the Materials upload-type visibility seam together with this docs refresh
-2. Do one inspect-first current-main review to choose the next narrow finishing seam
-3. Refresh README.md only if it still conflicts with the active continuation docs
-4. Keep the active continuation set small and obvious
-5. Do not let overridden notes compete with the active continuation set
+1. Do one inspect-first current-main review to choose the next narrow finishing seam
+2. Refresh README.md only if it conflicts with the active continuation docs
+3. Keep the active continuation set small and obvious
+4. Do not let overridden notes compete with the active continuation set
+5. Commit and push future seam closeouts immediately after they land
 
 ## Local doc policy
 The active local doc set should stay small and obvious:
