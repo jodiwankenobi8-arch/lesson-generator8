@@ -300,7 +300,7 @@ export default function InputsPage() {
             />
             <div style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 6 }}>
               Optional. Enter a standard if you know it. Otherwise the app will use
-              standards detected from ready curriculum materials when available.
+              standards detected from usable curriculum materials when available.
             </div>
           </div>
 
@@ -505,7 +505,7 @@ export default function InputsPage() {
           <div style={noticeStyle}>
             Required before Results can generate: grade, subject, skill focus,
             lesson topic, and duration. Standard is optional here; if left blank,
-            the app will use standards detected from ready curriculum materials
+            the app will use standards detected from usable curriculum materials
             when available.
           </div>
         </div>
