@@ -3,15 +3,16 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current published continuation point: eb5047c copy: align Inputs source-intake wording with usable materials
+- Current published continuation point: 04a9b08 docs: refresh continuation after intake wording seam
 - Last meaningful code checkpoint: eb5047c copy: align Inputs source-intake wording with usable materials
-- Current milestone: orchard lesson-flow surface system remains landed, and the source-intake wording contract is now aligned on usable materials
+- Current milestone: orchard lesson-flow surface system remains landed, and the source-intake wording contract is aligned on usable materials
 - Current active seam: source-intake upload-type visibility inspect
 
 ## What is actually landed
 - Inputs deliverable copy seam landed at 10c55c6
 - Continuation docs refresh landed at ff4a2d7
 - Inputs source-intake wording seam landed at eb5047c
+- Continuation docs refresh after intake wording seam landed at 04a9b08
 - src/pages/orchardUi.ts exists in the live repo
 - Results uses the newer teacher-first support lanes
 - Active product flow remains Inputs -> Materials -> Results
@@ -30,10 +31,10 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- Live repo included the Inputs wording seam at eb5047c
-- npm run typecheck passed for the seam
-- Continuation docs were refreshed after the seam
-- Continue from live repo files, not older pre-usable-material wording
+- Live repo HEAD is 04a9b08 on branch work/canonical-project-consolidation
+- Local worktree is clean before this closeout refresh
+- The branch was already pushed with eb5047c and 04a9b08
+- Continue from live repo files and the newest handoff, not older pre-usable-material wording notes
 
 ## Non-blocking warnings
 - README.md may still lag the active continuation docs and should not override this file

@@ -17,20 +17,22 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current published continuation point: eb5047c copy: align Inputs source-intake wording with usable materials
+- Current published continuation point: 04a9b08 docs: refresh continuation after intake wording seam
 - Last meaningful code checkpoint: eb5047c copy: align Inputs source-intake wording with usable materials
 
 ## Current confirmed state
 - Inputs deliverable copy seam landed at 10c55c6
 - Continuation docs refresh landed at ff4a2d7
 - Inputs source-intake wording seam landed at eb5047c
+- Continuation docs refresh after intake wording seam landed at 04a9b08
 - src/pages/orchardUi.ts exists as the shared orchard UI seam
 - Results uses the newer teacher-first support lane structure
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- npm run typecheck passed after the Inputs wording seam
+- npm run typecheck passed for the intake wording seam before the docs refresh
 - the usable-materials wording now matches the actual material trust contract
+- the repo was pushed through 04a9b08
 - orchard foundation is not the next seam
 - do not reopen closed UI/package seams without live regression evidence
 
