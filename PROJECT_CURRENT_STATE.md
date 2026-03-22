@@ -1,4 +1,4 @@
-﻿# PROJECT_CURRENT_STATE
+# PROJECT_CURRENT_STATE
 
 Last refreshed: 2026-03-22
 
@@ -8,7 +8,7 @@ This file is the current project status board for active work.
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: main
-- Current published continuation point: b2cc872
+- Current published continuation point: 273560e
 
 ## Current milestone
 - Step 4 basic-finished closeout is complete
@@ -23,7 +23,7 @@ This file is the current project status board for active work.
 - request-aware printables package gating no longer treats printables as a proxy unlock for optional support/package outputs
 - request-aware and trust/support terminology tests are aligned to the current teacher-facing language
 - the active product flow remains Inputs -> Materials -> Results
-- a first Step 5 Results chrome consolidation pass is now landed locally in src/pages/ResultsPage.tsx:
+- Step 5 Results chrome consolidation is now pushed in src/pages/ResultsPage.tsx at 273560e:
   - extracted helper styles for repeated Results chrome
   - preserved teacher-first package-first hierarchy
   - preserved secondary evidence grouping
@@ -32,7 +32,7 @@ This file is the current project status board for active work.
 - Targeted Results helper/usage inspect passed after the local seam
 - npm run typecheck passed after the local seam
 - npm run build passed after the local seam
-- The full test suite was last known green at pushed checkpoint b2cc872, but was not rerun after this local seam
+- The full test suite was last known green at pushed checkpoint b2cc872 and has still not been rerun after the pushed Results seam at 273560e
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -45,17 +45,17 @@ This file is the current project status board for active work.
 - materials trust depends on usable materials, not merely ready materials
 
 ## Current risks
-- older handoffs may still imply that the next move is still orchard continuation inspect-first rather than a landed local Results seam
+- older handoffs may still imply that the Results seam is still local/unpushed rather than already pushed at 273560e
 - ResultsPage still contains substantial inline styling beyond this first chrome pass
 - do not widen scope into behavior, export, or trust-contract edits without proof
 - unrelated untracked docs exist locally and are intentionally untouched
 
 ## Top next steps
-1. Inspect the current local diff for src/pages/ResultsPage.tsx
-2. Decide whether one more narrow Results chrome cleanup pass is worth doing
-3. If not, commit/push ResultsPage.tsx plus the active doc chain only
+1. Run the Step 5 hardening validation sweep on current main
+2. Fix only the brittle tests or regressions that the sweep proves are real
+3. Keep Results teacher-first and do not widen scope into request-aware/export logic without proof
 4. Keep continuation docs authoritative and small
-5. Move to the next narrow Step 5 seam only after the current seam is either pushed or intentionally parked
+5. Move to the next narrow Step 5 seam only after validation status is truthful
 
 ## What is not the next move
 - do not recreate src/pages/orchardUi.ts
