@@ -1,64 +1,60 @@
-# PROJECT_CURRENT_STATE
-
-Last refreshed: 2026-03-22
-
-## Purpose
-This file is the current project status board for active work.
-
-## Repo and branch
-- Repo: jodiwankenobi8-arch/lesson-generator8
-- Active branch: main
-- Current published continuation point: 273560e
+# PROJECT_CURRENT_STATE.md
 
 ## Current milestone
-- Step 4 basic-finished closeout is complete
-- The project is in Step 5 continuation from the live orchard surface state already present in the repo
+Step 6A — source-intake contract tightening
 
-## Current confirmed state
-- src/pages/orchardUi.ts exists as the shared orchard UI seam
-- src/styles/theme.css contains orchard token coverage
-- src/pages/ResultsPage.tsx is the canonical Results surface
-- InputsPage orchard shell seam is landed
-- MaterialsPage orchard shell seam is landed
-- request-aware printables package gating no longer treats printables as a proxy unlock for optional support/package outputs
-- request-aware and trust/support terminology tests are aligned to the current teacher-facing language
-- the active product flow remains Inputs -> Materials -> Results
-- Step 5 Results chrome consolidation is now pushed in src/pages/ResultsPage.tsx at 273560e:
-  - extracted helper styles for repeated Results chrome
-  - preserved teacher-first package-first hierarchy
-  - preserved secondary evidence grouping
+## Current checkpoint
+- Latest pushed continuation point: 865ca2b
+- Local HEAD when this doc was refreshed: 865ca2b docs: refresh active continuation checkpoint after results seam push
 
-## Validated state
-- Targeted Results helper/usage inspect passed after the local seam
-- npm run typecheck passed after the local seam
-- npm run build passed after the local seam
-- The full test suite was last known green at pushed checkpoint b2cc872 and has still not been rerun after the pushed Results seam at 273560e
+## What is done
+- orchard / teacher-first surface direction is already present
+- Results chrome consolidation is pushed on main
+- active continuation docs were refreshed and pushed
+- validation at checkpoint 865ca2b was green:
+  - npm run typecheck = PASS
+  - npm run test = PASS
+  - npm run build = PASS
+- teacher-facing Materials flow already supports curriculum and exemplar as separate multi-source lanes
+- extraction owner for current accepted upload-file types exists in src/engine/materials/extractTextFromFile.ts
+- reliability-aware source selection helpers already exist in src/engine/blueprint/materialSelection.ts
 
-## Product truths to preserve
-- curriculum = content authority
-- exemplar = presentation / structure authority
-- orchard / warm storybook / teacher-first direction
-- do not drift into generic SaaS/dashboard styling
-- centers = student-independent work
-- small group / intervention = teacher-led support
-- optional lesson parts and outputs should only appear when explicitly requested or strongly source-grounded
-- materials trust depends on usable materials, not merely ready materials
+## What is not done yet
+- the teacher-facing source-intake contract is still not explicit enough across the flow
+- MaterialsPage wording still needs one tighter, more honest contract pass
+- InputsPage still under-describes sources / uploads compared with MaterialsPage
+- accepted-type truth is not yet clearly anchored across the user-facing copy
+- OCR expansion is not started
+- export registry expansion is not started
+- AI analysis / production assist are not started
 
 ## Current risks
-- older handoffs may still imply that the Results seam is still local/unpushed rather than already pushed at 273560e
-- ResultsPage still contains substantial inline styling beyond this first chrome pass
-- do not widen scope into behavior, export, or trust-contract edits without proof
-- unrelated untracked docs exist locally and are intentionally untouched
+- older notes still point at pre-push Results work and older checkpoints
+- user-facing wording can still overclaim or under-explain what the intake system currently accepts
+- copy drift could make the UI disagree with the extraction owner
+- reopening already-stable engine seams would create avoidable patch-stacking
+
+## Validation status
+- checkpoint 865ca2b is green:
+  - typecheck PASS
+  - full test PASS
+  - build PASS
 
 ## Top next steps
-1. Run the Step 5 hardening validation sweep on current main
-2. Fix only the brittle tests or regressions that the sweep proves are real
-3. Keep Results teacher-first and do not widen scope into request-aware/export logic without proof
-4. Keep continuation docs authoritative and small
-5. Move to the next narrow Step 5 seam only after validation status is truthful
+1. finish Step 6A source-intake contract copy pass in MaterialsPage.tsx
+2. adjust InputsPage.tsx only if needed to keep wording consistent
+3. verify immediately:
+   - targeted inspect
+   - npm run typecheck
+   - relevant tests
+   - npm run build
+   - brief manual copy check
+4. refresh START_HERE_CURRENT_TRUTH.md, PROJECT_CURRENT_STATE.md, and one latest handoff if the seam lands cleanly
+5. commit and push the Step 6A checkpoint before starting Step 6B OCR expansion
 
-## What is not the next move
-- do not recreate src/pages/orchardUi.ts
-- do not restart broad repo discovery
-- do not reopen closed Results/export/request-aware seams without proof
-- do not touch unrelated untracked docs unless there is a separate reason
+## What should wait until later
+- OCR provider expansion
+- export registry expansion
+- AI analysis provider
+- AI production assist
+- broad polish beyond the narrow current seam
