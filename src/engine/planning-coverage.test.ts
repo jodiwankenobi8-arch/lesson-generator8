@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest"
 import { buildLessonPlanningIdeas } from "./planning/buildLessonPlanningIdeas"
-import { LessonBlueprint, PlanningCoverageStatus } from "./types"
+import {
+  createDefaultOutputContents,
+  normalizeOutputContents,
+  LessonBlueprint,
+  LessonOutputContents,
+  PlanningCoverageStatus,
+} from "./types"
 
 function makeBlueprint(overrides: Partial<LessonBlueprint> = {}): LessonBlueprint {
   return {
@@ -48,15 +54,31 @@ function makeBlueprint(overrides: Partial<LessonBlueprint> = {}): LessonBlueprin
     sourceReadiness: {
       curriculumSupport: "strong",
       exemplarSupport: "strong",
-    coverageSupport: "strong",
+      coverageSupport: "strong",
       overall: "balanced",
       selectedCurriculumMaterialIds: [],
-    selectedExemplarMaterialIds: [],
-    warnings: [],
+      selectedExemplarMaterialIds: [],
+      warnings: [],
       signals: [],
       ...overrides.sourceReadiness,
     },
   }
+}
+
+function makeOutputContents(options: {
+  assessment?: boolean
+  centers?: boolean
+  smallGroup?: boolean
+  intervention?: boolean
+} = {}): LessonOutputContents {
+  const outputContents = createDefaultOutputContents()
+
+  outputContents.assessments.types.formative_assessment = Boolean(options.assessment)
+  outputContents.groups.byTier.T1.centers = Boolean(options.centers)
+  outputContents.groups.byTier.T2.small_group = Boolean(options.smallGroup)
+  outputContents.groups.byTier.T3.intervention = Boolean(options.intervention)
+
+  return normalizeOutputContents(outputContents)
 }
 
 function isCoverageStatus(value: unknown): value is PlanningCoverageStatus {
@@ -65,7 +87,7 @@ function isCoverageStatus(value: unknown): value is PlanningCoverageStatus {
 
 describe("planning coverage and missing-area prompts", () => {
   it("marks major lesson components as covered when blueprint signals are strong", () => {
-    const planning = buildLessonPlanningIdeas(makeBlueprint())
+    const planning = buildLessonPlanningIdeas(makeBlueprint(), makeOutputContents())
 
     const coverage = planning.componentCoverage ?? []
 
@@ -132,10 +154,7 @@ describe("planning coverage and missing-area prompts", () => {
           },
         },
       }),
-      {
-        requestedLessonParts: ["centers", "small_group", "intervention"],
-        requestedOutputs: ["centers", "small_group", "intervention"],
-      }
+      makeOutputContents()
     )
 
     const coverage = planning.componentCoverage ?? []
@@ -157,7 +176,7 @@ describe("planning coverage and missing-area prompts", () => {
     )
   })
 
-  it("still produces structured planning output when blueprint structure is thin", () => {
+  it("still produces structured planning output and selected assessment coverage when blueprint structure is thin", () => {
     const planning = buildLessonPlanningIdeas(
       makeBlueprint({
         content: {
@@ -200,10 +219,7 @@ describe("planning coverage and missing-area prompts", () => {
           },
         },
       }),
-      {
-        requestedLessonParts: ["centers", "small_group", "intervention"],
-        requestedOutputs: ["centers", "small_group", "intervention"],
-      }
+      makeOutputContents({ assessment: true })
     )
 
     const coverage = planning.componentCoverage ?? []
@@ -214,7 +230,7 @@ describe("planning coverage and missing-area prompts", () => {
     )
 
     expect(planning.lessonPlanSections.length).toBeGreaterThan(0)
-    expect(planning.formativeAssessmentIdeas).toEqual([])
+    expect(planning.formativeAssessmentIdeas.length).toBeGreaterThan(0)
 
     expect(isCoverageStatus(byComponent.get("teach")?.status)).toBe(true)
     expect(isCoverageStatus(byComponent.get("guided_practice")?.status)).toBe(true)
@@ -224,20 +240,12 @@ describe("planning coverage and missing-area prompts", () => {
     expect(Array.isArray(prompts)).toBe(true)
     expect(
       prompts.every((prompt) =>
-        [
-          "guided_practice",
-          "independent_practice",
-          "closure",
-          "formative_assessment",
-          "centers",
-          "small_group",
-          "intervention",
-        ].includes(prompt.component)
+        ["guided_practice", "independent_practice", "closure"].includes(prompt.component)
       )
     ).toBe(true)
   })
 
-  it("generates downstream mixed-lesson support ideas even when center structure is not explicit", () => {
+  it("generates downstream mixed-lesson support ideas when those group outputs are selected", () => {
     const planning = buildLessonPlanningIdeas(
       makeBlueprint({
         content: {
@@ -280,10 +288,11 @@ describe("planning coverage and missing-area prompts", () => {
           },
         },
       }),
-      {
-        requestedLessonParts: ["centers", "small_group", "intervention"],
-        requestedOutputs: ["centers", "small_group", "intervention"],
-      }
+      makeOutputContents({
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+      })
     )
 
     const coverage = planning.componentCoverage ?? []
@@ -300,6 +309,3 @@ describe("planning coverage and missing-area prompts", () => {
     expect(isCoverageStatus(byComponent.get("intervention")?.status)).toBe(true)
   })
 })
-
-
-

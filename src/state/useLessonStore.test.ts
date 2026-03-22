@@ -5,6 +5,10 @@ import type {
   MaterialRole,
   MaterialStatus,
 } from "../engine/types"
+import {
+  createDefaultOutputContents,
+  normalizeOutputContents,
+} from "../engine/types"
 import { beforeEach, describe, expect, it } from "vitest"
 import { useLessonStore } from "./useLessonStore"
 
@@ -72,7 +76,10 @@ function makeMaterial(args: {
     status: args.status ?? "ready",
     analysis: args.analysis ?? makeAnalysis(args.role),
     errorMessage: null,
-    styleSettings: args.role === "exemplar" ? { mode: "inspiration", aspects: [], customInstructions: "" } : null,
+    styleSettings:
+      args.role === "exemplar"
+        ? { mode: "inspiration", aspects: [], customInstructions: "" }
+        : null,
     fileBuffer: null,
     fileContent: "seeded content",
   }
@@ -90,10 +97,7 @@ describe("useLessonStore regeneration", () => {
       lessonSpec: null,
       lessonPackage: null,
       lessonTrace: null,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: [],
-      },
+      outputContents: createDefaultOutputContents(),
       missingAreaDecisions: {},
     }))
   })
@@ -193,10 +197,7 @@ describe("useLessonStore regeneration", () => {
       lessonSpec: null,
       lessonPackage: null,
       lessonTrace: null,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: [],
-      },
+      outputContents: createDefaultOutputContents(),
       missingAreaDecisions: {},
     }))
 
@@ -261,10 +262,7 @@ describe("useLessonStore regeneration", () => {
       lessonSpec: null,
       lessonPackage: null,
       lessonTrace: null,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: [],
-      },
+      outputContents: createDefaultOutputContents(),
       missingAreaDecisions: {},
     }))
 
@@ -273,7 +271,8 @@ describe("useLessonStore regeneration", () => {
     )
   })
 })
-describe("useLessonStore lesson request contract", () => {
+
+describe("useLessonStore outputContents contract", () => {
   beforeEach(() => {
     useLessonStore.setState((state) => ({
       ...state,
@@ -288,29 +287,25 @@ describe("useLessonStore lesson request contract", () => {
       lessonSpec: null,
       lessonPackage: null,
       lessonTrace: null,
-      lessonRequest: {
-        requestedLessonParts: [],
-        requestedOutputs: [],
-      },
+      outputContents: createDefaultOutputContents(),
       missingAreaDecisions: {},
     }))
   })
 
-  it("stores requested lesson parts and clears generated content when they change", async () => {
+  it("stores normalized outputContents and clears generated content when they change", async () => {
     await useLessonStore.getState().generateLesson()
 
-    useLessonStore.getState().setRequestedLessonParts([
-      "teach",
-      "small_group",
-      "teach",
-    ])
+    const nextOutputContents = createDefaultOutputContents()
+    nextOutputContents.lessonPlan.parts.teach = false
+    nextOutputContents.assessments.types.formative_assessment = true
+    nextOutputContents.groups.byTier.T2.small_group = true
+    nextOutputContents.other.printables = true
+
+    useLessonStore.getState().setOutputContents(nextOutputContents)
 
     const state = useLessonStore.getState()
 
-    expect(state.lessonRequest.requestedLessonParts).toEqual([
-      "teach",
-      "small_group",
-    ])
+    expect(state.outputContents).toEqual(normalizeOutputContents(nextOutputContents))
     expect(state.blueprint).toBeNull()
     expect(state.planningIdeas).toBeNull()
     expect(state.lessonSpec).toBeNull()
@@ -319,30 +314,24 @@ describe("useLessonStore lesson request contract", () => {
     expect(state.missingAreaDecisions).toEqual({})
   })
 
-  it("stores requested outputs independently and supports toggle updates", () => {
+  it("supports nested output toggle updates through the unified outputContents model", () => {
     const store = useLessonStore.getState()
 
-    store.setRequestedOutputs([
-      "slides",
-      "printables",
-      "slides",
-      "assessment",
-    ])
-    store.toggleRequestedOutput("printables")
-    store.toggleRequestedOutput("intervention")
-    store.toggleRequestedLessonPart("closure")
-    store.toggleRequestedLessonPart("small_group")
-    store.toggleRequestedLessonPart("closure")
+    store.toggleOtherOutput("printables")
+    store.toggleAssessmentType("formative_assessment")
+    store.toggleGroupOutput("intervention")
+    store.toggleLessonPlanPart("closure")
+    store.toggleLessonPlanPart("closure")
 
     const state = useLessonStore.getState()
 
-    expect(state.lessonRequest.requestedLessonParts).toEqual([
-      "small_group",
-    ])
-    expect(state.lessonRequest.requestedOutputs).toEqual([
-      "slides",
-      "assessment",
-      "intervention",
-    ])
+    expect(state.outputContents.lessonPlan.parts.closure).toBe(true)
+    expect(state.outputContents.assessments.selected).toBe(true)
+    expect(state.outputContents.assessments.types.formative_assessment).toBe(true)
+    expect(state.outputContents.groups.selected).toBe(true)
+    expect(state.outputContents.groups.byTier.T1.centers).toBe(false)
+    expect(state.outputContents.groups.byTier.T2.small_group).toBe(false)
+    expect(state.outputContents.groups.byTier.T3.intervention).toBe(true)
+    expect(state.outputContents.other.printables).toBe(true)
   })
 })

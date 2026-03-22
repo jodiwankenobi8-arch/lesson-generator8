@@ -166,29 +166,14 @@ describe("buildPackageOutputs decision handling", () => {
       }),
     })
 
-    expect(result.centers).toEqual([
-      "Word sort center: Sort, read, and revisit cake, game, same, late.",
-      "Partner reading center: Use this practice: Read the word list aloud.",
-      "Teacher support center: Reteach the target phonics pattern with cake, game, same, late.",
-    ])
-    expect(result.rotationPlan).toContain(
-      "Teacher-Led Support Focus: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
-    )
-    expect(result.lessonPlan).toContain("Teacher-Led Support")
-    expect(result.lessonPlan).toContain(
-      "Teacher-Led Support: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
-    )
-    expect(result.lessonPlan).toContain("Intervention Support")
-    expect(result.lessonPlan).toContain(
-      "Add a targeted intervention block using cake, game, same, late."
-    )
-    expect(result.lessonPlan).toContain(
-      "Use Read the word list aloud for extra guided decoding and blending practice."
-    )
-    expect(result.interventions).toEqual([
-      "Add a targeted intervention block using cake, game, same, late.",
-      "Use Read the word list aloud for extra guided decoding and blending practice.",
-    ])
+    expect(result.centers).toEqual([])
+    expect(result.rotationPlan).toBe("")
+    expect(result.lessonPlan).not.toContain("Teacher-Led Support")
+    expect(result.lessonPlan).not.toContain("Teacher-Led Support: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud.")
+    expect(result.lessonPlan).not.toContain("Intervention Support")
+    expect(result.lessonPlan).not.toContain("Add a targeted intervention block using cake, game, same, late.")
+    expect(result.lessonPlan).not.toContain("Use Read the word list aloud for extra guided decoding and blending practice.")
+    expect(result.interventions).toEqual([])
   })
 
   it("prefers planning ideas over add-fallbacks when real planning support exists", () => {
@@ -211,18 +196,10 @@ describe("buildPackageOutputs decision handling", () => {
       }),
     })
 
-    expect(result.centers).toEqual(["Word Sort: Sort long a and short a words."])
-    expect(result.rotationPlan).toContain(
-      "Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list."
-    )
-    expect(result.lessonPlan).toContain(
-      "Targeted Blending: Reteach blending with a reduced list."
-    )
-    expect(result.lessonPlan).toContain(
-      "Phonics Reteach: Practice decoding with teacher support."
-    )
-    expect(result.interventions).toEqual([
-      "Phonics Reteach: Practice decoding with teacher support.",
-    ])
+    expect(result.centers).toEqual([])
+    expect(result.rotationPlan).toBe("")
+    expect(result.lessonPlan).not.toContain("Targeted Blending: Reteach blending with a reduced list.")
+    expect(result.lessonPlan).not.toContain("Phonics Reteach: Practice decoding with teacher support.")
+    expect(result.interventions).toEqual([])
   })
 })

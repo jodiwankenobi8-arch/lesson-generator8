@@ -6,7 +6,8 @@ import {
   LessonGenerationResult,
   LessonInputs,
   LessonMode,
-  LessonRequestPreferences,
+  LessonOutputContents,
+  createDefaultOutputContents,
   MaterialFile,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
@@ -16,21 +17,18 @@ export function runLessonPipeline(
   inputs: LessonInputs,
   materials: MaterialFile[],
   selectedMode: LessonMode,
-  lessonRequest: LessonRequestPreferences = {
-    requestedLessonParts: [],
-    requestedOutputs: [],
-  },
+  outputContents: LessonOutputContents = createDefaultOutputContents(),
   missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>> = {}
 ): LessonGenerationResult {
   const blueprint = buildBlueprint(inputs, materials, selectedMode)
-  const planningIdeas = buildLessonPlanningIdeas(blueprint, lessonRequest)
+  const planningIdeas = buildLessonPlanningIdeas(blueprint, outputContents)
   const lessonSpec = buildLessonSpec(blueprint, planningIdeas)
   const lessonPackage = buildLessonPackage(
     inputs,
     blueprint,
     lessonSpec,
     planningIdeas,
-    lessonRequest,
+    outputContents,
     missingAreaDecisions
   )
 
