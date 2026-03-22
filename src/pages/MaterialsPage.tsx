@@ -4,10 +4,12 @@ import { MaterialFile, MaterialRole, MaterialStatus } from "../engine/types"
 import {
   orchardButtonStyle,
   orchardCardStyle,
+  orchardHeroCardStyle,
   orchardInputStyle,
   orchardMetaRowStyle,
   orchardNoticeStyle,
   orchardPageIntroBlockStyle,
+  orchardPageShellStyle,
   orchardSectionLabelStyle,
   orchardSectionTitleStyle,
   orchardSoftCardStyle,
@@ -16,7 +18,9 @@ import {
 } from "../pages/orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 
+
 const pageStyle: React.CSSProperties = {
+  ...orchardPageShellStyle,
   maxWidth: 980,
   margin: "0 auto",
 }
@@ -30,6 +34,7 @@ const introStyle: React.CSSProperties = {
 }
 
 const pageIntroStyle: React.CSSProperties = {
+  ...orchardHeroCardStyle,
   ...orchardPageIntroBlockStyle,
 }
 
@@ -976,4 +981,8 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
+
+
+
+
 
