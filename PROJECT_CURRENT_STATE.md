@@ -17,8 +17,8 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current published continuation point: 77bb5c3 copy: clarify lesson parts vs deliverables in inputs
-- Last meaningful code checkpoint: 77bb5c3 copy: clarify lesson parts vs deliverables in inputs
+- Current published continuation point: 158b1de copy: align assessment output wording with package behavior
+- Last meaningful code checkpoint: 158b1de copy: align assessment output wording with package behavior
 ## Current confirmed state
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -40,9 +40,9 @@ Anything older or not in that chain should be treated as historical unless expli
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- current published continuation point is 77bb5c3 copy: clarify lesson parts vs deliverables in inputs
-- last meaningful code checkpoint is 77bb5c3 copy: clarify lesson parts vs deliverables in inputs
-- Inputs wording seam committed and pushed at 77bb5c3; script parse corruption repaired locally.
+- current published continuation point is 158b1de copy: align assessment output wording with package behavior
+- last meaningful code checkpoint is 158b1de copy: align assessment output wording with package behavior
+- Assessment wording seam committed and pushed at 158b1de; doc refresh automation repaired and working.
 - doc refresh was run from branch work/canonical-project-consolidation
 ## Product truths to preserve
 - curriculum = content authority
@@ -83,9 +83,10 @@ Do not reopen prior closed seams unless live inspection finds a real regression.
 Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
-$11. Continue from the newest handoff file and live repo files
-2. Treat the current active seam as: Inputs wording seam landed; doc automation repair in progress
-3. Review refreshed continuation docs, then commit the script repair and doc refresh together if the diff is clean.
+## Top next steps
+1. Continue from the newest handoff file and live repo files
+2. Treat the current active seam as: Assessment wording seam landed; continue inspect-first seam selection from live repo files
+3. Review refreshed continuation docs, then choose the next smallest real implementation seam from live repo files only.
 4. Keep continuation docs authoritative and small
 5. Do not let overridden notes compete with the active continuation set
 ## Local doc policy

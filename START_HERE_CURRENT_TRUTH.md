@@ -3,10 +3,10 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current published continuation point: 77bb5c3 copy: clarify lesson parts vs deliverables in inputs
-- Last meaningful code checkpoint: 77bb5c3 copy: clarify lesson parts vs deliverables in inputs
+- Current published continuation point: 158b1de copy: align assessment output wording with package behavior
+- Last meaningful code checkpoint: 158b1de copy: align assessment output wording with package behavior
 - Current milestone: Step 5 orchard lesson-flow surface system complete for the active teacher flow
-- Current active seam: Inputs wording seam landed; doc automation repair in progress
+- Current active seam: Assessment wording seam landed; continue inspect-first seam selection from live repo files
 ## What is actually landed
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -37,9 +37,9 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- current published continuation point is 77bb5c3 copy: clarify lesson parts vs deliverables in inputs
-- last meaningful code checkpoint is 77bb5c3 copy: clarify lesson parts vs deliverables in inputs
-- Inputs wording seam committed and pushed at 77bb5c3; script parse corruption repaired locally.
+- current published continuation point is 158b1de copy: align assessment output wording with package behavior
+- last meaningful code checkpoint is 158b1de copy: align assessment output wording with package behavior
+- Assessment wording seam committed and pushed at 158b1de; doc refresh automation repaired and working.
 - doc refresh was run from branch work/canonical-project-consolidation
 ## Non-blocking warnings
 - Vite build still reports large chunk warnings after minification
@@ -55,9 +55,9 @@
 4. then inspect the actual repo files involved in the next seam
 
 ## Exact next move
-- current active seam: Inputs wording seam landed; doc automation repair in progress
+- current active seam: Assessment wording seam landed; continue inspect-first seam selection from live repo files
 - continue from the newest handoff file and live repo files, not older overridden notes
-- Review refreshed continuation docs, then commit the script repair and doc refresh together if the diff is clean.
+- Review refreshed continuation docs, then choose the next smallest real implementation seam from live repo files only.
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the exact missing file(s) and treat that as higher-trust than older indexed copies.
 
