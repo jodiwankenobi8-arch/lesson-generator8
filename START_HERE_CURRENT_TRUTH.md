@@ -3,10 +3,10 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current published continuation point: 6ae252b docs: repair continuation doc automation for current schema
+- Current published continuation point: 1e406f9 docs: align README after doc automation repair
 - Last meaningful code checkpoint: 519f65c copy: align materials intake wording with upload-file contract
 - Current milestone: Step 5 orchard lesson-flow surface system complete for the active teacher flow
-- Current active seam: README and continuation docs aligned after doc automation repair
+- Current active seam: inspect-first selection of the next real implementation seam from live repo files
 ## What is actually landed
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -55,7 +55,7 @@
 4. then inspect the actual repo files involved in the next seam
 
 ## Exact next move
-- current active seam: README and continuation docs aligned after doc automation repair
+- Current active seam: inspect-first selection of the next real implementation seam from live repo files
 - continue from the newest handoff file and live repo files, not older overridden notes
 - treat the doc automation seam as closed, then choose the next smallest real implementation seam from live repo files only
 ## Retrieval fallback rule

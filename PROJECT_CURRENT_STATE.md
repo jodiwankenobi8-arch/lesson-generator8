@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current published continuation point: 6ae252b docs: repair continuation doc automation for current schema
+- Current published continuation point: 1e406f9 docs: align README after doc automation repair
 - Last meaningful code checkpoint: 519f65c copy: align materials intake wording with upload-file contract
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -83,14 +83,9 @@ Do not reopen prior closed seams unless live inspection finds a real regression.
 Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
-$11. Continue from the newest handoff file and live repo files
-2. Treat the current active seam as: doc automation compatibility aligned to current continuation schema
-3. review the refreshed docs and newest handoff, then commit and push the automation repair if the diff looks correct
-4. Keep continuation docs authoritative and small
-5. Do not let overridden notes compete with the active continuation set
 ## Top next steps
 1. Treat the doc automation seam as closed unless live regression evidence appears
-2. Keep README and continuation docs aligned with current repo truth at 6ae252b
+2. Keep README and continuation docs aligned with current repo truth at 1e406f9
 3. Choose the next smallest real implementation seam from live repo files only
 4. Keep continuation docs authoritative and small
 5. Do not let overridden notes compete with the active continuation set
@@ -103,4 +98,3 @@ The active local doc set should stay small and obvious:
 - current relevant docs/chat-handoffs/*
 
 Older docs that are no longer referenced and no longer authoritative should be removed from the local working set and preserved through Git history rather than kept as apparently-live guidance.
-
