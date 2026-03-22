@@ -3,10 +3,10 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current published continuation point: 5806ff0 docs: refresh continuation after assessment wording seam
-- Last meaningful code checkpoint: 158b1de copy: align assessment output wording with package behavior
+- Current published continuation point: 10c55c6 fix: align Inputs deliverable copy with package outputs
+- Last meaningful code checkpoint: 10c55c6 fix: align Inputs deliverable copy with package outputs
 - Current milestone: Step 5 orchard lesson-flow surface system complete for the active teacher flow
-- Current active seam: Core deliverable toggle copy seam identified: slides and lesson plan should be treated as always-included core outputs, not optional deliverable toggles in Inputs.
+- Current active seam: Step 3A results naming and hierarchy cleanup
 ## What is actually landed
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -37,9 +37,9 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- current published continuation point is 5806ff0 docs: refresh continuation after assessment wording seam
-- last meaningful code checkpoint is 158b1de copy: align assessment output wording with package behavior
-- Live repo HEAD is 5806ff0 with a clean worktree; last meaningful code checkpoint remains 158b1de; small_group is intentionally folded into Teacher-Led Support; assessment wording seam landed and docs are aligned.
+- current published continuation point is 10c55c6 fix: align Inputs deliverable copy with package outputs
+- last meaningful code checkpoint is 10c55c6 fix: align Inputs deliverable copy with package outputs
+- Live repo HEAD is 10c55c6 with a clean worktree. Inputs deliverable copy seam landed locally and npm run typecheck passed.
 - doc refresh was run from branch work/canonical-project-consolidation
 ## Non-blocking warnings
 - Vite build still reports large chunk warnings after minification
@@ -55,9 +55,9 @@
 4. then inspect the actual repo files involved in the next seam
 
 ## Exact next move
-- current active seam: Core deliverable toggle copy seam identified: slides and lesson plan should be treated as always-included core outputs, not optional deliverable toggles in Inputs.
+- current active seam: Step 3A results naming and hierarchy cleanup
 - continue from the newest handoff file and live repo files, not older overridden notes
-- Inspect and land the smallest copy-only Inputs seam that removes slides and lesson plan from optional deliverable toggles while preserving current engine behavior.
+- Inspect the current Results/package wording surface and land the narrowest Results naming and hierarchy cleanup seam.
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the exact missing file(s) and treat that as higher-trust than older indexed copies.
 

@@ -17,8 +17,8 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current published continuation point: 5806ff0 docs: refresh continuation after assessment wording seam
-- Last meaningful code checkpoint: 158b1de copy: align assessment output wording with package behavior
+- Current published continuation point: 10c55c6 fix: align Inputs deliverable copy with package outputs
+- Last meaningful code checkpoint: 10c55c6 fix: align Inputs deliverable copy with package outputs
 ## Current confirmed state
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -40,9 +40,9 @@ Anything older or not in that chain should be treated as historical unless expli
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- current published continuation point is 5806ff0 docs: refresh continuation after assessment wording seam
-- last meaningful code checkpoint is 158b1de copy: align assessment output wording with package behavior
-- Live repo HEAD is 5806ff0 with a clean worktree; last meaningful code checkpoint remains 158b1de; small_group is intentionally folded into Teacher-Led Support; assessment wording seam landed and docs are aligned.
+- current published continuation point is 10c55c6 fix: align Inputs deliverable copy with package outputs
+- last meaningful code checkpoint is 10c55c6 fix: align Inputs deliverable copy with package outputs
+- Live repo HEAD is 10c55c6 with a clean worktree. Inputs deliverable copy seam landed locally and npm run typecheck passed.
 - doc refresh was run from branch work/canonical-project-consolidation
 ## Product truths to preserve
 - curriculum = content authority
@@ -86,6 +86,12 @@ Prefer continuation from the newest handoff file to avoid lag and repeated redis
 $11. Continue from the newest handoff file and live repo files
 2. Treat the current active seam as: Core deliverable toggle copy seam identified: slides and lesson plan should be treated as always-included core outputs, not optional deliverable toggles in Inputs.
 3. Inspect and land the smallest copy-only Inputs seam that removes slides and lesson plan from optional deliverable toggles while preserving current engine behavior.
+4. Keep continuation docs authoritative and small
+5. Do not let overridden notes compete with the active continuation set
+## Top next steps
+1. Continue from the newest handoff file and live repo files
+2. Treat the current active seam as: Step 3A results naming and hierarchy cleanup
+3. Inspect the current Results/package wording surface and land the narrowest Results naming and hierarchy cleanup seam.
 4. Keep continuation docs authoritative and small
 5. Do not let overridden notes compete with the active continuation set
 ## Local doc policy
