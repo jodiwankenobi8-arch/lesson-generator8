@@ -200,7 +200,7 @@ describe("blueprint selected source ids", () => {
       "single"
     )
 
-    expect(blueprint.sourceReadiness.selectedCurriculumMaterialIds).toEqual(["curr-broad"])
+    expect(blueprint.sourceReadiness.selectedCurriculumMaterialIds).toEqual(["curr-broad", "curr-narrow"])
     expect(blueprint.content.texts.join(" ").toLowerCase()).toContain("jake made a cake")
     expect(blueprint.content.vocabulary.join(" ").toLowerCase()).toContain("silent e")
   })
@@ -252,3 +252,52 @@ describe("blueprint selected source ids", () => {
     expect(blueprint.structure.lessonSegments.join(" ").toLowerCase()).toContain("guided practice")
   })
 })
+
+describe("blueprint content threading", () => {
+  it("pulls useful content from a secondary strong curriculum source", async () => {
+    const primaryCurriculum = await makeMaterial({
+      id: "curr-primary",
+      name: "primary-curriculum.txt",
+      role: "curriculum",
+      lines: [
+        "RF.1.3",
+        "Objective: Students will read long a words with silent e.",
+        "Vocabulary: silent e, long a",
+        "Word list: cake, game, same, late",
+        "Text: Jake made a cake at the lake.",
+        "Practice: read the words and sort by pattern.",
+      ],
+      extractionMetadata: makeExtractionMetadata(),
+    })
+
+    const secondaryCurriculum = await makeMaterial({
+      id: "curr-secondary",
+      name: "secondary-curriculum.txt",
+      role: "curriculum",
+      lines: [
+        "RF.1.3",
+        "Objective: Students will explain the vowel pattern in context.",
+        "Vocabulary: vowel pattern, decoding",
+        "Word list: gate, plane, flame, same",
+        "Text: A brave snake came to the lake.",
+        "Practice: read a decodable passage and explain the pattern.",
+      ],
+      extractionMetadata: makeExtractionMetadata(),
+    })
+
+    const blueprint = buildBlueprint(
+      makeInputs(),
+      [primaryCurriculum, secondaryCurriculum],
+      "single"
+    )
+
+    const vocabulary = blueprint.content.vocabulary.join(" ").toLowerCase()
+    const wordLists = blueprint.content.wordLists.join(" ").toLowerCase()
+
+    expect(vocabulary).toContain("silent e")
+    expect(vocabulary).toContain("vowel pattern")
+    expect(wordLists).toContain("cake")
+    expect(wordLists).toMatch(/gate|plane|flame/)
+  })
+})
+

@@ -139,41 +139,49 @@ describe("buildPackageOutputs", () => {
       blueprint,
       spec,
       planningIdeas,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["assessment", "centers", "small_group", "intervention", "printables"],
+      },
     })
 
     expect(result.slides.length).toBeGreaterThan(0)
     expect(result.lessonPlan).toContain("Blueprint Readiness")
     expect(result.lessonPlan).toContain("Planning Notes")
+    expect(result.lessonPlan).toContain("Centers")
     expect(result.lessonPlan).toContain("Formative Assessment Ideas")
-    expect(result.lessonPlan).toContain("Small Group Ideas")
-    expect(result.lessonPlan).toContain("Intervention Ideas")
+    expect(result.lessonPlan).toContain("Teacher-Led Support")
+    expect(result.lessonPlan).toContain("Intervention Support")
     expect(result.centers).toEqual(["Word Sort: Sort long a and short a words."])
     expect(result.rotationPlan).toContain("Rotation 1: Word Sort: Sort long a and short a words.")
-    expect(result.rotationPlan).toContain("Teacher Table Focus: Targeted Blending - Reteach blending with a reduced list.")
+    expect(result.rotationPlan).toContain("Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list.")
     expect(result.interventions).toEqual(["Phonics Reteach: Practice decoding with teacher support."])
     expect(result.exports).toEqual([
       {
         kind: "slides",
         label: "Slides Export",
-        fileName: "ELA-slides-export-placeholder",
-        status: "placeholder",
+        fileName: "ELA-slides-export.txt",
+        mimeType: "text/plain;charset=utf-8",
+        content: expect.stringContaining("Slides Export"),
       },
       {
         kind: "lesson_plan",
         label: "Lesson Plan Export",
-        fileName: "ELA-lesson-plan-export-placeholder",
-        status: "placeholder",
+        fileName: "ELA-lesson-plan-export.docx",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        content: expect.stringContaining("Blueprint Readiness"),
       },
       {
         kind: "printables",
         label: "Printables Export",
-        fileName: "ELA-printables-export-placeholder",
-        status: "placeholder",
+        fileName: "ELA-printables-export.txt",
+        mimeType: "text/plain;charset=utf-8",
+        content: expect.stringContaining("Centers"),
       },
     ])
   })
 
-  it("falls back to spec and target-based defaults when planning ideas are absent", () => {
+  it("omits unrequested optional practice and support sections from the lesson plan narrative", () => {
     const result = buildPackageOutputs({
       inputs: {
         grade: "1",
@@ -185,19 +193,131 @@ describe("buildPackageOutputs", () => {
       },
       blueprint,
       spec,
+      planningIdeas,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["assessment"],
+      },
     })
 
-    expect(result.centers).toEqual(["Word sort center", "Partner reading center"])
-    expect(result.rotationPlan).toContain("Rotation 1: Word sort center")
-    expect(result.rotationPlan).toContain("Teacher Table Focus: Targeted reteach or extension based on student need.")
+    expect(result.lessonPlan).toContain("Formative Assessment Ideas")
+    expect(result.lessonPlan).not.toContain("Rotation Focus:")
+    expect(result.lessonPlan).not.toContain("Teacher-Led Support")
+    expect(result.lessonPlan).not.toContain("Intervention Support")
+    expect(result.lessonPlan).not.toContain("Small Group Support:")
+    expect(result.lessonPlan).not.toContain("Intervention Focus:")
+    expect(result.centers).toEqual([])
+    expect(result.rotationPlan).toBe("")
+    expect(result.interventions).toEqual([])
+    expect(result.exports.map((artifact) => artifact.kind)).toEqual(["slides", "lesson_plan"])
+    expect(result.exports[1].content).not.toContain("Rotation Focus:")
+    expect(result.exports[1].content).not.toContain("Teacher-Led Support")
+    expect(result.exports[1].content).not.toContain("Intervention Support")
+  })
+
+  it("falls back to grounded target-based defaults when planning ideas are absent", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["centers", "small_group", "intervention", "printables"],
+      },
+    })
+
+    expect(result.centers).toEqual([
+      "Word sort center: Sort, read, and revisit cake, game, same, late.",
+      "Partner reading center: Use this practice: Read the word list aloud.",
+      "Teacher support center: Reteach the target phonics pattern with cake, game, same, late.",
+    ])
+    expect(result.rotationPlan).toContain(
+      "Rotation 1: Word sort center: Sort, read, and revisit cake, game, same, late."
+    )
+    expect(result.rotationPlan).toContain(
+      "Teacher-Led Support Focus: Reteach the target phonics pattern with cake, game, same, late and guide students through this practice: Read the word list aloud."
+    )
     expect(result.interventions).toEqual([
-      "Reteach the target phonics pattern with a reduced word set.",
-      "Provide extra guided decoding and blending practice.",
+      "Reteach the target phonics pattern with cake, game, same, late.",
+      "Provide extra guided decoding and blending practice with Read the word list aloud.",
     ])
     expect(result.lessonPlan).toContain("Source Balance: balanced")
     expect(result.lessonPlan).toContain("Minor warning for visibility.")
   })
+
+
+  it("keeps export support labels aligned without forcing results-page center wording", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["centers", "small_group", "intervention", "printables"],
+      },
+    })
+
+    expect(result.lessonPlan).toContain("Centers")
+    expect(result.lessonPlan).toContain("Teacher-Led Support")
+    expect(result.lessonPlan).toContain("Intervention Support")
+    expect(result.lessonPlan).not.toContain("Small Group Ideas")
+    expect(result.lessonPlan).not.toContain("Intervention Ideas")
+
+    const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
+    expect(printablesExport).toBeDefined()
+    expect(printablesExport!.content).toContain("Centers")
+    expect(printablesExport!.content).toContain("Rotation Plan")
+    expect(printablesExport!.content).toContain("Intervention Support")
+    expect(printablesExport!.content).not.toContain("\nInterventions\n")
+  })
+  it("keeps canonical exports free of banned hub language", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas,
+    })
+
+    const exportContent = result.exports
+      .map((artifact) => artifact.content ?? "")
+      .join("\n")
+
+    const bannedPhrases = [
+      "Lesson Hub",
+      "Clickable Hub",
+      "Choose the lesson path together",
+      "Launch and Navigation",
+      "Guided Rotation and Practice",
+      "Hub Launch",
+      "Center Rotation",
+      "Complete the final quick check before leaving the hub",
+      "Rotate through the practice path you were assigned",
+    ]
+
+    bannedPhrases.forEach((phrase) => {
+      expect(exportContent).not.toContain(phrase)
+    })
+  })
 })
-
-
-

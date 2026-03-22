@@ -1,84 +1,80 @@
-# Project Current State
+# PROJECT_CURRENT_STATE
 
-**Project:** Lesson Generator 8
-**Last updated:** 2026-03-15
-**Status:** In progress
+Last refreshed: 2026-03-22
 
-## Current summary
-- Active product flow is Inputs -> Materials -> Results.
-- useLessonStore is the orchestration seam.
-- Store-driven processing, generation, regeneration, and selected-source explainability are already in place.
-- Current source of truth is GitHub main at 38f9f1c.
-- Main remaining near-term gap is export maturity / packaging follow-through, not shell cleanup.
+## Purpose
+This file is the current project status board for active work.
+It should be read after AGENTS.md and START_HERE_CURRENT_TRUTH.md.
 
-## Current priorities
-- Keep the store seam protected from page-to-engine bypasses.
-- Keep local repo state and GitHub state aligned through PROJECT_CURRENT_STATE.md.
-- Move to the next hardening step now that dead-shell confirmation is complete.
+## Authority order
+1. AGENTS.md = workflow and rules authority
+2. START_HERE_CURRENT_TRUTH.md = entry doc and active seam launcher
+3. PROJECT_CURRENT_STATE.md = current working status
+4. latest relevant docs/chat-handoffs/* file = seam-level execution detail
 
-## Active rules
-- Keep useLessonStore as the orchestration seam.
-- Do not prioritize visual redesign ahead of trust, clarity, and release hardening.
-- Keep curriculum as content authority and exemplar as presentation authority.
+Anything older or not in that chain should be treated as historical unless explicitly re-adopted.
 
-## Known issues / risks
-- Export lifecycle maturity still trails the rest of the architecture.
-- Build emits large chunk warnings that should be addressed later.
-- Tests show non-blocking useLayoutEffect SSR-style warnings in integration output.
-- npm install reported moderate dependency vulnerabilities that should be reviewed in a later maintenance pass.
+## Repo and branch
+- Repo: jodiwankenobi8-arch/lesson-generator8
+- Active branch: work/canonical-project-consolidation
+- Current published continuation point: 04a9b08 docs: refresh continuation after intake wording seam
+- Last meaningful code checkpoint: eb5047c copy: align Inputs source-intake wording with usable materials
 
-## Validation snapshot
-- Local environment: Windows PowerShell at C:\Users\jodiw\OneDrive\Desktop\lesson-generator8-local.
-- Import-graph audit passed: no legacy shell references found.
-- Import-graph audit passed: no forbidden page-to-engine imports found.
-- npm run typecheck passed.
-- npm run test passed: 19 test files, 85 tests passed.
-- npm run build passed.
-- Note: local Windows validation is the source of truth if Codex reports a different shell or branch environment.
+## Current confirmed state
+- Inputs deliverable copy seam landed at 10c55c6
+- Continuation docs refresh landed at ff4a2d7
+- Inputs source-intake wording seam landed at eb5047c
+- Continuation docs refresh after intake wording seam landed at 04a9b08
+- src/pages/orchardUi.ts exists as the shared orchard UI seam
+- Results uses the newer teacher-first support lane structure
+- the active product flow remains Inputs -> Materials -> Results
 
-## Dead shell confirmation
-- src/app does not exist.
-- Search for BlueprintPage, ResultsHubPage, AppRouter, src/app, ./app/AppRouter, and ../app/AppRouter returned no live references.
-- Import-graph audit re-run passed cleanly.
-- No shell/router deletions are required from the current local source of truth.
+## Validated state
+- npm run typecheck passed for the intake wording seam before the docs refresh
+- the usable-materials wording now matches the actual material trust contract
+- the repo was pushed through 04a9b08
+- orchard foundation is not the next seam
+- do not reopen closed UI/package seams without live regression evidence
 
-## Next recommended step
-- Move to the next hardening task: export/package follow-through and cleanup of any remaining delivery/documentation gaps.
+## Product truths to preserve
+- curriculum = content authority
+- exemplar = presentation / structure authority
+- orchard / warm storybook / teacher-first direction
+- do not drift into generic SaaS/dashboard styling
+- centers = student-independent work
+- small group / intervention = teacher-led support
+- centers and teacher-led support may coexist during the same lesson block, but they are not the same lane
+- I/E is the umbrella block where centers and teacher-led support can run at the same time without collapsing those lanes
+- optional lesson parts and outputs should only appear when explicitly requested or strongly source-grounded
+- materials trust depends on usable materials, not merely ready materials
 
----
+## Flow truths
+- Product flow: Inputs -> Materials -> Results
+- Engine flow: extraction -> analysis -> blueprint -> planning -> spec -> package -> results
+- useLessonStore remains the orchestration seam
 
-## Update log
+## Current risks
+- teacher-facing upload-type visibility may still lag the actual extraction contract
+- README.md may still lag the active continuation docs
+- older handoffs can mislaunch work if treated as current
+- do not reopen closed seams unless live regression evidence appears
 
-## Update - 2026-03-15
+## Active execution rule
+Do not reopen prior closed seams unless live inspection finds a real regression.
+Choose the next seam from current repo state and keep it narrow.
+Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
-### What changed
-- Added a repeatable import-graph audit script.
-- Added a developer note documenting the supported store seam.
-- Created the canonical in-repo current-state file.
-- Confirmed no dead shell/router path remains in the local source of truth.
+## Top next steps
+1. Continue from the newest handoff file and live repo files
+2. Treat the next seam as: source-intake upload-type visibility inspect
+3. Inspect whether teacher-facing copy should explicitly surface the currently supported upload/extraction formats
+4. Keep continuation docs authoritative and small
+5. Do not let overridden notes compete with the active continuation set
 
-### Files touched
-- scripts/Find-LegacyShellReferences.ps1
-- docs/STORE_SEAM_NOTE.md
+## Local doc policy
+The active local doc set should stay small and obvious:
+- AGENTS.md
+- START_HERE_CURRENT_TRUTH.md
 - PROJECT_CURRENT_STATE.md
-
-### Tests run
-- .\scripts\Find-LegacyShellReferences.ps1
-- npm run typecheck
-- npm run test
-- npm run build
-
-### Current status
-- Audit passed with no legacy shell references found.
-- Audit passed with no forbidden page-to-engine imports found.
-- Typecheck, tests, and build all passed.
-- Dead-shell confirmation is complete and no deletions are required.
-- Repo is ready for the next hardening step.
-
-### Known issues / risks
-- Build still reports large chunk warnings.
-- Tests still report non-blocking useLayoutEffect SSR-style warnings.
-- Dependency audit warnings remain for a future maintenance pass.
-
-### Next recommended step
-- Start the next focused hardening change on export/package follow-through.
+- README.md
+- current relevant docs/chat-handoffs/*

@@ -31,7 +31,7 @@ export function buildBlueprint(
   )
 
   const curriculumAnalyses = curriculumMaterials
-    .slice(0, 1)
+    .slice(0, 2)
     .map((material) => material.analysis?.curriculum)
     .filter((analysis): analysis is CurriculumAnalysis => Boolean(analysis))
 
@@ -53,6 +53,9 @@ export function buildBlueprint(
     curriculumAnalyses,
     inputs: {
       standard: inputs.standard,
+      grade: inputs.grade,
+      subject: inputs.subject,
+      skill: inputs.skill,
       topic: inputs.topic,
     },
     target,

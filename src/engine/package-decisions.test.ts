@@ -133,13 +133,13 @@ describe("buildPackageOutputs decision handling", () => {
     })
 
     expect(result.centers).toEqual([])
-    expect(result.rotationPlan).toContain("No centers defined.")
-    expect(result.lessonPlan).not.toContain("Small Group Ideas")
-    expect(result.lessonPlan).not.toContain("Intervention Ideas")
+    expect(result.rotationPlan).toBe("")
+    expect(result.lessonPlan).not.toContain("Teacher-Led Support")
+    expect(result.lessonPlan).not.toContain("Intervention Support")
     expect(result.interventions).toEqual([])
   })
 
-  it("adds fallback support when teacher chooses add and planning ideas are absent", () => {
+  it("adds grounded fallback support when teacher chooses add and planning ideas are absent", () => {
     const result = buildPackageOutputs({
       inputs: {
         grade: "1",
@@ -167,24 +167,27 @@ describe("buildPackageOutputs decision handling", () => {
     })
 
     expect(result.centers).toEqual([
-      "Independent practice center",
-      "Partner practice center",
-      "Teacher support center",
+      "Word sort center: Sort, read, and revisit cake, game, same, late.",
+      "Partner reading center: Use this practice: Read the word list aloud.",
+      "Teacher support center: Reteach the target phonics pattern with cake, game, same, late.",
     ])
     expect(result.rotationPlan).toContain(
-      "Teacher Table Focus: Add a targeted small-group reteach or extension block based on student need."
+      "Teacher Table Focus: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
     )
-    expect(result.lessonPlan).toContain("Small Group Ideas")
+    expect(result.lessonPlan).toContain("Teacher-Led Support")
     expect(result.lessonPlan).toContain(
-      "Teacher Table Support: Add a small-group reteach or extension block based on student need."
+      "Teacher Table Support: Add a targeted phonics reteach using cake, game, same, late and guide students through this practice: Read the word list aloud."
     )
-    expect(result.lessonPlan).toContain("Intervention Ideas")
+    expect(result.lessonPlan).toContain("Intervention Support")
     expect(result.lessonPlan).toContain(
-      "Targeted Reteach: Add an intervention block for students who need extra support with the main lesson skill."
+      "Add a targeted intervention block using cake, game, same, late."
+    )
+    expect(result.lessonPlan).toContain(
+      "Use Read the word list aloud for extra guided decoding and blending practice."
     )
     expect(result.interventions).toEqual([
-      "Provide targeted reteach for the primary lesson need.",
-      "Use a short teacher-led intervention block before independent transfer.",
+      "Add a targeted intervention block using cake, game, same, late.",
+      "Use Read the word list aloud for extra guided decoding and blending practice.",
     ])
   })
 
@@ -223,6 +226,3 @@ describe("buildPackageOutputs decision handling", () => {
     ])
   })
 })
-
-
-

@@ -1,7 +1,5 @@
 import { create } from "zustand"
 import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
-import { generateLessonForStore } from "./workflows/generateLessonForStore"
-import { processMaterialForStore } from "./workflows/processMaterialForStore"
 import {
   ExemplarStyleSettings,
   LessonBlueprint,
@@ -10,6 +8,7 @@ import {
   LessonPackage,
   LessonPlanningIdeas,
   LessonPipelineTrace,
+  LessonRequestPreferences,
   LessonSpec,
   MaterialAnalysis,
   MaterialFile,
@@ -17,6 +16,8 @@ import {
   MaterialStatus,
   MissingAreaDecisionChoice,
   PlanningComponentKey,
+  RequestedLessonPartKey,
+  RequestedOutputKey,
 } from "../engine/types"
 
 type MaterialCounts = {
@@ -45,10 +46,15 @@ type LessonStore = {
   lessonSpec: LessonSpec | null
   lessonPackage: LessonPackage | null
   lessonTrace: LessonPipelineTrace | null
+  lessonRequest: LessonRequestPreferences
   missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
 
   setInputs: (updates: Partial<LessonInputs>) => void
   setSelectedLessonMode: (mode: LessonMode) => void
+  setRequestedLessonParts: (parts: RequestedLessonPartKey[]) => void
+  toggleRequestedLessonPart: (part: RequestedLessonPartKey) => void
+  setRequestedOutputs: (outputs: RequestedOutputKey[]) => void
+  toggleRequestedOutput: (output: RequestedOutputKey) => void
 
   addMaterial: (role: MaterialRole, name?: string) => string
   setMaterialSource: (
@@ -83,6 +89,7 @@ type LessonStore = {
 
   hasRequiredInputs: () => boolean
   hasReadyMaterials: () => boolean
+  hasUsableMaterialsForGeneration: () => boolean
   hasProcessingMaterials: () => boolean
   canGenerate: () => boolean
   getMaterialCounts: () => MaterialCounts
@@ -145,6 +152,17 @@ function defaultExemplarStyleSettings(): ExemplarStyleSettings {
   }
 }
 
+function defaultLessonRequestPreferences(): LessonRequestPreferences {
+  return {
+    requestedLessonParts: [],
+    requestedOutputs: [],
+  }
+}
+
+function uniqueValues<T extends string>(items: T[]): T[] {
+  return Array.from(new Set(items))
+}
+
 function buildTargetPreview(
   inputs: LessonInputs,
   selectedLessonMode: LessonMode
@@ -202,6 +220,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   lessonSpec: null,
   lessonPackage: null,
   lessonTrace: null,
+  lessonRequest: defaultLessonRequestPreferences(),
   missingAreaDecisions: {},
 
   setInputs: (updates) =>
@@ -217,6 +236,54 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     set({
       selectedLessonMode,
       ...clearedGeneratedState(),
+    }),
+
+  setRequestedLessonParts: (requestedLessonParts) =>
+    set((state) => ({
+      lessonRequest: {
+        ...state.lessonRequest,
+        requestedLessonParts: uniqueValues(requestedLessonParts),
+      },
+      ...clearedGeneratedState(),
+    })),
+
+  toggleRequestedLessonPart: (part) =>
+    set((state) => {
+      const requestedLessonParts = state.lessonRequest.requestedLessonParts.includes(part)
+        ? state.lessonRequest.requestedLessonParts.filter((item) => item !== part)
+        : [...state.lessonRequest.requestedLessonParts, part]
+
+      return {
+        lessonRequest: {
+          ...state.lessonRequest,
+          requestedLessonParts,
+        },
+        ...clearedGeneratedState(),
+      }
+    }),
+
+  setRequestedOutputs: (requestedOutputs) =>
+    set((state) => ({
+      lessonRequest: {
+        ...state.lessonRequest,
+        requestedOutputs: uniqueValues(requestedOutputs),
+      },
+      ...clearedGeneratedState(),
+    })),
+
+  toggleRequestedOutput: (output) =>
+    set((state) => {
+      const requestedOutputs = state.lessonRequest.requestedOutputs.includes(output)
+        ? state.lessonRequest.requestedOutputs.filter((item) => item !== output)
+        : [...state.lessonRequest.requestedOutputs, output]
+
+      return {
+        lessonRequest: {
+          ...state.lessonRequest,
+          requestedOutputs,
+        },
+        ...clearedGeneratedState(),
+      }
     }),
 
   addMaterial: (role, name) => {
@@ -347,6 +414,8 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   processMaterial: async (id) => {
     const store = get()
 
+    const { processMaterialForStore } = await import("./workflows/processMaterialForStore")
+
     await processMaterialForStore(id, store.materials, {
       beginMaterialExtraction: store.beginMaterialExtraction,
       beginMaterialAnalysis: store.beginMaterialAnalysis,
@@ -357,6 +426,8 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   generateLesson: async () => {
     const store = get()
+
+    const { generateLessonForStore } = await import("./workflows/generateLessonForStore")
 
     const result = await generateLessonForStore(
       {
@@ -373,6 +444,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
             inputs: current.inputs,
             materials: current.materials,
             selectedLessonMode: current.selectedLessonMode,
+            lessonRequest: current.lessonRequest,
             missingAreaDecisions: current.missingAreaDecisions,
           }
         },
@@ -393,7 +465,6 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return (
       isFilled(inputs.grade) &&
       isFilled(inputs.subject) &&
-      isFilled(inputs.standard) &&
       isFilled(inputs.skill) &&
       isFilled(inputs.topic) &&
       isFilled(inputs.duration)
@@ -402,7 +473,25 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   hasReadyMaterials: () => {
     const { materials } = get()
-    return materials.some((material) => material.status === "ready")
+    return materials.some(
+      (material) => material.status === "ready" && Boolean(material.analysis)
+    )
+  },
+
+  hasUsableMaterialsForGeneration: () => {
+    const { materials } = get()
+    return materials.some((material) => {
+      if (material.status !== "ready" || !material.analysis) {
+        return false
+      }
+
+      const reliability = material.analysis.reliability
+      if (!reliability) {
+        return true
+      }
+
+      return reliability.usableForContent || reliability.usableForStructure
+    })
   },
 
   hasProcessingMaterials: () => {
@@ -420,7 +509,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return (
       store.hasRequiredInputs() &&
       !store.hasProcessingMaterials() &&
-      store.hasReadyMaterials()
+      store.hasUsableMaterialsForGeneration()
     )
   },
 

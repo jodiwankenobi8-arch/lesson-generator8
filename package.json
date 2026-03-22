@@ -1,37 +1,39 @@
 {
-    "name":  "lesson-generator8",
-    "private":  true,
-    "version":  "1.0.0",
-    "type":  "module",
-    "scripts":  {
-                    "dev":  "vite",
-                    "build":  "tsc \u0026\u0026 vite build",
-                    "typecheck":  "tsc --noEmit",
-                    "test":  "vitest run",
-                    "test:watch":  "vitest",
-                    "test:engine":  "vitest run src/engine"
-                },
-    "dependencies":  {
-                         "mammoth":  "^1.11.0",
-                         "pdf-parse":  "^2.4.5",
-                         "pdfjs-dist":  "^5.5.207",
-                         "pptx-parser":  "^1.1.7-beta.9",
-                         "react":  "^18.2.0",
-                         "react-dom":  "^18.2.0",
-                         "react-router-dom":  "^6.30.3",
-                         "tesseract.js":  "^7.0.0",
-                         "zustand":  "^4.5.2"
-                     },
-    "devDependencies":  {
-                            "@types/node":  "^25.4.0",
-                            "@types/react":  "^19.2.14",
-                            "@types/react-dom":  "^19.2.3",
-                            "@vitejs/plugin-react":  "^4.2.0",
-                            "typescript":  "^5.4.5",
-                            "vite":  "^5.2.0",
-                            "vitest":  "^4.1.0"
-                        },
-    "optionalDependencies":  {
-                                 "@rolldown/binding-win32-x64-msvc":  "^1.0.0-rc.9"
-                             }
+  "name": "lesson-generator8",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:engine": "vitest run src/engine",
+    "test:standards-contract": "vitest run src/engine/standard-optional-contract.test.ts src/engine/blueprint/resolveBlueprintContent.test.ts src/engine/analysis-and-blueprint.test.ts"
+  },
+  "dependencies": {
+    "docx": "^9.6.1",
+    "mammoth": "^1.11.0",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.5.207",
+    "pptx-parser": "^1.1.7-beta.9",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.30.3",
+    "tesseract.js": "^7.0.0",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.0",
+    "vitest": "^4.1.0"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.0.0-rc.9"
+  }
 }

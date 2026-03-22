@@ -1,6 +1,19 @@
 import React, { useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { MaterialFile, MaterialRole, MaterialStatus } from "../engine/types"
+import {
+  orchardButtonStyle,
+  orchardCardStyle,
+  orchardInputStyle,
+  orchardMetaRowStyle,
+  orchardNoticeStyle,
+  orchardPageIntroBlockStyle,
+  orchardSectionLabelStyle,
+  orchardSectionTitleStyle,
+  orchardSoftCardStyle,
+  orchardStatusBadgeStyle,
+  orchardTagStyle,
+} from "../pages/orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 
 const pageStyle: React.CSSProperties = {
@@ -10,61 +23,49 @@ const pageStyle: React.CSSProperties = {
 
 const introStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
-  marginBottom: "var(--space-lg)",
   fontSize: 16,
   maxWidth: 760,
+  margin: 0,
+  lineHeight: 1.6,
+}
+
+const pageIntroStyle: React.CSSProperties = {
+  ...orchardPageIntroBlockStyle,
 }
 
 const sectionLabelStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "6px 12px",
-  marginBottom: "var(--space-sm)",
-  borderRadius: "999px",
-  background: "rgba(230, 201, 143, 0.28)",
-  color: "var(--warm-brown)",
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: 0.3,
-  textTransform: "uppercase",
+  ...orchardSectionLabelStyle,
+}
+
+const sectionTitleStyle: React.CSSProperties = {
+  ...orchardSectionTitleStyle,
+  fontSize: 32,
 }
 
 const cardStyle: React.CSSProperties = {
-  border: "1px solid var(--border-soft)",
-  borderRadius: "var(--radius-lg)",
-  padding: "var(--space-lg)",
-  background: "var(--paper-white)",
-  boxShadow: "var(--shadow-card)",
+  ...orchardCardStyle,
 }
 
 const uploadCardStyle = (role: MaterialRole): React.CSSProperties => ({
-  ...cardStyle,
+  ...orchardSoftCardStyle,
   background:
     role === "curriculum"
-      ? "linear-gradient(135deg, #fffdfa, #f8fbff)"
-      : "linear-gradient(135deg, #fffdfa, #fbf8ff)",
+      ? "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,246,233,0.82))"
+      : "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,214,208,0.18))",
 })
 
 const buttonStyle: React.CSSProperties = {
-  padding: "12px 14px",
-  borderRadius: "var(--radius-md)",
-  border: "1px solid var(--moss-green)",
-  background: "#fcfbf8",
-  color: "var(--orchard-green)",
-  cursor: "pointer",
-  fontWeight: 700,
-  boxShadow: "var(--shadow-soft)",
+  ...orchardButtonStyle(),
 }
 
 const primaryButtonStyle = (disabled: boolean): React.CSSProperties => ({
-  padding: "12px 16px",
-  borderRadius: "var(--radius-md)",
-  border: "1px solid var(--orchard-green)",
-  background: disabled ? "#9ca3af" : "var(--orchard-green)",
-  color: "var(--paper-white)",
-  cursor: disabled ? "not-allowed" : "pointer",
-  fontWeight: 700,
+  ...orchardButtonStyle({ active: !disabled }),
   opacity: disabled ? 0.7 : 1,
+  cursor: disabled ? "not-allowed" : "pointer",
   boxShadow: disabled ? "none" : "var(--shadow-soft)",
+  border: disabled ? "1px solid var(--border-soft)" : "1px solid var(--orchard-green)",
+  background: disabled ? "var(--warm-gray)" : "var(--orchard-green)",
+  color: disabled ? "var(--text-secondary)" : "var(--paper-white)",
 })
 
 const rowStyle: React.CSSProperties = {
@@ -72,7 +73,7 @@ const rowStyle: React.CSSProperties = {
   justifyContent: "space-between",
   alignItems: "flex-start",
   padding: "14px 0",
-  borderTop: "1px solid #f1ede5",
+  borderTop: "1px solid var(--border-paper)",
   gap: "var(--space-md)",
 }
 
@@ -138,7 +139,9 @@ export default function MaterialsPage() {
   const generateLesson = useLessonStore((state) => state.generateLesson)
   const counts = useLessonStore((state) => state.getMaterialCounts)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
-  const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()
+  const hasUsableMaterialsForGeneration = useLessonStore(
+    (state) => state.hasUsableMaterialsForGeneration
+  )()
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const canGenerate = useLessonStore((state) => state.canGenerate)()
 
@@ -212,22 +215,21 @@ export default function MaterialsPage() {
 
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Source Materials</div>
-      <h2
-        style={{
-          marginTop: 0,
-          marginBottom: "var(--space-sm)",
-          fontFamily: "var(--font-heading)",
-          fontSize: 32,
-          color: "var(--orchard-green)",
-        }}
-      >
+      <div style={sectionLabelStyle}>Source Workbench</div>
+      <h2 style={sectionTitleStyle}>
         Materials
       </h2>
-      <p style={introStyle}>
-        Upload curriculum and exemplar files. Materials appear immediately and stay visible
-        while they move through upload, extraction, analysis, and ready states.
-      </p>
+      <div style={pageIntroStyle}>
+        <p style={introStyle}>
+          Add curriculum files and exemplar files to the workbench. Uploaded files stay visible while they move through upload, extraction, analysis, and ready states.
+        </p>
+        <p style={introStyle}>
+          Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
+        </p>
+        <p style={introStyle}>
+          Current intake is upload-file based. Add source files here, then generate only from usable curriculum and exemplar files.
+        </p>
+      </div>
 
       <input
         ref={curriculumInputRef}
@@ -252,14 +254,14 @@ export default function MaterialsPage() {
             Curriculum
           </h3>
           <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
-            Teaching content authority: standards, word lists, texts, examples, and practice activities.
+Content authority for standards, word lists, texts, examples, and practice activities across one or more source files.
           </p>
           <button
             type="button"
             style={buttonStyle}
             onClick={() => curriculumInputRef.current?.click()}
           >
-            Upload Curriculum Files
+            Add Curriculum Files
           </button>
         </div>
 
@@ -269,28 +271,28 @@ export default function MaterialsPage() {
             Exemplar
           </h3>
           <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
-            Presentation authority: slide order, pacing, prompts, layout, and timing.
+Presentation authority for slide order, pacing, prompts, layout, and timing across one or more source files.
           </p>
           <button
             type="button"
             style={buttonStyle}
             onClick={() => exemplarInputRef.current?.click()}
           >
-            Upload Exemplar Files
+            Add Exemplar Files
           </button>
         </div>
       </div>
 
       <div style={{ ...cardStyle, marginBottom: "var(--space-md)" }}>
         <h3 style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--orchard-green)" }}>
-          Materials Trust Summary
+          Materials Trust
         </h3>
 
         <div style={summaryGridStyle}>
-          <SummaryCard label="Content-ready files" value={supportSummary.readyCurriculum} />
-          <SummaryCard label="Structure-ready files" value={supportSummary.readyExemplar} />
-          <SummaryCard label="Content grounding signals" value={supportSummary.contentSignalCount} />
-          <SummaryCard label="Structure guidance signals" value={supportSummary.structureSignalCount} />
+          <SummaryCard label="Usable content files" value={supportSummary.usableCurriculum} />
+          <SummaryCard label="Usable structure files" value={supportSummary.usableExemplar} />
+          <SummaryCard label="Caution files" value={supportSummary.cautionCount} />
+          <SummaryCard label="Blocked files" value={supportSummary.blockedCount} />
         </div>
 
         <div style={supportNoticeStyle(supportSummary.overall)}>
@@ -313,7 +315,7 @@ export default function MaterialsPage() {
 
       <div style={cardStyle}>
         <h3 style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--orchard-green)" }}>
-          Status Overview
+          Generation Readiness
         </h3>
 
         <div style={summaryGridStyle}>
@@ -328,14 +330,18 @@ export default function MaterialsPage() {
 
         <div
           style={noticeStyle(
-            hasProcessingMaterials ? "processing" : hasReadyMaterials ? "ready" : "idle"
+            hasProcessingMaterials
+              ? "processing"
+              : hasUsableMaterialsForGeneration
+                ? "ready"
+                : "idle"
           )}
         >
           {hasProcessingMaterials
-            ? "Results stay blocked until all uploaded materials finish processing."
-            : hasReadyMaterials
-              ? "At least one material is ready. You can continue once your inputs are complete."
-              : "Add curriculum or exemplar files to begin analysis."}
+            ? "Lesson generation stays blocked until all uploaded materials finish processing."
+            : hasUsableMaterialsForGeneration
+              ? "At least one material is usable for grounded lesson generation."
+              : "Add or replace source uploads until at least one curriculum or exemplar material is usable for grounded lesson generation."}
         </div>
 
         <div style={{ marginTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -353,9 +359,9 @@ export default function MaterialsPage() {
               ? "Complete all lesson inputs before generating."
               : hasProcessingMaterials
                 ? "Wait until uploaded materials finish processing."
-                : !hasReadyMaterials
-                  ? "At least one curriculum or exemplar material must be ready."
-                  : "Inputs and materials are ready for lesson generation."}
+                : !hasUsableMaterialsForGeneration
+                  ? "At least one curriculum or exemplar material must be usable for grounded lesson generation."
+                  : "Inputs are complete and at least one material is usable for grounded lesson generation."}
           </div>
 
           {generationError && (
@@ -366,8 +372,19 @@ export default function MaterialsPage() {
 
       <div style={{ ...cardStyle, marginTop: "var(--space-md)" }}>
         <h3 style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--orchard-green)" }}>
-          Processing Status
+          Source Processing Status
         </h3>
+        <p
+          style={{
+            marginTop: 0,
+            marginBottom: "var(--space-sm)",
+            color: "var(--text-secondary)",
+            fontSize: 13,
+          }}
+        >
+          Store status remains authoritative. The labels below explain where each file is in
+          intake, extraction, analysis, and readiness.
+        </p>
 
         {materials.length === 0 ? (
           <p style={{ color: "var(--text-secondary)", marginBottom: 0 }}>No materials added yet.</p>
@@ -413,7 +430,16 @@ export default function MaterialsPage() {
                     </div>
                   </div>
 
-                  <div style={{ marginTop: 8, display: "grid", gap: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                                    <div style={{ marginTop: 8, display: "grid", gap: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                    <div>
+                      <strong>Upload:</strong> {buildMaterialStageDetails(material).upload}
+                    </div>
+                    <div>
+                      <strong>Evaluation:</strong> {buildMaterialStageDetails(material).evaluation}
+                    </div>
+                    <div>
+                      <strong>Pipeline:</strong> {buildMaterialStageDetails(material).pipeline}
+                    </div>
                     <div>
                       <strong>Influence:</strong> {formatInfluenceLabel(material)}
                     </div>
@@ -507,8 +533,10 @@ export default function MaterialsPage() {
 }
 
 type MaterialSupportSummary = {
-  readyCurriculum: number
-  readyExemplar: number
+  usableCurriculum: number
+  usableExemplar: number
+  cautionCount: number
+  blockedCount: number
   contentSignalCount: number
   structureSignalCount: number
   overall: "balanced" | "content_heavy" | "structure_heavy" | "limited"
@@ -517,15 +545,40 @@ type MaterialSupportSummary = {
 }
 
 function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupportSummary {
-  const readyCurriculum = materials.filter(
-    (material) => material.role === "curriculum" && material.status === "ready" && material.analysis?.curriculum
+  const usableCurriculum = materials.filter(
+    (material) =>
+      material.role === "curriculum" &&
+      material.status === "ready" &&
+      material.analysis?.curriculum &&
+      (!material.analysis.reliability || material.analysis.reliability.usableForContent)
   )
 
-  const readyExemplar = materials.filter(
-    (material) => material.role === "exemplar" && material.status === "ready" && material.analysis?.exemplar
+  const usableExemplar = materials.filter(
+    (material) =>
+      material.role === "exemplar" &&
+      material.status === "ready" &&
+      material.analysis?.exemplar &&
+      (!material.analysis.reliability || material.analysis.reliability.usableForStructure)
   )
 
-  const contentSignalCount = readyCurriculum.reduce((total, material) => {
+  const cautionCount = materials.filter((material) => {
+    const reliability = material.analysis?.reliability
+    if (material.status !== "ready" || !reliability) return false
+
+    return (
+      (reliability.usableForContent && reliability.contentDecision === "caution") ||
+      (reliability.usableForStructure && reliability.structureDecision === "caution")
+    )
+  }).length
+
+  const blockedCount = materials.filter((material) => {
+    const reliability = material.analysis?.reliability
+    if (material.status !== "ready" || !reliability) return false
+
+    return !reliability.usableForContent && !reliability.usableForStructure
+  }).length
+
+  const contentSignalCount = usableCurriculum.reduce((total, material) => {
     const curriculum = material.analysis?.curriculum
     if (!curriculum) return total
 
@@ -540,7 +593,7 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
     )
   }, 0)
 
-  const structureSignalCount = readyExemplar.reduce((total, material) => {
+  const structureSignalCount = usableExemplar.reduce((total, material) => {
     const exemplar = material.analysis?.exemplar
     if (!exemplar) return total
 
@@ -555,8 +608,8 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
     )
   }, 0)
 
-  const hasCurriculumSupport = readyCurriculum.length > 0 && contentSignalCount > 0
-  const hasExemplarSupport = readyExemplar.length > 0 && structureSignalCount > 0
+  const hasCurriculumSupport = usableCurriculum.length > 0 && contentSignalCount > 0
+  const hasExemplarSupport = usableExemplar.length > 0 && structureSignalCount > 0
 
   const overall =
     hasCurriculumSupport && hasExemplarSupport
@@ -569,26 +622,36 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
 
   const guidance: string[] = []
 
+  if (blockedCount > 0) {
+    guidance.push("Some files finished processing but are blocked from grounding generation because their extracted text is too weak or unreliable.")
+  }
+
+  if (cautionCount > 0) {
+    guidance.push("Some files are usable only with caution. Review extraction trace notes before relying on them heavily.")
+  }
+
   if (!hasCurriculumSupport) {
-    guidance.push("Add at least one strong curriculum file so lesson content is grounded in actual standards, texts, word lists, and tasks.")
+    guidance.push("Add at least one usable curriculum source so lesson content is grounded in actual standards, texts, word lists, and tasks.")
   }
 
   if (!hasExemplarSupport) {
-    guidance.push("Add at least one strong exemplar file so pacing, slide flow, prompts, and structure are grounded in a real model.")
+    guidance.push("Add at least one usable exemplar source so pacing, slide flow, prompts, and structure are grounded in a real model.")
   }
 
   const message =
     overall === "balanced"
-      ? "You currently have both curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
+      ? "You currently have usable curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
       : overall === "content_heavy"
-        ? "You currently have stronger curriculum support than exemplar support. Content should be more grounded than structure."
+        ? "You currently have more usable curriculum support than exemplar support. Content should be more grounded than structure."
         : overall === "structure_heavy"
-          ? "You currently have stronger exemplar support than curriculum support. Structure should be stronger than content grounding."
-          : "Current material support is limited. The lesson may rely more on fallback logic until stronger files are added."
+          ? "You currently have more usable exemplar support than curriculum support. Structure should be stronger than content grounding."
+          : "Current usable material support is limited. The lesson may rely more on fallback logic until stronger files are added."
 
   return {
-    readyCurriculum: readyCurriculum.length,
-    readyExemplar: readyExemplar.length,
+    usableCurriculum: usableCurriculum.length,
+    usableExemplar: usableExemplar.length,
+    cautionCount,
+    blockedCount,
     contentSignalCount,
     structureSignalCount,
     overall,
@@ -631,13 +694,82 @@ function formatUseStatusLabel(material: MaterialFile): string {
   if (material.status === "error") return "Needs attention"
   if (material.status !== "ready") return "Partial support"
 
-  const influence = formatInfluenceLabel(material)
+  const reliability = material.analysis?.reliability
 
-  if (influence === "Content authority") return "Ready for content grounding"
-  if (influence === "Structure authority") return "Ready for structure guidance"
-  if (influence === "Mixed support") return "Ready for mixed support"
+  if (!reliability) {
+    return "Analysis complete, trust not scored"
+  }
+
+  if (!reliability.usableForContent && !reliability.usableForStructure) {
+    return "Blocked for lesson generation"
+  }
+
+  if (
+    (reliability.usableForContent && reliability.contentDecision === "caution") ||
+    (reliability.usableForStructure && reliability.structureDecision === "caution")
+  ) {
+    return "Usable with caution"
+  }
+
+  const usableForContent = reliability.usableForContent
+  const usableForStructure = reliability.usableForStructure
+
+  if (usableForContent && usableForStructure) return "Usable for grounded generation"
+  if (usableForContent) return "Usable for content grounding"
+  if (usableForStructure) return "Usable for structure guidance"
 
   return "Needs attention"
+}
+
+type MaterialStageDetails = {
+  upload: string
+  evaluation: string
+  pipeline: string
+}
+
+function buildMaterialStageDetails(material: MaterialFile): MaterialStageDetails {
+  if (material.status === "uploaded") {
+    return {
+      upload: "File captured and waiting in the intake queue.",
+      evaluation: "Extraction has not started yet.",
+      pipeline: "Queued for extraction.",
+    }
+  }
+
+  if (material.status === "extracting") {
+    return {
+      upload: "File source is attached to the store.",
+      evaluation: "Extracting readable text from the file.",
+      pipeline: "Waiting for analysis to begin.",
+    }
+  }
+
+  if (material.status === "analyzing") {
+    return {
+      upload: "File source is attached to the store.",
+      evaluation: "Building curriculum or exemplar lesson signals.",
+      pipeline: "Waiting for analysis to finish.",
+    }
+  }
+
+  if (material.status === "ready") {
+    const extraction = material.analysis?.extractionMetadata
+    const extractionSummary = extraction
+      ? `${formatExtractionMethod(extraction.method)} / ${formatExtractionQuality(extraction.quality)}`
+      : "analysis completed"
+
+    return {
+      upload: "File source is attached to the store.",
+      evaluation: `Analysis complete (${extractionSummary}).`,
+      pipeline: "Analysis complete. Check Use status for grounded-generation support.",
+    }
+  }
+
+  return {
+    upload: "File source needs attention.",
+    evaluation: "Processing stopped before analysis completed.",
+    pipeline: "Review the error before generating Results.",
+  }
 }
 
 function buildMaterialPreviewLines(material: MaterialFile): string[] {
@@ -656,10 +788,10 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
   return (
     <div
       style={{
-        border: "1px solid #f3efe6",
+        border: "1px solid var(--border-paper)",
         borderRadius: "var(--radius-md)",
         padding: 12,
-        background: "#fcfbf8",
+        background: "var(--surface-paper-soft)",
       }}
     >
       <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>{label}</div>
@@ -692,11 +824,11 @@ function formatStatus(status: string): string {
 }
 
 function getStatusExplanation(status: MaterialStatus): string {
-  if (status === "uploaded") return "Queued for extraction"
-  if (status === "extracting") return "Extracting file contents"
+  if (status === "uploaded") return "Waiting in intake queue"
+  if (status === "extracting") return "Extracting readable text"
   if (status === "analyzing") return "Building lesson signals"
-  if (status === "ready") return "Available for lesson generation"
-  return "Needs attention"
+  if (status === "ready") return "Analysis complete"
+  return "Processing stopped"
 }
 
 function getProgressStepState(
@@ -729,99 +861,33 @@ function getProgressStepState(
 }
 
 function miniTagStyle(role: MaterialRole): React.CSSProperties {
-  return {
-    display: "inline-block",
-    padding: "6px 10px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    marginBottom: "var(--space-sm)",
-    background: role === "curriculum" ? "#eff6ff" : "#f5f3ff",
-    color: role === "curriculum" ? "#1d4ed8" : "#6d28d9",
-  }
+  return orchardTagStyle(role === "curriculum" ? "moss" : "cranberry")
 }
 
 function roleBadgeStyle(role: string): React.CSSProperties {
-  return {
-    display: "inline-block",
-    padding: "6px 10px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: role === "curriculum" ? "#eff6ff" : "#f5f3ff",
-    color: role === "curriculum" ? "#1d4ed8" : "#6d28d9",
-    textTransform: "capitalize",
-  }
+  return orchardTagStyle(role === "curriculum" ? "moss" : "cranberry")
 }
 
 function statusBadgeStyle(status: MaterialStatus): React.CSSProperties {
-  const palette =
-    status === "ready"
-      ? { background: "#ecfdf5", color: "#047857" }
-      : status === "error"
-        ? { background: "#fef2f2", color: "#b91c1c" }
-        : { background: "#fff7ed", color: "#c2410c" }
-
-  return {
-    display: "inline-block",
-    padding: "6px 10px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: palette.background,
-    color: palette.color,
-  }
+  if (status === "ready") return orchardStatusBadgeStyle("moss")
+  if (status === "error") return orchardStatusBadgeStyle("cranberry")
+  return orchardStatusBadgeStyle("honey")
 }
 
 function methodBadgeStyle(method: "parser" | "ocr" | "mixed" | "fallback_notice"): React.CSSProperties {
-  const palette =
-    method === "parser"
-      ? { background: "#eff6ff", color: "#1d4ed8" }
-      : method === "ocr"
-        ? { background: "#f5f3ff", color: "#6d28d9" }
-        : method === "mixed"
-          ? { background: "#ecfeff", color: "#0f766e" }
-          : { background: "#fff7ed", color: "#c2410c" }
-
-  return {
-    display: "inline-block",
-    padding: "6px 10px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: palette.background,
-    color: palette.color,
-  }
+  if (method === "parser") return orchardTagStyle("moss")
+  if (method === "ocr") return orchardTagStyle("cranberry")
+  if (method === "mixed") return orchardTagStyle("honey")
+  return orchardTagStyle("honey")
 }
 
 function qualityBadgeStyle(quality: "high" | "medium" | "low"): React.CSSProperties {
-  const palette =
-    quality === "high"
-      ? { background: "#ecfdf5", color: "#047857" }
-      : quality === "medium"
-        ? { background: "#fffbeb", color: "#b45309" }
-        : { background: "#fef2f2", color: "#b91c1c" }
-
-  return {
-    display: "inline-block",
-    padding: "6px 10px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: palette.background,
-    color: palette.color,
-  }
+  if (quality === "high") return orchardTagStyle("moss")
+  if (quality === "medium") return orchardTagStyle("honey")
+  return orchardTagStyle("cranberry")
 }
 
-const ocrCandidateBadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "6px 10px",
-  borderRadius: 999,
-  fontSize: 12,
-  fontWeight: 700,
-  background: "#fff7ed",
-  color: "#9a3412",
-}
+const ocrCandidateBadgeStyle: React.CSSProperties = orchardTagStyle("honey")
 
 function formatExtractionMethod(method: "parser" | "ocr" | "mixed" | "fallback_notice"): string {
   if (method === "parser") return "Parser"
@@ -840,65 +906,71 @@ function formatExtractionConfidence(confidence: number): string {
 
 function secondaryButtonStyle(): React.CSSProperties {
   return {
+    ...orchardButtonStyle({ subtle: true }),
     padding: "8px 10px",
-    borderRadius: "var(--radius-sm)",
-    border: "1px solid var(--border-soft)",
-    background: "var(--paper-white)",
-    cursor: "pointer",
     fontSize: 12,
     fontWeight: 700,
-    color: "var(--text-primary)",
   }
 }
 
 function noticeStyle(mode: "idle" | "processing" | "ready"): React.CSSProperties {
-  const palette =
-    mode === "ready"
-      ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
-      : mode === "processing"
-        ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
-        : { background: "#fcfbf8", border: "var(--border-soft)", color: "var(--text-secondary)" }
+  if (mode === "ready") {
+    return {
+      ...orchardNoticeStyle,
+      background: "rgba(110, 139, 107, 0.14)",
+      border: "1px solid var(--border-moss)",
+      color: "var(--deep-orchard)",
+    }
+  }
+
+  if (mode === "processing") {
+    return {
+      ...orchardNoticeStyle,
+      background: "rgba(242, 192, 120, 0.20)",
+      border: "1px solid var(--border-honey)",
+      color: "var(--warm-brown)",
+    }
+  }
 
   return {
-    padding: "12px 14px",
-    borderRadius: "var(--radius-md)",
-    border: `1px solid ${palette.border}`,
-    background: palette.background,
-    color: palette.color,
+    ...orchardNoticeStyle,
   }
 }
 
 function supportNoticeStyle(mode: MaterialSupportSummary["overall"]): React.CSSProperties {
-  const palette =
-    mode === "balanced"
-      ? { background: "#ecfdf5", border: "#a7f3d0", color: "#065f46" }
-      : mode === "limited"
-        ? { background: "#fff7ed", border: "#fed7aa", color: "#9a3412" }
-        : { background: "#fcfbf8", border: "var(--border-soft)", color: "var(--text-secondary)" }
+  if (mode === "balanced") {
+    return {
+      ...orchardNoticeStyle,
+      background: "rgba(110, 139, 107, 0.14)",
+      border: "1px solid var(--border-moss)",
+      color: "var(--deep-orchard)",
+    }
+  }
+
+  if (mode === "limited") {
+    return {
+      ...orchardNoticeStyle,
+      background: "rgba(242, 192, 120, 0.20)",
+      border: "1px solid var(--border-honey)",
+      color: "var(--warm-brown)",
+    }
+  }
 
   return {
-    padding: "12px 14px",
-    borderRadius: "var(--radius-md)",
-    border: `1px solid ${palette.border}`,
-    background: palette.background,
-    color: palette.color,
+    ...orchardNoticeStyle,
   }
 }
 
 const guidanceStyle: React.CSSProperties = {
-  border: "1px solid var(--border-soft)",
-  background: "#fcfbf8",
+  ...orchardSoftCardStyle,
   color: "var(--text-secondary)",
-  borderRadius: "var(--radius-md)",
   padding: 12,
   fontSize: 14,
 }
 
 const metadataPanelStyle: React.CSSProperties = {
-  border: "1px solid #e6ebf2",
-  background: "#f8fafc",
+  ...orchardSoftCardStyle,
   color: "var(--text-secondary)",
-  borderRadius: "var(--radius-md)",
   padding: 10,
   fontSize: 13,
 }
