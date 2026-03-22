@@ -81,17 +81,17 @@ const requestedOutputOptions: RequestOption<RequestedOutputKey>[] = [
   {
     key: "centers",
     title: "Centers printables",
-    description: "Generate student-facing center materials when you want printable support for a centers plan.",
+    description: "Generate student-facing center materials when you want printable support for independent centers work.",
   },
   {
     key: "small_group",
     title: "Small-group support",
-    description: "Generate teacher-facing small-group supports when you want materials for a small-group plan.",
+    description: "Generate teacher-facing small-group supports when you want materials for a teacher-led support plan.",
   },
   {
     key: "intervention",
     title: "Intervention support",
-    description: "Generate teacher-facing intervention supports when you want materials for an intervention plan.",
+    description: "Generate teacher-facing intervention supports when you want materials for a teacher-led support plan.",
   },
 ]
 
