@@ -6,13 +6,13 @@
 - Current published continuation point: d22e7e6 docs: refresh continuation truth after pushed README current-truth summary seam
 - Current validated local state: Materials upload-type visibility is closed on current main and the continuation docs now match the pushed repo truth
 - Current milestone: current-main truth is aligned after the Materials upload-type visibility seam push
-- Current active seam: inspect current main after pushed Inputs materials terminology seam to choose the next narrow finishing seam
+- Current active seam: inspect current main after pushed Results blocked-state terminology seam to choose the next narrow finishing seam
 
 ## What is actually landed
 - Active product flow remains Inputs -> Materials -> Results
 - Current local branch is main
-- Current local HEAD during this refresh is f7bd493
-- origin/main matched local during this refresh at f7bd493
+- Current local HEAD during this refresh is 9e4e457
+- origin/main matched local during this refresh at 9e4e457
 - Materials intro explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
 - Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
 - npm run typecheck passed for the Materials upload-type visibility seam before this refresh
@@ -34,13 +34,13 @@
 
 ## Latest validation snapshot
 - Live local branch was main during this refresh
-- Live local HEAD was f7bd493 during this refresh
-- origin/main matched local at f7bd493 during this refresh
+- Live local HEAD was 9e4e457 during this refresh
+- origin/main matched local at 9e4e457 during this refresh
 - Materials upload-type visibility seam is committed and pushed
 - Continuation docs were refreshed after the push so future launches start from current main truth
 
 ## Non-blocking warnings
-- README.md current-truth summary was refreshed and pushed at d22e7e6, and Inputs terminology alignment was pushed at f7bd493
+- README.md current-truth summary was refreshed and pushed at d22e7e6, Inputs terminology alignment was pushed at f7bd493, and Results blocked-state terminology alignment was pushed at 9e4e457
 - older handoffs that still launch from work/canonical-project-consolidation and 04a9b08 are historical
 - do not reopen the Materials upload-type visibility seam unless live regression evidence appears
 
