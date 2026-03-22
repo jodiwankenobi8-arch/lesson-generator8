@@ -52,16 +52,19 @@ The repo already includes:
 - export support wording parity across lesson-plan, printables, DOCX headings, and related tests
 - automated generated-artifact Results/export flow coverage through `useLessonStore` plus `downloadExportArtifact`
 
-Current validated checkpoint:
-- **last meaningful code checkpoint: `519f65c` copy: align materials intake wording with upload-file contract**
-- `npm run typecheck` passed for `519f65c`
-- **current published continuation point: `6ae252b` docs: repair continuation doc automation for current schema**
-- continuation docs now update through the repaired `scripts/update-project-docs.ps1` workflow
-Current active seam:
-- **README and continuation docs aligned after doc automation repair**
-- keep README and continuation docs aligned with current repo truth after `6ae252b`
-- treat the doc automation seam as closed unless live regression evidence appears
-- do not reopen prior closed seams without proof
+Current repo truth:
+- Materials upload-type visibility seam is closed on current main
+- The Materials page explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
+- Both Materials upload inputs use `accept=".txt,.pdf,.docx,.pptx,.html,.htm"`
+- Results uses the newer teacher-first support lane structure
+- `useLessonStore` remains the orchestration seam
+- A live local inspect confirmed `main` matched `origin/main` and the worktree was clean when this README was refreshed
+
+Documentation note:
+- `README.md` is a public-facing repo summary, not the authoritative continuation launcher
+- For exact current continuation truth, use `AGENTS.md` -> `START_HERE_CURRENT_TRUTH.md` -> `PROJECT_CURRENT_STATE.md` -> latest relevant handoff
+- Older checkpoint and active-seam text previously carried here should be treated as historical once it conflicts with live repo truth
+- Do not reopen prior closed seams without live regression evidence
 ## Active documentation chain
 
 For current continuation, use this order:
