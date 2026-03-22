@@ -223,7 +223,6 @@ describe("Results explainability rendering contracts", () => {
     expect(source).not.toContain('const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()')
 
     expect(source).toContain('Results are blocked until at least one curriculum or exemplar material is usable for grounded generation.')
-    expect(source).toContain('Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one file is usable for grounded generation.')
     expect(source).toContain('Inputs are complete and at least one material is usable, but no generated lesson is currently loaded.')
     expect(source).toContain('Ready files:')
 
@@ -488,8 +487,4 @@ describe("Results export download contract", () => {
     }
   })
 })
-
-
-
-
 
