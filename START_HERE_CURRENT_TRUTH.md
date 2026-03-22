@@ -1,19 +1,19 @@
-﻿# START_HERE_CURRENT_TRUTH.md
+# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current published continuation point: ee9028f fix: align support wording across package outputs
-- Last meaningful code checkpoint: ee9028f fix: align support wording across package outputs
-- Current milestone: orchard lesson-flow surface system is already landed enough for the active teacher flow
-- Current active seam: source-intake contract inspect after continuation-doc refresh
+- Current published continuation point: eb5047c copy: align Inputs source-intake wording with usable materials
+- Last meaningful code checkpoint: eb5047c copy: align Inputs source-intake wording with usable materials
+- Current milestone: orchard lesson-flow surface system remains landed, and the source-intake wording contract is now aligned on usable materials
+- Current active seam: source-intake upload-type visibility inspect
 
 ## What is actually landed
 - Inputs deliverable copy seam landed at 10c55c6
-- Continuation docs refresh landed at 96a55c2
-- Support-wording package/test seam landed at ee9028f
+- Continuation docs refresh landed at ff4a2d7
+- Inputs source-intake wording seam landed at eb5047c
 - src/pages/orchardUi.ts exists in the live repo
-- Results uses the newer teacher-first support lanes instead of the older Step 3A-prep framing
+- Results uses the newer teacher-first support lanes
 - Active product flow remains Inputs -> Materials -> Results
 
 ## Product truths to preserve
@@ -30,16 +30,15 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- Live repo HEAD is ee9028f on branch work/canonical-project-consolidation
-- Worktree is clean
-- Local branch is ahead of origin/work/canonical-project-consolidation by 3 commits
-- orchardUi.ts is present in the live repo
-- Results surface uses the newer teacher-first support naming
+- Live repo included the Inputs wording seam at eb5047c
+- npm run typecheck passed for the seam
+- Continuation docs were refreshed after the seam
+- Continue from live repo files, not older pre-usable-material wording
 
 ## Non-blocking warnings
 - README.md may still lag the active continuation docs and should not override this file
-- older 10c55c6 handoff/doc snapshots are now historical and should not be treated as the active seam launcher
-- confirm remote push timing before treating ee9028f as the latest pushed checkpoint
+- older Step 3A and earlier source-intake notes are historical once they conflict with live repo truth
+- keep the next seam copy-first unless live inspection shows a real contract mismatch
 
 ## What to read next
 1. AGENTS.md
@@ -49,9 +48,9 @@
 5. then inspect the actual repo files involved in the next seam
 
 ## Exact next move
-- current active seam: source-intake contract inspect
-- continue from the newest handoff file and live repo files, not the older Step 3A launcher
-- inspect the current source-intake surface first before changing behavior
+- current active seam: source-intake upload-type visibility inspect
+- continue from the newest handoff file and live repo files
+- inspect whether Inputs and Materials should explicitly surface the currently supported upload/extraction formats without changing engine behavior
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, trust live local git output and live local source files first.

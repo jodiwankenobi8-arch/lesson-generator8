@@ -1,4 +1,4 @@
-﻿# PROJECT_CURRENT_STATE
+# PROJECT_CURRENT_STATE
 
 Last refreshed: 2026-03-22
 
@@ -17,23 +17,22 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current published continuation point: ee9028f fix: align support wording across package outputs
-- Last meaningful code checkpoint: ee9028f fix: align support wording across package outputs
+- Current published continuation point: eb5047c copy: align Inputs source-intake wording with usable materials
+- Last meaningful code checkpoint: eb5047c copy: align Inputs source-intake wording with usable materials
 
 ## Current confirmed state
 - Inputs deliverable copy seam landed at 10c55c6
-- Continuation docs refresh landed at 96a55c2
-- Support-wording package/test seam landed at ee9028f
+- Continuation docs refresh landed at ff4a2d7
+- Inputs source-intake wording seam landed at eb5047c
 - src/pages/orchardUi.ts exists as the shared orchard UI seam
 - Results uses the newer teacher-first support lane structure
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- Live repo HEAD is ee9028f
-- Live worktree is clean
-- Local branch is ahead of origin/work/canonical-project-consolidation by 3 commits
-- orchard foundation is not the next missing seam
-- older 10c55c6 continuation docs and the Step 3A launcher are stale relative to live HEAD
+- npm run typecheck passed after the Inputs wording seam
+- the usable-materials wording now matches the actual material trust contract
+- orchard foundation is not the next seam
+- do not reopen closed UI/package seams without live regression evidence
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -53,7 +52,7 @@ Anything older or not in that chain should be treated as historical unless expli
 - useLessonStore remains the orchestration seam
 
 ## Current risks
-- remote still does not include the latest 3 local commits
+- teacher-facing upload-type visibility may still lag the actual extraction contract
 - README.md may still lag the active continuation docs
 - older handoffs can mislaunch work if treated as current
 - do not reopen closed seams unless live regression evidence appears
@@ -65,8 +64,8 @@ Prefer continuation from the newest handoff file to avoid lag and repeated redis
 
 ## Top next steps
 1. Continue from the newest handoff file and live repo files
-2. Treat the next seam as: source-intake contract inspect
-3. Inspect the current source-intake entrypoints, accepted file types, extraction path, and trust surfaces before changing behavior
+2. Treat the next seam as: source-intake upload-type visibility inspect
+3. Inspect whether teacher-facing copy should explicitly surface the currently supported upload/extraction formats
 4. Keep continuation docs authoritative and small
 5. Do not let overridden notes compete with the active continuation set
 
