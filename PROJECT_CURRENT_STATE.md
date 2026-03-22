@@ -17,8 +17,8 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: main
-- Current published continuation point: d22e7e6 docs: refresh continuation truth after pushed README current-truth summary seam
-- Current validated local state: Materials upload-type visibility is closed on current main, the README current-truth summary is pushed, and this docs refresh matches the pushed repo truth
+- Current published continuation point: f7bd493 refine Inputs materials terminology and close the seam on current main
+- Current validated local state: Materials upload-type visibility is closed on current main, the README current-truth summary is pushed, Inputs terminology alignment is pushed, and this docs refresh matches the pushed repo truth
 
 ## Current confirmed state
 - Active product flow remains Inputs -> Materials -> Results
@@ -57,7 +57,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Current risks
 - README.md may still lag the active continuation docs
 - older handoffs can mislaunch work if treated as current
-- after this docs closeout, the next narrow finishing seam should be re-picked from current main
+- after this docs closeout, re-pick the next narrow finishing seam from live current main without reopening closed seams
 - do not reopen closed seams unless live regression evidence appears
 
 ## Active execution rule
