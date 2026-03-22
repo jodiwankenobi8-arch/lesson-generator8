@@ -227,7 +227,7 @@ export default function MaterialsPage() {
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
         </p>
         <p style={introStyle}>
-          Current intake is upload-file based. Supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm. Add source files here, then generate only from usable curriculum and exemplar files.
+          Current intake is upload-file based. Supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm. Add source materials here, then generate only from usable curriculum and exemplar materials.
         </p>
       </div>
 
@@ -343,7 +343,7 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
             ? "Lesson generation stays blocked until all uploaded materials finish processing."
             : hasUsableMaterialsForGeneration
               ? "At least one material is usable for grounded lesson generation."
-              : "Add or replace source uploads until at least one curriculum or exemplar material is usable for grounded lesson generation."}
+              : "Add or replace curriculum or exemplar materials until at least one material is usable for grounded lesson generation."}
         </div>
 
         <div style={{ marginTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: 10 }}>
