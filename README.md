@@ -4,12 +4,13 @@ Teacher-facing lesson generation studio with a 3-step flow:
 
 **Inputs -> Materials -> Results**
 
-The app takes teacher lesson inputs plus **multiple uploaded curriculum materials and multiple uploaded exemplar materials**, analyzes them, builds a blueprint, and generates a classroom-ready lesson package.
+The app takes teacher lesson inputs plus uploaded curriculum and exemplar source files, analyzes them, builds a blueprint, and generates a classroom-ready lesson package.
 
-Curriculum uploads can include several source types together when that helps build stronger content grounding, such as lesson slides, worksheets, screenshots, teacher text companion pages, and other curriculum artifacts.
+Current intake is upload-file based. Supported source files on the Materials page are `.txt`, `.pdf`, `.docx`, `.pptx`, `.html`, and `.htm`.
 
-Exemplar uploads can also include several source types together when that helps shape presentation and structure, such as slide decks, lesson plans, centers examples, and other model materials.
+Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
 
+Optional lesson parts and outputs should appear only when explicitly requested or strongly source-grounded.
 ## Current product direction
 
 This project is in the **hardening / finishing phase**.
@@ -134,3 +135,4 @@ npm run build
 - Use the active documentation chain above for continuation
 - If notes conflict with live code/tests, trust the live repo first
 - Keep the worktree free of unrelated staging before the next seam
+

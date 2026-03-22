@@ -18,13 +18,14 @@ Anything older or not in that chain should be treated as historical unless expli
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: main
 - Current published continuation point: 1408023 copy: align Materials teacher-facing terminology with the usable-materials contract
-- Current validated local state: Materials upload-type visibility is closed on current main, the README current-truth summary is pushed, Inputs terminology alignment is pushed, Results blocked-state terminology alignment is pushed, Inputs optional-support terminology alignment is pushed, Inputs optional-support docs closeout is pushed, Materials terminology alignment is pushed, and this docs closeout follows that pushed seam
+- Current local working seam: README truth-alignment repair is verified locally on main and pending commit/push with docs closeout
 
 ## Current confirmed state
 - Active product flow remains Inputs -> Materials -> Results
 - Current local branch is main
-- Current local HEAD during this refresh is 40d192d
-- origin/main matched local during this refresh at 40d192d
+- Current local HEAD during this refresh is e8c5936
+- Live README inspect confirmed the stale broader README opening wording was still present before repair
+- Live README verification confirmed the repaired truth-aligned wording is now present locally
 - Materials intro explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
 - Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
 - src/pages/orchardUi.ts exists on current main
@@ -32,9 +33,9 @@ Anything older or not in that chain should be treated as historical unless expli
 
 ## Validated state
 - The Materials upload-type visibility seam is committed and pushed
-- npm run typecheck passed for the seam before this refresh
-- The seam remained narrow and UI-contract focused
-- Engine behavior was not broadened during the seam
+- The README truth-alignment repair is verified locally
+- The stale broader README markers are gone locally
+- Engine behavior was not broadened during this README seam
 - The previous continuation docs on work/canonical-project-consolidation and 04a9b08 are historical
 
 ## Product truths to preserve
@@ -55,9 +56,9 @@ Anything older or not in that chain should be treated as historical unless expli
 - useLessonStore remains the orchestration seam
 
 ## Current risks
-- README.md may still lag the active continuation docs
+- the README seam is still local until commit/push completes
 - older handoffs can mislaunch work if treated as current
-- after this docs closeout, re-pick the next narrow finishing seam from live current main without reopening closed seams
+- after this closeout, re-pick the next narrow finishing seam from live current main without reopening closed seams
 - do not reopen closed seams unless live regression evidence appears
 
 ## Active execution rule
@@ -66,11 +67,11 @@ Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
 ## Top next steps
-1. Do one inspect-first current-main review to choose the next narrow finishing seam
-2. Refresh README.md only if it conflicts with the active continuation docs
+1. Commit and push the README truth-alignment seam with docs closeout
+2. Re-pick the next narrow finishing seam from live current main
 3. Keep the active continuation set small and obvious
 4. Do not let overridden notes compete with the active continuation set
-5. Commit and push future seam closeouts immediately after they land
+5. Do not reopen closed seams unless live regression evidence appears
 
 ## Local doc policy
 The active local doc set should stay small and obvious:

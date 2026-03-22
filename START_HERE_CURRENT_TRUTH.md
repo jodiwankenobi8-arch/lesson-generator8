@@ -4,18 +4,18 @@
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
 - Current published continuation point: 1408023 copy: align Materials teacher-facing terminology with the usable-materials contract
-- Current validated local state: Materials upload-type visibility is closed on current main and the continuation docs now match the pushed repo truth
-- Current milestone: current-main truth is aligned after the Materials upload-type visibility seam push
-- Current active seam: inspect current main after pushed Materials terminology seam and docs closeout to choose the next narrow finishing seam
+- Current local working state: README current-truth summary is aligned locally on main after live inspect and replacement verification; this seam is not published until the closeout commit is pushed
+- Current milestone: README truth-alignment seam is verified locally and ready for docs closeout + publish
+- Current active seam: close out and publish the narrow README truth-alignment seam, then re-pick the next narrow finishing seam from live current main
 
 ## What is actually landed
 - Active product flow remains Inputs -> Materials -> Results
 - Current local branch is main
-- Current local HEAD during the Materials terminology seam refresh was 1408023 before this docs closeout commit
-- origin/main matched local during the Materials terminology seam refresh at 1408023 before this docs closeout commit
+- Current local HEAD during the README truth-alignment verification was e8c5936
+- Live local inspect confirmed the stale broader README opening block was still present before repair
+- Live local verification confirmed the repaired README wording is present locally and the stale broad markers are gone
 - Materials intro explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
 - Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
-- npm run typecheck passed for the Materials upload-type visibility seam before this refresh
 - src/pages/orchardUi.ts exists on current main
 - Results uses the newer teacher-first support lane structure
 
@@ -34,15 +34,16 @@
 
 ## Latest validation snapshot
 - Live local branch was main during this refresh
-- Live local HEAD was 1408023 during the Materials terminology seam refresh before this docs closeout commit
-- origin/main matched local at 1408023 during the Materials terminology seam refresh before this docs closeout commit
-- Materials upload-type visibility seam is committed and pushed
-- Continuation docs were refreshed after the push so future launches start from current main truth
+- Live local HEAD was e8c5936 during the README truth-alignment verification
+- README local inspect showed the old broader opening wording was present before repair
+- README repair verification showed the new truth-aligned wording present locally
+- README git status was modified locally after repair and the diff was present
+- Materials upload-type visibility seam remains committed and pushed
 
 ## Non-blocking warnings
-- README.md current-truth summary was refreshed and pushed at d22e7e6, Inputs terminology alignment was pushed at f7bd493, Results blocked-state terminology alignment was pushed at 9e4e457, Inputs optional-support terminology alignment was pushed at cd666f8, Inputs optional-support docs closeout was pushed at df8b4d0, and Materials terminology alignment was pushed at 1408023
+- Current published continuation point still names 1408023 until the README seam is committed and pushed
 - older handoffs that still launch from work/canonical-project-consolidation and 04a9b08 are historical
-- do not reopen the Materials upload-type visibility seam unless live regression evidence appears
+- do not reopen closed seams unless live regression evidence appears
 
 ## What to read next
 1. AGENTS.md
@@ -52,8 +53,8 @@
 5. then inspect the actual current-main repo files for the next narrow finishing seam
 
 ## Exact next move
-- Do one inspect-first current-main review to choose the next narrow finishing seam
-- Refresh README.md only if it conflicts with the active continuation docs
+- Commit and push the README truth-alignment seam with docs closeout
+- Then re-pick the next narrow finishing seam from live current main
 - Prefer live local git output and live local source files over older continuation notes if they conflict
 
 ## Retrieval fallback rule
