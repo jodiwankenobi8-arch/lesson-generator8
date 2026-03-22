@@ -57,15 +57,12 @@ export function buildPackageOutputs(args: {
   const requestedOutputs = new Set<RequestedOutputKey>(lessonRequest.requestedOutputs)
   const includeCentersOutput =
     requestedOutputs.has("centers") ||
-    requestedOutputs.has("printables") ||
     missingAreaDecisions.centers === "add"
   const includeSmallGroupOutput =
     requestedOutputs.has("small_group") ||
-    requestedOutputs.has("printables") ||
     missingAreaDecisions.small_group === "add"
   const includeInterventionOutput =
     requestedOutputs.has("intervention") ||
-    requestedOutputs.has("printables") ||
     missingAreaDecisions.intervention === "add"
 
   const slides = buildSlides(blueprint, spec)

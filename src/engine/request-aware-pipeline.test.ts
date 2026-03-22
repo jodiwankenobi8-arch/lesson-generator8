@@ -224,7 +224,7 @@ describe("request-aware package outputs", () => {
       "Word Sort: Sort long a and short a words.",
     ])
     expect(result.rotationPlan).toContain(
-      "Teacher Table Focus: Targeted Blending - Reteach blending with a reduced list."
+      "Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list."
     )
     expect(result.interventions).toEqual([
       "Phonics Reteach: Practice decoding with teacher support.",
@@ -235,4 +235,37 @@ describe("request-aware package outputs", () => {
       "printables",
     ])
   })
+
+  it("does not let printables alone assemble optional package outputs", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint: makeBlueprint(),
+      spec,
+      planningIdeas,
+      lessonRequest: {
+        requestedLessonParts: [],
+        requestedOutputs: ["printables"],
+      },
+    })
+
+    expect(result.centers).toEqual([])
+    expect(result.rotationPlan).toBe("")
+    expect(result.interventions).toEqual([])
+    expect(result.lessonPlan).not.toContain("Centers")
+    expect(result.lessonPlan).not.toContain("Teacher-Led Support")
+    expect(result.lessonPlan).not.toContain("Intervention Support")
+    expect(result.exports.map((artifact) => artifact.kind)).toEqual([
+      "slides",
+      "lesson_plan",
+      "printables",
+    ])
+  })
+
 })
