@@ -1,11 +1,11 @@
-﻿# START_HERE_CURRENT_TRUTH.md
+# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: b2cc872
+- Current published continuation point: 273560e
 - Current milestone: Step 5 continuation from the live orchard surface already present in the repo
-- Current active seam: Step 5 Results chrome consolidation is landed locally and verified
+- Current active seam: Step 5 Results chrome consolidation is pushed on main; Step 5 hardening validation is next
 
 ## What is actually landed
 - src/pages/orchardUi.ts exists in the live repo
@@ -32,7 +32,7 @@
 - Targeted Results helper/usage inspect passed in live local ResultsPage.tsx
 - npm run typecheck passed after the seam
 - npm run build passed after the seam
-- The full test suite was last known green at pushed checkpoint b2cc872, but was not rerun after this local seam
+- The full test suite was last known green at pushed checkpoint b2cc872 and has still not been rerun after the pushed Results seam at 273560e
 - Continue from live repo files and newest handoff, not older notes
 
 ## What to read next
@@ -43,8 +43,12 @@
 5. then inspect src/pages/ResultsPage.tsx and its local diff
 
 ## Exact next move
-- inspect the current local diff for src/pages/ResultsPage.tsx
-- either commit/push this seam cleanly, or do one more narrow Results chrome cleanup pass
-- do not reopen closed request-aware / Results / export seams without live regression evidence
-- do not recreate src/pages/orchardUi.ts
-- do not touch unrelated untracked docs unless explicitly asked
+- run the Step 5 hardening validation sweep on current main:
+  - targeted inspect
+  - typecheck
+  - relevant tests
+  - full tests
+  - build
+- fix only the failures that the validation sweep proves are real
+- keep Results teacher-first and do not reopen closed request-aware / Results / export seams without proof
+- keep the active continuation docs small and truthful

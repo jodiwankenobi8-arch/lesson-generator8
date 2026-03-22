@@ -1,9 +1,9 @@
-Ôªø# Lesson Generator 8 ‚Äî handoff after Step 5 Results chrome consolidation verification
+# Lesson Generator 8 ó handoff after Step 5 Results chrome consolidation verification
 
 ## Repo
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Latest pushed continuation point still treated as: b2cc872
+- Latest pushed continuation point: 273560e
 - This handoff captures meaningful local seam work after that pushed point
 
 ## What was actually checked in this chat
@@ -28,7 +28,7 @@
   - docs/.gitignore
   - docs/PROJECT_PLAN_UPDATED_2026-03-11.md
 
-## What just landed locally
+## What just landed and is now pushed
 - Narrow Step 5 Results chrome consolidation in src/pages/ResultsPage.tsx
 - Added shared local helper styles for repeated Results chrome:
   - binderFeedbackStackStyle
@@ -49,17 +49,10 @@
 - npm run typecheck -> PASS
 - npm run build -> PASS
 
-## Current local working tree shape at checkpoint time
-- Modified tracked code file:
-  - src/pages/ResultsPage.tsx
-- Active docs refreshed by this checkpoint:
-  - START_HERE_CURRENT_TRUTH.md
-  - PROJECT_CURRENT_STATE.md
-  - this handoff file
-- Temporary backup file from the seam should be removed before commit
-- Unrelated untracked docs were intentionally left untouched:
-  - docs/.gitignore
-  - docs/PROJECT_PLAN_UPDATED_2026-03-11.md
+## Checkpoint outcome
+- Commit 273560e is pushed to origin/main
+- The targeted Results seam and active continuation docs were the only intended committed files
+- Local-only ignores now keep unrelated docs out of git status
 
 ## What is current vs stale
 ### Current
@@ -70,7 +63,7 @@
 
 ### Stale / superseded
 - Any note that says src/pages/orchardUi.ts is missing
-- Any note that says the next move is still only ‚Äúinspect orchard continuation files‚Äù rather than ‚Äúlocal Results chrome seam is landed and needs diff review / commit decision‚Äù
+- Any note that says the next move is still only ìinspect orchard continuation filesî rather than ìlocal Results chrome seam is landed and needs diff review / commit decisionî
 - Any note that implies this local seam is still hypothetical or unverified
 
 ## Product truths to preserve
@@ -84,15 +77,19 @@
 - materials trust depends on usable materials, not merely ready materials
 
 ## Best next narrow move
-Inspect the current local diff for src/pages/ResultsPage.tsx and choose one path only:
-1. commit/push this seam cleanly
-2. or do one more narrow Results chrome cleanup pass
+Run the Step 5 hardening validation sweep on current main:
+
+1. targeted inspect
+2. npm run typecheck
+3. relevant tests
+4. npm run test
+5. npm run build
 
 Reason:
-- the first chrome pass is meaningful and validated
-- ResultsPage still has substantial inline styling overall
-- the next move should stay surface-only and narrow
-- behavior seams should stay closed unless real regression evidence appears
+- the Results chrome seam is already pushed at 273560e
+- the active doc chain should now point at truthful validation status
+- Step 5 is a hardening phase, so the next useful signal is validation truth, not another speculative seam
+- closed request-aware / Results / export seams should stay closed unless the sweep reveals real regression evidence
 
 ## Paste this into the next chat
 
@@ -118,14 +115,14 @@ Important:
 Repo:
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Latest pushed continuation point: b2cc872
+- Latest pushed continuation point: 273560e
 
 Current local truth:
 - src/pages/orchardUi.ts exists
 - src/styles/theme.css contains orchard token coverage
 - src/pages/ResultsPage.tsx is the canonical Results surface
 - Inputs and Materials orchard shell seams are already landed
-- A first Step 5 Results chrome consolidation pass is now landed locally in src/pages/ResultsPage.tsx
+- Step 5 Results chrome consolidation is now pushed in src/pages/ResultsPage.tsx at 273560e
 - The current local Results seam extracted helper styles for repeated Results chrome:
   - binderFeedbackStackStyle
   - binderSuccessNoticeStyle
@@ -150,7 +147,7 @@ Important honesty constraints:
 Current place in the plan:
 - Step 5 continuation
 - current seam = Results chrome consolidation
-- this seam is landed locally and validated, but the diff still needs review before deciding whether to commit/push or do one more narrow cleanup pass
+- this seam is pushed; the next job is Step 5 hardening validation so the continuation docs and validation status stay truthful
 
 What to read first in this chat:
 1. START_HERE_CURRENT_TRUTH.md
@@ -161,13 +158,15 @@ What to read first in this chat:
 6. then inspect src/pages/ResultsPage.tsx and its current local diff
 
 What the next move should be:
-- Inspect the current local diff for src/pages/ResultsPage.tsx
-- Decide one path only:
-  - commit/push the seam cleanly
-  - or do one more narrow Results chrome cleanup pass
+- Run the Step 5 hardening validation sweep on current main:
+  - targeted inspect
+  - npm run typecheck
+  - relevant tests
+  - npm run test
+  - npm run build
+- Fix only the failures the sweep proves are real
 - Do not reopen closed request-aware / Results / export seams without live regression evidence
-- Do not recreate orchardUi.ts
-- Do not touch unrelated untracked docs unless explicitly asked
+- Do not touch unrelated local-only ignored docs unless explicitly asked
 
 Start by giving:
 1. what the app currently is
