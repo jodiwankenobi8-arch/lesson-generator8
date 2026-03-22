@@ -1,10 +1,11 @@
 import React from "react"
-import { useNavigate } from "react-router-dom"
+import {
+  useNavigate } from "react-router-dom"
 import {
   LessonMode,
   RequestedLessonPartKey,
   RequestedOutputKey,
-} from "../engine/types"
+  } from "../engine/types"
 import {
   orchardButtonStyle,
   orchardCardStyle,
@@ -15,6 +16,8 @@ import {
   orchardSectionTitleStyle,
   orchardSoftCardStyle,
   orchardTagStyle,
+  orchardPageShellStyle,
+  orchardHeroCardStyle
 } from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 
@@ -96,11 +99,13 @@ const requestedOutputOptions: RequestOption<RequestedOutputKey>[] = [
 ]
 
 const pageStyle: React.CSSProperties = {
+  ...orchardPageShellStyle,
   maxWidth: 920,
   margin: "0 auto",
 }
 
 const pageIntroStyle: React.CSSProperties = {
+  ...orchardHeroCardStyle,
   ...orchardPageIntroBlockStyle,
 }
 
@@ -633,3 +638,4 @@ function RequestToggleCard({
     </label>
   )
 }
+
