@@ -3,16 +3,16 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 40d192d docs: refresh current truth after Materials upload-type visibility seam push
+- Current published continuation point: d22e7e6 docs: refresh continuation truth after pushed README current-truth summary seam
 - Current validated local state: Materials upload-type visibility is closed on current main and the continuation docs now match the pushed repo truth
 - Current milestone: current-main truth is aligned after the Materials upload-type visibility seam push
-- Current active seam: inspect-first current-main review to choose the next narrow finishing seam
+- Current active seam: refresh active continuation docs after pushed README current-truth summary seam
 
 ## What is actually landed
 - Active product flow remains Inputs -> Materials -> Results
 - Current local branch is main
-- Current local HEAD during this refresh is 40d192d
-- origin/main matched local during this refresh at 40d192d
+- Current local HEAD during this refresh is d22e7e6
+- origin/main matched local during this refresh at d22e7e6
 - Materials intro explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
 - Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
 - npm run typecheck passed for the Materials upload-type visibility seam before this refresh
@@ -34,13 +34,13 @@
 
 ## Latest validation snapshot
 - Live local branch was main during this refresh
-- Live local HEAD was 40d192d during this refresh
-- origin/main matched local at 40d192d during this refresh
+- Live local HEAD was d22e7e6 during this refresh
+- origin/main matched local at d22e7e6 during this refresh
 - Materials upload-type visibility seam is committed and pushed
 - Continuation docs were refreshed after the push so future launches start from current main truth
 
 ## Non-blocking warnings
-- README.md may still lag the active continuation docs
+- README.md current-truth summary was refreshed and pushed at d22e7e6
 - older handoffs that still launch from work/canonical-project-consolidation and 04a9b08 are historical
 - do not reopen the Materials upload-type visibility seam unless live regression evidence appears
 
