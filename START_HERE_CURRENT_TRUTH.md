@@ -2,20 +2,21 @@
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
-- Branch: work/canonical-project-consolidation
-- Current published continuation point: 04a9b08 docs: refresh continuation after intake wording seam
-- Last meaningful code checkpoint: eb5047c copy: align Inputs source-intake wording with usable materials
-- Current milestone: orchard lesson-flow surface system remains landed, and the source-intake wording contract is aligned on usable materials
-- Current active seam: source-intake upload-type visibility inspect
+- Branch: main
+- Current published continuation point: d8fafad current main checkpoint after consolidation fast-forward
+- Current validated local seam: Materials upload-type visibility is now surfaced in MaterialsPage.tsx and both upload inputs use aligned accept values
+- Current milestone: current-main truth is refreshed after consolidation and the upload-type visibility seam is locally landed
+- Current active seam: docs closeout and commit-ready checkpoint for the landed Materials upload-type visibility seam
 
 ## What is actually landed
-- Inputs deliverable copy seam landed at 10c55c6
-- Continuation docs refresh landed at ff4a2d7
-- Inputs source-intake wording seam landed at eb5047c
-- Continuation docs refresh after intake wording seam landed at 04a9b08
-- src/pages/orchardUi.ts exists in the live repo
-- Results uses the newer teacher-first support lanes
 - Active product flow remains Inputs -> Materials -> Results
+- Current local branch is main
+- Current local HEAD during this refresh is d8fafad
+- origin/main matched local during this refresh at d8fafad
+- Materials intro now explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
+- Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
+- npm run typecheck passed after the Materials seam edit
+- src/pages/orchardUi.ts exists on current main
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -31,27 +32,31 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- Live repo HEAD is 04a9b08 on branch work/canonical-project-consolidation
-- Local worktree is clean before this closeout refresh
-- The branch was already pushed with eb5047c and 04a9b08
-- Continue from live repo files and the newest handoff, not older pre-usable-material wording notes
+- Live local branch was main during this refresh
+- Live local HEAD was d8fafad during this refresh
+- origin/main matched local at d8fafad during this refresh
+- Materials upload-type visibility seam was edited and verified locally
+- Verification already completed for this seam:
+  - supported source files copy present in MaterialsPage.tsx
+  - both upload inputs have aligned accept values
+  - npm run typecheck passed
 
 ## Non-blocking warnings
-- README.md may still lag the active continuation docs and should not override this file
-- older Step 3A and earlier source-intake notes are historical once they conflict with live repo truth
-- keep the next seam copy-first unless live inspection shows a real contract mismatch
+- README.md may still lag the active continuation docs
+- older handoffs that still launch from work/canonical-project-consolidation and 04a9b08 are now historical
+- do not reopen the upload-type visibility seam unless live regression evidence appears
 
 ## What to read next
 1. AGENTS.md
 2. PROJECT_CURRENT_STATE.md
 3. docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
 4. newest file in docs/chat-handoffs/
-5. then inspect the actual repo files involved in the next seam
+5. then inspect the actual current-main repo files for the next narrow finishing seam
 
 ## Exact next move
-- current active seam: source-intake upload-type visibility inspect
-- continue from the newest handoff file and live repo files
-- inspect whether Inputs and Materials should explicitly surface the currently supported upload/extraction formats without changing engine behavior
+- Commit and push the landed Materials upload-type visibility seam together with this docs refresh
+- Then do one inspect-first current-main review to choose the next narrow finishing seam
+- Prefer current main repo files over older continuation notes if they conflict
 
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, trust live local git output and live local source files first.

@@ -16,31 +16,32 @@ Anything older or not in that chain should be treated as historical unless expli
 
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
-- Active branch: work/canonical-project-consolidation
-- Current published continuation point: 04a9b08 docs: refresh continuation after intake wording seam
-- Last meaningful code checkpoint: eb5047c copy: align Inputs source-intake wording with usable materials
+- Active branch: main
+- Current published continuation point: d8fafad current main checkpoint after consolidation fast-forward
+- Current validated local seam: Materials upload-type visibility landed locally on main and is ready for commit closeout
 
 ## Current confirmed state
-- Inputs deliverable copy seam landed at 10c55c6
-- Continuation docs refresh landed at ff4a2d7
-- Inputs source-intake wording seam landed at eb5047c
-- Continuation docs refresh after intake wording seam landed at 04a9b08
-- src/pages/orchardUi.ts exists as the shared orchard UI seam
+- Active product flow remains Inputs -> Materials -> Results
+- Current local branch is main
+- Current local HEAD during this refresh is d8fafad
+- origin/main matched local during this refresh at d8fafad
+- Materials intro now explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
+- Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
+- src/pages/orchardUi.ts exists on current main
 - Results uses the newer teacher-first support lane structure
-- the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- npm run typecheck passed for the intake wording seam before the docs refresh
-- the usable-materials wording now matches the actual material trust contract
-- the repo was pushed through 04a9b08
-- orchard foundation is not the next seam
-- do not reopen closed UI/package seams without live regression evidence
+- The Materials upload-type visibility seam was edited and verified locally
+- npm run typecheck passed after the seam edit
+- The seam remained narrow and UI-contract focused
+- Engine behavior was not broadened during this seam
+- The previous continuation docs were stale on work/canonical-project-consolidation and 04a9b08 before this refresh
 
 ## Product truths to preserve
 - curriculum = content authority
 - exemplar = presentation / structure authority
 - orchard / warm storybook / teacher-first direction
-- do not drift into generic SaaS/dashboard styling
+- do not drift into generic SaaS / dashboard styling
 - centers = student-independent work
 - small group / intervention = teacher-led support
 - centers and teacher-led support may coexist during the same lesson block, but they are not the same lane
@@ -54,9 +55,9 @@ Anything older or not in that chain should be treated as historical unless expli
 - useLessonStore remains the orchestration seam
 
 ## Current risks
-- teacher-facing upload-type visibility may still lag the actual extraction contract
 - README.md may still lag the active continuation docs
 - older handoffs can mislaunch work if treated as current
+- the next finishing seam has not yet been re-picked from current main after the consolidation merge
 - do not reopen closed seams unless live regression evidence appears
 
 ## Active execution rule
@@ -65,10 +66,10 @@ Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
 ## Top next steps
-1. Continue from the newest handoff file and live repo files
-2. Treat the next seam as: source-intake upload-type visibility inspect
-3. Inspect whether teacher-facing copy should explicitly surface the currently supported upload/extraction formats
-4. Keep continuation docs authoritative and small
+1. Commit and push the Materials upload-type visibility seam together with this docs refresh
+2. Do one inspect-first current-main review to choose the next narrow finishing seam
+3. Refresh README.md only if it still conflicts with the active continuation docs
+4. Keep the active continuation set small and obvious
 5. Do not let overridden notes compete with the active continuation set
 
 ## Local doc policy
