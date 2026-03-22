@@ -17,7 +17,7 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current published continuation point: 49af196 docs: refresh current truth after 519f65c materials wording seam
+- Current published continuation point: 6ae252b docs: repair continuation doc automation for current schema
 - Last meaningful code checkpoint: 519f65c copy: align materials intake wording with upload-file contract
 ## Current confirmed state
 - Step 1 complete: local truth locked
@@ -40,9 +40,9 @@ Anything older or not in that chain should be treated as historical unless expli
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- current published continuation point is 49af196 docs: refresh current truth after 519f65c materials wording seam
+- current published continuation point is 6ae252b docs: repair continuation doc automation for current schema
 - last meaningful code checkpoint is 519f65c copy: align materials intake wording with upload-file contract
-- npm run typecheck passed for 519f65c; current repo head before this doc repair run was 49af196
+- npm run typecheck passed for 519f65c; doc automation repair pushed at 6ae252b
 - doc refresh was run from branch work/canonical-project-consolidation
 ## Product truths to preserve
 - curriculum = content authority
@@ -86,6 +86,12 @@ Prefer continuation from the newest handoff file to avoid lag and repeated redis
 $11. Continue from the newest handoff file and live repo files
 2. Treat the current active seam as: doc automation compatibility aligned to current continuation schema
 3. review the refreshed docs and newest handoff, then commit and push the automation repair if the diff looks correct
+4. Keep continuation docs authoritative and small
+5. Do not let overridden notes compete with the active continuation set
+## Top next steps
+1. Treat the doc automation seam as closed unless live regression evidence appears
+2. Keep README and continuation docs aligned with current repo truth at 6ae252b
+3. Choose the next smallest real implementation seam from live repo files only
 4. Keep continuation docs authoritative and small
 5. Do not let overridden notes compete with the active continuation set
 ## Local doc policy

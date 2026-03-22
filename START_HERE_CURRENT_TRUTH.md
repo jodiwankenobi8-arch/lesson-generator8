@@ -3,10 +3,10 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current published continuation point: 49af196 docs: refresh current truth after 519f65c materials wording seam
+- Current published continuation point: 6ae252b docs: repair continuation doc automation for current schema
 - Last meaningful code checkpoint: 519f65c copy: align materials intake wording with upload-file contract
 - Current milestone: Step 5 orchard lesson-flow surface system complete for the active teacher flow
-- Current active seam: doc automation compatibility aligned to current continuation schema
+- Current active seam: README and continuation docs aligned after doc automation repair
 ## What is actually landed
 - Step 1 complete: local truth locked
 - Step 2A complete: pipeline boundary backward compatibility restored
@@ -37,9 +37,9 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- current published continuation point is 49af196 docs: refresh current truth after 519f65c materials wording seam
+- current published continuation point is 6ae252b docs: repair continuation doc automation for current schema
 - last meaningful code checkpoint is 519f65c copy: align materials intake wording with upload-file contract
-- npm run typecheck passed for 519f65c; current repo head before this doc repair run was 49af196
+- npm run typecheck passed for 519f65c; doc automation repair pushed at 6ae252b
 - doc refresh was run from branch work/canonical-project-consolidation
 ## Non-blocking warnings
 - Vite build still reports large chunk warnings after minification
@@ -55,9 +55,9 @@
 4. then inspect the actual repo files involved in the next seam
 
 ## Exact next move
-- current active seam: doc automation compatibility aligned to current continuation schema
+- current active seam: README and continuation docs aligned after doc automation repair
 - continue from the newest handoff file and live repo files, not older overridden notes
-- review the refreshed docs and newest handoff, then commit and push the automation repair if the diff looks correct
+- treat the doc automation seam as closed, then choose the next smallest real implementation seam from live repo files only
 ## Retrieval fallback rule
 If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the exact missing file(s) and treat that as higher-trust than older indexed copies.
 

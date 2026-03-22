@@ -53,17 +53,15 @@ The repo already includes:
 - automated generated-artifact Results/export flow coverage through `useLessonStore` plus `downloadExportArtifact`
 
 Current validated checkpoint:
-- **generated-artifact Results/export flow seam pushed at `1fab6c2`**
-- `npm test` passed
-- `npm run build` passed
-- `npm run typecheck` passed
-
+- **last meaningful code checkpoint: `519f65c` copy: align materials intake wording with upload-file contract**
+- `npm run typecheck` passed for `519f65c`
+- **current published continuation point: `6ae252b` docs: repair continuation doc automation for current schema**
+- continuation docs now update through the repaired `scripts/update-project-docs.ps1` workflow
 Current active seam:
-- **docs/status alignment after pushed checkpoint `1fab6c2`**
-- keep README and continuation docs aligned with current repo truth
-- treat any remaining export follow-up as **optional browser/UI-only work**
+- **README and continuation docs aligned after doc automation repair**
+- keep README and continuation docs aligned with current repo truth after `6ae252b`
+- treat the doc automation seam as closed unless live regression evidence appears
 - do not reopen prior closed seams without proof
-
 ## Active documentation chain
 
 For current continuation, use this order:
