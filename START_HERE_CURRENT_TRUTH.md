@@ -1,11 +1,11 @@
-# START_HERE_CURRENT_TRUTH.md
+﻿# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
 - Current published continuation point: b2cc872
-- Current milestone: Step 4 basic-finished closeout is complete
-- Current active seam: refresh doc chain, then inspect the live orchard continuation seam from actual repo files only
+- Current milestone: Step 5 continuation from the live orchard surface already present in the repo
+- Current active seam: Step 5 Results chrome consolidation is landed locally and verified
 
 ## What is actually landed
 - src/pages/orchardUi.ts exists in the live repo
@@ -13,9 +13,10 @@
 - src/pages/ResultsPage.tsx remains the canonical Results surface
 - InputsPage.tsx orchard shell refit is landed
 - MaterialsPage.tsx orchard shell refit is landed
-- request-aware printables package gating is tightened
-- remaining trust/support terminology tests were aligned
-- active product flow remains Inputs -> Materials -> Results
+- ResultsPage.tsx now has a first Results chrome consolidation pass:
+  - helper styles extracted for feedback stack, success notice, section stack, meta list, small note, details grid, and blocked-state title/message
+  - teacher-first package-first hierarchy is preserved
+  - evidence and planning details remain secondary
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -28,11 +29,10 @@
 - materials trust depends on usable materials, not merely ready materials
 
 ## Latest validation snapshot
-- Live local HEAD is b2cc872 on branch main
-- git status was clean before this doc refresh
-- npm run typecheck passed
-- npm run test passed
-- npm run build passed
+- Targeted Results helper/usage inspect passed in live local ResultsPage.tsx
+- npm run typecheck passed after the seam
+- npm run build passed after the seam
+- The full test suite was last known green at pushed checkpoint b2cc872, but was not rerun after this local seam
 - Continue from live repo files and newest handoff, not older notes
 
 ## What to read next
@@ -40,12 +40,11 @@
 2. PROJECT_CURRENT_STATE.md
 3. docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
 4. newest file in docs/chat-handoffs/
-5. then inspect the actual repo files involved in the next seam
+5. then inspect src/pages/ResultsPage.tsx and its local diff
 
 ## Exact next move
-- inspect the live current main repo files for the next narrow Step 5 seam
-- start from existing orchardUi.ts and theme.css, not from a missing-shared-seam assumption
-- inspect first: src/pages/orchardUi.ts, src/styles/theme.css, src/App.tsx, src/pages/ResultsPage.tsx
-- only then choose one narrow continuation seam
-- do not reopen closed request-aware / Results / export seams unless live regression evidence appears
+- inspect the current local diff for src/pages/ResultsPage.tsx
+- either commit/push this seam cleanly, or do one more narrow Results chrome cleanup pass
+- do not reopen closed request-aware / Results / export seams without live regression evidence
 - do not recreate src/pages/orchardUi.ts
+- do not touch unrelated untracked docs unless explicitly asked
