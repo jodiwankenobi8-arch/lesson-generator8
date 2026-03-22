@@ -1,27 +1,20 @@
-# START_HERE_CURRENT_TRUTH.md
+﻿# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: work/canonical-project-consolidation
-- Current published continuation point: 10c55c6 fix: align Inputs deliverable copy with package outputs
-- Last meaningful code checkpoint: 10c55c6 fix: align Inputs deliverable copy with package outputs
-- Current milestone: Step 5 orchard lesson-flow surface system complete for the active teacher flow
-- Current active seam: Step 3A results naming and hierarchy cleanup
+- Current published continuation point: ee9028f fix: align support wording across package outputs
+- Last meaningful code checkpoint: ee9028f fix: align support wording across package outputs
+- Current milestone: orchard lesson-flow surface system is already landed enough for the active teacher flow
+- Current active seam: source-intake contract inspect after continuation-doc refresh
+
 ## What is actually landed
-- Step 1 complete: local truth locked
-- Step 2A complete: pipeline boundary backward compatibility restored
-- Step 2B complete: request-aware contract reconciled and tests green
-- Documentation checkpoint complete
-- Step 3A complete: Results naming and hierarchy cleanup landed
-- Step 3B complete: visible trust-language cleanup across Inputs, Materials, and Results substantially aligned
-- Step 3C complete: traceability and pipeline evidence moved into clearly secondary Results surfaces
-- Step 4A complete: lesson-plan narrative obeys the requested-output contract
-- Step 4B complete: empty optional Results outputs stay hidden unless actually present
-- Step 4C complete: export support wording parity aligned across lesson-plan, printables, DOCX headings, and tests
-- Step 4D complete: generated-artifact Results/export flow guardrail landed through useLessonStore plus downloadExportArtifact
-- Step 5A complete: orchard surface foundation landed through shared orchardUi.ts, real theme tokens, and App shell migration
-- Step 5B complete: Inputs and Materials moved onto the orchard surface system
-- Step 5C complete: Results moved onto orchard-native surfaces while keeping teacher package first and evidence secondary
+- Inputs deliverable copy seam landed at 10c55c6
+- Continuation docs refresh landed at 96a55c2
+- Support-wording package/test seam landed at ee9028f
+- src/pages/orchardUi.ts exists in the live repo
+- Results uses the newer teacher-first support lanes instead of the older Step 3A-prep framing
+- Active product flow remains Inputs -> Materials -> Results
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -37,27 +30,28 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- current published continuation point is 10c55c6 fix: align Inputs deliverable copy with package outputs
-- last meaningful code checkpoint is 10c55c6 fix: align Inputs deliverable copy with package outputs
-- Live repo HEAD is 10c55c6 with a clean worktree. Inputs deliverable copy seam landed locally and npm run typecheck passed.
-- doc refresh was run from branch work/canonical-project-consolidation
+- Live repo HEAD is ee9028f on branch work/canonical-project-consolidation
+- Worktree is clean
+- Local branch is ahead of origin/work/canonical-project-consolidation by 3 commits
+- orchardUi.ts is present in the live repo
+- Results surface uses the newer teacher-first support naming
+
 ## Non-blocking warnings
-- Vite build still reports large chunk warnings after minification
-- SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
-- Vite still reports esbuild/oxc deprecation warnings during some runs
-- README.md may still lag the active continuation docs and should not override START_HERE_CURRENT_TRUTH.md or PROJECT_CURRENT_STATE.md
-- confirm remote state if you need to treat 6e144f5 as the latest pushed checkpoint
+- README.md may still lag the active continuation docs and should not override this file
+- older 10c55c6 handoff/doc snapshots are now historical and should not be treated as the active seam launcher
+- confirm remote push timing before treating ee9028f as the latest pushed checkpoint
 
 ## What to read next
-1. PROJECT_CURRENT_STATE.md
-2. newest file in docs/chat-handoffs/
+1. AGENTS.md
+2. PROJECT_CURRENT_STATE.md
 3. docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
-4. then inspect the actual repo files involved in the next seam
+4. newest file in docs/chat-handoffs/
+5. then inspect the actual repo files involved in the next seam
 
 ## Exact next move
-- current active seam: Step 3A results naming and hierarchy cleanup
-- continue from the newest handoff file and live repo files, not older overridden notes
-- Inspect the current Results/package wording surface and land the narrowest Results naming and hierarchy cleanup seam.
-## Retrieval fallback rule
-If connector retrieval is incomplete or stale, ask for one local inspect-first paste for the exact missing file(s) and treat that as higher-trust than older indexed copies.
+- current active seam: source-intake contract inspect
+- continue from the newest handoff file and live repo files, not the older Step 3A launcher
+- inspect the current source-intake surface first before changing behavior
 
+## Retrieval fallback rule
+If connector retrieval is incomplete or stale, trust live local git output and live local source files first.

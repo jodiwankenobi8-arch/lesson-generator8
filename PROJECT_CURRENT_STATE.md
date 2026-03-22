@@ -1,6 +1,6 @@
-# PROJECT_CURRENT_STATE
+﻿# PROJECT_CURRENT_STATE
 
-Last refreshed: 2026-03-21
+Last refreshed: 2026-03-22
 
 ## Purpose
 This file is the current project status board for active work.
@@ -17,33 +17,24 @@ Anything older or not in that chain should be treated as historical unless expli
 ## Repo and branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Active branch: work/canonical-project-consolidation
-- Current published continuation point: 10c55c6 fix: align Inputs deliverable copy with package outputs
-- Last meaningful code checkpoint: 10c55c6 fix: align Inputs deliverable copy with package outputs
+- Current published continuation point: ee9028f fix: align support wording across package outputs
+- Last meaningful code checkpoint: ee9028f fix: align support wording across package outputs
+
 ## Current confirmed state
-- Step 1 complete: local truth locked
-- Step 2A complete: pipeline boundary backward compatibility restored
-- Step 2B complete: request-aware contract reconciled and tests green
-- Documentation checkpoint complete
-- Step 3A complete: Results naming and hierarchy cleanup landed
-- Step 3B complete: visible trust-language cleanup across Inputs, Materials, and Results substantially aligned
-- Step 3C complete: secondary evidence grouping landed in Results
-- Step 4A complete: lesson-plan narrative / export contract alignment landed
-- Step 4B complete: Results output visibility contract alignment landed
-- Step 4C complete: export support wording parity alignment landed
-- Step 4D complete: generated-artifact Results/export flow has committed automated guardrail coverage through useLessonStore plus downloadExportArtifact
-- Step 5A complete: orchard surface foundation landed
-- Step 5B complete: Inputs and Materials translated onto the shared orchard surface system
-- Step 5C complete: Results translated onto orchard-native surfaces while keeping teacher package first and evidence secondary
-- src/pages/orchardUi.ts now exists as the shared orchard UI seam
-- src/styles/theme.css now holds the orchard token / surface layer for the active lesson flow
-- src/App.tsx now uses the shared orchard shell
+- Inputs deliverable copy seam landed at 10c55c6
+- Continuation docs refresh landed at 96a55c2
+- Support-wording package/test seam landed at ee9028f
+- src/pages/orchardUi.ts exists as the shared orchard UI seam
+- Results uses the newer teacher-first support lane structure
 - the active product flow remains Inputs -> Materials -> Results
 
 ## Validated state
-- current published continuation point is 10c55c6 fix: align Inputs deliverable copy with package outputs
-- last meaningful code checkpoint is 10c55c6 fix: align Inputs deliverable copy with package outputs
-- Live repo HEAD is 10c55c6 with a clean worktree. Inputs deliverable copy seam landed locally and npm run typecheck passed.
-- doc refresh was run from branch work/canonical-project-consolidation
+- Live repo HEAD is ee9028f
+- Live worktree is clean
+- Local branch is ahead of origin/work/canonical-project-consolidation by 3 commits
+- orchard foundation is not the next missing seam
+- older 10c55c6 continuation docs and the Step 3A launcher are stale relative to live HEAD
+
 ## Product truths to preserve
 - curriculum = content authority
 - exemplar = presentation / structure authority
@@ -61,39 +52,24 @@ Anything older or not in that chain should be treated as historical unless expli
 - Engine flow: extraction -> analysis -> blueprint -> planning -> spec -> package -> results
 - useLessonStore remains the orchestration seam
 
-## What the latest seam changed
-- created src/pages/orchardUi.ts as the shared orchard helper layer
-- expanded src/styles/theme.css from starter tokens into the real orchard token / surface system
-- moved src/App.tsx onto the shared orchard shell
-- translated Inputs into the orchard planning-notebook surface language
-- translated Materials into orchard-native source-workbench language, including multi-source wording and removal of blue/purple accent remnants
-- translated Results into an orchard planning-binder surface while keeping teacher package first and evidence secondary
-- preserved existing flow and compile safety through the orchard lesson-flow pass
-
 ## Current risks
-- confirm remote push status for 6e144f5 before treating it as the latest pushed checkpoint
-- README.md may still lag the active continuation docs and should not be used as the continuation authority
-- Vite build still reports large chunk warnings after minification
-- SSR-style useLayoutEffect warnings still appear in some route tests, but the suite passes
-- dashboard/mockup specs from earlier chats should be treated as donor guidance only; they are not current repo truth and must not override live file inspection
-- the next seam is not automatically dashboard work, because no dashboard route/file currently exists under src in this working repo
+- remote still does not include the latest 3 local commits
+- README.md may still lag the active continuation docs
+- older handoffs can mislaunch work if treated as current
+- do not reopen closed seams unless live regression evidence appears
 
 ## Active execution rule
 Do not reopen prior closed seams unless live inspection finds a real regression.
 Choose the next seam from current repo state and keep it narrow.
 Prefer continuation from the newest handoff file to avoid lag and repeated rediscovery.
 
-$11. Continue from the newest handoff file and live repo files
-2. Treat the current active seam as: Core deliverable toggle copy seam identified: slides and lesson plan should be treated as always-included core outputs, not optional deliverable toggles in Inputs.
-3. Inspect and land the smallest copy-only Inputs seam that removes slides and lesson plan from optional deliverable toggles while preserving current engine behavior.
-4. Keep continuation docs authoritative and small
-5. Do not let overridden notes compete with the active continuation set
 ## Top next steps
 1. Continue from the newest handoff file and live repo files
-2. Treat the current active seam as: Step 3A results naming and hierarchy cleanup
-3. Inspect the current Results/package wording surface and land the narrowest Results naming and hierarchy cleanup seam.
+2. Treat the next seam as: source-intake contract inspect
+3. Inspect the current source-intake entrypoints, accepted file types, extraction path, and trust surfaces before changing behavior
 4. Keep continuation docs authoritative and small
 5. Do not let overridden notes compete with the active continuation set
+
 ## Local doc policy
 The active local doc set should stay small and obvious:
 - AGENTS.md
@@ -101,5 +77,3 @@ The active local doc set should stay small and obvious:
 - PROJECT_CURRENT_STATE.md
 - README.md
 - current relevant docs/chat-handoffs/*
-
-Older docs that are no longer referenced and no longer authoritative should be removed from the local working set and preserved through Git history rather than kept as apparently-live guidance.
