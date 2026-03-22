@@ -1,19 +1,21 @@
-﻿# START_HERE_CURRENT_TRUTH.md
+# START_HERE_CURRENT_TRUTH.md
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: f8444b4
-- Current milestone: Inputs + Materials orchard shell seam is closed
-- Current active seam: choose the next narrow seam from live repo state only
+- Current published continuation point: b2cc872
+- Current milestone: Step 4 basic-finished closeout is complete
+- Current active seam: refresh doc chain, then inspect the live orchard continuation seam from actual repo files only
 
 ## What is actually landed
 - src/pages/orchardUi.ts exists in the live repo
 - src/styles/theme.css contains orchard token coverage
-- src/pages/ResultsPage.tsx is the canonical Results surface
+- src/pages/ResultsPage.tsx remains the canonical Results surface
 - InputsPage.tsx orchard shell refit is landed
 - MaterialsPage.tsx orchard shell refit is landed
-- Active product flow remains Inputs -> Materials -> Results
+- request-aware printables package gating is tightened
+- remaining trust/support terminology tests were aligned
+- active product flow remains Inputs -> Materials -> Results
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -26,8 +28,11 @@
 - materials trust depends on usable materials, not merely ready materials
 
 ## Latest validation snapshot
-- Live local HEAD is f8444b4 on branch main
-- npm run typecheck passed during closeout
+- Live local HEAD is b2cc872 on branch main
+- git status was clean before this doc refresh
+- npm run typecheck passed
+- npm run test passed
+- npm run build passed
 - Continue from live repo files and newest handoff, not older notes
 
 ## What to read next
@@ -38,6 +43,9 @@
 5. then inspect the actual repo files involved in the next seam
 
 ## Exact next move
-- inspect live current main/working branch state
-- identify the next narrow finishing seam from actual repo files
-- do not reopen closed orchard shell seams unless live regression evidence appears
+- inspect the live current main repo files for the next narrow Step 5 seam
+- start from existing orchardUi.ts and theme.css, not from a missing-shared-seam assumption
+- inspect first: src/pages/orchardUi.ts, src/styles/theme.css, src/App.tsx, src/pages/ResultsPage.tsx
+- only then choose one narrow continuation seam
+- do not reopen closed request-aware / Results / export seams unless live regression evidence appears
+- do not recreate src/pages/orchardUi.ts
