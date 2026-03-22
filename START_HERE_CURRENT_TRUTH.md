@@ -3,16 +3,16 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: df8b4d0 docs: repair active continuation truth after pushed Inputs optional-support docs closeout seam
+- Current published continuation point: 1408023 copy: align Materials teacher-facing terminology with the usable-materials contract
 - Current validated local state: Materials upload-type visibility is closed on current main and the continuation docs now match the pushed repo truth
 - Current milestone: current-main truth is aligned after the Materials upload-type visibility seam push
-- Current active seam: inspect current main after pushed Inputs optional-support docs closeout seam to choose the next narrow finishing seam
+- Current active seam: inspect current main after pushed Materials terminology seam and docs closeout to choose the next narrow finishing seam
 
 ## What is actually landed
 - Active product flow remains Inputs -> Materials -> Results
 - Current local branch is main
-- Current local HEAD during this refresh is df8b4d0
-- origin/main matched local during this refresh at df8b4d0
+- Current local HEAD during the Materials terminology seam refresh was 1408023 before this docs closeout commit
+- origin/main matched local during the Materials terminology seam refresh at 1408023 before this docs closeout commit
 - Materials intro explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
 - Both Materials upload inputs now use accept=".txt,.pdf,.docx,.pptx,.html,.htm"
 - npm run typecheck passed for the Materials upload-type visibility seam before this refresh
@@ -34,13 +34,13 @@
 
 ## Latest validation snapshot
 - Live local branch was main during this refresh
-- Live local HEAD was df8b4d0 during this refresh
-- origin/main matched local at df8b4d0 during this refresh
+- Live local HEAD was 1408023 during the Materials terminology seam refresh before this docs closeout commit
+- origin/main matched local at 1408023 during the Materials terminology seam refresh before this docs closeout commit
 - Materials upload-type visibility seam is committed and pushed
 - Continuation docs were refreshed after the push so future launches start from current main truth
 
 ## Non-blocking warnings
-- README.md current-truth summary was refreshed and pushed at d22e7e6, Inputs terminology alignment was pushed at f7bd493, Results blocked-state terminology alignment was pushed at 9e4e457, Inputs optional-support terminology alignment was pushed at cd666f8, and Inputs optional-support docs closeout was pushed at df8b4d0
+- README.md current-truth summary was refreshed and pushed at d22e7e6, Inputs terminology alignment was pushed at f7bd493, Results blocked-state terminology alignment was pushed at 9e4e457, Inputs optional-support terminology alignment was pushed at cd666f8, Inputs optional-support docs closeout was pushed at df8b4d0, and Materials terminology alignment was pushed at 1408023
 - older handoffs that still launch from work/canonical-project-consolidation and 04a9b08 are historical
 - do not reopen the Materials upload-type visibility seam unless live regression evidence appears
 
