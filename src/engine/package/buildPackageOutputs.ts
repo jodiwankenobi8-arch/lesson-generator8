@@ -80,14 +80,27 @@ export function buildPackageOutputs(args: {
     ? buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions)
     : []
   const rotationPlan =
-    includeCentersOutput || includeSmallGroupOutput
+    includeSmallGroupOutput
       ? buildRotationPlan(
           blueprint,
           centers,
           planningIdeas,
-          missingAreaDecisions
+          missingAreaDecisions,
+          {
+            includeTeacherLedSupport: true,
+          }
         )
-      : ""
+      : includeCentersOutput && centers.length > 0
+        ? buildRotationPlan(
+            blueprint,
+            centers,
+            planningIdeas,
+            missingAreaDecisions,
+            {
+              includeTeacherLedSupport: false,
+            }
+          )
+        : ""
   const interventions = includeInterventionOutput
     ? buildInterventions(
         blueprint,
@@ -215,12 +228,16 @@ function buildLessonPlan(
     : ""
 
   const centersBlock = includeCentersOutput
-    ? buildSectionNarrativeBlock(spec.centers.title, [
-        `Rotation Focus: ${joinOrFallback(
-          planningIdeas?.centerIdeas.map((idea) => idea.title).slice(0, 3) ?? [],
-          "student-independent practice, partner practice, independent application"
-        )}`,
-      ], spec.centers.steps)
+    ? buildSectionNarrativeBlock(
+        spec.centers.title,
+        [
+          `Rotation Focus: ${joinOrFallback(
+            planningIdeas?.centerIdeas.map((idea) => idea.title).slice(0, 3) ?? [],
+            "student-independent practice, partner practice, independent application"
+          )}`,
+        ],
+        resolveCenterNarrativeSteps(spec)
+      )
     : ""
 
   const closureBlock = isLessonPlanPartSelected(outputContents, "closure")
@@ -542,15 +559,28 @@ function buildRotationPlan(
   blueprint: LessonBlueprint,
   centers: string[],
   planningIdeas?: LessonPlanningIdeas,
-  missingAreaDecisions: MissingAreaDecisionMap = {}
+  missingAreaDecisions: MissingAreaDecisionMap = {},
+  options: {
+    includeTeacherLedSupport: boolean
+  } = {
+    includeTeacherLedSupport: true,
+  }
 ): string {
+  const rotationLines = centers.map(
+    (center, index) => `Rotation ${index + 1}: ${center}`
+  )
+
+  if (!options.includeTeacherLedSupport) {
+    return rotationLines.join("\n")
+  }
+
   const smallGroupLine = resolveTeacherTableLine(
     blueprint,
     planningIdeas,
     missingAreaDecisions
   )
 
-  if (centers.length === 0) {
+  if (rotationLines.length === 0) {
     return [
       "No centers defined.",
       smallGroupLine,
@@ -558,7 +588,7 @@ function buildRotationPlan(
   }
 
   return [
-    ...centers.map((center, index) => `Rotation ${index + 1}: ${center}`),
+    ...rotationLines,
     smallGroupLine,
   ].join("\n")
 }
@@ -589,10 +619,10 @@ function buildGroundedCenterDefaults(
   const labels = resolveCenterLabels(
     spec,
     isMixed
-      ? ["Word work center", "Reading response center", "Teacher support center"]
+      ? ["Word work center", "Reading response center", "Vocabulary connection center"]
       : primary === "phonics"
-        ? ["Word work center", "Partner practice center", "Teacher support center"]
-        : ["Reading response center", "Partner discussion center", "Teacher support center"]
+        ? ["Word work center", "Partner practice center", "Independent practice center"]
+        : ["Reading response center", "Partner discussion center", "Independent response center"]
   )
 
   if (isMixed) {
@@ -622,10 +652,10 @@ function buildGroundedCenterDefaults(
         blueprint,
         "partner decoding and word reading"
       )}.`,
-      `${labels[2]}: Reteach the target phonics pattern with ${selectWordListFocus(
+      `${labels[2]}: Reinforce the target phonics pattern with ${selectWordListFocus(
         blueprint,
         "target words"
-      )}.`,
+      )} during independent review.`,
     ]
   }
 
@@ -848,12 +878,48 @@ function buildDefaultTeacherTableLine(blueprint: LessonBlueprint): string {
 }
 
 function resolveCenterLabels(spec: LessonSpec, fallbackLabels: string[]): string[] {
-  const rawLabels = takeClean(spec.centers.steps, 3).map((item) => {
-    const lower = item.toLowerCase()
-    return lower.includes("center") || lower.includes("table") ? item : ""
-  })
+  const rawLabels = takeClean(spec.centers.steps, 6)
+    .filter(isStudentIndependentCenterLine)
+    .map((item) => {
+      const lower = item.toLowerCase()
+      return lower.includes("center") ? item : ""
+    })
+    .filter(Boolean)
+    .slice(0, 3)
 
   return fallbackLabels.map((defaultLabel, index) => rawLabels[index] || defaultLabel)
+}
+
+function resolveCenterNarrativeSteps(spec: LessonSpec): string[] {
+  const studentIndependentSteps = takeClean(spec.centers.steps, spec.centers.steps.length)
+    .filter(isStudentIndependentCenterLine)
+
+  if (studentIndependentSteps.length > 0) {
+    return studentIndependentSteps
+  }
+
+  return [
+    "Set up student-independent center expectations.",
+    "Rotate students through the selected center tasks.",
+  ]
+}
+
+function isStudentIndependentCenterLine(line: string): boolean {
+  const lower = line.toLowerCase()
+
+  return !(
+    lower.includes("teacher") ||
+    lower.includes("small group") ||
+    lower.includes("small-group") ||
+    lower.includes("intervention") ||
+    lower.includes("reteach") ||
+    lower.includes("guided group") ||
+    lower.includes("teacher-led") ||
+    lower.includes("teacher led") ||
+    lower.includes("support /") ||
+    lower.includes("support center") ||
+    lower.includes("teacher table")
+  )
 }
 
 function selectWordListFocus(blueprint: LessonBlueprint, fallback: string): string {

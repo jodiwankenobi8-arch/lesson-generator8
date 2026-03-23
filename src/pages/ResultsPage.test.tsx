@@ -219,6 +219,9 @@ describe("Results explainability rendering contracts", () => {
     expect(centerRotationIndex).toBeGreaterThan(studentCentersIndex)
 
     expect(source).toContain('Teacher-facing lesson package first.')
+    expect(source).toContain('Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.')
+    expect(source).toContain('Download Package ZIP')
+    expect(source).not.toContain('Download Full Package ZIP')
     expect(source).toContain('Lesson Evidence and Planning Details')
     expect(source).toContain('<summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>')
     expect(source).toContain('<SecondaryEvidenceSection')
@@ -590,7 +593,7 @@ describe("Results export format labels", () => {
     })
 
     expect(getArtifactButtonLabel(zipArtifact)).toBe("Download ZIP")
-    expect(getArtifactDescription(zipArtifact)).toContain("ZIP file")
+    expect(getArtifactDescription(zipArtifact)).toContain("current generated artifacts")
 
     expect(getArtifactButtonLabel(docxArtifact)).toBe("Download DOCX")
     expect(getArtifactDescription(docxArtifact)).toContain("DOCX lesson plan")
