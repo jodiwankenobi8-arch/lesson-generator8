@@ -298,7 +298,7 @@ describe("buildPackageOutputs", () => {
     expect(result.centers).toEqual([
       "Word sort center: Sort, read, and revisit cake, game, same, late.",
       "Partner reading center: Use this practice: Read the word list aloud.",
-      "Teacher support center: Reteach the target phonics pattern with cake, game, same, late.",
+      "Independent practice center: Reinforce the target phonics pattern with cake, game, same, late during independent review.",
     ])
     expect(result.rotationPlan).toContain(
       "Rotation 1: Word sort center: Sort, read, and revisit cake, game, same, late."
@@ -431,3 +431,4 @@ describe("buildPackageOutputs", () => {
     })
   })
 })
+

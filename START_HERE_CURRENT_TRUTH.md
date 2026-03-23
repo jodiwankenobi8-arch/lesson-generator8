@@ -2,9 +2,10 @@
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 3b89acb
-- Current milestone: export/package contract expansion from a green hardening checkpoint
-- Current active seam: post-export verification + continuation-doc refresh, then next trust/polish seam selection
+- Current published continuation point: b6f8986
+- Current local checkpoint: uncommitted green working tree on top of b6f8986
+- Current milestone: export/package contract expansion is landed; narrow lane-separation hardening and Results export wording refinement are validated locally
+- Current active seam: quick browser/manual Results smoke check, then commit/push and choose the next seam intentionally
 
 ## What is actually landed
 - orchard shell direction is already present in the live repo
@@ -15,9 +16,21 @@
   - printables -> PDF
   - slides -> PPTX
   - full package -> ZIP
-- export routing tests, package-output tests, request-aware tests, typecheck, test, and build are green at this checkpoint
+- package outputs are now hardened so T1 centers remain student-independent in package outputs
+- Results export wording is now calmer and more precise about actual ZIP/export behavior
+- local validation is green at this checkpoint:
+  - typecheck PASS
+  - test PASS (24 files / 118 tests)
+  - build PASS
+
+## What is still true
+- large build-chunk warnings still remain, especially around ResultsPage / office / pdf
+- browser/manual confirmation of the Results export surface is still not yet recorded after this narrow pass
+- do not return to Step 6A as the active seam
+- choose the next seam intentionally after the Results smoke check and checkpoint push
 
 ## Best next move
-- do a quick browser/manual smoke check on Results export buttons and ZIP flow
+- do a quick browser/manual smoke check on Results export buttons and ZIP/export wording
+- commit and push this narrow pass
 - use the refreshed handoff as the primary continuation launcher
 - then choose the next seam intentionally instead of returning to Step 6A

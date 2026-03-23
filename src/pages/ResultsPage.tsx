@@ -219,7 +219,7 @@ export default function ResultsPage() {
       </h2>
       <div style={pageIntroStyle}>
         <p style={introStyle}>
-          Teacher-facing lesson package first. Review the generated package, confirm standards and source support, and export only the pieces you want to use.
+          Teacher-facing lesson package first. Review the generated package, confirm standards and source support, and export only the artifacts you want to use.
         </p>
         <p style={introStyle}>
           Evidence and planning details stay available below as secondary review surfaces when you need to inspect grounding more closely.
@@ -1153,7 +1153,7 @@ export function getArtifactButtonLabel(artifact: ExportArtifact): string {
 
 export function getArtifactDescription(artifact: ExportArtifact): string {
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) {
-    return "This export bundles the full lesson package into a ZIP file."
+    return "This export bundles the current generated artifacts into a ZIP file."
   }
 
   if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) {
@@ -1201,7 +1201,7 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Exports</h3>
       <p style={{ color: "var(--text-secondary)", margin: "0 0 var(--space-sm) 0" }}>
-        Download the full package as a ZIP file, or export each generated area in its classroom-ready format.
+        Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.
       </p>
 
       {fullPackageArtifact ? (
@@ -1215,7 +1215,7 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
               fontWeight: 700,
             }}
           >
-            Download Full Package ZIP
+            Download Package ZIP
           </button>
         </div>
       ) : null}
