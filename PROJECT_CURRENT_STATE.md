@@ -1,5 +1,12 @@
 # PROJECT CURRENT STATE
 
+## Auto-sync status
+<!-- AUTO_SYNC_START -->
+- Published main checkpoint: a893cb0
+- Last auto-sync UTC: 2026-03-23T17:53:08Z
+- Manual/browser verification notes must still be updated by hand.
+<!-- AUTO_SYNC_END -->
+
 ## What is done
 - export/package contract expansion is landed
 - Results exports now support DOCX / PDF / PPTX / ZIP
