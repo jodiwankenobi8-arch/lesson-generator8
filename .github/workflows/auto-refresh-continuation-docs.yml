@@ -1,0 +1,141 @@
+name: Auto-refresh continuation docs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-refresh-continuation-docs
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip auto-docs]')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Refresh continuation docs
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import datetime
+          import os
+          import re
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          branch = os.environ["GITHUB_REF_NAME"]
+          sha = os.environ["GITHUB_SHA"][:7]
+          utc_now = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+
+          start_here_path = Path("START_HERE_CURRENT_TRUTH.md")
+          project_state_path = Path("PROJECT_CURRENT_STATE.md")
+          handoff_dir = Path("docs/chat-handoffs")
+          handoff_dir.mkdir(parents=True, exist_ok=True)
+          handoff_path = handoff_dir / "LATEST_AUTO_SYNC.md"
+
+          auto_block = (
+              "## Auto-sync status\n"
+              "<!-- AUTO_SYNC_START -->\n"
+              f"- Published main checkpoint: {sha}\n"
+              f"- Last auto-sync UTC: {utc_now}\n"
+              "- Manual/browser verification notes must still be updated by hand.\n"
+              "<!-- AUTO_SYNC_END -->\n"
+          )
+
+          def upsert_auto_block(text: str) -> str:
+              pattern = r"(?s)## Auto-sync status\s*<!-- AUTO_SYNC_START -->.*?<!-- AUTO_SYNC_END -->\n?"
+              if re.search(pattern, text):
+                  return re.sub(pattern, auto_block, text).rstrip() + "\n"
+              lines = text.splitlines()
+              if not lines:
+                  return auto_block
+              head = lines[0]
+              tail = "\n".join(lines[1:]).lstrip("\n")
+              merged = f"{head}\n\n{auto_block}\n"
+              if tail:
+                  merged += tail.rstrip() + "\n"
+              return merged
+
+          if start_here_path.exists():
+              start_here = start_here_path.read_text(encoding="utf-8")
+          else:
+              start_here = "# START HERE - CURRENT TRUTH\n"
+
+          start_here = re.sub(
+              r"(?m)^- Current published continuation point: .*$",
+              f"- Current published continuation point: {sha}",
+              start_here,
+          )
+
+          start_here = re.sub(
+              r"(?m)^- Current local checkpoint: .*\n?",
+              "",
+              start_here,
+          )
+
+          if "- Current published continuation point:" not in start_here:
+              start_here = start_here.replace(
+                  "# START HERE - CURRENT TRUTH",
+                  "# START HERE - CURRENT TRUTH\n\n- Current published continuation point: " + sha,
+                  1,
+              )
+
+          start_here = upsert_auto_block(start_here)
+          start_here_path.write_text(start_here, encoding="utf-8")
+
+          if project_state_path.exists():
+              project_state = project_state_path.read_text(encoding="utf-8")
+          else:
+              project_state = "# PROJECT CURRENT STATE\n"
+
+          project_state = project_state.replace(
+              "- this narrow pass is not yet committed/pushed",
+              "- latest published checkpoint is now on main",
+          )
+          project_state = project_state.replace(
+              "- next seam selection is still pending after this checkpoint is pushed",
+              "- next seam selection is still pending after checkpoint closeout",
+          )
+
+          project_state = upsert_auto_block(project_state)
+          project_state_path.write_text(project_state, encoding="utf-8")
+
+          handoff = (
+              "# LATEST AUTO SYNC\n\n"
+              f"- Repo: {repo}\n"
+              f"- Branch: {branch}\n"
+              f"- Published checkpoint: {sha}\n"
+              f"- Last auto-sync UTC: {utc_now}\n\n"
+              "## What this file is\n"
+              "- This is an auto-generated continuation sync file.\n"
+              "- It exists to keep the active continuation set aligned to the published checkpoint after each push.\n"
+              "- It does not replace human-written seam handoffs.\n"
+              "- Manual/browser verification results must still be recorded by hand.\n"
+          )
+          handoff_path.write_text(handoff, encoding="utf-8")
+          PY
+
+      - name: Commit and push if docs changed
+        shell: bash
+        run: |
+          if git diff --quiet -- START_HERE_CURRENT_TRUTH.md PROJECT_CURRENT_STATE.md docs/chat-handoffs/LATEST_AUTO_SYNC.md; then
+            echo "No continuation doc changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add START_HERE_CURRENT_TRUTH.md PROJECT_CURRENT_STATE.md docs/chat-handoffs/LATEST_AUTO_SYNC.md
+          git commit -m "auto-refresh continuation docs [skip auto-docs]"
+          git push
