@@ -2,40 +2,48 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: a27c9bd
-- Last auto-sync UTC: 2026-03-23T19:49:50Z
+- Published main checkpoint: beba70d
+- Last auto-sync UTC: 2026-03-23T20:03:13Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: a27c9bd
-- Current milestone: export/package contract expansion is landed; narrow lane-separation hardening and Results export wording refinement are now published on main
-- Current active seam: quick browser/manual Results smoke check, then choose the next seam intentionally
+- Current published continuation point: beba70d
+- Current milestone: results package truth hardening and lazy export loading are landed on main
+- Current active seam: documentation reset is the current closeout step; after that, do one quick browser/manual Results recheck and then choose the next seam intentionally
 
 ## What is actually landed
 - orchard shell direction is already present in the live repo
 - unified outputContents seam is already complete
 - request-aware planning/package flow is already complete
+- Results export builders are now lazy-loaded instead of eager-loaded at the page/package seam
+- teacher package truth is tighter in Results
+- missing-area decision prompt text no longer leaks into teacher-facing package sections
+- Results now separates:
+  - Teacher-Led Support
+  - Intervention Support
+- Teacher-Led Support count now comes from the teacher-support rotation/support line instead of intervention count
 - Results now supports format-aware exports:
   - lesson plan -> DOCX
   - printables -> PDF
   - slides -> PPTX
   - full package -> ZIP
-- package outputs are now hardened so T1 centers remain student-independent in package outputs
-- Results export wording is now calmer and more precise about actual ZIP/export behavior
 - local validation is green at this checkpoint:
   - typecheck PASS
   - test PASS (24 files / 118 tests)
   - build PASS
 
 ## What is still true
-- large build-chunk warnings still remain, especially around ResultsPage / office / pdf
-- browser/manual confirmation of the Results export surface is still not yet recorded after this narrow pass
+- large build-chunk warnings still remain, especially around office and pdf
+- browser/manual confirmation after the final results-truth fix is still not yet recorded in docs
 - do not return to Step 6A as the active seam
-- choose the next seam intentionally after the Results smoke check
+- the export seam is no longer the main issue; the upstream package/results truth seam was the real leak and that narrow repair is now landed
 
 ## Best next move
-- do a quick browser/manual smoke check on Results export buttons and ZIP/export wording
-- use this refreshed truth + handoff as the continuation launcher
+- finish the continuation-doc reset using this truth doc, PROJECT_CURRENT_STATE.md, and the latest handoff
+- do one quick browser/manual Results recheck:
+  - no High-priority decision lines in teacher package sections
+  - Teacher-Led Support and Intervention Support render separately
+  - export buttons still work
 - then choose the next seam intentionally instead of returning to Step 6A
