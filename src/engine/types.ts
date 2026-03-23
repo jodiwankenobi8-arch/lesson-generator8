@@ -1179,23 +1179,21 @@ export type LessonPackageReadiness = {
 
 
 
-export type ExportArtifactKind = "slides" | "lesson_plan" | "printables"
+export type ExportArtifactKind = "slides" | "lesson_plan" | "printables" | "full_package"
 
-
+export type ExportArtifactFormat = "docx" | "pdf" | "pptx" | "zip"
 
 export type ExportArtifactStatus = "ready"
 
-
-
 export type ExportArtifact = {
   kind: ExportArtifactKind
+  format: ExportArtifactFormat
   label: string
   fileName: string
   mimeType?: string
+  status?: ExportArtifactStatus
   content?: string
 }
-
-
 
 export type LessonPackage = {
 

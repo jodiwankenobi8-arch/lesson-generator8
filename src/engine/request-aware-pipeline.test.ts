@@ -203,6 +203,7 @@ describe("outputContents-aware package outputs", () => {
     expect(result.rotationPlan).toBe("")
     expect(result.interventions).toEqual([])
     expect(result.exports.map((artifact) => artifact.kind)).toEqual([
+      "full_package",
       "slides",
       "lesson_plan",
     ])
@@ -239,6 +240,7 @@ describe("outputContents-aware package outputs", () => {
       "Phonics Reteach: Practice decoding with teacher support.",
     ])
     expect(result.exports.map((artifact) => artifact.kind)).toEqual([
+      "full_package",
       "slides",
       "lesson_plan",
       "printables",
@@ -268,6 +270,7 @@ describe("outputContents-aware package outputs", () => {
     expect(result.lessonPlan).not.toContain("Teacher-Led Support")
     expect(result.lessonPlan).not.toContain("Intervention Support")
     expect(result.exports.map((artifact) => artifact.kind)).toEqual([
+      "full_package",
       "slides",
       "lesson_plan",
       "printables",

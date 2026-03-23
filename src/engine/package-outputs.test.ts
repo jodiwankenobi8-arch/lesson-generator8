@@ -210,15 +210,25 @@ describe("buildPackageOutputs", () => {
     ])
     expect(result.exports).toEqual([
       {
+        kind: "full_package",
+        label: "Full Lesson Package",
+        format: "zip",
+        fileName: "ELA-full-lesson-package.zip",
+        mimeType: "application/zip",
+        content: expect.stringContaining("Blueprint Readiness"),
+      },
+      {
         kind: "slides",
         label: "Slides Export",
-        fileName: "ELA-slides-export.txt",
-        mimeType: "text/plain;charset=utf-8",
+        fileName: "ELA-slides-export.pptx",
+        format: "pptx",
+        mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         content: expect.stringContaining("Slides Export"),
       },
       {
         kind: "lesson_plan",
         label: "Lesson Plan Export",
+        format: "docx",
         fileName: "ELA-lesson-plan-export.docx",
         mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         content: expect.stringContaining("Blueprint Readiness"),
@@ -226,8 +236,9 @@ describe("buildPackageOutputs", () => {
       {
         kind: "printables",
         label: "Printables Export",
-        fileName: "ELA-printables-export.txt",
-        mimeType: "text/plain;charset=utf-8",
+        fileName: "ELA-printables-export.pdf",
+        format: "pdf",
+        mimeType: "application/pdf",
         content: expect.stringContaining("Centers"),
       },
     ])
@@ -258,7 +269,7 @@ describe("buildPackageOutputs", () => {
     expect(result.centers).toEqual([])
     expect(result.rotationPlan).toBe("")
     expect(result.interventions).toEqual([])
-    expect(result.exports.map((artifact) => artifact.kind)).toEqual(["slides", "lesson_plan"])
+    expect(result.exports.map((artifact) => artifact.kind)).toEqual(["full_package", "slides", "lesson_plan"])
     expect(result.exports[1].content).not.toContain("Rotation Focus:")
     expect(result.exports[1].content).not.toContain("Teacher-Led Support")
     expect(result.exports[1].content).not.toContain("Intervention Support")
@@ -367,6 +378,7 @@ describe("buildPackageOutputs", () => {
     expect(result.rotationPlan).toBe("")
     expect(result.interventions).toEqual([])
     expect(result.exports.map((artifact) => artifact.kind)).toEqual([
+      "full_package",
       "slides",
       "lesson_plan",
       "printables",
