@@ -148,7 +148,7 @@ function makePlanningIdeas(overrides: Partial<LessonPlanningIdeas> = {}): Lesson
 }
 
 describe("buildLessonSpec", () => {
-  it("surfaces missing-area decision lines in guided, independent, closure, and centers sections", () => {
+  it("keeps missing-area decision prompts out of the teacher package sections", () => {
     const spec = buildLessonSpec(
       makeBlueprint(),
       makePlanningIdeas({
@@ -199,25 +199,25 @@ describe("buildLessonSpec", () => {
       })
     )
 
-    expect(spec.guidedPractice.steps.join(" ")).toContain(
+    expect(spec.guidedPractice.steps.join(" ")).not.toContain(
       "High-priority decision: Add a scaffolded guided-practice block?"
     )
-    expect(spec.independentPractice.steps.join(" ")).toContain(
+    expect(spec.independentPractice.steps.join(" ")).not.toContain(
       "High-priority decision: Add an independent application task?"
     )
-    expect(spec.closure.steps.join(" ")).toContain(
+    expect(spec.closure.steps.join(" ")).not.toContain(
       "Decision: Add a short recap or exit check?"
     )
-    expect(spec.closure.steps.join(" ")).toContain(
+    expect(spec.closure.steps.join(" ")).not.toContain(
       "High-priority decision: Add a quick understanding check?"
     )
-    expect(spec.centers.steps.join(" ")).toContain(
+    expect(spec.centers.steps.join(" ")).not.toContain(
       "Decision: Add targeted centers or rotation work?"
     )
-    expect(spec.centers.steps.join(" ")).toContain(
+    expect(spec.centers.steps.join(" ")).not.toContain(
       "Decision: Add a clear small-group support plan?"
     )
-    expect(spec.centers.steps.join(" ")).toContain(
+    expect(spec.centers.steps.join(" ")).not.toContain(
       "Decision: Add a clear intervention or reteach plan?"
     )
   })

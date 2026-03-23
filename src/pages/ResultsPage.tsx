@@ -1,7 +1,3 @@
-import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
-import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
-import { exportSlidesPptx } from "../engine/exports/exportSlidesPptx"
-import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import { getAxisDecision, getReliabilityScore, hasRelevantRoleAnalysis, sortByAxisPriority } from "../engine/blueprint/materialSelection"
@@ -287,12 +283,14 @@ function PackageSummarySection({
   lessonPackage: LessonPackage
   selectedLessonMode: string
 }) {
+  const teacherLedSupportCount = countTeacherLedSupportLines(lessonPackage.rotationPlan).toString()
+
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
       <div style={heroGridStyle}>
         <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
-        <SummaryCard label="Teacher-Led Support" value={lessonPackage.interventions.length.toString()} />
+        <SummaryCard label="Teacher-Led Support" value={teacherLedSupportCount} />
         <SummaryCard label="Centers / Independent Work" value={lessonPackage.centers.length.toString()} />
       </div>
 
@@ -1009,29 +1007,48 @@ function sanitizeListItems(items: string[]): string[] {
     .filter((item) => item.length > 0)
 }
 
+function extractTeacherLedSupportLines(rotationPlan: string): string[] {
+  return sanitizeListItems(rotationPlan.split(/\r?\n/))
+    .filter((line) => line.startsWith("Teacher-Led Support Focus:"))
+}
+
+function extractRotationOnlyText(rotationPlan: string): string {
+  return sanitizeListItems(rotationPlan.split(/\r?\n/))
+    .filter((line) => !line.startsWith("Teacher-Led Support Focus:"))
+    .join("\n")
+}
+
+function countTeacherLedSupportLines(rotationPlan: string): number {
+  return extractTeacherLedSupportLines(rotationPlan).length
+}
+
 function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
   const lessonPlan = lessonPackage.lessonPlan.trim()
   const slides = sanitizeListItems(lessonPackage.slides)
   const interventions = sanitizeListItems(lessonPackage.interventions)
   const centers = sanitizeListItems(lessonPackage.centers)
   const rotationPlan = lessonPackage.rotationPlan.trim()
+  const teacherLedSupportLines = extractTeacherLedSupportLines(rotationPlan)
+  const rotationOnly = extractRotationOnlyText(rotationPlan)
   const exports = lessonPackage.exports ?? []
 
   const hasVisibleOutputs =
     lessonPlan.length > 0 ||
     slides.length > 0 ||
+    teacherLedSupportLines.length > 0 ||
     interventions.length > 0 ||
     centers.length > 0 ||
-    rotationPlan.length > 0 ||
+    rotationOnly.length > 0 ||
     exports.length > 0
 
   return (
     <>
       {lessonPlan.length > 0 ? <PreSection title="Lesson Plan" content={lessonPlan} /> : null}
       {slides.length > 0 ? <SimpleListSection title="Slides" items={slides} /> : null}
-      {interventions.length > 0 ? <SimpleListSection title="Teacher-Led Support" items={interventions} /> : null}
+      {teacherLedSupportLines.length > 0 ? <SimpleListSection title="Teacher-Led Support" items={teacherLedSupportLines} /> : null}
+      {interventions.length > 0 ? <SimpleListSection title="Intervention Support" items={interventions} /> : null}
       {centers.length > 0 ? <SimpleListSection title="Centers / Independent Work" items={centers} /> : null}
-      {rotationPlan.length > 0 ? <PreSection title="Centers / Independent Work Rotation" content={rotationPlan} /> : null}
+      {rotationOnly.length > 0 ? <PreSection title="Centers / Independent Work Rotation" content={rotationOnly} /> : null}
       {exports.length > 0 ? <ExportArtifactsSection exports={exports} /> : null}
 
       {!hasVisibleOutputs ? (
@@ -1173,13 +1190,17 @@ export async function downloadExportArtifact(artifact: ExportArtifact, artifacts
   let blob: Blob
 
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) {
+    const { exportFullPackageZip } = await import("../engine/exports/exportFullPackageZip")
     blob = await exportFullPackageZip(artifact.label, artifacts.length ? artifacts : [artifact])
   } else if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) {
+    const { exportSlidesPptx } = await import("../engine/exports/exportSlidesPptx")
     const slides = artifact.content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean)
     blob = await exportSlidesPptx(artifact.label, slides)
   } else if (artifact.format === "pdf" || artifact.mimeType === PDF_MIME) {
+    const { exportPrintablesPdf } = await import("../engine/exports/exportPrintablesPdf")
     blob = await exportPrintablesPdf(artifact.label, artifact.content)
   } else {
+    const { exportLessonPlanDocx } = await import("../engine/exports/exportLessonPlanDocx")
     blob = await exportLessonPlanDocx(artifact.label, artifact.content)
   }
 

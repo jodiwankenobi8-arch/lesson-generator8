@@ -1,8 +1,5 @@
 import JSZip from "jszip"
 import type { ExportArtifact } from "../types"
-import { exportLessonPlanDocx } from "./exportLessonPlanDocx"
-import { exportPrintablesPdf } from "./exportPrintablesPdf"
-import { exportSlidesPptx } from "./exportSlidesPptx"
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 const PDF_MIME = "application/pdf"
@@ -19,14 +16,17 @@ async function buildArtifactBlob(artifact: ExportArtifact): Promise<Blob> {
   }
 
   if (artifact.mimeType === DOCX_MIME || artifact.format === "docx") {
+    const { exportLessonPlanDocx } = await import("./exportLessonPlanDocx")
     return exportLessonPlanDocx(artifact.label, content)
   }
 
   if (artifact.mimeType === PDF_MIME || artifact.format === "pdf") {
+    const { exportPrintablesPdf } = await import("./exportPrintablesPdf")
     return exportPrintablesPdf(artifact.label, content)
   }
 
   if (artifact.mimeType === PPTX_MIME || artifact.format === "pptx") {
+    const { exportSlidesPptx } = await import("./exportSlidesPptx")
     const slides = content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean)
     return exportSlidesPptx(artifact.label, slides)
   }

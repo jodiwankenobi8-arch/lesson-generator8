@@ -4,8 +4,6 @@ import {
   LessonPlanningIdeas,
   LessonSpec,
   LessonSpecSection,
-  MissingAreaPromptCandidate,
-  PlanningComponentKey,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
@@ -45,10 +43,6 @@ type LessonSpecContext = {
   smallGroupPlanLines: string[]
   interventionPlanLines: string[]
   formativePlanLines: string[]
-  guidedDecisionLines: string[]
-  independentDecisionLines: string[]
-  closureDecisionLines: string[]
-  centerDecisionLines: string[]
 }
 
 export function buildLessonSpec(
@@ -183,17 +177,6 @@ function buildLessonSpecContext(
     smallGroupPlanLines: ideaLines(planningIdeas?.smallGroupIdeas),
     interventionPlanLines: ideaLines(planningIdeas?.interventionIdeas),
     formativePlanLines: ideaLines(planningIdeas?.formativeAssessmentIdeas),
-    guidedDecisionLines: decisionLinesFor(planningIdeas, ["guided_practice"]),
-    independentDecisionLines: decisionLinesFor(planningIdeas, ["independent_practice"]),
-    closureDecisionLines: decisionLinesFor(planningIdeas, [
-      "closure",
-      "formative_assessment",
-    ]),
-    centerDecisionLines: decisionLinesFor(planningIdeas, [
-      "centers",
-      "small_group",
-      "intervention",
-    ]),
   }
 }
 
@@ -220,7 +203,6 @@ function buildMixedTeachSteps(context: LessonSpecContext): string[] {
 
 function buildMixedGuidedPracticeSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.guidedDecisionLines,
     `Guide students through two curriculum-aligned practice blocks: ${context.practiceIdeas.join(", ")}.`,
     `Use modeled examples and text support during teacher guidance: ${context.wordList.join(", ")}; ${context.texts.join(", ")}.`,
     `Keep support anchored to the standards: ${context.standards.join(", ")}.`,
@@ -233,7 +215,6 @@ function buildMixedGuidedPracticeSteps(context: LessonSpecContext): string[] {
 
 function buildMixedIndependentPracticeSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.independentDecisionLines,
     `Students complete two aligned independent tasks using: ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
     `Require students to apply both lesson resources and text support: ${context.wordList.join(", ")} / ${context.texts.join(", ")}.`,
     ...context.independentPlanLines,
@@ -245,7 +226,6 @@ function buildMixedIndependentPracticeSteps(context: LessonSpecContext): string[
 
 function buildMixedCentersSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.centerDecisionLines,
     ...context.centerPlanLines,
     ...takeLines(context.smallGroupPlanLines, 1),
     ...takeLines(context.interventionPlanLines, 1),
@@ -257,7 +237,6 @@ function buildMixedCentersSteps(context: LessonSpecContext): string[] {
 
 function buildMixedClosureSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.closureDecisionLines,
     "Review what students learned in both parts of the lesson.",
     ...context.closurePlanLines,
     ...takeLines(context.formativePlanLines, 1),
@@ -283,7 +262,6 @@ function buildPhonicsTeachSteps(context: LessonSpecContext): string[] {
 
 function buildPhonicsGuidedPracticeSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.guidedDecisionLines,
     context.guidedTaskLine,
     `Use the lesson word list during support: ${context.wordList.join(", ")}.`,
     "Require students to explain or show the target pattern with teacher guidance.",
@@ -296,7 +274,6 @@ function buildPhonicsGuidedPracticeSteps(context: LessonSpecContext): string[] {
 
 function buildPhonicsIndependentPracticeSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.independentDecisionLines,
     context.independentTaskLine,
     `Use these words or examples during practice: ${context.wordList.join(", ")}.`,
     ...context.independentPlanLines,
@@ -308,7 +285,6 @@ function buildPhonicsIndependentPracticeSteps(context: LessonSpecContext): strin
 
 function buildPhonicsCentersSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.centerDecisionLines,
     ...context.centerPlanLines,
     ...takeLines(context.smallGroupPlanLines, 1),
     ...takeLines(context.interventionPlanLines, 1),
@@ -320,7 +296,6 @@ function buildPhonicsCentersSteps(context: LessonSpecContext): string[] {
 
 function buildPhonicsClosureSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.closureDecisionLines,
     "Review the target sound, pattern, or decoding skill.",
     context.closureLine,
     ...context.closurePlanLines,
@@ -344,7 +319,6 @@ function buildComprehensionTeachSteps(context: LessonSpecContext): string[] {
 
 function buildComprehensionGuidedPracticeSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.guidedDecisionLines,
     context.guidedTaskLine,
     `Use the lesson text and prompts during support: ${context.texts.join(", ")}.`,
     `Anchor the work to the lesson standard: ${context.standards.join(", ")}.`,
@@ -359,7 +333,6 @@ function buildComprehensionIndependentPracticeSteps(
   context: LessonSpecContext
 ): string[] {
   return [
-    ...context.independentDecisionLines,
     context.independentTaskLine,
     `Use these texts or prompts during student work: ${context.texts.join(", ")}.`,
     ...context.independentPlanLines,
@@ -371,7 +344,6 @@ function buildComprehensionIndependentPracticeSteps(
 
 function buildComprehensionCentersSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.centerDecisionLines,
     ...context.centerPlanLines,
     ...takeLines(context.smallGroupPlanLines, 1),
     ...takeLines(context.interventionPlanLines, 1),
@@ -383,7 +355,6 @@ function buildComprehensionCentersSteps(context: LessonSpecContext): string[] {
 
 function buildComprehensionClosureSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.closureDecisionLines,
     "Review the comprehension objective and key takeaway from the text.",
     context.closureLine,
     ...context.closurePlanLines,
@@ -406,7 +377,6 @@ function buildGenericTeachSteps(context: LessonSpecContext): string[] {
 
 function buildGenericGuidedPracticeSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.guidedDecisionLines,
     context.guidedTaskLine,
     `Reference standards during support: ${context.standards.join(", ")}.`,
     ...context.guidedPlanLines,
@@ -418,7 +388,6 @@ function buildGenericGuidedPracticeSteps(context: LessonSpecContext): string[] {
 
 function buildGenericIndependentPracticeSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.independentDecisionLines,
     context.independentTaskLine,
     `Use these lesson resources: ${context.wordList.join(", ")} / ${context.texts.join(", ")}.`,
     ...context.independentPlanLines,
@@ -429,7 +398,6 @@ function buildGenericIndependentPracticeSteps(context: LessonSpecContext): strin
 
 function buildGenericCentersSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.centerDecisionLines,
     ...context.centerPlanLines,
     ...takeLines(context.smallGroupPlanLines, 1),
     ...takeLines(context.interventionPlanLines, 1),
@@ -441,7 +409,6 @@ function buildGenericCentersSteps(context: LessonSpecContext): string[] {
 
 function buildGenericClosureSteps(context: LessonSpecContext): string[] {
   return [
-    ...context.closureDecisionLines,
     "Review the lesson objective.",
     `Revisit the lesson flow: ${context.shell.lessonSegments.join(" -> ")}.`,
     context.closureLine,
@@ -471,30 +438,12 @@ function ideaLines(ideas: LessonPlanIdea[] | undefined): string[] {
   return ideas.map((idea) => formatPlanningIdea(idea))
 }
 
-function decisionLinesFor(
-  planningIdeas: LessonPlanningIdeas | undefined,
-  components: PlanningComponentKey[]
-): string[] {
-  if (!planningIdeas?.missingAreaPrompts?.length) {
-    return []
-  }
-
-  return planningIdeas.missingAreaPrompts
-    .filter((candidate) => components.includes(candidate.component))
-    .map((candidate) => formatDecisionPrompt(candidate))
-}
-
 function takeLines(lines: string[], count: number, start = 0): string[] {
   return lines.slice(start, start + count)
 }
 
 function formatPlanningIdea(idea: LessonPlanIdea): string {
   return `${idea.title}: ${idea.description}`
-}
-
-function formatDecisionPrompt(candidate: MissingAreaPromptCandidate): string {
-  const importanceLabel = candidate.importance === "high" ? "High-priority decision" : "Decision"
-  return `${importanceLabel}: ${candidate.prompt}`
 }
 
 function compactSteps(steps: string[]): string[] {
