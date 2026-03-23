@@ -7,8 +7,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes("node_modules/pdfjs-dist") || id.includes("node_modules/pdf-parse")) {
-            return "pdf-import"
+          if (id.includes("node_modules/pdf-parse")) {
+            return "pdf-parse-import"
+          }
+
+          if (id.includes("node_modules/pdfjs-dist")) {
+            return "pdfjs-render"
           }
 
           if (id.includes("node_modules/pdf-lib")) {
