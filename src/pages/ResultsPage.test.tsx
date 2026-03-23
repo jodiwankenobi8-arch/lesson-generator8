@@ -7,7 +7,22 @@ vi.mock("../engine/exports/exportLessonPlanDocx", () => ({
   exportLessonPlanDocx: vi.fn(),
 }))
 
+vi.mock("../engine/exports/exportPrintablesPdf", () => ({
+  exportPrintablesPdf: vi.fn(),
+}))
+
+vi.mock("../engine/exports/exportSlidesPptx", () => ({
+  exportSlidesPptx: vi.fn(),
+}))
+
+vi.mock("../engine/exports/exportFullPackageZip", () => ({
+  exportFullPackageZip: vi.fn(),
+}))
+
 import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
+import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
+import { exportSlidesPptx } from "../engine/exports/exportSlidesPptx"
+import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
 import { CoverageDecisionsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
 import type { ExportArtifact, LessonInputs, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
@@ -290,17 +305,16 @@ describe("Results explainability rendering contracts", () => {
 })
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
-function makeExportArtifact(
-  overrides: Partial<ExportArtifact> = {}
-): ExportArtifact {
+function makeExportArtifact(overrides: Partial<ExportArtifact> = {}): ExportArtifact {
   return {
     kind: "lesson_plan",
+    format: "docx",
     label: "Lesson Plan Export",
-    fileName: "ELA-lesson-plan-export.docx",
-        mimeType: DOCX_MIME,
-    content: "Blueprint Readiness`nTeach",
+    fileName: "lesson-plan-export.docx",
+    mimeType: DOCX_MIME,
+    content: "Lesson plan body",
     ...overrides,
-  }
+  } as ExportArtifact
 }
 
 function installDownloadDomHarness(objectUrlValue: string) {
@@ -449,42 +463,91 @@ describe("Results export download contract", () => {
     }
   })
 
-  it("downloads plain-text exports directly without DOCX conversion", async () => {
+  it("routes PPTX exports through exportSlidesPptx before download", async () => {
     vi.mocked(exportLessonPlanDocx).mockReset()
+    vi.mocked(exportSlidesPptx).mockResolvedValue(
+      new Blob(["pptx-binary"], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" })
+    )
 
     const harness = installDownloadDomHarness("blob:text")
 
     try {
       const artifact = makeExportArtifact({
         kind: "slides",
+        format: "pptx",
         label: "Slides Export",
-        fileName: "ELA-slides-export.txt",
-        mimeType: "text/plain;charset=utf-8",
+        fileName: "ELA-slides-export.pptx",
+        mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         content: "Slides Export`n1. Opening",
       })
 
       await downloadExportArtifact(artifact)
 
       expect(exportLessonPlanDocx).not.toHaveBeenCalled()
+      expect(exportSlidesPptx).toHaveBeenCalledTimes(1)
       expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
 
-      const blobArg = harness.getCreatedObjectUrlArg()
-      expect(blobArg).toBeTruthy()
-      expect(blobArg).toBeInstanceOf(Blob)
-      expect((blobArg as Blob).type).toBe("text/plain;charset=utf-8")
-
-      expect(harness.createdLinks).toHaveLength(1)
       const appendedLink = harness.createdLinks[0]!
-
       expect(appendedLink.download).toBe(artifact.fileName)
       expect(appendedLink.href).toBe("blob:text")
       expect(appendedLink.click).toHaveBeenCalledTimes(1)
-      expect(harness.body.appendChild).toHaveBeenCalledWith(appendedLink)
-      expect(harness.body.removeChild).toHaveBeenCalledWith(appendedLink)
-      expect(harness.urlStub.revokeObjectURL).toHaveBeenCalledWith("blob:text")
     } finally {
       harness.restore()
     }
   })
 })
 
+
+describe("Results export routing - PDF and ZIP", () => {
+  it("routes PDF printables exports through exportPrintablesPdf before download", async () => {
+    vi.mocked(exportPrintablesPdf).mockResolvedValue(new Blob(["pdf-binary"], { type: "application/pdf" }))
+    const harness = installDownloadDomHarness("blob:pdf")
+
+    try {
+      const artifact = {
+        kind: "printables",
+        format: "pdf",
+        label: "Printables Export",
+        fileName: "ELA-printables-export.pdf",
+        mimeType: "application/pdf",
+        content: "Centers`nRotation Plan",
+      } as const
+
+      await downloadExportArtifact(artifact)
+
+      expect(exportPrintablesPdf).toHaveBeenCalledWith(artifact.label, artifact.content)
+      expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
+      expect(harness.createdLinks).toHaveLength(1)
+      expect(harness.createdLinks[0]!.download).toBe(artifact.fileName)
+      expect(harness.createdLinks[0]!.href).toBe("blob:pdf")
+    } finally {
+      harness.restore()
+    }
+  })
+
+  it("routes ZIP bundle exports through exportFullPackageZip before download", async () => {
+    vi.mocked(exportFullPackageZip).mockResolvedValue(new Blob(["zip-binary"], { type: "application/zip" }))
+    const harness = installDownloadDomHarness("blob:zip")
+
+    try {
+      const artifact = {
+        kind: "full_package",
+        format: "zip",
+        label: "Full Lesson Package",
+        fileName: "ELA-full-lesson-package.zip",
+        mimeType: "application/zip",
+        content: "bundle marker",
+      } as const
+
+      await downloadExportArtifact(artifact, [artifact])
+
+      expect(exportFullPackageZip).toHaveBeenCalledWith(artifact.label, [artifact])
+      expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
+      expect(harness.createdLinks).toHaveLength(1)
+      expect(harness.createdLinks[0]!.download).toBe(artifact.fileName)
+      expect(harness.createdLinks[0]!.href).toBe("blob:zip")
+    } finally {
+      harness.restore()
+    }
+  })
+})

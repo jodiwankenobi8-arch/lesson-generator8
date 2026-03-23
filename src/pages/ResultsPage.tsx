@@ -1,3 +1,7 @@
+import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
+import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
+import { exportSlidesPptx } from "../engine/exports/exportSlidesPptx"
+import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import { getAxisDecision, getReliabilityScore, hasRelevantRoleAnalysis, sortByAxisPriority } from "../engine/blueprint/materialSelection"
@@ -1136,19 +1140,47 @@ function SimpleListSection({
 }
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+const PDF_MIME = "application/pdf"
+const PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+const ZIP_MIME = "application/zip"
 
-export async function downloadExportArtifact(artifact: ExportArtifact) {
+function getArtifactButtonLabel(artifact: ExportArtifact): string {
+  if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) return "Download ZIP"
+  if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) return "Download PPTX"
+  if (artifact.format === "pdf" || artifact.mimeType === PDF_MIME) return "Download PDF"
+  return "Download DOCX"
+}
+
+function getArtifactDescription(artifact: ExportArtifact): string {
+  if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) {
+    return "This export bundles the full lesson package into a ZIP file."
+  }
+
+  if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) {
+    return "This export is generated from the current lesson package and downloads as a PPTX slide deck."
+  }
+
+  if (artifact.format === "pdf" || artifact.mimeType === PDF_MIME) {
+    return "This export is generated from the current lesson package and downloads as a PDF handout."
+  }
+
+  return "This export is generated from the current lesson package and downloads as a DOCX lesson plan."
+}
+
+export async function downloadExportArtifact(artifact: ExportArtifact, artifacts: ExportArtifact[] = []) {
   if (!artifact.content) return
 
   let blob: Blob
 
-  if (artifact.mimeType === DOCX_MIME) {
-    const { exportLessonPlanDocx } = await import("../engine/exports/exportLessonPlanDocx")
-    blob = await exportLessonPlanDocx(artifact.label, artifact.content)
+  if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) {
+    blob = await exportFullPackageZip(artifact.label, artifacts.length ? artifacts : [artifact])
+  } else if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) {
+    const slides = artifact.content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean)
+    blob = await exportSlidesPptx(artifact.label, slides)
+  } else if (artifact.format === "pdf" || artifact.mimeType === PDF_MIME) {
+    blob = await exportPrintablesPdf(artifact.label, artifact.content)
   } else {
-    blob = new Blob([artifact.content], {
-      type: artifact.mimeType ?? "text/plain;charset=utf-8",
-    })
+    blob = await exportLessonPlanDocx(artifact.label, artifact.content)
   }
 
   const url = window.URL.createObjectURL(blob)
@@ -1162,35 +1194,50 @@ export async function downloadExportArtifact(artifact: ExportArtifact) {
 }
 
 function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
+  const fullPackageArtifact = exports.find((artifact) => artifact.kind === "full_package")
+  const sectionArtifacts = exports.filter((artifact) => artifact.kind !== "full_package")
+
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Exports</h3>
       <p style={{ color: "var(--text-secondary)", margin: "0 0 var(--space-sm) 0" }}>
-        Export only what you need, or download the full lesson package once the artifacts are ready.
+        Download the full package as a ZIP file, or export each generated area in its classroom-ready format.
       </p>
+
+      {fullPackageArtifact ? (
+        <div style={{ marginBottom: 14 }}>
+          <button
+            type="button"
+            onClick={() => void downloadExportArtifact(fullPackageArtifact, exports)}
+            style={{
+              ...orchardButtonStyle(),
+              cursor: "pointer",
+              fontWeight: 700,
+            }}
+          >
+            Download Full Package ZIP
+          </button>
+        </div>
+      ) : null}
+
       <div style={{ display: "grid", gap: 10 }}>
-        {exports.map((artifact) => (
+        {sectionArtifacts.map((artifact) => (
           <div
             key={`${artifact.kind}-${artifact.fileName}`}
             style={signalCardStyle("neutral")}
           >
             <div style={{ fontWeight: 700 }}>{artifact.label}</div>
-            <div style={{ marginTop: 4, fontSize: 13 }}>
-              <strong>Format:</strong> {artifact.mimeType === DOCX_MIME ? "DOCX" : "Plain text"}
-            </div>
-            <div style={{ marginTop: 4, fontSize: 13 }}>
+            <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
               <strong>Filename:</strong> {artifact.fileName}
             </div>
             <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-              {artifact.mimeType === DOCX_MIME
-                ? "This export is generated from the current lesson package and downloads as a DOCX lesson plan."
-                : "This export is generated from the current lesson package and downloads as plain text."}
+              {getArtifactDescription(artifact)}
             </div>
 
             {artifact.content ? (
               <button
                 type="button"
-                onClick={() => void downloadExportArtifact(artifact)}
+                onClick={() => void downloadExportArtifact(artifact, exports)}
                 style={{
                   ...orchardButtonStyle({ subtle: true }),
                   marginTop: 10,
@@ -1198,7 +1245,7 @@ function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
                   fontWeight: 600,
                 }}
               >
-                Download
+                {getArtifactButtonLabel(artifact)}
               </button>
             ) : null}
           </div>

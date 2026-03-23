@@ -912,8 +912,9 @@ function buildExports(
     artifacts.push({
       kind: "slides",
       label: "Slides Export",
-      fileName: `${safeSubject}-slides-export.txt`,
-      mimeType: "text/plain;charset=utf-8",
+      fileName: `${safeSubject}-slides-export.pptx`,
+      format: "pptx",
+      mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
       content: buildSlidesExportText(slides),
     })
   }
@@ -923,6 +924,7 @@ function buildExports(
       kind: "lesson_plan",
       label: "Lesson Plan Export",
       fileName: `${safeSubject}-lesson-plan-export.docx`,
+      format: "docx",
       mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       content: lessonPlan,
     })
@@ -932,9 +934,23 @@ function buildExports(
     artifacts.push({
       kind: "printables",
       label: "Printables Export",
-      fileName: `${safeSubject}-printables-export.txt`,
-      mimeType: "text/plain;charset=utf-8",
+      fileName: `${safeSubject}-printables-export.pdf`,
+      format: "pdf",
+      mimeType: "application/pdf",
       content: buildPrintablesExportText(centers, rotationPlan, interventions),
+    })
+  }
+
+    if (artifacts.length > 0) {
+    artifacts.unshift({
+      kind: "full_package",
+      format: "zip",
+      label: "Full Lesson Package",
+      fileName: `${safeSubject}-full-lesson-package.zip`,
+      mimeType: "application/zip",
+      content: [lessonPlan, slides.join("\n\n"), buildPrintablesExportText(centers, rotationPlan, interventions)]
+        .filter(Boolean)
+        .join("\n\n"),
     })
   }
 
