@@ -103,6 +103,7 @@ function makePlanningIdeas(options: {
   centers?: boolean
   smallGroup?: boolean
   intervention?: boolean
+  missingAreaPrompts?: LessonPlanningIdeas["missingAreaPrompts"]
 } = {}): LessonPlanningIdeas {
   return {
     slidePlans: [
@@ -162,6 +163,7 @@ function makePlanningIdeas(options: {
           },
         ]
       : [],
+    missingAreaPrompts: options.missingAreaPrompts ?? [],
   }
 }
 
