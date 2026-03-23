@@ -490,5 +490,27 @@ describe("buildPackageOutputs", () => {
       expect(exportContent).not.toContain(phrase)
     })
   })
+
+  it("does not bleed teacher-led support into a centers-only rotation plan", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A phonics",
+        topic: "Long A vowel patterns",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      outputContents: makeOutputContents({
+        centers: true,
+        printables: true,
+      }),
+    })
+
+    expect(result.rotationPlan).toContain("Rotation 1:")
+    expect(result.rotationPlan).not.toContain("Teacher-Led Support Focus:")
+  })
 })
 

@@ -795,7 +795,7 @@ function resolveTeacherTableLine(
   missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string {
   if (shouldLeaveOut("small_group", missingAreaDecisions)) {
-    return "Teacher-Led Support Focus: No small-group block selected."
+    return ""
   }
 
   const firstSmallGroupIdea = planningIdeas?.smallGroupIdeas[0]
@@ -1138,6 +1138,7 @@ function joinOrFallback(items: string[], fallback: string): string {
 
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
+
 
 
 
