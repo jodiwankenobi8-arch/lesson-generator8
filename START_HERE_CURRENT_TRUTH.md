@@ -3,14 +3,14 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 22a4732
+- Current published continuation point: c9034a2
 - Current milestone: Step 6A source-intake contract from a green Step 5 checkpoint
 - Current active seam: teacher-facing source-intake contract tightening in MaterialsPage.tsx, with InputsPage.tsx only if needed for wording consistency
 
 ## What is actually landed
 - orchard shell direction is already present in the live repo
 - Results chrome consolidation and continuation-doc checkpoint are already pushed on main
-- validation at checkpoint 22a4732 was green:
+- validation at checkpoint c9034a2 was green:
   - npm run typecheck = PASS
   - npm run test = PASS
   - npm run build = PASS
@@ -30,7 +30,7 @@
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 
 ## Latest validation snapshot
-- checkpoint 22a4732 was validated green on main
+- checkpoint c9034a2 was validated green on main
 - npm run typecheck = PASS
 - npm run test = PASS
 - npm run build = PASS

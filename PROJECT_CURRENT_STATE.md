@@ -4,14 +4,14 @@
 Step 6A — source-intake contract tightening
 
 ## Current checkpoint
-- Latest pushed continuation point: 22a4732
-- Local HEAD when this doc was refreshed: 22a4732 docs: refresh active continuation checkpoint after results seam push
+- Latest pushed continuation point: c9034a2
+- Local HEAD when this doc was refreshed: c9034a2 docs: refresh current truth docs to match main
 
 ## What is done
 - orchard / teacher-first surface direction is already present
 - Results chrome consolidation is pushed on main
 - active continuation docs were refreshed and pushed
-- validation at checkpoint 22a4732 was green:
+- validation at checkpoint c9034a2 was green:
   - npm run typecheck = PASS
   - npm run test = PASS
   - npm run build = PASS
@@ -35,7 +35,7 @@ Step 6A — source-intake contract tightening
 - reopening already-stable engine seams would create avoidable patch-stacking
 
 ## Validation status
-- checkpoint 22a4732 is green:
+- checkpoint c9034a2 is green:
   - typecheck PASS
   - full test PASS
   - build PASS
