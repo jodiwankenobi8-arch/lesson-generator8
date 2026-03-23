@@ -2,14 +2,14 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: a893cb0
-- Last auto-sync UTC: 2026-03-23T17:53:08Z
+- Published main checkpoint: a27c9bd
+- Last auto-sync UTC: 2026-03-23T19:49:50Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: a893cb0
+- Current published continuation point: a27c9bd
 - Current milestone: export/package contract expansion is landed; narrow lane-separation hardening and Results export wording refinement are now published on main
 - Current active seam: quick browser/manual Results smoke check, then choose the next seam intentionally
 
