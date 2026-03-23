@@ -23,7 +23,7 @@ import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
 import { exportSlidesPptx } from "../engine/exports/exportSlidesPptx"
 import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
-import { CoverageDecisionsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact } from "./ResultsPage"
+import { CoverageDecisionsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
 import type { ExportArtifact, LessonInputs, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
 
@@ -549,5 +549,56 @@ describe("Results export routing - PDF and ZIP", () => {
     } finally {
       harness.restore()
     }
+  })
+})
+describe("Results export format labels", () => {
+  it("maps ZIP, DOCX, PDF, and PPTX exports to the correct teacher-facing labels and descriptions", () => {
+    const zipArtifact = makeExportArtifact({
+      kind: "full_package",
+      format: "zip",
+      label: "Full Lesson Package",
+      fileName: "ELA-full-lesson-package.zip",
+      mimeType: "application/zip",
+      content: "bundle marker",
+    })
+
+    const docxArtifact = makeExportArtifact({
+      kind: "lesson_plan",
+      format: "docx",
+      label: "Lesson Plan Export",
+      fileName: "ELA-lesson-plan-export.docx",
+      mimeType: DOCX_MIME,
+      content: "Lesson plan body",
+    })
+
+    const pdfArtifact = makeExportArtifact({
+      kind: "printables",
+      format: "pdf",
+      label: "Printables Export",
+      fileName: "ELA-printables-export.pdf",
+      mimeType: "application/pdf",
+      content: "Centers`nRotation Plan",
+    })
+
+    const pptxArtifact = makeExportArtifact({
+      kind: "slides",
+      format: "pptx",
+      label: "Slides Export",
+      fileName: "ELA-slides-export.pptx",
+      mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      content: "Slides Export`n1. Opening",
+    })
+
+    expect(getArtifactButtonLabel(zipArtifact)).toBe("Download ZIP")
+    expect(getArtifactDescription(zipArtifact)).toContain("ZIP file")
+
+    expect(getArtifactButtonLabel(docxArtifact)).toBe("Download DOCX")
+    expect(getArtifactDescription(docxArtifact)).toContain("DOCX lesson plan")
+
+    expect(getArtifactButtonLabel(pdfArtifact)).toBe("Download PDF")
+    expect(getArtifactDescription(pdfArtifact)).toContain("PDF handout")
+
+    expect(getArtifactButtonLabel(pptxArtifact)).toBe("Download PPTX")
+    expect(getArtifactDescription(pptxArtifact)).toContain("PPTX slide deck")
   })
 })

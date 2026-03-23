@@ -1144,14 +1144,14 @@ const PDF_MIME = "application/pdf"
 const PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 const ZIP_MIME = "application/zip"
 
-function getArtifactButtonLabel(artifact: ExportArtifact): string {
+export function getArtifactButtonLabel(artifact: ExportArtifact): string {
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) return "Download ZIP"
   if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) return "Download PPTX"
   if (artifact.format === "pdf" || artifact.mimeType === PDF_MIME) return "Download PDF"
   return "Download DOCX"
 }
 
-function getArtifactDescription(artifact: ExportArtifact): string {
+export function getArtifactDescription(artifact: ExportArtifact): string {
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) {
     return "This export bundles the full lesson package into a ZIP file."
   }
