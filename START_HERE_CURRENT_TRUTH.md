@@ -2,10 +2,9 @@
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: b6f8986
-- Current local checkpoint: uncommitted green working tree on top of b6f8986
-- Current milestone: export/package contract expansion is landed; narrow lane-separation hardening and Results export wording refinement are validated locally
-- Current active seam: quick browser/manual Results smoke check, then commit/push and choose the next seam intentionally
+- Current published continuation point: d0fb041
+- Current milestone: export/package contract expansion is landed; narrow lane-separation hardening and Results export wording refinement are now published on main
+- Current active seam: quick browser/manual Results smoke check, then choose the next seam intentionally
 
 ## What is actually landed
 - orchard shell direction is already present in the live repo
@@ -27,10 +26,9 @@
 - large build-chunk warnings still remain, especially around ResultsPage / office / pdf
 - browser/manual confirmation of the Results export surface is still not yet recorded after this narrow pass
 - do not return to Step 6A as the active seam
-- choose the next seam intentionally after the Results smoke check and checkpoint push
+- choose the next seam intentionally after the Results smoke check
 
 ## Best next move
 - do a quick browser/manual smoke check on Results export buttons and ZIP/export wording
-- commit and push this narrow pass
-- use the refreshed handoff as the primary continuation launcher
+- use this refreshed truth + handoff as the continuation launcher
 - then choose the next seam intentionally instead of returning to Step 6A

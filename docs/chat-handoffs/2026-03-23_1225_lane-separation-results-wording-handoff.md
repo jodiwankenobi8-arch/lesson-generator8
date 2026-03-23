@@ -3,8 +3,7 @@
 ## Repo / branch
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Base published checkpoint: b6f8986
-- Current state: local uncommitted green working tree on top of b6f8986
+- Published checkpoint: d0fb041
 
 ## What changed in this narrow pass
 - hardened package outputs so T1 centers remain student-independent in package outputs
@@ -20,7 +19,8 @@
 - src/pages/ResultsPage.tsx
 - src/pages/ResultsPage.test.tsx
 
-## Verified local status
+## Verified status
+- published on main at d0fb041
 - typecheck PASS
 - test PASS (24 files / 118 tests)
 - build PASS
@@ -31,13 +31,10 @@
   - ResultsPage
   - office
   - pdf
-- this pass is not yet committed/pushed
 
 ## Recommended next move
 1. do a quick browser/manual smoke check on Results export buttons and wording
-2. commit this narrow pass
-3. push
-4. then choose the next seam intentionally instead of returning to Step 6A
+2. then choose the next seam intentionally instead of returning to Step 6A
 
 ## Notes
 - this pass does not change export/package format support
