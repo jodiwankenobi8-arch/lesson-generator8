@@ -394,6 +394,64 @@ describe("buildPackageOutputs", () => {
     expect(printablesExport!.content).toContain("- No intervention support defined.")
   })
 
+  it("keeps missing-area decision prompt language out of teacher-facing package sections and exports", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas: makePlanningIdeas({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        missingAreaPrompts: [
+          {
+            component: "guided_practice",
+            importance: "high",
+            prompt: "Add a scaffolded guided-practice block?",
+            rationale: "Guided practice is a core lesson component.",
+          },
+          {
+            component: "closure",
+            importance: "medium",
+            prompt: "Add a short recap or exit check?",
+            rationale: "Closure is instructionally meaningful.",
+          },
+          {
+            component: "intervention",
+            importance: "medium",
+            prompt: "Add a clear intervention or reteach plan?",
+            rationale: "Intervention keeps support targeted.",
+          },
+        ],
+      }),
+      outputContents: makeOutputContents({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        printables: true,
+      }),
+    })
+
+    const teacherFacingContent = [
+      result.lessonPlan,
+      result.rotationPlan,
+      ...result.exports.map((artifact) => artifact.content ?? ""),
+    ].join("\n")
+
+    expect(teacherFacingContent).not.toContain("High-priority decision:")
+    expect(teacherFacingContent).not.toContain("Decision: Add a short recap or exit check?")
+    expect(teacherFacingContent).not.toContain("Decision: Add a clear intervention or reteach plan?")
+  })
+
   it("keeps canonical exports free of banned hub language", () => {
     const result = buildPackageOutputs({
       inputs: {
