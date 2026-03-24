@@ -3,15 +3,21 @@
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
 - Published main checkpoint: c1b602e
-- Last auto-sync UTC: 2026-03-24T16:28:39Z
+- Last auto-sync UTC: 2026-03-24T15:52:36Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
+
+## Local verification update
+- checkpoint: c1b602e
+- narrow trust/copy alignment is landed for weak-source Materials and Results wording
+- targeted local validation passed: src/engine/planning-coverage.test.ts, src/pages/ResultsPage.test.tsx, src/engine/package-outputs.test.ts, src/engine/lesson-spec.test.ts (29 tests)
+- manual browser recheck of Materials + Results wording is still pending unless already completed locally
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
 - Current published continuation point: c1b602e
 - Current milestone: results package truth hardening and lazy export loading are landed on main
-- Current active seam: Results/doc closeout is already complete; next step is to choose the next narrow implementation seam intentionally from the orchard continuation surface
+- Current active seam: narrow trust/copy alignment across Materials and Results is landed locally; manual browser recheck plus doc closeout remain before final seam closure.
 
 ## What is actually landed
 - orchard shell direction is already present in the live repo

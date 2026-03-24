@@ -788,7 +788,7 @@ export function CoverageDecisionsSection({
 
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Teacher Decisions for Missing Lesson Parts</h3>
+      <h3 style={sectionHeadingStyle}>Teacher Decisions for Source Coverage Gaps</h3>
 
       <div style={{ display: "grid", gap: 12 }}>
         <div style={subCardStyle}>
@@ -907,8 +907,8 @@ export function CoverageDecisionsSection({
 
                     {sourceStatus === "missing" && generatedStatus !== "missing" ? (
                       <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
-                        The engine can generate support here, but the source materials did not clearly cover it.
-                        Choose whether to keep that generated support or leave it out.
+                        The engine can generate support here even when the source materials do not clearly cover it.
+                        Choose whether to include that generated support or leave it out.
                       </div>
                     ) : null}
 
