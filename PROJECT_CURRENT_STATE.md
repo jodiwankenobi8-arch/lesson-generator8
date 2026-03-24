@@ -34,3 +34,9 @@
 2. use the refreshed truth docs and latest handoff as the continuation launcher
 3. decide the next seam intentionally after that check
 4. do not return to Step 6A as the active seam unless current repo truth forces it
+
+- Manual/browser Results recheck recorded on main@1ac197d:
+  - no High-priority decision lines in teacher package sections = YES
+  - Teacher-Led Support and Intervention Support render separately = YES
+  - export buttons still work = YES
+  - closeout status = PASS
