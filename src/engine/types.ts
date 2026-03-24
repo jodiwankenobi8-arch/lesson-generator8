@@ -12,11 +12,21 @@ export type LessonInputs = {
 
   duration: string
 
+  notes?: string
+
 }
 
 
 
 export type LessonPlanContentPartKey =
+
+  | "standards"
+
+  | "objective"
+
+  | "opening"
+
+  | "direct_instruction_modeling"
 
   | "teach"
 
@@ -26,9 +36,77 @@ export type LessonPlanContentPartKey =
 
   | "closure"
 
+  | "differentiation"
+
+  | "vocabulary"
+
+  | "materials_prep_list"
+
+  | "assessment_connection"
 
 
-export type AssessmentOutputTypeKey = "formative_assessment"
+
+export type AssessmentOutputTypeKey =
+
+  | "observation_checklist"
+
+  | "exit_ticket"
+
+  | "running_record_conference_notes"
+
+  | "quick_oral_check"
+
+  | "end_of_lesson_task"
+
+  | "skill_check"
+
+  | "response_sheet"
+
+  | "brief_performance_task"
+
+  | "formative_assessment"
+
+
+
+export type CenterOutputOptionKey =
+
+  | "use_what_you_have"
+
+  | "create_new_center_activities"
+
+
+
+export type CenterFocusKey =
+
+  | "letter_identification"
+
+  | "phonological_awareness"
+
+  | "phonemic_awareness"
+
+  | "phonics"
+
+  | "high_frequency_words"
+
+  | "word_building"
+
+  | "vocabulary_oral_language"
+
+  | "handwriting_fine_motor"
+
+  | "decodable_reading"
+
+  | "fluency"
+
+  | "reading_response"
+
+  | "comprehension"
+
+  | "writing_sentence_work"
+
+
+
+export type SmallGroupTierKey = "T1" | "T2" | "T3" | "Extension"
 
 
 
@@ -46,13 +124,93 @@ export type OtherOutputKey = "printables"
 
 
 
+type AssessmentTypeMap = Record<AssessmentOutputTypeKey, boolean>
+
+type LessonPlanPartMap = Record<LessonPlanContentPartKey, boolean>
+
+type CenterOptionMap = Record<CenterOutputOptionKey, boolean>
+
+type CenterFocusMap = Record<CenterFocusKey, boolean>
+
+type SmallGroupTierMap = Record<SmallGroupTierKey, boolean>
+
+const lessonPlanContentPartKeys: LessonPlanContentPartKey[] = [
+  "standards",
+  "objective",
+  "opening",
+  "direct_instruction_modeling",
+  "teach",
+  "guided_practice",
+  "independent_practice",
+  "closure",
+  "differentiation",
+  "vocabulary",
+  "materials_prep_list",
+  "assessment_connection",
+]
+
+const assessmentOutputTypeKeys: AssessmentOutputTypeKey[] = [
+  "observation_checklist",
+  "exit_ticket",
+  "running_record_conference_notes",
+  "quick_oral_check",
+  "end_of_lesson_task",
+  "skill_check",
+  "response_sheet",
+  "brief_performance_task",
+  "formative_assessment",
+]
+
+const formativeAssessmentOutputTypeKeys: AssessmentOutputTypeKey[] = [
+  "observation_checklist",
+  "exit_ticket",
+  "running_record_conference_notes",
+  "quick_oral_check",
+]
+
+const centerOutputOptionKeys: CenterOutputOptionKey[] = [
+  "use_what_you_have",
+  "create_new_center_activities",
+]
+
+const centerFocusKeys: CenterFocusKey[] = [
+  "letter_identification",
+  "phonological_awareness",
+  "phonemic_awareness",
+  "phonics",
+  "high_frequency_words",
+  "word_building",
+  "vocabulary_oral_language",
+  "handwriting_fine_motor",
+  "decodable_reading",
+  "fluency",
+  "reading_response",
+  "comprehension",
+  "writing_sentence_work",
+]
+
+const smallGroupTierKeys: SmallGroupTierKey[] = ["T1", "T2", "T3", "Extension"]
+
+function normalizeBooleanRecord<T extends string>(
+  keys: T[],
+  incoming?: Partial<Record<T, boolean>>
+): Record<T, boolean> {
+  return keys.reduce(
+    (result, key) => {
+      result[key] = Boolean(incoming?.[key])
+      return result
+    },
+    {} as Record<T, boolean>
+  )
+}
+
 export type LessonOutputContents = {
 
   lessonPlan: {
 
     selected: boolean
 
-    parts: Record<LessonPlanContentPartKey, boolean>
+    parts: LessonPlanPartMap
 
   }
 
@@ -60,13 +218,43 @@ export type LessonOutputContents = {
 
     selected: boolean
 
+    studentFacingOnly: boolean
+
+  }
+
+  assessment: {
+
+    selected: boolean
+
+    types: AssessmentTypeMap
+
+    answerKeys: boolean
+
+  }
+
+  centers: {
+
+    selected: boolean
+
+    options: CenterOptionMap
+
+    focuses: CenterFocusMap
+
+  }
+
+  smallGroup: {
+
+    selected: boolean
+
+    tiers: SmallGroupTierMap
+
   }
 
   assessments: {
 
     selected: boolean
 
-    types: Record<AssessmentOutputTypeKey, boolean>
+    types: AssessmentTypeMap
 
   }
 
@@ -94,7 +282,11 @@ export type LessonOutputContents = {
 
       }
 
-      Extension: Record<string, never>
+      Extension: {
+
+        small_group: boolean
+
+      }
 
     }
 
@@ -112,22 +304,25 @@ export type LessonOutputContents = {
 
 export function createDefaultOutputContents(): LessonOutputContents {
 
-  return {
+  return normalizeOutputContents({
 
     lessonPlan: {
 
       selected: true,
 
       parts: {
-
+        standards: true,
+        objective: true,
+        opening: true,
+        direct_instruction_modeling: true,
         teach: true,
-
         guided_practice: true,
-
         independent_practice: true,
-
         closure: true,
-
+        differentiation: false,
+        vocabulary: true,
+        materials_prep_list: true,
+        assessment_connection: true,
       },
 
     },
@@ -136,17 +331,43 @@ export function createDefaultOutputContents(): LessonOutputContents {
 
       selected: true,
 
+      studentFacingOnly: true,
+
+    },
+
+    assessment: {
+
+      selected: false,
+
+      types: normalizeBooleanRecord(assessmentOutputTypeKeys),
+
+      answerKeys: true,
+
+    },
+
+    centers: {
+
+      selected: false,
+
+      options: normalizeBooleanRecord(centerOutputOptionKeys),
+
+      focuses: normalizeBooleanRecord(centerFocusKeys),
+
+    },
+
+    smallGroup: {
+
+      selected: false,
+
+      tiers: normalizeBooleanRecord(smallGroupTierKeys),
+
     },
 
     assessments: {
 
       selected: false,
 
-      types: {
-
-        formative_assessment: false,
-
-      },
+      types: normalizeBooleanRecord(assessmentOutputTypeKeys),
 
     },
 
@@ -174,7 +395,11 @@ export function createDefaultOutputContents(): LessonOutputContents {
 
         },
 
-        Extension: {},
+        Extension: {
+
+          small_group: false,
+
+        },
 
       },
 
@@ -186,7 +411,7 @@ export function createDefaultOutputContents(): LessonOutputContents {
 
     },
 
-  }
+  })
 
 }
 
@@ -198,63 +423,69 @@ export function normalizeOutputContents(
 
 ): LessonOutputContents {
 
-  const lessonPlanParts = {
+  const lessonPlanParts = normalizeBooleanRecord(
+    lessonPlanContentPartKeys,
+    outputContents.lessonPlan.parts
+  )
 
-    teach: Boolean(outputContents.lessonPlan.parts.teach),
+  const directInstructionSelected =
+    lessonPlanParts.direct_instruction_modeling || lessonPlanParts.teach
 
-    guided_practice: Boolean(outputContents.lessonPlan.parts.guided_practice),
+  lessonPlanParts.direct_instruction_modeling = directInstructionSelected
+  lessonPlanParts.teach = directInstructionSelected
 
-    independent_practice: Boolean(outputContents.lessonPlan.parts.independent_practice),
+  const assessmentTypes = normalizeBooleanRecord(
+    assessmentOutputTypeKeys,
+    outputContents.assessment?.types ?? outputContents.assessments?.types
+  )
 
-    closure: Boolean(outputContents.lessonPlan.parts.closure),
+  assessmentTypes.formative_assessment =
+    assessmentTypes.formative_assessment ||
+    formativeAssessmentOutputTypeKeys.some((key) => assessmentTypes[key])
 
+  const centerOptions = normalizeBooleanRecord(
+    centerOutputOptionKeys,
+    outputContents.centers?.options
+  )
+
+  const centerFocuses = normalizeBooleanRecord(
+    centerFocusKeys,
+    outputContents.centers?.focuses
+  )
+
+  if (
+    Boolean(
+      (outputContents.centers?.options as unknown as Record<string, boolean> | undefined)?.[
+        "vocabulary_support"
+      ]
+    )
+  ) {
+    centerFocuses.vocabulary_oral_language = true
   }
 
+  const smallGroupTiers = normalizeBooleanRecord(
+    smallGroupTierKeys,
+    outputContents.smallGroup?.tiers
+  )
 
+  const assessmentSelected = assessmentOutputTypeKeys.some(
+    (key) => assessmentTypes[key] && key !== "formative_assessment"
+  ) || assessmentTypes.formative_assessment
 
-  const assessmentTypes = {
+  const centersSelected = centerOutputOptionKeys.some((key) => centerOptions[key])
 
-    formative_assessment: Boolean(
+  const smallGroupSelected = smallGroupTierKeys.some((key) => smallGroupTiers[key])
 
-      outputContents.assessments.types.formative_assessment
-
-    ),
-
-  }
-
-
-
-  const groupByTier = {
-
-    T1: {
-
-      centers: Boolean(outputContents.groups.byTier.T1.centers),
-
-    },
-
-    T2: {
-
-      small_group: Boolean(outputContents.groups.byTier.T2.small_group),
-
-    },
-
-    T3: {
-
-      intervention: Boolean(outputContents.groups.byTier.T3.intervention),
-
-    },
-
-    Extension: {},
-
-  }
-
-
+  const printablesSelected =
+    Boolean(outputContents.other?.printables) ||
+    centersSelected ||
+    smallGroupSelected
 
   return {
 
     lessonPlan: {
 
-      selected: true,
+      selected: Boolean(outputContents.lessonPlan.selected),
 
       parts: lessonPlanParts,
 
@@ -262,13 +493,43 @@ export function normalizeOutputContents(
 
     lessonSlides: {
 
-      selected: true,
+      selected: Boolean(outputContents.lessonSlides.selected),
+
+      studentFacingOnly: outputContents.lessonSlides.studentFacingOnly !== false,
+
+    },
+
+    assessment: {
+
+      selected: assessmentSelected,
+
+      types: assessmentTypes,
+
+      answerKeys: outputContents.assessment?.answerKeys !== false,
+
+    },
+
+    centers: {
+
+      selected: centersSelected,
+
+      options: centerOptions,
+
+      focuses: centerFocuses,
+
+    },
+
+    smallGroup: {
+
+      selected: smallGroupSelected,
+
+      tiers: smallGroupTiers,
 
     },
 
     assessments: {
 
-      selected: assessmentTypes.formative_assessment,
+      selected: assessmentSelected,
 
       types: assessmentTypes,
 
@@ -276,21 +537,41 @@ export function normalizeOutputContents(
 
     groups: {
 
-      selected:
+      selected: centersSelected || smallGroupSelected,
 
-        groupByTier.T1.centers ||
+      byTier: {
 
-        groupByTier.T2.small_group ||
+        T1: {
 
-        groupByTier.T3.intervention,
+          centers: centersSelected,
 
-      byTier: groupByTier,
+        },
+
+        T2: {
+
+          small_group: smallGroupSelected,
+
+        },
+
+        T3: {
+
+          intervention: smallGroupTiers.T3,
+
+        },
+
+        Extension: {
+
+          small_group: smallGroupTiers.Extension,
+
+        },
+
+      },
 
     },
 
     other: {
 
-      printables: Boolean(outputContents.other.printables),
+      printables: printablesSelected,
 
     },
 
@@ -915,6 +1196,28 @@ export function isLessonPlanPartSelected(
 
 ): boolean {
 
+  if (part === "teach") {
+
+    return Boolean(
+      outputContents.lessonPlan.parts.teach ||
+        outputContents.lessonPlan.parts.direct_instruction_modeling
+    )
+
+  }
+
+
+
+  if (part === "direct_instruction_modeling") {
+
+    return Boolean(
+      outputContents.lessonPlan.parts.direct_instruction_modeling ||
+        outputContents.lessonPlan.parts.teach
+    )
+
+  }
+
+
+
   return Boolean(outputContents.lessonPlan.parts[part])
 
 }
@@ -929,7 +1232,20 @@ export function isAssessmentTypeSelected(
 
 ): boolean {
 
-  return Boolean(outputContents.assessments.types[type])
+  if (type === "formative_assessment") {
+
+    return Boolean(
+      outputContents.assessment.types.formative_assessment ||
+        formativeAssessmentOutputTypeKeys.some(
+          (key) => outputContents.assessment.types[key]
+        )
+    )
+
+  }
+
+
+
+  return Boolean(outputContents.assessment.types[type])
 
 }
 
@@ -945,7 +1261,7 @@ export function isGroupOutputSelected(
 
   if (kind === "centers") {
 
-    return Boolean(outputContents.groups.byTier.T1.centers)
+    return Boolean(outputContents.centers.selected)
 
   }
 
@@ -953,13 +1269,32 @@ export function isGroupOutputSelected(
 
   if (kind === "small_group") {
 
-    return Boolean(outputContents.groups.byTier.T2.small_group)
+    return Boolean(outputContents.smallGroup.selected)
 
   }
 
 
 
-  return Boolean(outputContents.groups.byTier.T3.intervention)
+  return Boolean(outputContents.smallGroup.tiers.T3)
+
+}
+
+
+export function isSupportPrintablesSelected(
+
+  outputContents: LessonOutputContents
+
+): boolean {
+
+  const centersSelected =
+    Boolean(outputContents.centers?.selected) ||
+    centerOutputOptionKeys.some((key) => Boolean(outputContents.centers?.options?.[key]))
+
+  const smallGroupSelected =
+    Boolean(outputContents.smallGroup?.selected) ||
+    smallGroupTierKeys.some((key) => Boolean(outputContents.smallGroup?.tiers?.[key]))
+
+  return Boolean(outputContents.other?.printables) || centersSelected || smallGroupSelected
 
 }
 
@@ -1017,11 +1352,11 @@ export function countSelectedOutputSections(
 
     outputContents.lessonSlides.selected,
 
-    outputContents.assessments.selected,
+    outputContents.assessment.selected,
 
-    outputContents.groups.selected,
+    outputContents.centers.selected,
 
-    outputContents.other.printables,
+    outputContents.smallGroup.selected,
 
   ].filter(Boolean).length
 

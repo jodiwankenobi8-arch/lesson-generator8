@@ -1,7 +1,8 @@
 import { create } from "zustand"
-import { detectLessonTargets } from "../engine/blueprint/detectLessonTargets"
 import {
   AssessmentOutputTypeKey,
+  CenterFocusKey,
+  CenterOutputOptionKey,
   ExemplarStyleSettings,
   GroupOutputKindKey,
   LessonBlueprint,
@@ -20,6 +21,7 @@ import {
   MissingAreaDecisionChoice,
   OtherOutputKey,
   PlanningComponentKey,
+  SmallGroupTierKey,
   createDefaultOutputContents,
   normalizeOutputContents,
 } from "../engine/types"
@@ -31,14 +33,6 @@ type MaterialCounts = {
   analyzing: number
   ready: number
   error: number
-}
-
-type TargetPreview = {
-  primary: string
-  secondary: string | null
-  isMixedTarget: boolean
-  recommendedMode: LessonMode
-  message: string
 }
 
 type LessonStore = {
@@ -56,8 +50,13 @@ type LessonStore = {
   setInputs: (updates: Partial<LessonInputs>) => void
   setSelectedLessonMode: (mode: LessonMode) => void
   setOutputContents: (outputContents: LessonOutputContents) => void
+  toggleLessonPlanOutput: () => void
+  toggleLessonSlidesOutput: () => void
   toggleLessonPlanPart: (part: LessonPlanContentPartKey) => void
   toggleAssessmentType: (type: AssessmentOutputTypeKey) => void
+  toggleCenterOption: (option: CenterOutputOptionKey) => void
+  toggleCenterFocus: (focus: CenterFocusKey) => void
+  toggleSmallGroupTier: (tier: SmallGroupTierKey) => void
   toggleGroupOutput: (output: GroupOutputKindKey) => void
   toggleOtherOutput: (output: OtherOutputKey) => void
 
@@ -98,7 +97,6 @@ type LessonStore = {
   hasProcessingMaterials: () => boolean
   canGenerate: () => boolean
   getMaterialCounts: () => MaterialCounts
-  getTargetPreview: () => TargetPreview
 }
 
 const emptyInputs: LessonInputs = {
@@ -108,6 +106,7 @@ const emptyInputs: LessonInputs = {
   skill: "",
   topic: "",
   duration: "",
+  notes: "",
 }
 
 function clearedGeneratedState() {
@@ -161,54 +160,6 @@ function defaultOutputContents(): LessonOutputContents {
   return createDefaultOutputContents()
 }
 
-function buildTargetPreview(
-  inputs: LessonInputs,
-  selectedLessonMode: LessonMode
-): TargetPreview {
-  const detected = detectLessonTargets(inputs, selectedLessonMode)
-
-  if (detected.isMixedTarget) {
-    return {
-      primary: detected.primary === "mixed" ? "phonics" : detected.primary,
-      secondary: detected.secondary,
-      isMixedTarget: true,
-      recommendedMode: detected.recommendedMode,
-      message:
-        selectedLessonMode === "single"
-          ? "Inputs appear mixed. Full mixed lesson is likely the best fit unless you want only one portion."
-          : `Inputs appear mixed. Current selection: ${selectedLessonMode}.`,
-    }
-  }
-
-  if (detected.primary === "phonics") {
-    return {
-      primary: "phonics",
-      secondary: detected.secondary,
-      isMixedTarget: false,
-      recommendedMode: detected.recommendedMode,
-      message: "Inputs currently read mostly as phonics-focused.",
-    }
-  }
-
-  if (detected.primary === "comprehension") {
-    return {
-      primary: "comprehension",
-      secondary: detected.secondary,
-      isMixedTarget: false,
-      recommendedMode: detected.recommendedMode,
-      message: "Inputs currently read mostly as comprehension-focused.",
-    }
-  }
-
-  return {
-    primary: "general",
-    secondary: null,
-    isMixedTarget: false,
-    recommendedMode: detected.recommendedMode,
-    message: "Add more lesson detail or choose a lesson shape manually if needed.",
-  }
-}
-
 export const useLessonStore = create<LessonStore>((set, get) => ({
   inputs: emptyInputs,
   materials: [],
@@ -242,6 +193,30 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
       ...clearedGeneratedState(),
     }),
 
+  toggleLessonPlanOutput: () =>
+    set((state) => ({
+      outputContents: normalizeOutputContents({
+        ...state.outputContents,
+        lessonPlan: {
+          ...state.outputContents.lessonPlan,
+          selected: !state.outputContents.lessonPlan.selected,
+        },
+      }),
+      ...clearedGeneratedState(),
+    })),
+
+  toggleLessonSlidesOutput: () =>
+    set((state) => ({
+      outputContents: normalizeOutputContents({
+        ...state.outputContents,
+        lessonSlides: {
+          ...state.outputContents.lessonSlides,
+          selected: !state.outputContents.lessonSlides.selected,
+        },
+      }),
+      ...clearedGeneratedState(),
+    })),
+
   toggleLessonPlanPart: (part) =>
     set((state) => ({
       outputContents: normalizeOutputContents({
@@ -261,11 +236,56 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     set((state) => ({
       outputContents: normalizeOutputContents({
         ...state.outputContents,
-        assessments: {
-          ...state.outputContents.assessments,
+        assessment: {
+          ...state.outputContents.assessment,
           types: {
-            ...state.outputContents.assessments.types,
-            [type]: !state.outputContents.assessments.types[type],
+            ...state.outputContents.assessment.types,
+            [type]: !state.outputContents.assessment.types[type],
+          },
+        },
+      }),
+      ...clearedGeneratedState(),
+    })),
+
+  toggleCenterOption: (option) =>
+    set((state) => ({
+      outputContents: normalizeOutputContents({
+        ...state.outputContents,
+        centers: {
+          ...state.outputContents.centers,
+          options: {
+            ...state.outputContents.centers.options,
+            [option]: !state.outputContents.centers.options[option],
+          },
+        },
+      }),
+      ...clearedGeneratedState(),
+    })),
+
+  toggleCenterFocus: (focus) =>
+    set((state) => ({
+      outputContents: normalizeOutputContents({
+        ...state.outputContents,
+        centers: {
+          ...state.outputContents.centers,
+          focuses: {
+            ...state.outputContents.centers.focuses,
+            [focus]: !state.outputContents.centers.focuses[focus],
+          },
+        },
+      }),
+      ...clearedGeneratedState(),
+    })),
+
+  toggleSmallGroupTier: (tier) =>
+    set((state) => ({
+      outputContents: normalizeOutputContents({
+        ...state.outputContents,
+        smallGroup: {
+          ...state.outputContents.smallGroup,
+          tiers: {
+            ...state.outputContents.smallGroup.tiers,
+            [tier]: !state.outputContents.smallGroup.tiers[tier],
           },
         },
       }),
@@ -274,42 +294,39 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   toggleGroupOutput: (output) =>
     set((state) => {
-      const nextByTier = {
-        ...state.outputContents.groups.byTier,
-        T1: {
-          ...state.outputContents.groups.byTier.T1,
+      const nextOutputContents = {
+        ...state.outputContents,
+        centers: {
+          ...state.outputContents.centers,
+          options: {
+            ...state.outputContents.centers.options,
+          },
         },
-        T2: {
-          ...state.outputContents.groups.byTier.T2,
-        },
-        T3: {
-          ...state.outputContents.groups.byTier.T3,
-        },
-        Extension: {
-          ...state.outputContents.groups.byTier.Extension,
+        smallGroup: {
+          ...state.outputContents.smallGroup,
+          tiers: {
+            ...state.outputContents.smallGroup.tiers,
+          },
         },
       }
 
       if (output === "centers") {
-        nextByTier.T1.centers = !state.outputContents.groups.byTier.T1.centers
+        nextOutputContents.centers.options.use_what_you_have =
+          !state.outputContents.centers.options.use_what_you_have
       }
 
       if (output === "small_group") {
-        nextByTier.T2.small_group = !state.outputContents.groups.byTier.T2.small_group
+        nextOutputContents.smallGroup.tiers.T2 =
+          !state.outputContents.smallGroup.tiers.T2
       }
 
       if (output === "intervention") {
-        nextByTier.T3.intervention = !state.outputContents.groups.byTier.T3.intervention
+        nextOutputContents.smallGroup.tiers.T3 =
+          !state.outputContents.smallGroup.tiers.T3
       }
 
       return {
-        outputContents: normalizeOutputContents({
-          ...state.outputContents,
-          groups: {
-            ...state.outputContents.groups,
-            byTier: nextByTier,
-          },
-        }),
+        outputContents: normalizeOutputContents(nextOutputContents),
         ...clearedGeneratedState(),
       }
     }),
@@ -505,9 +522,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     return (
       isFilled(inputs.grade) &&
       isFilled(inputs.subject) &&
-      isFilled(inputs.skill) &&
-      isFilled(inputs.topic) &&
-      isFilled(inputs.duration)
+      isFilled(inputs.skill)
     )
   },
 
@@ -555,8 +570,4 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   getMaterialCounts: () => buildMaterialCounts(get().materials),
 
-  getTargetPreview: () => {
-    const { inputs, selectedLessonMode } = get()
-    return buildTargetPreview(inputs, selectedLessonMode)
-  },
 }))
