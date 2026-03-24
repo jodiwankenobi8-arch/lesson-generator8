@@ -47,3 +47,9 @@
   - Teacher-Led Support and Intervention Support render separately
   - export buttons still work
 - then choose the next seam intentionally instead of returning to Step 6A
+
+- Manual/browser Results recheck recorded on main@1ac197d:
+  - no High-priority decision lines in teacher package sections = YES
+  - Teacher-Led Support and Intervention Support render separately = YES
+  - export buttons still work = YES
+  - closeout status = PASS
