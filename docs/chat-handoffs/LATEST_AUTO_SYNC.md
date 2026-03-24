@@ -1,12 +1,66 @@
-# LATEST AUTO SYNC
+# Latest Auto Sync
 
+## Local continuation snapshot
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Published checkpoint: b9bc2d7
-- Last auto-sync UTC: 2026-03-24T14:44:02Z
+- Base HEAD: 80cd9ed
+- Status: local worktree contains validated uncommitted continuation work; do not describe this as already published on main
 
-## What this file is
-- This is an auto-generated continuation sync file.
-- It exists to keep the active continuation set aligned to the published checkpoint after each push.
-- It does not replace human-written seam handoffs.
-- Manual/browser verification results must still be recorded by hand.
+## Local changes now present
+1. `src/engine/blueprint/materialSelection.test.ts`
+   - direct selector-contract regression coverage added
+   - reliability-aware source selection is now directly tested instead of only indirectly through blueprint behavior
+
+2. `src/engine/package/buildPackageOutputs.ts`
+   - centers-only rotation plans no longer emit fallback teacher-led support copy
+   - specifically, a centers-only rotation plan should not show `Teacher-Led Support Focus: No small-group block selected.`
+
+3. `src/engine/package-outputs.test.ts`
+   - regression test added to lock the centers-only / no teacher-led-support bleed contract
+
+## Validation completed on the local worktree
+- targeted blueprint selector tests: PASS
+- package outputs test: PASS
+- typecheck: PASS
+- build: PASS
+
+## Important current truths
+- do not return to Step 6A / source-intake as the active seam from this checkpoint
+- ResultsPage currently has a real `full_package` artifact/export path in the local repo; do not remove full-package wording based on older assumptions alone
+- the newly completed seam is package lane separation:
+  - T1 centers remain student-independent
+  - T2 teacher-led support remains separate
+  - rotation-plan fallback copy no longer blurs those lanes in centers-only cases
+
+## Best next move after this handoff refresh
+1. commit the currently validated local changes
+2. then do one quick browser/manual Results smoke check
+3. then choose the next seam intentionally
+
+## Browser/manual smoke check target
+- Results renders Teacher-Led Support and Intervention Support separately
+- centers-only flows do not imply a teacher-led support lane
+- export buttons still work
+- no missing-area prompt text leaks into teacher-facing package sections
+
+## Files currently modified in the local worktree
+- src/engine/blueprint/materialSelection.test.ts
+- src/engine/package/buildPackageOutputs.ts
+- src/engine/package-outputs.test.ts
+
+- Manual/browser Results recheck recorded on main@1ac197d:
+  - no High-priority decision lines in teacher package sections = YES
+  - Teacher-Led Support and Intervention Support render separately = YES
+  - export buttons still work = YES
+  - closeout status = PASS
+
+## Export decision lock
+- Official teacher-facing export truth: per-artifact exports plus optional full-package ZIP.
+- Results should present both honestly:
+  - individual classroom-ready artifact downloads
+  - one optional package ZIP bundling the current generated artifacts
+- Do not describe the export model as artifact-only.
+- Do not describe the ZIP as replacing the individual artifact exports.
+- No new export-code seam is required from this decision alone; code/tests were already aligned when this note was added.
+- Next seam after this doc lock should be chosen from live active docs, not by reopening Results/export wording unless live proof shows drift.
+- Decision locked at main@b9bc2d7.

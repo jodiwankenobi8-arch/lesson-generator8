@@ -53,3 +53,14 @@
   - Teacher-Led Support and Intervention Support render separately = YES
   - export buttons still work = YES
   - closeout status = PASS
+
+## Export decision lock
+- Official teacher-facing export truth: per-artifact exports plus optional full-package ZIP.
+- Results should present both honestly:
+  - individual classroom-ready artifact downloads
+  - one optional package ZIP bundling the current generated artifacts
+- Do not describe the export model as artifact-only.
+- Do not describe the ZIP as replacing the individual artifact exports.
+- No new export-code seam is required from this decision alone; code/tests were already aligned when this note was added.
+- Next seam after this doc lock should be chosen from live active docs, not by reopening Results/export wording unless live proof shows drift.
+- Decision locked at main@b9bc2d7.
