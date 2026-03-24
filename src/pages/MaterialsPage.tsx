@@ -4,18 +4,15 @@ import { MaterialFile, MaterialRole, MaterialStatus } from "../engine/types"
 import {
   orchardButtonStyle,
   orchardCardStyle,
-  orchardHeroCardStyle,
   orchardInputStyle,
   orchardMetaRowStyle,
   orchardNoticeStyle,
-  orchardPageIntroBlockStyle,
   orchardPageShellStyle,
-  orchardSectionLabelStyle,
-  orchardSectionTitleStyle,
   orchardSoftCardStyle,
   orchardStatusBadgeStyle,
   orchardTagStyle,
-} from "../pages/orchardUi"
+} from "./orchardUi"
+import { OrchardPageHeader } from "./OrchardPageHeader"
 import { useLessonStore } from "../state/useLessonStore"
 
 
@@ -33,19 +30,6 @@ const introStyle: React.CSSProperties = {
   lineHeight: 1.6,
 }
 
-const pageIntroStyle: React.CSSProperties = {
-  ...orchardHeroCardStyle,
-  ...orchardPageIntroBlockStyle,
-}
-
-const sectionLabelStyle: React.CSSProperties = {
-  ...orchardSectionLabelStyle,
-}
-
-const sectionTitleStyle: React.CSSProperties = {
-  ...orchardSectionTitleStyle,
-  fontSize: 32,
-}
 
 const cardStyle: React.CSSProperties = {
   ...orchardCardStyle,
@@ -220,13 +204,9 @@ export default function MaterialsPage() {
 
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Source Workbench</div>
-      <h2 style={sectionTitleStyle}>
-        Materials
-      </h2>
-      <div style={pageIntroStyle}>
+      <OrchardPageHeader label="Source Workbench" title="Materials">
         <p style={introStyle}>
-          Add curriculum files and exemplar files to the workbench. Uploaded files stay visible while they move through upload, extraction, analysis, and ready states.
+          Add curriculum files and exemplar files to the workbench. Uploaded files stay visible while they move through upload, extraction, analysis, and readiness states.
         </p>
         <p style={introStyle}>
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
@@ -234,7 +214,7 @@ export default function MaterialsPage() {
         <p style={introStyle}>
           Current intake is upload-file based. Supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm. Add source materials here, then generate only from usable curriculum and exemplar materials.
         </p>
-      </div>
+      </OrchardPageHeader>
 
       <input
         ref={curriculumInputRef}
@@ -814,18 +794,43 @@ function shouldCapturePlainText(fileName: string): boolean {
 
 
 function renderProcessingPipeline(status: MaterialStatus) {
-  const order = ["uploaded","extracting","analyzing","ready"]
+  if (status === "error") {
+    return [
+      "[x] Uploaded",
+      "[x] Extracting",
+      "[x] Analyzing",
+      "[!] Needs attention",
+    ].join(" -> ")
+  }
 
-  const currentIndex = order.indexOf(status === "error" ? "ready" : status)
+  const order: Array<"uploaded" | "extracting" | "analyzing" | "ready"> = [
+    "uploaded",
+    "extracting",
+    "analyzing",
+    "ready",
+  ]
 
   return order
-    .map((step, index) => {
-      const active = index <= currentIndex
+    .map((step) => {
+      const state = getProgressStepState(status, step)
       const label = step.charAt(0).toUpperCase() + step.slice(1)
-      return `${active ? "?" : "?"} ${label}`
+      const marker = getPipelineMarker(state, step)
+
+      return `${marker} ${label}`
     })
-    .join(" ? ")
+    .join(" -> ")
 }
+
+function getPipelineMarker(
+  state: "complete" | "current" | "upcoming" | "error",
+  step: "uploaded" | "extracting" | "analyzing" | "ready"
+): string {
+  if (state === "complete") return "[x]"
+  if (state === "error") return "[!]"
+  if (state === "current") return step === "ready" ? "[x]" : "[>]"
+  return "[ ]"
+}
+
 function formatStatus(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
