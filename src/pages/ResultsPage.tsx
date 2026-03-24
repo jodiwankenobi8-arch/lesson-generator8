@@ -18,7 +18,6 @@ import {
   orchardButtonStyle,
   orchardCardStyle,
   orchardNoticeStyle,
-  orchardPageIntroBlockStyle,
   orchardSectionLabelStyle,
   orchardSectionTitleStyle,
   orchardSoftCardStyle,
@@ -26,6 +25,7 @@ import {
   orchardTagStyle,
 } from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
+import { OrchardPageHeader } from "./OrchardPageHeader"
 
 const pageStyle: React.CSSProperties = {
   maxWidth: 980,
@@ -57,7 +57,6 @@ const sectionTitleStyle: React.CSSProperties = {
 }
 
 const pageIntroStyle: React.CSSProperties = {
-  ...orchardPageIntroBlockStyle,
   marginBottom: "var(--space-lg)",
 }
 
