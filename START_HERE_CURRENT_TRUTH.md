@@ -2,14 +2,14 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 80cd9ed
-- Last auto-sync UTC: 2026-03-23T21:04:03Z
+- Published main checkpoint: 1ac197d
+- Last auto-sync UTC: 2026-03-24T02:06:08Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 80cd9ed
+- Current published continuation point: 1ac197d
 - Current milestone: results package truth hardening and lazy export loading are landed on main
 - Current active seam: documentation reset is the current closeout step; after that, do one quick browser/manual Results recheck and then choose the next seam intentionally
 
