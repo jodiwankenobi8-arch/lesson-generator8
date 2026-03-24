@@ -3,10 +3,13 @@
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
 - Published checkpoint: 13669e7
-- Last auto-sync UTC: 2026-03-24T23:37:59Z
+- Last auto-sync UTC: 2026-03-24T23:27:29Z
 
 ## What this file is
 - This is an auto-generated continuation sync file.
 - It exists to keep the active continuation set aligned to the published checkpoint after each push.
 - It does not replace human-written seam handoffs.
 - Manual/browser verification results must still be recorded by hand.
+
+- orchard page-header consistency and Materials pipeline-state text repair are now landed on main
+
