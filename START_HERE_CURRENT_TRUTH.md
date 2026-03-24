@@ -2,14 +2,14 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 2b9e6d8
-- Last auto-sync UTC: 2026-03-24T15:52:36Z
+- Published main checkpoint: c1b602e
+- Last auto-sync UTC: 2026-03-24T16:28:39Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 2b9e6d8
+- Current published continuation point: c1b602e
 - Current milestone: results package truth hardening and lazy export loading are landed on main
 - Current active seam: Results/doc closeout is already complete; next step is to choose the next narrow implementation seam intentionally from the orchard continuation surface
 
