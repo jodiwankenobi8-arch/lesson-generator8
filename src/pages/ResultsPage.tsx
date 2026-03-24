@@ -18,8 +18,7 @@ import {
   orchardButtonStyle,
   orchardCardStyle,
   orchardNoticeStyle,
-  orchardSectionLabelStyle,
-  orchardSectionTitleStyle,
+  orchardPageShellStyle,
   orchardSoftCardStyle,
   orchardStatusBadgeStyle,
   orchardTagStyle,
@@ -28,6 +27,7 @@ import { useLessonStore } from "../state/useLessonStore"
 import { OrchardPageHeader } from "./OrchardPageHeader"
 
 const pageStyle: React.CSSProperties = {
+  ...orchardPageShellStyle,
   maxWidth: 980,
   margin: "0 auto",
 }
@@ -47,18 +47,6 @@ const heroGridStyle: React.CSSProperties = {
   gap: "var(--space-sm)",
 }
 
-const sectionLabelStyle: React.CSSProperties = {
-  ...orchardSectionLabelStyle,
-}
-
-const sectionTitleStyle: React.CSSProperties = {
-  ...orchardSectionTitleStyle,
-  fontSize: 32,
-}
-
-const pageIntroStyle: React.CSSProperties = {
-  marginBottom: "var(--space-lg)",
-}
 
 const introStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
@@ -103,17 +91,6 @@ const detailsSectionGridStyle: React.CSSProperties = {
   gap: 12,
 }
 
-const blockedTitleStyle: React.CSSProperties = {
-  ...orchardSectionTitleStyle,
-  fontSize: 32,
-  marginTop: 0,
-  marginBottom: "var(--space-sm)",
-}
-
-const blockedMessageStyle: React.CSSProperties = {
-  color: "var(--text-secondary)",
-  marginBottom: "var(--space-md)",
-}
 
 export default function ResultsPage() {
   const blueprint = useLessonStore((state) => state.blueprint)
@@ -208,18 +185,14 @@ export default function ResultsPage() {
 
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Planning Binder</div>
-      <h2 style={sectionTitleStyle}>
-        Results
-      </h2>
-      <div style={pageIntroStyle}>
+      <OrchardPageHeader label="Planning Binder" title="Results">
         <p style={introStyle}>
           Teacher-facing lesson package first. Review the generated package, confirm standards and source support, and export only the artifacts you want to use.
         </p>
         <p style={introStyle}>
           Evidence and planning details stay available below as secondary review surfaces when you need to inspect grounding more closely.
         </p>
-      </div>
+      </OrchardPageHeader>
 
       {(isRegenerating || regenerationError || lastDecisionSummary) && (
         <div style={binderFeedbackStackStyle}>
@@ -1384,12 +1357,10 @@ function BlockedResultsState({
 }) {
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Planning Binder</div>
-      <h2 style={blockedTitleStyle}>
-        {title}
-      </h2>
-      <p style={blockedMessageStyle}>{message}</p>
-      <div style={noticeStyle}>{details}</div>
+      <OrchardPageHeader label="Planning Binder" title={title}>
+        <p style={introStyle}>{message}</p>
+        <div style={{ ...noticeStyle, marginTop: "var(--space-sm)" }}>{details}</div>
+      </OrchardPageHeader>
       <div style={actionsStyle}>
         <Link to={linkTo} style={linkStyle}>
           {linkLabel}
