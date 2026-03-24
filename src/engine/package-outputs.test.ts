@@ -81,18 +81,45 @@ const spec: LessonSpec = {
 }
 
 function makeOutputContents(options: {
+  lessonPlan?: boolean
+  slides?: boolean
   assessment?: boolean
   centers?: boolean
+  createNewCenters?: boolean
   smallGroup?: boolean
   intervention?: boolean
   printables?: boolean
 } = {}): LessonOutputContents {
   const outputContents = createDefaultOutputContents()
 
-  outputContents.assessments.types.formative_assessment = Boolean(options.assessment)
-  outputContents.groups.byTier.T1.centers = Boolean(options.centers)
-  outputContents.groups.byTier.T2.small_group = Boolean(options.smallGroup)
-  outputContents.groups.byTier.T3.intervention = Boolean(options.intervention)
+  if (options.lessonPlan === false) {
+    outputContents.lessonPlan.selected = false
+  }
+
+  if (options.slides === false) {
+    outputContents.lessonSlides.selected = false
+  }
+
+  if (options.assessment) {
+    outputContents.assessment.types.exit_ticket = true
+  }
+
+  if (options.centers) {
+    outputContents.centers.options.use_what_you_have = true
+  }
+
+  if (options.createNewCenters) {
+    outputContents.centers.options.create_new_center_activities = true
+  }
+
+  if (options.smallGroup) {
+    outputContents.smallGroup.tiers.T2 = true
+  }
+
+  if (options.intervention) {
+    outputContents.smallGroup.tiers.T3 = true
+  }
+
   outputContents.other.printables = Boolean(options.printables)
 
   return normalizeOutputContents(outputContents)
@@ -198,10 +225,10 @@ describe("buildPackageOutputs", () => {
     expect(result.slides.length).toBeGreaterThan(0)
     expect(result.lessonPlan).toContain("Blueprint Readiness")
     expect(result.lessonPlan).toContain("Planning Notes")
-    expect(result.lessonPlan).toContain("Centers")
-    expect(result.lessonPlan).toContain("Formative Assessment Ideas")
+    expect(result.lessonPlan).toContain("Assessment")
     expect(result.lessonPlan).toContain("Teacher-Led Support")
     expect(result.lessonPlan).toContain("Intervention Support")
+    expect(result.lessonPlan).toContain("Assessment Connection")
     expect(result.centers).toEqual(["Word Sort: Sort long a and short a words."])
     expect(result.rotationPlan).toContain("Rotation 1: Word Sort: Sort long a and short a words.")
     expect(result.rotationPlan).toContain(
@@ -237,11 +264,11 @@ describe("buildPackageOutputs", () => {
       },
       {
         kind: "printables",
-        label: "Printables Export",
+        label: "Centers & Support Printables Export",
         fileName: "ELA-printables-export.pdf",
         format: "pdf",
         mimeType: "application/pdf",
-        content: expect.stringContaining("Centers"),
+        content: expect.stringContaining("Centers & Support Printables Export"),
       },
     ])
   })
@@ -262,7 +289,8 @@ describe("buildPackageOutputs", () => {
       outputContents: makeOutputContents({ assessment: true }),
     })
 
-    expect(result.lessonPlan).toContain("Formative Assessment Ideas")
+    expect(result.lessonPlan).toContain("Assessment")
+    expect(result.lessonPlan).toContain("Assessment Connection")
     expect(result.lessonPlan).not.toContain("Rotation Focus:")
     expect(result.lessonPlan).not.toContain("Teacher-Led Support")
     expect(result.lessonPlan).not.toContain("Intervention Support")
@@ -275,6 +303,7 @@ describe("buildPackageOutputs", () => {
     expect(result.exports[1].content).not.toContain("Rotation Focus:")
     expect(result.exports[1].content).not.toContain("Teacher-Led Support")
     expect(result.exports[1].content).not.toContain("Intervention Support")
+    expect(result.exports[0].content).not.toContain("Centers & Support Printables Export")
   })
 
   it("falls back to grounded target-based defaults when planning ideas are absent", () => {
@@ -290,7 +319,7 @@ describe("buildPackageOutputs", () => {
       blueprint,
       spec,
       outputContents: makeOutputContents({
-        centers: true,
+        createNewCenters: true,
         smallGroup: true,
         intervention: true,
         printables: true,
@@ -343,21 +372,25 @@ describe("buildPackageOutputs", () => {
       }),
     })
 
-    expect(result.lessonPlan).toContain("Centers")
     expect(result.lessonPlan).toContain("Teacher-Led Support")
     expect(result.lessonPlan).toContain("Intervention Support")
+    expect(result.lessonPlan).toContain("Assessment")
+    expect(result.lessonPlan).toContain("Assessment Connection")
     expect(result.lessonPlan).not.toContain("Small Group Ideas")
     expect(result.lessonPlan).not.toContain("Intervention Ideas")
 
     const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
     expect(printablesExport).toBeDefined()
+    expect(printablesExport!.label).toBe("Centers & Support Printables Export")
+    expect(printablesExport!.content).toContain("Centers & Support Printables Export")
+    expect(printablesExport!.content).toContain("Current scope:")
     expect(printablesExport!.content).toContain("Centers")
     expect(printablesExport!.content).toContain("Rotation Plan")
     expect(printablesExport!.content).toContain("Intervention Support")
     expect(printablesExport!.content).not.toContain("\nInterventions\n")
   })
 
-  it("does not let printables alone unlock optional centers or teacher-led support lanes", () => {
+  it("does not let the legacy printables compatibility flag unlock optional centers or teacher-led support lanes", () => {
     const result = buildPackageOutputs({
       inputs: {
         grade: "1",
@@ -388,12 +421,44 @@ describe("buildPackageOutputs", () => {
 
     const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
     expect(printablesExport).toBeDefined()
+    expect(printablesExport!.content).toContain("Centers & Support Printables Export")
     expect(printablesExport!.content).toContain("Centers")
     expect(printablesExport!.content).toContain("- No student centers defined.")
     expect(printablesExport!.content).toContain("Rotation Plan")
     expect(printablesExport!.content).toContain("No rotation plan defined.")
     expect(printablesExport!.content).toContain("Intervention Support")
     expect(printablesExport!.content).toContain("- No intervention support defined.")
+  })
+
+  it("includes the centers and support printables export when teacher-led support is selected", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas: makePlanningIdeas({ smallGroup: true }),
+      outputContents: makeOutputContents({ smallGroup: true }),
+    })
+
+    expect(result.exports.map((artifact) => artifact.kind)).toEqual([
+      "full_package",
+      "slides",
+      "lesson_plan",
+      "printables",
+    ])
+
+    const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
+    expect(printablesExport).toBeDefined()
+    expect(printablesExport!.label).toBe("Centers & Support Printables Export")
+    expect(printablesExport!.content).toContain("Centers & Support Printables Export")
+    expect(printablesExport!.content).toContain("Rotation Plan")
+    expect(printablesExport!.content).toContain("Teacher-Led Support Focus:")
   })
 
   it("keeps missing-area decision prompt language out of teacher-facing package sections and exports", () => {
@@ -489,6 +554,51 @@ describe("buildPackageOutputs", () => {
     bannedPhrases.forEach((phrase) => {
       expect(exportContent).not.toContain(phrase)
     })
+  })
+
+  it("treats lesson slides as an explicit requested output", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      outputContents: makeOutputContents({
+        slides: false,
+      }),
+    })
+
+    expect(result.slides).toEqual([])
+    expect(result.exports.map((artifact) => artifact.kind)).not.toContain("slides")
+  })
+
+  it("lets requested lesson parts narrow the lesson plan without reviving lesson-shape UI logic", () => {
+    const outputContents = makeOutputContents()
+    outputContents.lessonPlan.parts.opening = false
+    outputContents.lessonPlan.parts.differentiation = true
+
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas: makePlanningIdeas({ smallGroup: true }),
+      outputContents: normalizeOutputContents(outputContents),
+    })
+
+    expect(result.lessonPlan).not.toContain("\nOpening\n")
+    expect(result.lessonPlan).toContain("Differentiation")
   })
 
   it("does not bleed teacher-led support into a centers-only rotation plan", () => {

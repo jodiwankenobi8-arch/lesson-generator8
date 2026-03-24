@@ -1,4 +1,5 @@
 import {
+  CenterFocusKey,
   ExportArtifact,
   LessonBlueprint,
   LessonInputs,
@@ -10,6 +11,7 @@ import {
   createDefaultOutputContents,
   isGroupOutputSelected,
   isLessonPlanPartSelected,
+  isSupportPrintablesSelected,
 } from "../types"
 import { assembleSlideDeck } from "../slides/assembleSlideDeck"
 
@@ -33,6 +35,7 @@ type LessonPlanOutputOptions = {
 }
 
 type SupportBlockOutputOptions = {
+  outputContents: LessonOutputContents
   includeSmallGroupOutput: boolean
   includeInterventionOutput: boolean
 }
@@ -77,7 +80,7 @@ export function buildPackageOutputs(args: {
       )
     : ""
   const centers = includeCentersOutput
-    ? buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions)
+    ? buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions, outputContents)
     : []
   const rotationPlan =
     includeSmallGroupOutput
@@ -118,7 +121,7 @@ export function buildPackageOutputs(args: {
     {
       includeLessonSlidesExport: includeLessonSlidesOutput,
       includeLessonPlanExport: includeLessonPlanOutput,
-      includePrintablesExport: outputContents.other.printables,
+      includePrintablesExport: isSupportPrintablesSelected(outputContents),
     }
   )
 
@@ -173,81 +176,127 @@ function buildLessonPlan(
     includeInterventionOutput,
   } = lessonPlanOutputs
 
-  const header = [
-    `Grade: ${inputs.grade}`,
-    `Subject: ${inputs.subject}`,
-    `Standard: ${inputs.standard}`,
-    `Skill: ${inputs.skill}`,
-    `Topic: ${inputs.topic}`,
-    `Duration: ${inputs.duration}`,
-  ].join("\n")
-
+  const header = buildLessonHeader(inputs)
   const groundingBlock = buildLessonGroundingBlock(blueprint)
   const readinessBlock = buildBlueprintReadinessBlock(blueprint)
   const coverageBlock = buildCoverageDecisionBlock(planningIdeas, missingAreaDecisions)
 
-  const teachBlock = isLessonPlanPartSelected(outputContents, "teach")
-    ? buildSectionNarrativeBlock(spec.teach.title, [
-    `Model Resources: ${selectModelResources(blueprint)}`,
-    `Teacher Moves: ${joinOrFallback(
-      blueprint.structure.teacherMoves.slice(0, 3),
-      "teacher model, guided support"
-    )}`,
-    `Slide Shell Cue: ${joinOrFallback(
-      blueprint.structure.templateShell.slideShell.slice(0, 3),
-      "Objective -> Teach -> Guided Practice"
-    )}`,
-  ], spec.teach.steps)
+  const standardsBlock = isLessonPlanPartSelected(outputContents, "standards")
+    ? buildSectionNarrativeBlock("Standards", [
+        `Requested / grounded standards: ${buildStandardsSummary(inputs, blueprint)}`,
+      ], [])
+    : ""
+
+  const objectiveBlock = isLessonPlanPartSelected(outputContents, "objective")
+    ? buildSectionNarrativeBlock("Objective", [
+        buildObjectiveSummary(inputs, blueprint),
+      ], [])
+    : ""
+
+  const openingBlock = isLessonPlanPartSelected(outputContents, "opening")
+    ? buildSectionNarrativeBlock("Opening", [
+        `Launch Move: ${joinOrFallback(
+          blueprint.structure.templateShell.segmentOrder.slice(0, 2),
+          "Opening, objective, quick warm start"
+        )}`,
+        `Prompt Style: ${joinOrFallback(
+          blueprint.structure.promptStyle.slice(0, 2),
+          "teacher prompt"
+        )}`,
+      ], [
+        `Introduce the focus using ${selectModelResources(blueprint)}.`,
+        `Set the purpose for the lesson in a ${joinOrFallback(
+          blueprint.structure.tone.slice(0, 2),
+          "clear, supportive"
+        )} tone.`,
+      ])
+    : ""
+
+  const directInstructionBlock = isLessonPlanPartSelected(
+    outputContents,
+    "direct_instruction_modeling"
+  )
+    ? buildSectionNarrativeBlock("Direct Instruction / Modeling", [
+        `Model Resources: ${selectModelResources(blueprint)}`,
+        `Teacher Moves: ${joinOrFallback(
+          blueprint.structure.teacherMoves.slice(0, 3),
+          "teacher model, guided support"
+        )}`,
+        `Slide Shell Cue: ${joinOrFallback(
+          blueprint.structure.templateShell.slideShell.slice(0, 3),
+          "Objective -> Teach -> Guided Practice"
+        )}`,
+      ], spec.teach.steps)
     : ""
 
   const guidedBlock = isLessonPlanPartSelected(outputContents, "guided_practice")
-    ? buildSectionNarrativeBlock(spec.guidedPractice.title, [
-    `Practice Anchor: ${joinOrFallback(
-      blueprint.content.practiceIdeas.slice(0, 3),
-      "curriculum-aligned guided practice"
-    )}`,
-    `Prompt Style: ${joinOrFallback(
-      blueprint.structure.promptStyle.slice(0, 3),
-      "teacher prompt"
-    )}`,
-    `Timing Cue: ${joinOrFallback(
-      blueprint.structure.templateShell.timingShell.slice(0, 3),
-      "Mini-lesson | Practice | Closure"
-    )}`,
-  ], spec.guidedPractice.steps)
+    ? buildSectionNarrativeBlock("Guided Practice", [
+        `Practice Anchor: ${joinOrFallback(
+          blueprint.content.practiceIdeas.slice(0, 3),
+          "curriculum-aligned guided practice"
+        )}`,
+        `Prompt Style: ${joinOrFallback(
+          blueprint.structure.promptStyle.slice(0, 3),
+          "teacher prompt"
+        )}`,
+        `Timing Cue: ${joinOrFallback(
+          blueprint.structure.templateShell.timingShell.slice(0, 3),
+          "Mini-lesson | Practice | Closure"
+        )}`,
+      ], spec.guidedPractice.steps)
     : ""
 
   const independentBlock = isLessonPlanPartSelected(outputContents, "independent_practice")
-    ? buildSectionNarrativeBlock(spec.independentPractice.title, [
-    `Transfer Task: ${selectIndependentResources(blueprint)}`,
-    `Student Practice: ${joinOrFallback(
-      blueprint.content.practiceIdeas.slice(0, 2),
-      "independent application"
-    )}`,
-  ], spec.independentPractice.steps)
-    : ""
-
-  const centersBlock = includeCentersOutput
-    ? buildSectionNarrativeBlock(
-        spec.centers.title,
-        [
-          `Rotation Focus: ${joinOrFallback(
-            planningIdeas?.centerIdeas.map((idea) => idea.title).slice(0, 3) ?? [],
-            "student-independent practice, partner practice, independent application"
-          )}`,
-        ],
-        resolveCenterNarrativeSteps(spec)
-      )
+    ? buildSectionNarrativeBlock("Independent Practice", [
+        `Transfer Task: ${selectIndependentResources(blueprint)}`,
+        `Student Practice: ${joinOrFallback(
+          blueprint.content.practiceIdeas.slice(0, 2),
+          "independent application"
+        )}`,
+      ], spec.independentPractice.steps)
     : ""
 
   const closureBlock = isLessonPlanPartSelected(outputContents, "closure")
-    ? buildSectionNarrativeBlock(spec.closure.title, [
-    `Review Focus: ${selectClosureResources(blueprint)}`,
-    `Delivery Tone: ${joinOrFallback(
-      blueprint.structure.tone.slice(0, 2),
-      "clear instructional tone"
-    )}`,
-  ], spec.closure.steps)
+    ? buildSectionNarrativeBlock("Closure", [
+        `Review Focus: ${selectClosureResources(blueprint)}`,
+        `Delivery Tone: ${joinOrFallback(
+          blueprint.structure.tone.slice(0, 2),
+          "clear instructional tone"
+        )}`,
+      ], spec.closure.steps)
+    : ""
+
+  const differentiationBlock = isLessonPlanPartSelected(outputContents, "differentiation")
+    ? buildSectionNarrativeBlock("Differentiation", [
+        `Centers: ${includeCentersOutput ? "Requested" : "Not requested"}`,
+        `Teacher-Led Small Group: ${includeSmallGroupOutput ? "Requested" : "Not requested"}`,
+        `Intervention / Tier 3: ${includeInterventionOutput ? "Requested" : "Not requested"}`,
+      ], buildDifferentiationSteps(blueprint, outputContents))
+    : ""
+
+  const vocabularyBlock = isLessonPlanPartSelected(outputContents, "vocabulary")
+    ? buildSectionNarrativeBlock("Vocabulary", [
+        `Story + academic vocabulary: ${buildVocabularySummary(blueprint)}`,
+      ], [])
+    : ""
+
+  const materialsPrepBlock = isLessonPlanPartSelected(outputContents, "materials_prep_list")
+    ? buildSectionNarrativeBlock("Materials / Prep List", [
+        `Lesson resources: ${selectModelResources(blueprint)}`,
+        `Independent materials: ${selectIndependentResources(blueprint)}`,
+      ], buildMaterialsPrepSteps(blueprint, outputContents))
+    : ""
+
+  const assessmentConnectionBlock = isLessonPlanPartSelected(
+    outputContents,
+    "assessment_connection"
+  )
+    ? buildSectionNarrativeBlock("Assessment Connection", [
+        `Requested assessment outputs: ${buildSelectedAssessmentTypeSummary(outputContents)}`,
+        outputContents.assessment.selected
+          ? "Answer keys generate automatically where applicable."
+          : "No assessment output requested yet.",
+      ], [])
     : ""
 
   const planningBlock = buildPlanningBlock(planningIdeas)
@@ -256,6 +305,7 @@ function buildLessonPlan(
     planningIdeas,
     missingAreaDecisions,
     {
+      outputContents,
       includeSmallGroupOutput,
       includeInterventionOutput,
     }
@@ -266,16 +316,238 @@ function buildLessonPlan(
     groundingBlock,
     readinessBlock,
     coverageBlock,
-    teachBlock,
+    standardsBlock,
+    objectiveBlock,
+    openingBlock,
+    directInstructionBlock,
     guidedBlock,
     independentBlock,
-    centersBlock,
     closureBlock,
+    differentiationBlock,
+    vocabularyBlock,
+    materialsPrepBlock,
+    assessmentConnectionBlock,
     planningBlock,
     supportBlock,
   ]
     .filter(Boolean)
     .join("\n\n")
+}
+
+function buildLessonHeader(inputs: LessonInputs): string {
+  const lines = [
+    `Grade: ${inputs.grade}`,
+    `Subject: ${inputs.subject}`,
+    inputs.standard.trim() ? `Standard(s): ${inputs.standard}` : "",
+    `Skill / Focus: ${inputs.skill}`,
+    inputs.topic.trim() ? `Topic / Text / Unit: ${inputs.topic}` : "",
+    inputs.duration.trim() ? `Duration: ${inputs.duration}` : "",
+    inputs.notes?.trim() ? `Anything I should know?: ${inputs.notes}` : "",
+  ]
+
+  return lines.filter(Boolean).join("\n")
+}
+
+function buildStandardsSummary(
+  inputs: LessonInputs,
+  blueprint: LessonBlueprint
+): string {
+  const standards = [inputs.standard, ...blueprint.content.standards]
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  return joinOrFallback(Array.from(new Set(standards)).slice(0, 4), "No standards surfaced yet.")
+}
+
+function buildObjectiveSummary(
+  inputs: LessonInputs,
+  blueprint: LessonBlueprint
+): string {
+  const topic = inputs.topic.trim() || selectTextFocus(blueprint, "the requested lesson context")
+  return `Students will work on ${inputs.skill} through ${topic}.`
+}
+
+function buildDifferentiationSteps(
+  blueprint: LessonBlueprint,
+  outputContents: LessonOutputContents
+): string[] {
+  const steps: string[] = []
+
+  if (outputContents.centers.selected) {
+    steps.push("Use centers for student-independent follow-through while teacher-led support happens in a separate lane.")
+  }
+
+  if (outputContents.smallGroup.selected) {
+    steps.push(`Teacher-led tiers requested: ${buildSelectedSmallGroupTierSummary(outputContents)}.`)
+  }
+
+  if (steps.length === 0) {
+    steps.push(`Differentiate using ${selectPracticeFocus(blueprint, "targeted lesson support")} without forcing a separate center or teacher-led lane.`)
+  }
+
+  return steps
+}
+
+function buildVocabularySummary(blueprint: LessonBlueprint): string {
+  return joinOrFallback(blueprint.content.vocabulary.slice(0, 6), "No vocabulary surfaced yet.")
+}
+
+function buildMaterialsPrepSteps(
+  blueprint: LessonBlueprint,
+  outputContents: LessonOutputContents
+): string[] {
+  const steps = [
+    `Have ${selectModelResources(blueprint)} ready for direct instruction and modeling.`,
+    `Prepare ${selectIndependentResources(blueprint)} for student practice.`,
+  ]
+
+  if (outputContents.centers.selected) {
+    steps.push("Prepare any student-independent center materials separately from teacher-led support materials.")
+  }
+
+  if (outputContents.smallGroup.selected) {
+    steps.push("Pull teacher-led support materials for the requested small-group tiers.")
+  }
+
+  return steps
+}
+
+function buildSelectedAssessmentTypeSummary(outputContents: LessonOutputContents): string {
+  const labels = buildSelectedAssessmentLabels(outputContents)
+  return labels.length > 0 ? labels.join(", ") : "No assessment output requested"
+}
+
+function buildSelectedAssessmentLabels(outputContents: LessonOutputContents): string[] {
+  const labels: Array<{ key: string; label: string }> = [
+    { key: "observation_checklist", label: "Observation checklist" },
+    { key: "exit_ticket", label: "Exit ticket" },
+    { key: "running_record_conference_notes", label: "Running record / conference notes" },
+    { key: "quick_oral_check", label: "Quick oral check" },
+    { key: "end_of_lesson_task", label: "End-of-lesson task" },
+    { key: "skill_check", label: "Skill check" },
+    { key: "response_sheet", label: "Response sheet" },
+    { key: "brief_performance_task", label: "Brief performance task" },
+  ]
+
+  return labels
+    .filter(({ key }) => outputContents.assessment.types[key as keyof typeof outputContents.assessment.types])
+    .map(({ label }) => label)
+}
+
+function buildSelectedSmallGroupTierSummary(outputContents: LessonOutputContents): string {
+  const tiers = ["T1", "T2", "T3", "Extension"].filter(
+    (tier) => outputContents.smallGroup.tiers[tier as keyof typeof outputContents.smallGroup.tiers]
+  )
+
+  return tiers.length > 0 ? tiers.join(", ") : "none selected"
+}
+
+function buildCenterFocusLine(
+  blueprint: LessonBlueprint,
+  focus: CenterFocusKey
+): string {
+  switch (focus) {
+    case "letter_identification":
+      return `Letter identification center: Match, sort, or name target letters using ${selectWordListFocus(
+        blueprint,
+        "teacher-selected letter cards"
+      )}.`
+    case "phonological_awareness":
+      return `Phonological awareness center: Practice listening for rhyme, syllables, and larger sound parts through ${selectPracticeFocus(
+        blueprint,
+        "teacher-guided oral language routines"
+      )}.`
+    case "phonemic_awareness":
+      return `Phonemic awareness center: Blend, segment, and manipulate sounds using ${selectPracticeFocus(
+        blueprint,
+        "oral sound work tied to the lesson focus"
+      )}.`
+    case "phonics":
+      return `Phonics center: Read and sort ${selectWordListFocus(
+        blueprint,
+        "target words"
+      )} while practicing the target sound-spelling pattern.`
+    case "high_frequency_words":
+      return `High-frequency word center: Review and read ${selectWordListFocus(
+        blueprint,
+        "teacher-selected high-frequency words"
+      )} during quick recognition practice.`
+    case "word_building":
+      return `Word-building center: Build and change words from ${selectWordListFocus(
+        blueprint,
+        "teacher-selected target words"
+      )}.`
+    case "vocabulary_oral_language":
+      return `Vocabulary & oral language center: Revisit ${selectVocabularyFocus(
+        blueprint,
+        "key lesson vocabulary"
+      )} through student-friendly oral language practice.`
+    case "handwriting_fine_motor":
+      return `Handwriting / fine motor center: Trace, build, or write ${selectWordListFocus(
+        blueprint,
+        "target letters or words"
+      )} with attention to correct formation.`
+    case "decodable_reading":
+      return `Decodable reading center: Revisit ${selectTextFocus(
+        blueprint,
+        "a decodable or teacher-provided text"
+      )} for independent reading practice.`
+    case "fluency":
+      return `Fluency center: Practice accurate, repeated reading with ${selectTextFocus(
+        blueprint,
+        "teacher-provided text"
+      )}.`
+    case "reading_response":
+      return `Reading response center: Respond to ${selectTextFocus(
+        blueprint,
+        "teacher-provided text"
+      )} through drawing, discussion, or simple written reflection.`
+    case "comprehension":
+      return `Comprehension center: Revisit ${selectTextFocus(
+        blueprint,
+        "teacher-provided text"
+      )} and use ${selectPracticeFocus(
+        blueprint,
+        "a simple understanding check"
+      )} to show understanding.`
+    case "writing_sentence_work":
+      return `Writing / sentence work center: Use ${selectVocabularyFocus(
+        blueprint,
+        "key vocabulary"
+      )} and ${selectWordListFocus(
+        blueprint,
+        "teacher-selected words"
+      )} in sentence-level writing.`
+  }
+}
+
+function buildSelectedCenterFocusLines(
+  blueprint: LessonBlueprint,
+  outputContents: LessonOutputContents
+): string[] {
+  const focusOrder: CenterFocusKey[] = [
+    "letter_identification",
+    "phonological_awareness",
+    "phonemic_awareness",
+    "phonics",
+    "high_frequency_words",
+    "word_building",
+    "vocabulary_oral_language",
+    "handwriting_fine_motor",
+    "decodable_reading",
+    "fluency",
+    "reading_response",
+    "comprehension",
+    "writing_sentence_work",
+  ]
+
+  return focusOrder
+    .filter((focus) => outputContents.centers.focuses[focus])
+    .map((focus) => buildCenterFocusLine(blueprint, focus))
+}
+
+function dedupeStrings(items: string[]): string[] {
+  return Array.from(new Set(items.map((item) => item.trim()).filter(Boolean)))
 }
 
 function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
@@ -470,26 +742,37 @@ function buildSupportBlock(
   planningIdeas?: LessonPlanningIdeas,
   missingAreaDecisions: MissingAreaDecisionMap = {},
   supportOutputs: SupportBlockOutputOptions = {
+    outputContents: createDefaultOutputContents(),
     includeSmallGroupOutput: true,
     includeInterventionOutput: true,
   }
 ): string {
-  if (!planningIdeas) {
-    return ""
+  const { outputContents, includeSmallGroupOutput, includeInterventionOutput } = supportOutputs
+
+  const sections: string[] = []
+
+  if (outputContents.assessment.selected) {
+    const assessmentSelections = buildSelectedAssessmentLabels(outputContents).map(
+      (label) => `- ${label}`
+    )
+    const formativeIdeas = planningIdeas?.formativeAssessmentIdeas.map(
+      (idea) => `- ${idea.title}: ${idea.description}`
+    ) ?? []
+
+    sections.push(
+      "Assessment",
+      ...assessmentSelections,
+      ...formativeIdeas,
+      "- Answer keys generate automatically where applicable."
+    )
   }
-
-  const { includeSmallGroupOutput, includeInterventionOutput } = supportOutputs
-
-  const formative = planningIdeas.formativeAssessmentIdeas.map(
-    (idea) => `- ${idea.title}: ${idea.description}`
-  )
 
   const smallGroup = includeSmallGroupOutput
     ? resolveDecisionAwareList({
         component: "small_group",
-        plannedItems: planningIdeas.smallGroupIdeas.map(
+        plannedItems: planningIdeas?.smallGroupIdeas.map(
           (idea) => `- ${idea.title}: ${idea.description}`
-        ),
+        ) ?? [],
         missingAreaDecisions,
         addFallbackItems: [`- ${buildAddSmallGroupSupportLine(blueprint)}`],
       })
@@ -498,9 +781,9 @@ function buildSupportBlock(
   const interventions = includeInterventionOutput
     ? resolveDecisionAwareList({
         component: "intervention",
-        plannedItems: planningIdeas.interventionIdeas.map(
+        plannedItems: planningIdeas?.interventionIdeas.map(
           (idea) => `- ${idea.title}: ${idea.description}`
-        ),
+        ) ?? [],
         missingAreaDecisions,
         addFallbackItems: buildAddFallbackInterventions(blueprint).map(
           (item) => `- ${item}`
@@ -508,14 +791,12 @@ function buildSupportBlock(
       })
     : []
 
-  const sections: string[] = []
-
-  if (formative.length > 0) {
-    sections.push("Formative Assessment Ideas", ...formative)
-  }
-
   if (smallGroup.length > 0) {
-    sections.push("Teacher-Led Support", ...smallGroup)
+    sections.push(
+      "Teacher-Led Support",
+      `- Requested tiers: ${buildSelectedSmallGroupTierSummary(outputContents)}`,
+      ...smallGroup
+    )
   }
 
   if (interventions.length > 0) {
@@ -540,19 +821,43 @@ function buildBlueprintReadinessBlock(blueprint: LessonBlueprint): string {
 function buildCenters(
   blueprint: LessonBlueprint,
   spec: LessonSpec,
-  planningIdeas?: LessonPlanningIdeas,
-  missingAreaDecisions: MissingAreaDecisionMap = {}
+  planningIdeas: LessonPlanningIdeas | undefined,
+  missingAreaDecisions: MissingAreaDecisionMap = {},
+  outputContents: LessonOutputContents
 ): string[] {
-  const groundedDefaults = buildGroundedCenterDefaults(blueprint, spec)
+  const plannedItems = outputContents.centers.options.use_what_you_have
+    ? planningIdeas?.centerIdeas.map((idea) => `${idea.title}: ${idea.description}`) ?? []
+    : []
 
-  return resolveDecisionAwareList({
-    component: "centers",
-    plannedItems:
-      planningIdeas?.centerIdeas.map((idea) => `${idea.title}: ${idea.description}`) ?? [],
-    missingAreaDecisions,
-    addFallbackItems: groundedDefaults,
-    defaultItems: groundedDefaults,
-  })
+  const generatedItems = outputContents.centers.options.create_new_center_activities
+    ? buildGroundedCenterDefaults(blueprint, spec)
+    : []
+
+  const focusItems = buildSelectedCenterFocusLines(blueprint, outputContents)
+
+  const requestedItems = dedupeStrings([
+    ...plannedItems,
+    ...generatedItems,
+    ...focusItems,
+  ])
+
+  if (shouldLeaveOut("centers", missingAreaDecisions)) {
+    return []
+  }
+
+  if (requestedItems.length > 0) {
+    return requestedItems
+  }
+
+  if (shouldAdd("centers", missingAreaDecisions)) {
+    return buildGroundedCenterDefaults(blueprint, spec)
+  }
+
+  if (outputContents.centers.options.use_what_you_have) {
+    return buildGroundedCenterDefaults(blueprint, spec)
+  }
+
+  return []
 }
 
 function buildRotationPlan(
@@ -999,22 +1304,27 @@ function buildExports(
   if (exportOptions.includePrintablesExport) {
     artifacts.push({
       kind: "printables",
-      label: "Printables Export",
+      label: "Centers & Support Printables Export",
       fileName: `${safeSubject}-printables-export.pdf`,
       format: "pdf",
       mimeType: "application/pdf",
       content: buildPrintablesExportText(centers, rotationPlan, interventions),
     })
   }
-
-    if (artifacts.length > 0) {
+  if (artifacts.length > 0) {
     artifacts.unshift({
       kind: "full_package",
       format: "zip",
       label: "Full Lesson Package",
       fileName: `${safeSubject}-full-lesson-package.zip`,
       mimeType: "application/zip",
-      content: [lessonPlan, slides.join("\n\n"), buildPrintablesExportText(centers, rotationPlan, interventions)]
+      content: [
+        lessonPlan,
+        slides.join("\n\n"),
+        exportOptions.includePrintablesExport
+          ? buildPrintablesExportText(centers, rotationPlan, interventions)
+          : "",
+      ]
         .filter(Boolean)
         .join("\n\n"),
     })
@@ -1049,7 +1359,9 @@ function buildPrintablesExportText(
       : ["- No intervention support defined."]
 
   return [
-    "Printables Export",
+    "Centers & Support Printables Export",
+    "",
+    "Current scope: selected centers, rotation plans, and teacher-led support materials where this repo already supports printable output.",
     "",
     "Centers",
     ...centerLines,

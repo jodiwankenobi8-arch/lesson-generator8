@@ -2,9 +2,10 @@ import React from "react"
 import { useNavigate } from "react-router-dom"
 import {
   AssessmentOutputTypeKey,
-  GroupOutputKindKey,
-  LessonMode,
+  CenterFocusKey,
+  CenterOutputOptionKey,
   LessonPlanContentPartKey,
+  SmallGroupTierKey,
   countSelectedOutputSections,
 } from "../engine/types"
 import {
@@ -22,7 +23,7 @@ import {
 } from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 
-type LessonPlanPartOption = {
+type LessonPartOption = {
   key: LessonPlanContentPartKey
   title: string
   description: string
@@ -34,77 +35,229 @@ type AssessmentOption = {
   description: string
 }
 
-type GroupOption = {
-  key: GroupOutputKindKey
+type CenterOption = {
+  key: CenterOutputOptionKey
   title: string
   description: string
 }
 
-const lessonPlanPartOptions: LessonPlanPartOption[] = [
+type CenterFocusOption = {
+  key: CenterFocusKey
+  title: string
+  description: string
+}
+
+type SmallGroupTierOption = {
+  key: SmallGroupTierKey
+  title: string
+  description: string
+}
+
+const lessonPartOptions: LessonPartOption[] = [
   {
-    key: "teach",
-    title: "Teach / mini-lesson",
-    description: "Direct instruction or modeled teaching in the teacher lesson plan.",
+    key: "standards",
+    title: "Standards",
+    description: "Show the target standard(s) or curriculum-grounded standards in the lesson plan.",
+  },
+  {
+    key: "objective",
+    title: "Objective",
+    description: "Include a clear teacher-facing objective tied to the lesson focus.",
+  },
+  {
+    key: "opening",
+    title: "Opening",
+    description: "Launch the lesson with an opening, warm start, or context-setting move.",
+  },
+  {
+    key: "direct_instruction_modeling",
+    title: "Direct instruction / modeling",
+    description: "Teacher modeling, explanation, think-aloud, or demonstration.",
   },
   {
     key: "guided_practice",
     title: "Guided practice",
-    description: "Supported practice with teacher prompts or shared work.",
+    description: "Supported practice with prompts, shared work, or guided follow-through.",
   },
   {
     key: "independent_practice",
     title: "Independent practice",
-    description: "Student practice that can stand on its own after teaching.",
+    description: "Student application that can stand on its own after teaching.",
   },
   {
     key: "closure",
     title: "Closure",
-    description: "A wrap-up, recap, or end-of-lesson reflection in the lesson plan.",
+    description: "Wrap-up, reflection, recap, or end-of-lesson close.",
+  },
+  {
+    key: "differentiation",
+    title: "Differentiation",
+    description: "Teacher-facing notes for support, reteach, extension, or pacing differences.",
+  },
+  {
+    key: "vocabulary",
+    title: "Vocabulary",
+    description: "Story vocabulary and academic vocabulary connected to the lesson.",
+  },
+  {
+    key: "materials_prep_list",
+    title: "Materials / prep list",
+    description: "Supplies, source materials, and setup notes the teacher should have ready.",
+  },
+  {
+    key: "assessment_connection",
+    title: "Assessment connection",
+    description: "How the requested assessments connect to the lesson and what they are checking.",
   },
 ]
 
-const assessmentOptions: AssessmentOption[] = [
+const formativeAssessmentOptions: AssessmentOption[] = [
   {
-    key: "formative_assessment",
-    title: "Formative assessment / exit check",
-    description:
-      "Add a quick check for understanding or exit-check support inside the lesson package.",
+    key: "observation_checklist",
+    title: "Observation checklist",
+    description: "A quick look-for list the teacher can use while students work.",
+  },
+  {
+    key: "exit_ticket",
+    title: "Exit ticket",
+    description: "A short end-of-lesson check to see what students can do independently.",
+  },
+  {
+    key: "running_record_conference_notes",
+    title: "Running record / conference notes",
+    description: "Teacher note-capture for conferring, quick records, or guided checkpoints.",
+  },
+  {
+    key: "quick_oral_check",
+    title: "Quick oral check",
+    description: "A spoken check for understanding during or right after instruction.",
   },
 ]
 
-const t1GroupOptions: GroupOption[] = [
+const summativeAssessmentOptions: AssessmentOption[] = [
   {
-    key: "centers",
-    title: "Student-independent groups / centers",
-    description:
-      "Printable or rotation-ready support for student-independent centers or station work.",
+    key: "end_of_lesson_task",
+    title: "End-of-lesson task",
+    description: "A short task that asks students to show the lesson target independently.",
+  },
+  {
+    key: "skill_check",
+    title: "Skill check",
+    description: "A focused check on the requested skill or standard.",
+  },
+  {
+    key: "response_sheet",
+    title: "Response sheet",
+    description: "A simple written response page tied to the requested lesson output.",
+  },
+  {
+    key: "brief_performance_task",
+    title: "Brief performance task",
+    description: "A short application task when students need to show the skill in context.",
   },
 ]
 
-const t2GroupOptions: GroupOption[] = [
+const centerOptions: CenterOption[] = [
   {
-    key: "small_group",
-    title: "Teacher-led support group",
-    description:
-      "Teacher-facing support for a guided small-group or teacher-table follow-through.",
+    key: "use_what_you_have",
+    title: "Ready-to-Use Center Ideas",
+    description: "Suggested center ideas using materials and resources already available in your classroom.",
+  },
+  {
+    key: "create_new_center_activities",
+    title: "Lesson-Aligned Center Printables",
+    description: "New printable center materials created to match the lesson.",
   },
 ]
 
-const t3GroupOptions: GroupOption[] = [
+const centerFocusOptions: CenterFocusOption[] = [
   {
-    key: "intervention",
-    title: "Teacher-led intervention",
-    description:
-      "Targeted reteach or intervention support when students need extra help.",
+    key: "letter_identification",
+    title: "Letter Identification",
+    description: "Letter recognition, matching, naming, and sorting work.",
+  },
+  {
+    key: "phonological_awareness",
+    title: "Phonological Awareness",
+    description: "Listening for rhyme, syllables, onset-rime, and larger sound units.",
+  },
+  {
+    key: "phonemic_awareness",
+    title: "Phonemic Awareness",
+    description: "Hearing, isolating, blending, segmenting, and manipulating phonemes.",
+  },
+  {
+    key: "phonics",
+    title: "Phonics",
+    description: "Sound-spelling practice with target letters, patterns, and decoding work.",
+  },
+  {
+    key: "high_frequency_words",
+    title: "High-Frequency Words",
+    description: "Recognition and practice with high-frequency or heart words.",
+  },
+  {
+    key: "word_building",
+    title: "Word Building",
+    description: "Building, changing, and reading words with letters or word parts.",
+  },
+  {
+    key: "vocabulary_oral_language",
+    title: "Vocabulary & Oral Language",
+    description: "Student-friendly vocabulary practice, speaking, and language development.",
+  },
+  {
+    key: "handwriting_fine_motor",
+    title: "Handwriting / Fine Motor",
+    description: "Letter formation, tracing, grip, and other fine-motor tasks.",
+  },
+  {
+    key: "decodable_reading",
+    title: "Decodable Reading",
+    description: "Reading connected text or controlled text that matches the target skill.",
+  },
+  {
+    key: "fluency",
+    title: "Fluency",
+    description: "Accuracy, pacing, repeated reading, and smooth oral reading practice.",
+  },
+  {
+    key: "reading_response",
+    title: "Reading Response",
+    description: "Drawing, discussing, or writing to respond to text.",
+  },
+  {
+    key: "comprehension",
+    title: "Comprehension",
+    description: "Meaning-making, retell, questions, and understanding checks.",
+  },
+  {
+    key: "writing_sentence_work",
+    title: "Writing / Sentence Work",
+    description: "Sentence-level writing, dictation, labeling, and written response work.",
   },
 ]
 
-const otherOutputOptions = [
+const smallGroupTierOptions: SmallGroupTierOption[] = [
   {
-    key: "printables" as const,
-    title: "Printables pack",
-    description:
-      "A broader printable packet when you want extra printable artifacts beyond the core lesson package.",
+    key: "T1",
+    title: "Tier 1",
+    description: "Teacher-led support for on-track students who still benefit from a guided check-in.",
+  },
+  {
+    key: "T2",
+    title: "Tier 2",
+    description: "Teacher-led small-group support for students who need targeted follow-through.",
+  },
+  {
+    key: "T3",
+    title: "Tier 3",
+    description: "Teacher-led intervention or reteach for students who need the most support.",
+  },
+  {
+    key: "Extension",
+    title: "Extension",
+    description: "Teacher-led extension or enrichment for students ready to stretch the same lesson focus.",
   },
 ]
 
@@ -122,7 +275,7 @@ const pageIntroStyle: React.CSSProperties = {
 const introStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
   fontSize: 16,
-  maxWidth: 720,
+  maxWidth: 760,
   margin: 0,
   lineHeight: 1.6,
 }
@@ -132,10 +285,17 @@ const cardStyle: React.CSSProperties = {
   padding: "var(--space-xl)",
 }
 
-const gridStyle: React.CSSProperties = {
+const infoGridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
   gap: "var(--space-md)",
+}
+
+const requestGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "var(--space-md)",
+  marginTop: "var(--space-md)",
 }
 
 const fullWidthStyle: React.CSSProperties = {
@@ -151,7 +311,7 @@ const sectionTitleStyle: React.CSSProperties = {
   fontSize: 32,
 }
 
-const labelStyle: React.CSSProperties = {
+const fieldLabelStyle: React.CSSProperties = {
   display: "block",
   fontWeight: 700,
   marginBottom: 6,
@@ -164,10 +324,15 @@ const inputStyle: React.CSSProperties = {
 }
 
 const helpStyle: React.CSSProperties = {
-  marginTop: 4,
+  marginTop: 6,
   fontSize: 12,
   color: "var(--text-secondary)",
   fontWeight: 400,
+  lineHeight: 1.5,
+}
+
+const noticeStyle: React.CSSProperties = {
+  ...orchardNoticeStyle,
 }
 
 const buttonRowStyle: React.CSSProperties = {
@@ -194,30 +359,6 @@ const disabledButtonStyle: React.CSSProperties = {
   opacity: 0.8,
 }
 
-const noticeStyle: React.CSSProperties = {
-  ...orchardNoticeStyle,
-}
-
-const modeCardStyle: React.CSSProperties = {
-  ...orchardSoftCardStyle,
-  padding: "var(--space-lg)",
-}
-
-const modeOptionStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "flex-start",
-  gap: 10,
-  padding: "12px 0",
-  borderTop: "1px solid var(--border-paper)",
-}
-
-const requestGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-  gap: "var(--space-md)",
-  marginTop: "var(--space-md)",
-}
-
 const outputSectionCardStyle: React.CSSProperties = {
   ...orchardSoftCardStyle,
   padding: "var(--space-lg)",
@@ -225,11 +366,16 @@ const outputSectionCardStyle: React.CSSProperties = {
   gap: "var(--space-sm)",
 }
 
-const tierCardStyle: React.CSSProperties = {
+const subgroupBlockStyle: React.CSSProperties = {
   border: "1px solid var(--border-paper)",
   borderRadius: "var(--radius-md)",
-  padding: "12px 14px",
-  background: "rgba(255, 255, 255, 0.78)",
+  padding: "14px 16px",
+  background: "rgba(255, 255, 255, 0.82)",
+}
+
+const cranberryStyle: React.CSSProperties = {
+  color: "var(--cranberry, #B8545A)",
+  marginLeft: 4,
 }
 
 export default function InputsPage() {
@@ -237,18 +383,15 @@ export default function InputsPage() {
 
   const inputs = useLessonStore((state) => state.inputs)
   const setInputs = useLessonStore((state) => state.setInputs)
-  const selectedLessonMode = useLessonStore((state) => state.selectedLessonMode)
-  const setSelectedLessonMode = useLessonStore((state) => state.setSelectedLessonMode)
   const outputContents = useLessonStore((state) => state.outputContents)
+  const toggleLessonPlanOutput = useLessonStore((state) => state.toggleLessonPlanOutput)
+  const toggleLessonSlidesOutput = useLessonStore((state) => state.toggleLessonSlidesOutput)
   const toggleLessonPlanPart = useLessonStore((state) => state.toggleLessonPlanPart)
   const toggleAssessmentType = useLessonStore((state) => state.toggleAssessmentType)
-  const toggleGroupOutput = useLessonStore((state) => state.toggleGroupOutput)
-  const toggleOtherOutput = useLessonStore((state) => state.toggleOtherOutput)
+  const toggleCenterOption = useLessonStore((state) => state.toggleCenterOption)
+  const toggleCenterFocus = useLessonStore((state) => state.toggleCenterFocus)
+  const toggleSmallGroupTier = useLessonStore((state) => state.toggleSmallGroupTier)
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
-  const targetPreview = useLessonStore((state) => state.getTargetPreview)()
-  const [showLessonShapeOverride, setShowLessonShapeOverride] = React.useState(
-    selectedLessonMode !== "single"
-  )
 
   const updateInput =
     (field: keyof typeof inputs) =>
@@ -260,29 +403,23 @@ export default function InputsPage() {
       setInputs({ [field]: event.target.value })
     }
 
-  const targetNoticeStyle: React.CSSProperties = targetPreview.isMixedTarget
-    ? {
-        ...orchardNoticeStyle,
-        background: "rgba(242, 192, 120, 0.20)",
-        border: "1px solid var(--border-honey)",
-        color: "var(--warm-brown)",
-      }
-    : {
-        ...orchardNoticeStyle,
-      }
-
   const selectedOutputSections = countSelectedOutputSections(outputContents)
-  const selectedLessonPlanParts = lessonPlanPartOptions.filter(
-    (option) => outputContents.lessonPlan.parts[option.key]
-  ).length
-  const selectedAssessmentTypes = assessmentOptions.filter(
-    (option) => outputContents.assessments.types[option.key]
-  ).length
-  const selectedGroupKinds = [
-    outputContents.groups.byTier.T1.centers,
-    outputContents.groups.byTier.T2.small_group,
-    outputContents.groups.byTier.T3.intervention,
-  ].filter(Boolean).length
+  const selectedRequestedParts = lessonPartOptions.filter((option) => {
+    return outputContents.lessonPlan.parts[option.key]
+  }).length
+  const selectedAssessmentCount = [
+    ...formativeAssessmentOptions,
+    ...summativeAssessmentOptions,
+  ].filter((option) => outputContents.assessment.types[option.key]).length
+  const selectedCenterFormats = centerOptions.filter((option) => {
+    return outputContents.centers.options[option.key]
+  }).length
+  const selectedCenterFocuses = centerFocusOptions.filter((option) => {
+    return outputContents.centers.focuses[option.key]
+  }).length
+  const selectedSmallGroupTiers = smallGroupTierOptions.filter((option) => {
+    return outputContents.smallGroup.tiers[option.key]
+  }).length
 
   return (
     <div style={pageStyle}>
@@ -291,352 +428,269 @@ export default function InputsPage() {
 
       <div style={pageIntroStyle}>
         <p style={introStyle}>
-          Define the lesson intent before adding curriculum and exemplar materials.
+          Start with the lesson information, then choose the lesson parts and
+          outputs you actually want.
         </p>
         <p style={introStyle}>
-          The next step is upload-file intake only. Materials accepts .txt, .pdf,
-          .docx, .pptx, .html, and .htm source files. Curriculum grounds content.
-          Exemplar grounds presentation and structure.
+          Curriculum stays the content authority. Exemplar stays the
+          presentation and structure authority. The next step is still Materials,
+          where upload-file intake accepts .txt, .pdf, .docx, .pptx, .html, and
+          .htm sources.
         </p>
         <p style={introStyle}>
-          Use Output Contents below as the single place to decide what belongs in
-          the package. Core lesson plan and slides stay included. Optional
-          assessments, groups, and printables stay out unless you select them here.
+          Requested lesson parts and requested outputs are tracked separately in
+          this seam. If a requested part is not clearly detected later, the app
+          can mark that gap later instead of forcing a narrow lesson shape here.
         </p>
       </div>
 
       <div style={cardStyle}>
-        <div style={gridStyle}>
-          <div>
-            <label style={labelStyle} htmlFor="grade">
-              Grade
-            </label>
-            <input
-              id="grade"
-              value={inputs.grade}
-              onChange={updateInput("grade")}
-              placeholder="Kindergarten"
-              style={inputStyle}
-            />
-          </div>
+        <div style={sectionLabelStyle}>1. Lesson Information</div>
+        <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
+          Cranberry stars only mark the fields the current flow truly requires.
+        </div>
 
-          <div>
-            <label style={labelStyle} htmlFor="subject">
-              Subject
-            </label>
-            <input
-              id="subject"
-              value={inputs.subject}
-              onChange={updateInput("subject")}
-              placeholder="ELA"
-              style={inputStyle}
-            />
-          </div>
+        <div style={{ ...infoGridStyle, marginTop: "var(--space-md)" }}>
+          <InputField
+            id="grade"
+            label="Grade"
+            value={inputs.grade}
+            required
+            placeholder="K, 1st, 3rd"
+            onChange={updateInput("grade")}
+          />
+          <InputField
+            id="subject"
+            label="Subject"
+            value={inputs.subject}
+            required
+            placeholder="ELA, Math, Science"
+            onChange={updateInput("subject")}
+          />
+          <InputField
+            id="standard"
+            label="Standard(s)"
+            value={inputs.standard}
+            placeholder="RF.K.3, 1.OA.1, RI.3.2"
+            onChange={updateInput("standard")}
+            help="Optional. The app can also use standards detected from usable curriculum materials later."
+          />
+          <InputField
+            id="duration"
+            label="Duration"
+            value={inputs.duration}
+            placeholder="20 minutes, 45 minutes, 2 days"
+            onChange={updateInput("duration")}
+          />
+          <InputField
+            id="skill"
+            label="Skill / Focus"
+            value={inputs.skill}
+            required
+            placeholder="Long a patterns, comparing fractions, main idea"
+            onChange={updateInput("skill")}
+            fullWidth
+          />
+          <TextAreaField
+            id="topic"
+            label="Topic / Text / Unit"
+            value={inputs.topic}
+            placeholder="Frog and Toad chapter 2, weather tools, plant life cycles"
+            onChange={updateInput("topic")}
+            fullWidth
+          />
+          <TextAreaField
+            id="notes"
+            label="Anything I should know?"
+            value={inputs.notes ?? ""}
+            placeholder="ELL newcomers, use decodable only, needs partner talk"
+            onChange={updateInput("notes")}
+            help="Use this for constraints, context, grouping notes, story context, academic vocabulary, or anything else the teacher wants the plan to respect."
+            fullWidth
+          />
+        </div>
 
-          <div>
-            <label style={labelStyle} htmlFor="standard">
-              Standard
-            </label>
-            <input
-              id="standard"
-              value={inputs.standard}
-              onChange={updateInput("standard")}
-              placeholder="RF.K.3"
-              style={inputStyle}
-            />
-            <div style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 6 }}>
-              Optional. Enter a standard if you know it. Otherwise the app will use
-              standards detected from usable curriculum materials when available.
-            </div>
+        <div style={{ marginTop: "var(--space-xl)" }}>
+          <div style={sectionLabelStyle}>2. Requested Lesson Parts</div>
+          <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
+            Choose the lesson parts you want planned. This page does not make the
+            teacher-facing decision in terms of phonics-only, comprehension-only,
+            or a forced binary lesson shape.
           </div>
-
-          <div>
-            <label style={labelStyle} htmlFor="duration">
-              Duration
-            </label>
-            <input
-              id="duration"
-              value={inputs.duration}
-              onChange={updateInput("duration")}
-              placeholder="25 minutes"
-              style={inputStyle}
-            />
-            <div style={helpStyle}>
-              Keep this as text for now to match the current engine types.
-            </div>
-          </div>
-
-          <div style={fullWidthStyle}>
-            <label style={labelStyle} htmlFor="skill">
-              Skill Focus
-            </label>
-            <input
-              id="skill"
-              value={inputs.skill}
-              onChange={updateInput("skill")}
-              placeholder="Long A phonics"
-              style={inputStyle}
-            />
-          </div>
-
-          <div style={fullWidthStyle}>
-            <label style={labelStyle} htmlFor="topic">
-              Lesson Topic
-            </label>
-            <textarea
-              id="topic"
-              value={inputs.topic}
-              onChange={updateInput("topic")}
-              placeholder="Reading long A words in connected text"
-              style={{ ...inputStyle, minHeight: 120, resize: "vertical" }}
-            />
+          <div style={requestGridStyle}>
+            {lessonPartOptions.map((option) => (
+              <RequestToggleCard
+                key={option.key}
+                checked={outputContents.lessonPlan.parts[option.key]}
+                title={option.title}
+                description={option.description}
+                onToggle={() => toggleLessonPlanPart(option.key)}
+              />
+            ))}
           </div>
         </div>
 
         <div style={{ marginTop: "var(--space-xl)" }}>
-          <div style={modeCardStyle}>
-            <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
-              Lesson shape
-            </div>
-            <div style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 8 }}>
-              The system recommends a lesson shape from your inputs behind the
-              scenes. Change it manually only if you need to override the
-              recommendation.
-            </div>
+          <div style={sectionLabelStyle}>3. Requested Outputs</div>
+          <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
+            Keep explicit teacher choice here on page 1. Centers and teacher-led
+            small group stay separate lanes. Printable-ready materials are only
+            bundled from the relevant selected sections the current repo already
+            supports, rather than as a stand-alone generic bucket.
+          </div>
 
-            <div style={{ ...targetNoticeStyle, marginBottom: 12 }}>
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                Recommended shape: {formatLessonModeLabel(targetPreview.recommendedMode)}
-              </div>
-              <div>{targetPreview.message}</div>
-              {selectedLessonMode !== "single" && (
-                <div style={{ marginTop: 6, fontSize: 13 }}>
-                  Manual override active: {formatLessonModeLabel(selectedLessonMode)}
-                </div>
-              )}
-            </div>
+          <div style={{ ...noticeStyle, marginTop: 12 }}>
+            {selectedOutputSections} output section(s) selected. Requested lesson
+            parts: {selectedRequestedParts}. Assessment choices: {selectedAssessmentCount}.
+            Center formats: {selectedCenterFormats}. Center focuses: {selectedCenterFocuses}.
+            Small-group tiers: {selectedSmallGroupTiers}.
+          </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-                flexWrap: "wrap",
-                marginBottom: showLessonShapeOverride ? 12 : 0,
-              }}
+          <div style={{ display: "grid", gap: "var(--space-md)", marginTop: "var(--space-md)" }}>
+            <OutputSectionCard
+              title="Lesson Plan"
+              description="Core teacher-facing output. The selected lesson parts above drive later planning and package behavior."
+              statusLabel={outputContents.lessonPlan.selected ? "Selected" : "Not selected"}
+              active={outputContents.lessonPlan.selected}
             >
-              <div style={{ color: "var(--text-secondary)", fontSize: 13 }}>
-                {showLessonShapeOverride
-                  ? "Manual lesson shape options are visible below."
-                  : "Using automatic recommendation by default."}
-              </div>
+              <RequestToggleCard
+                checked={outputContents.lessonPlan.selected}
+                title="Include lesson plan"
+                description="Keep the core lesson plan in the requested output package."
+                onToggle={toggleLessonPlanOutput}
+              />
+            </OutputSectionCard>
 
-              <button
-                type="button"
-                onClick={() => setShowLessonShapeOverride((value) => !value)}
-                style={{
-                  ...orchardButtonStyle({ subtle: true }),
-                  cursor: "pointer",
-                }}
-              >
-                {showLessonShapeOverride
-                  ? "Hide manual lesson shape options"
-                  : "Change lesson shape manually"}
-              </button>
-            </div>
-
-            {showLessonShapeOverride && (
-              <>
-                <LessonModeOption
-                  mode="single"
-                  selected={selectedLessonMode === "single"}
-                  title="Automatic recommendation"
-                  description="Let the system resolve the lesson shape from your inputs."
-                  onSelect={setSelectedLessonMode}
-                  isFirst
-                />
-
-                <LessonModeOption
-                  mode="full"
-                  selected={selectedLessonMode === "full"}
-                  title="Full mixed lesson"
-                  description="Use this when you want both parts preserved, such as phonics plus comprehension."
-                  onSelect={setSelectedLessonMode}
-                />
-
-                <LessonModeOption
-                  mode="phonics_only"
-                  selected={selectedLessonMode === "phonics_only"}
-                  title="Phonics only"
-                  description="Generate only the phonics portion when the input includes extra reading/comprehension context."
-                  onSelect={setSelectedLessonMode}
-                />
-
-                <LessonModeOption
-                  mode="comprehension_only"
-                  selected={selectedLessonMode === "comprehension_only"}
-                  title="Comprehension only"
-                  description="Generate only the comprehension/text-thinking portion."
-                  onSelect={setSelectedLessonMode}
-                />
-              </>
-            )}
-          </div>
-        </div>
-
-        <div style={{ marginTop: "var(--space-xl)" }}>
-          <div style={modeCardStyle}>
-            <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--orchard-green)" }}>
-              Output Contents
-            </div>
-            <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-              This is the only Inputs-page place where output inclusion is decided.
-              Choose lesson-plan sections, optional assessments, group supports,
-              and extra printables here.
-            </div>
-
-            <div style={{ ...noticeStyle, marginTop: 12 }}>
-              {selectedOutputSections} output section(s) currently included. Lesson
-              plan sections selected: {selectedLessonPlanParts}. Assessment types:
-              {" "}
-              {selectedAssessmentTypes}. Group kinds: {selectedGroupKinds}. Printables:
-              {outputContents.other.printables ? " selected" : " not selected"}.
-            </div>
-
-            <div style={{ display: "grid", gap: "var(--space-md)", marginTop: "var(--space-md)" }}>
-              <OutputSectionCard
-                title="Lesson Plan"
-                description="Core teacher lesson-plan output. Turn sections on or off to control what appears in the lesson plan document."
-                statusLabel="Included"
-                active
-              >
-                <div style={requestGridStyle}>
-                  {lessonPlanPartOptions.map((option) => (
+            <OutputSectionCard
+              title="Centers"
+              description="Student-independent activities. Choose the center format and focus you want without turning centers into teacher-led support."
+              statusLabel={outputContents.centers.selected ? "Selected" : "Optional"}
+              active={outputContents.centers.selected}
+            >
+              <div style={subgroupBlockStyle}>
+                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                  Choose center format
+                </div>
+                <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 6, marginBottom: 10 }}>
+                  Select the center format you want for this lesson.
+                </div>
+                <div style={{ display: "grid", gap: 12 }}>
+                  {centerOptions.map((option) => (
                     <RequestToggleCard
                       key={option.key}
-                      checked={outputContents.lessonPlan.parts[option.key]}
+                      checked={outputContents.centers.options[option.key]}
                       title={option.title}
                       description={option.description}
-                      onToggle={() => toggleLessonPlanPart(option.key)}
+                      onToggle={() => toggleCenterOption(option.key)}
                     />
                   ))}
                 </div>
-              </OutputSectionCard>
+              </div>
 
-              <OutputSectionCard
-                title="Lesson Slides"
-                description="Core slide-deck output. Slides stay included and continue to follow exemplar-grounded structure and presentation."
-                statusLabel="Included"
-                active
-              >
-                <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-                  Slides are part of the default package in this build. Their
-                  structure comes from the selected exemplar materials.
+              <div style={subgroupBlockStyle}>
+                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                  Choose center focus
                 </div>
-              </OutputSectionCard>
-
-              <OutputSectionCard
-                title="Assessments"
-                description="Optional assessment support inside the lesson package. Select only the types you want included."
-                statusLabel={outputContents.assessments.selected ? "Selected" : "Optional"}
-                active={outputContents.assessments.selected}
-              >
-                <div style={requestGridStyle}>
-                  {assessmentOptions.map((option) => (
+                <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 6, marginBottom: 10 }}>
+                  Select all that apply.
+                </div>
+                <div style={{ display: "grid", gap: 12 }}>
+                  {centerFocusOptions.map((option) => (
                     <RequestToggleCard
                       key={option.key}
-                      checked={outputContents.assessments.types[option.key]}
+                      checked={outputContents.centers.focuses[option.key]}
+                      title={option.title}
+                      description={option.description}
+                      onToggle={() => toggleCenterFocus(option.key)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </OutputSectionCard>
+
+            <OutputSectionCard
+              title="Small Group"
+              description="Teacher-led groups. This stays separate from centers and can coexist with centers during the same lesson block."
+              statusLabel={outputContents.smallGroup.selected ? "Selected" : "Optional"}
+              active={outputContents.smallGroup.selected}
+            >
+              <div style={subgroupBlockStyle}>
+                <div style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 10 }}>
+                  Teacher-led groups.
+                </div>
+                <div style={{ display: "grid", gap: 12 }}>
+                  {smallGroupTierOptions.map((option) => (
+                    <RequestToggleCard
+                      key={option.key}
+                      checked={outputContents.smallGroup.tiers[option.key]}
+                      title={option.title}
+                      description={option.description}
+                      onToggle={() => toggleSmallGroupTier(option.key)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </OutputSectionCard>
+
+            <OutputSectionCard
+              title="Assessment"
+              description="Choose the assessment outputs you want. Answer keys generate automatically where applicable."
+              statusLabel={outputContents.assessment.selected ? "Selected" : "Optional"}
+              active={outputContents.assessment.selected}
+            >
+              <div style={subgroupBlockStyle}>
+                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Formative</div>
+                <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
+                  {formativeAssessmentOptions.map((option) => (
+                    <RequestToggleCard
+                      key={option.key}
+                      checked={outputContents.assessment.types[option.key]}
                       title={option.title}
                       description={option.description}
                       onToggle={() => toggleAssessmentType(option.key)}
                     />
                   ))}
                 </div>
-              </OutputSectionCard>
+              </div>
 
-              <OutputSectionCard
-                title="Groups"
-                description="Optional group-related supports. Choose the kinds you want, organized by tier so the teacher-facing contract stays clear."
-                statusLabel={outputContents.groups.selected ? "Selected" : "Optional"}
-                active={outputContents.groups.selected}
-              >
-                <TierSection
-                  tier="T1"
-                  title="Student-independent groups / centers"
-                  description="Student-facing or rotation-ready support for independent work."
-                  options={t1GroupOptions}
-                  isSelected={(key) => {
-                    if (key === "centers") return outputContents.groups.byTier.T1.centers
-                    return false
-                  }}
-                  onToggle={toggleGroupOutput}
-                />
-
-                <TierSection
-                  tier="T2"
-                  title="Teacher-led support"
-                  description="Teacher-facing small-group follow-through and guided support."
-                  options={t2GroupOptions}
-                  isSelected={(key) => {
-                    if (key === "small_group") return outputContents.groups.byTier.T2.small_group
-                    return false
-                  }}
-                  onToggle={toggleGroupOutput}
-                />
-
-                <TierSection
-                  tier="T3"
-                  title="Teacher-led intervention"
-                  description="More targeted reteach or intervention support."
-                  options={t3GroupOptions}
-                  isSelected={(key) => {
-                    if (key === "intervention") return outputContents.groups.byTier.T3.intervention
-                    return false
-                  }}
-                  onToggle={toggleGroupOutput}
-                />
-
-                <div style={tierCardStyle}>
-                  <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                    Extension
-                  </div>
-                  <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 4 }}>
-                    No separate extension-specific group output is currently supported
-                    in the uploaded code. Extension remains a planning concept rather
-                    than a standalone packaged group artifact in this build.
-                  </div>
-                </div>
-              </OutputSectionCard>
-
-              <OutputSectionCard
-                title="Other Support Materials"
-                description="Additional support artifacts that still belong to the same output contract."
-                statusLabel={outputContents.other.printables ? "Selected" : "Optional"}
-                active={outputContents.other.printables}
-              >
-                <div style={requestGridStyle}>
-                  {otherOutputOptions.map((option) => (
+              <div style={subgroupBlockStyle}>
+                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Summative</div>
+                <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
+                  {summativeAssessmentOptions.map((option) => (
                     <RequestToggleCard
                       key={option.key}
-                      checked={outputContents.other[option.key]}
+                      checked={outputContents.assessment.types[option.key]}
                       title={option.title}
                       description={option.description}
-                      onToggle={() => toggleOtherOutput(option.key)}
+                      onToggle={() => toggleAssessmentType(option.key)}
                     />
                   ))}
                 </div>
-              </OutputSectionCard>
-            </div>
+                <div style={helpStyle}>Answer keys generate automatically where applicable.</div>
+              </div>
+            </OutputSectionCard>
+
+            <OutputSectionCard
+              title="Lesson Slides"
+              description="Student-facing only for now. Slides follow the lesson plan and exemplar-grounded structure when selected."
+              statusLabel={outputContents.lessonSlides.selected ? "Selected" : "Optional"}
+              active={outputContents.lessonSlides.selected}
+            >
+              <RequestToggleCard
+                checked={outputContents.lessonSlides.selected}
+                title="Include student-facing lesson slides"
+                description="Keep slides as an explicit requested output instead of a hidden hard-locked default."
+                onToggle={toggleLessonSlidesOutput}
+              />
+            </OutputSectionCard>
           </div>
         </div>
 
         <div style={{ marginTop: "var(--space-lg)" }}>
           <div style={noticeStyle}>
-            Required before Results can generate: grade, subject, skill focus,
-            lesson topic, and duration. Standard is optional here. Source files are
-            added on Materials, where upload intake currently accepts .txt, .pdf,
-            .docx, .pptx, .html, and .htm files.
+            Results can generate once the truly required lesson information is in
+            place: grade, subject, and skill / focus. Standard(s), topic / text /
+            unit, duration, and extra notes stay optional on this page.
           </div>
         </div>
 
@@ -647,7 +701,7 @@ export default function InputsPage() {
               fontWeight: 700,
             }}
           >
-            {hasRequiredInputs ? "Inputs complete" : "Complete all required lesson fields"}
+            {hasRequiredInputs ? "Inputs complete" : "Complete the required lesson fields"}
           </div>
 
           <button
@@ -664,50 +718,72 @@ export default function InputsPage() {
   )
 }
 
-function formatLessonModeLabel(mode: LessonMode): string {
-  if (mode === "full") return "Full mixed lesson"
-  if (mode === "phonics_only") return "Phonics only"
-  if (mode === "comprehension_only") return "Comprehension only"
-  return "Automatic recommendation"
+function RequiredMark() {
+  return <span style={cranberryStyle}>*</span>
 }
 
-function LessonModeOption({
-  mode,
-  selected,
-  title,
-  description,
-  onSelect,
-  isFirst = false,
+function InputField({
+  id,
+  label,
+  value,
+  placeholder,
+  onChange,
+  help,
+  required = false,
+  fullWidth = false,
 }: {
-  mode: LessonMode
-  selected: boolean
-  title: string
-  description: string
-  onSelect: (mode: LessonMode) => void
-  isFirst?: boolean
+  id: string
+  label: string
+  value: string
+  placeholder: string
+  onChange: React.ChangeEventHandler<HTMLInputElement>
+  help?: string
+  required?: boolean
+  fullWidth?: boolean
 }) {
   return (
-    <label
-      style={{
-        ...modeOptionStyle,
-        borderTop: isFirst ? "none" : modeOptionStyle.borderTop,
-        cursor: "pointer",
-      }}
-    >
-      <input
-        type="radio"
-        name="lesson-mode"
-        checked={selected}
-        onChange={() => onSelect(mode)}
-        style={{ marginTop: 3 }}
+    <div style={fullWidth ? fullWidthStyle : undefined}>
+      <label style={fieldLabelStyle} htmlFor={id}>
+        {label}
+        {required ? <RequiredMark /> : null}
+      </label>
+      <input id={id} value={value} onChange={onChange} placeholder={placeholder} style={inputStyle} />
+      {help ? <div style={helpStyle}>{help}</div> : null}
+    </div>
+  )
+}
+
+function TextAreaField({
+  id,
+  label,
+  value,
+  placeholder,
+  onChange,
+  help,
+  fullWidth = false,
+}: {
+  id: string
+  label: string
+  value: string
+  placeholder: string
+  onChange: React.ChangeEventHandler<HTMLTextAreaElement>
+  help?: string
+  fullWidth?: boolean
+}) {
+  return (
+    <div style={fullWidth ? fullWidthStyle : undefined}>
+      <label style={fieldLabelStyle} htmlFor={id}>
+        {label}
+      </label>
+      <textarea
+        id={id}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        style={{ ...inputStyle, minHeight: 110, resize: "vertical" }}
       />
-      <div>
-        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
-        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
-          {description}
-        </div>
-      </div>
-    </label>
+      {help ? <div style={helpStyle}>{help}</div> : null}
+    </div>
   )
 }
 
@@ -750,44 +826,6 @@ function OutputSectionCard({
   )
 }
 
-function TierSection({
-  tier,
-  title,
-  description,
-  options,
-  isSelected,
-  onToggle,
-}: {
-  tier: "T1" | "T2" | "T3"
-  title: string
-  description: string
-  options: GroupOption[]
-  isSelected: (key: GroupOutputKindKey) => boolean
-  onToggle: (key: GroupOutputKindKey) => void
-}) {
-  return (
-    <div style={tierCardStyle}>
-      <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-        {tier} · {title}
-      </div>
-      <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 4 }}>
-        {description}
-      </div>
-      <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
-        {options.map((option) => (
-          <RequestToggleCard
-            key={option.key}
-            checked={isSelected(option.key)}
-            title={option.title}
-            description={option.description}
-            onToggle={() => onToggle(option.key)}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function RequestToggleCard({
   checked,
   title,
@@ -821,12 +859,7 @@ function RequestToggleCard({
         cursor: "pointer",
       }}
     >
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onToggle}
-        style={{ marginTop: 3 }}
-      />
+      <input type="checkbox" checked={checked} onChange={onToggle} style={{ marginTop: 3 }} />
       <div>
         <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
         <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
