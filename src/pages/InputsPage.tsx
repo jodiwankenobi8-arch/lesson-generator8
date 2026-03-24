@@ -11,10 +11,8 @@ import {
 import {
   orchardButtonStyle,
   orchardCardStyle,
-  orchardHeroCardStyle,
   orchardInputStyle,
   orchardNoticeStyle,
-  orchardPageIntroBlockStyle,
   orchardPageShellStyle,
   orchardSectionLabelStyle,
   orchardSectionTitleStyle,
@@ -22,6 +20,7 @@ import {
   orchardTagStyle,
 } from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
+import { OrchardPageHeader } from "./OrchardPageHeader"
 
 type LessonPartOption = {
   key: LessonPlanContentPartKey
@@ -267,10 +266,6 @@ const pageStyle: React.CSSProperties = {
   margin: "0 auto",
 }
 
-const pageIntroStyle: React.CSSProperties = {
-  ...orchardHeroCardStyle,
-  ...orchardPageIntroBlockStyle,
-}
 
 const introStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
@@ -423,26 +418,16 @@ export default function InputsPage() {
 
   return (
     <div style={pageStyle}>
-      <div style={sectionLabelStyle}>Planning Notebook</div>
-      <h2 style={sectionTitleStyle}>Inputs</h2>
-
-      <div style={pageIntroStyle}>
+      <OrchardPageHeader label="Planning Notebook" title="Inputs">
         <p style={introStyle}>
           Start with the lesson information, then choose the lesson parts and
           outputs you actually want.
         </p>
         <p style={introStyle}>
-          Curriculum stays the content authority. Exemplar stays the
-          presentation and structure authority. The next step is still Materials,
-          where upload-file intake accepts .txt, .pdf, .docx, .pptx, .html, and
-          .htm sources.
+          Required fields stay narrow. Standards can come from teacher input and
+          from curriculum materials later.
         </p>
-        <p style={introStyle}>
-          Requested lesson parts and requested outputs are tracked separately in
-          this seam. If a requested part is not clearly detected later, the app
-          can mark that gap later instead of forcing a narrow lesson shape here.
-        </p>
-      </div>
+      </OrchardPageHeader>
 
       <div style={cardStyle}>
         <div style={sectionLabelStyle}>1. Lesson Information</div>
