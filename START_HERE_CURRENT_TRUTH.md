@@ -2,16 +2,16 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 8a439b1
+- Published main checkpoint: 8fff615
 - Last auto-sync UTC: 2026-03-24T15:13:14Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 8a439b1
+- Current published continuation point: 8fff615
 - Current milestone: results package truth hardening and lazy export loading are landed on main
-- Current active seam: documentation reset is the current closeout step; after that, do one quick browser/manual Results recheck and then choose the next seam intentionally
+- Current active seam: Results/doc closeout is already complete; next step is to choose the next narrow implementation seam intentionally from the orchard continuation surface
 
 ## What is actually landed
 - orchard shell direction is already present in the live repo
@@ -36,23 +36,15 @@
 
 ## What is still true
 - large build-chunk warnings still remain, especially around office and pdf
-- browser/manual confirmation after the final results-truth fix is still not yet recorded in docs
 - do not return to Step 6A as the active seam
 - the export seam is no longer the main issue; the upstream package/results truth seam was the real leak and that narrow repair is now landed
+- Results recheck/doc closeout is already complete and should not remain the active seam
 
 ## Best next move
-- finish the continuation-doc reset using this truth doc, PROJECT_CURRENT_STATE.md, and the latest handoff
-- do one quick browser/manual Results recheck:
-  - no High-priority decision lines in teacher package sections
-  - Teacher-Led Support and Intervention Support render separately
-  - export buttons still work
-- then choose the next seam intentionally instead of returning to Step 6A
-
-- Manual/browser Results recheck recorded on main@1ac197d:
-  - no High-priority decision lines in teacher package sections = YES
-  - Teacher-Led Support and Intervention Support render separately = YES
-  - export buttons still work = YES
-  - closeout status = PASS
+- treat the Results recheck/doc closeout as complete
+- use the refreshed truth docs as the continuation launcher
+- choose the next narrow implementation seam intentionally from the orchard continuation surface
+- do not reopen Results/export wording unless live proof shows drift
 
 ## Export decision lock
 - Official teacher-facing export truth: per-artifact exports plus optional full-package ZIP.

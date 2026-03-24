@@ -2,7 +2,7 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 8a439b1
+- Published main checkpoint: 8fff615
 - Last auto-sync UTC: 2026-03-24T15:13:14Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
@@ -22,24 +22,18 @@
   - build PASS
 
 ## What is not done yet
-- browser/manual confirmation of the final Results surface after the truth fix is not yet recorded in docs
 - large build-chunk warnings still remain:
   - office
   - pdf
 - broader intake/OCR expansion is still not started
 - the next seam selection is still pending after this checkpoint closeout
+- Results recheck/doc closeout is already complete and should not remain the active seam
 
 ## Top next steps
-1. do one quick browser/manual smoke check on the final Results surface
+1. treat Results recheck/doc closeout as complete
 2. use the refreshed truth docs and latest handoff as the continuation launcher
-3. decide the next seam intentionally after that check
+3. choose the next narrow implementation seam from the orchard continuation surface
 4. do not return to Step 6A as the active seam unless current repo truth forces it
-
-- Manual/browser Results recheck recorded on main@1ac197d:
-  - no High-priority decision lines in teacher package sections = YES
-  - Teacher-Led Support and Intervention Support render separately = YES
-  - export buttons still work = YES
-  - closeout status = PASS
 
 ## Export decision lock
 - Official teacher-facing export truth: per-artifact exports plus optional full-package ZIP.
