@@ -1,0 +1,50 @@
+# OFFICIAL DESIGN SOURCE OF TRUTH
+
+## Purpose
+This file is the official design authority for Lesson Generator 8.
+It exists so design guidance is explicit, stable, and not left only inside AGENTS.md.
+
+## Product character
+Lesson Generator 8 should feel:
+- teacher-first
+- warm
+- calm
+- orchard / storybook direction
+- elegant
+- readable
+- layered but not cluttered
+- polished, not corporate
+- inviting, not childish
+- practical, not flashy
+
+## Avoid
+Do not drift into:
+- generic SaaS / dashboard styling
+- startup admin-panel styling
+- bright edtech energy
+- cold corporate surfaces
+- harsh shadows
+- square, stiff visual language
+- over-decoration
+- clutter
+- visual gimmicks
+- dark wood-heavy or schoolhouse-heavy styling
+- overly sepia UI
+
+## Design authority order
+When design sources conflict, use:
+1. this file
+2. current streamlined product vision
+3. current shared UI system
+4. older leftover theme files last
+
+## Design guardrails
+- workflow clarity outranks decorative polish
+- trust and readability outrank novelty
+- teacher usability outranks cleverness
+- design should support source-grounded trust, not distract from it
+- preserve the orchard / warm storybook direction without becoming childish or theme-heavy
+
+## Notes
+- old design export and mockup images may be used as visual donors only
+- they are not architecture or layout source of truth by themselves
