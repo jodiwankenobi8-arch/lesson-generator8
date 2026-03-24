@@ -226,7 +226,7 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain('<summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>')
     expect(source).toContain('<SecondaryEvidenceSection')
     expect(source).toContain('Source Authority and Lesson Grounding')
-    expect(source).toContain('Teacher Decisions for Missing Lesson Parts')
+    expect(source).toContain('Teacher Decisions for Source Coverage Gaps')
     expect(source).toContain('<summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>')
     expect(source).toContain('<summary style={summaryStyle}>Pipeline Trace</summary>')
     expect(source).toContain('<summary style={minorSummaryStyle}>Evidence details</summary>')
@@ -251,7 +251,7 @@ describe("Results explainability rendering contracts", () => {
   it("keeps support-vs-generated gap messaging visible in coverage rendering", () => {
     const coverageMarkup = renderCoverageSection()
 
-    expect(coverageMarkup).toContain("Teacher Decisions for Missing Lesson Parts")
+    expect(coverageMarkup).toContain("Teacher Decisions for Source Coverage Gaps")
     expect(coverageMarkup).toContain("Source coverage:")
     expect(coverageMarkup).toContain("Generated support:")
   })

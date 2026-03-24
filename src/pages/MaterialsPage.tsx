@@ -647,7 +647,7 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
 
   const message =
     overall === "balanced"
-      ? "You currently have usable curriculum and exemplar support. This is the strongest setup for grounded content and strong presentation structure."
+      ? "You currently have usable curriculum and exemplar support. This is the best starting lane for grounded content and presentation structure, but thin source signals can still limit trust."
       : overall === "content_heavy"
         ? "You currently have more usable curriculum support than exemplar support. Content should be more grounded than structure."
         : overall === "structure_heavy"

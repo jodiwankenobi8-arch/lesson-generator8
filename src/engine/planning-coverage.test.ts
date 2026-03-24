@@ -73,10 +73,14 @@ function makeOutputContents(options: {
 } = {}): LessonOutputContents {
   const outputContents = createDefaultOutputContents()
 
-  outputContents.assessments.types.formative_assessment = Boolean(options.assessment)
-  outputContents.groups.byTier.T1.centers = Boolean(options.centers)
-  outputContents.groups.byTier.T2.small_group = Boolean(options.smallGroup)
-  outputContents.groups.byTier.T3.intervention = Boolean(options.intervention)
+  outputContents.assessment.types.formative_assessment = Boolean(options.assessment)
+
+  outputContents.centers.selected = Boolean(options.centers)
+  outputContents.centers.options.use_what_you_have = Boolean(options.centers)
+
+  outputContents.smallGroup.selected = Boolean(options.smallGroup) || Boolean(options.intervention)
+  outputContents.smallGroup.tiers.T2 = Boolean(options.smallGroup)
+  outputContents.smallGroup.tiers.T3 = Boolean(options.intervention)
 
   return normalizeOutputContents(outputContents)
 }
