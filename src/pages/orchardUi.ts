@@ -304,3 +304,9 @@ export const orchardPageIntroBlockStyle: CSSProperties = {
   gap: "var(--space-sm)",
   marginBottom: "var(--space-lg)",
 }
+export const orchardPageHeaderCardStyle: CSSProperties = {
+  ...orchardHeroCardStyle,
+  ...orchardPageIntroBlockStyle,
+  maxWidth: 920,
+}
+

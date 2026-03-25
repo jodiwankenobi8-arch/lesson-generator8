@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from "react"
 import {
-  orchardHeroCardStyle,
-  orchardPageIntroBlockStyle,
+  orchardPageHeaderCardStyle,
   orchardSectionLabelStyle,
   orchardSectionTitleStyle,
 } from "./orchardUi"
@@ -22,11 +21,6 @@ const titleStyle: CSSProperties = {
   fontSize: 32,
   margin: 0,
   maxWidth: "18ch",
-}
-
-const introCardBaseStyle: CSSProperties = {
-  ...orchardHeroCardStyle,
-  ...orchardPageIntroBlockStyle,
 }
 
 const introContentStyle: CSSProperties = {
@@ -50,7 +44,7 @@ export function OrchardPageHeader({
   introMaxWidth = 920,
 }: OrchardPageHeaderProps) {
   const introCardStyle: CSSProperties = {
-    ...introCardBaseStyle,
+    ...orchardPageHeaderCardStyle,
     maxWidth: introMaxWidth,
   }
 
