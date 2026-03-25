@@ -2,8 +2,8 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 57181c5
-- Last auto-sync UTC: 2026-03-25T19:16:39Z
+- Published main checkpoint: de55718
+- Last auto-sync UTC: 2026-03-25T19:44:38Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
@@ -18,7 +18,7 @@
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 57181c5
+- Current published continuation point: de55718
 - Current milestone: export truth is locked, parity hardening is landed, and the supported source matrix is documented
 - Current active seam: orchard/artifact finish pass on Results and reusable orchard surfaces
 
