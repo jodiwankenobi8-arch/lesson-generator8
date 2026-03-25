@@ -154,7 +154,7 @@ export default function MaterialsPage() {
       )
 
       if (duplicateExists) {
-        setGenerationError(`"${file.name}" is already uploaded in ${role} materials.`)
+        setGenerationError(`"${file.name}" is already uploaded in ${role} sources.`)
         continue
       }
 
@@ -212,7 +212,7 @@ export default function MaterialsPage() {
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
         </p>
         <p style={introStyle}>
-          Current intake is upload-file based. Supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm. Add source materials here, then generate only from usable curriculum and exemplar materials.
+          Current intake is upload based. Supported source formats: .txt, .pdf, .docx, .pptx, .html, and .htm. Add sources here, then generate only from usable curriculum and exemplar sources.
         </p>
       </OrchardPageHeader>
 
@@ -241,7 +241,7 @@ export default function MaterialsPage() {
             Curriculum
           </h3>
           <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
-Content authority for standards, word lists, texts, examples, and practice activities across one or more source files.
+Content authority for standards, word lists, texts, examples, and practice activities across one or more sources.
           </p>
           <button
             type="button"
@@ -258,7 +258,7 @@ Content authority for standards, word lists, texts, examples, and practice activ
             Exemplar
           </h3>
           <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
-Presentation authority for slide order, pacing, prompts, layout, and timing across one or more source files.
+Presentation authority for slide order, pacing, prompts, layout, and timing across one or more sources.
           </p>
           <button
             type="button"
@@ -325,7 +325,7 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
           )}
         >
           {hasProcessingMaterials
-            ? "Lesson generation stays blocked until all uploaded materials finish processing."
+            ? "Lesson generation stays blocked until all uploaded sources finish processing."
             : hasUsableMaterialsForGeneration
               ? "At least one curriculum or exemplar source is usable for grounded lesson generation."
               : "Add or replace curriculum or exemplar sources until at least one source is usable for grounded lesson generation."}
@@ -610,11 +610,11 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
   const guidance: string[] = []
 
   if (blockedCount > 0) {
-    guidance.push("Some files finished processing but are blocked from grounding generation because their extracted text is too weak or unreliable.")
+    guidance.push("Some sources finished processing but are blocked from grounding generation because their extracted text is too weak or unreliable.")
   }
 
   if (cautionCount > 0) {
-    guidance.push("Some files are usable only with caution. Review extraction trace notes before relying on them heavily.")
+    guidance.push("Some sources are usable only with caution. Review extraction trace notes before relying on them heavily.")
   }
 
   if (!hasCurriculumSupport) {
@@ -632,7 +632,7 @@ function buildMaterialSupportSummary(materials: MaterialFile[]): MaterialSupport
         ? "You currently have more usable curriculum support than exemplar support. Content should be more grounded than structure."
         : overall === "structure_heavy"
           ? "You currently have more usable exemplar support than curriculum support. Structure should be stronger than content grounding."
-          : "Current usable material support is limited. The lesson may rely more on fallback logic until stronger files are added."
+          : "Current usable source support is limited. The lesson may rely more on fallback logic until stronger sources are added."
 
   return {
     usableCurriculum: usableCurriculum.length,
@@ -986,6 +986,7 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
+
 
 
 
