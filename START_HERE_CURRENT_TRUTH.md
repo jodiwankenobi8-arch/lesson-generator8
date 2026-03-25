@@ -3,55 +3,62 @@
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
 - Published main checkpoint: f35ca7e
-- Last auto-sync UTC: 2026-03-25T01:15:09Z
+- Last auto-sync UTC: 2026-03-25T01:29:18Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 ## Local verification update
-- checkpoint: 13669e7
-- orchard page-header consistency and Materials pipeline-state text repair are now landed on main
-- targeted local validation previously passed for: src/engine/planning-coverage.test.ts, src/pages/ResultsPage.test.tsx, src/engine/package-outputs.test.ts, src/engine/lesson-spec.test.ts
-- manual browser recheck of Materials + Results remains pending unless already completed locally
+- checkpoint: f35ca7e
+- export-model lock and package/results parity hardening are landed on main
+- targeted validation at this checkpoint:
+  - typecheck PASS
+  - test PASS (24 files / 129 tests)
+  - build PASS
+- manual/browser validation is still pending by choice
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
 - Current published continuation point: f35ca7e
-- Current milestone: results/package truth hardening is landed, and the follow-up Materials/Results orchard consistency pass is now also landed on main
-- Current active seam: doc closeout and next-seam selection from current live repo truth
+- Current milestone: export truth is locked, parity hardening is landed, and the supported source matrix is documented
+- Current active seam: orchard/artifact finish pass on Results and reusable orchard surfaces
 
 ## What is actually landed
 - orchard shell direction is already present in the live repo
 - unified outputContents seam is already complete
 - request-aware planning/package flow is already complete
-- Results export builders are now lazy-loaded instead of eager-loaded at the page/package seam
-- teacher package truth is tighter in Results
-- missing-area decision prompt text no longer leaks into teacher-facing package sections
-- Results now separates:
-  - Teacher-Led Support
-  - Intervention Support
-- Teacher-Led Support count now comes from the teacher-support rotation/support line instead of intervention count
-- Results now supports format-aware exports:
+- Results export model is locked:
   - lesson plan -> DOCX
   - printables -> PDF
   - slides -> PPTX
   - full package -> ZIP
+- Results must present both honestly:
+  - individual classroom-ready artifact downloads
+  - one optional package ZIP bundling the current generated artifacts
+- package/results parity hardening is landed:
+  - teacher-led-support-only packages no longer invent `No centers defined.`
+  - teacher-led support remains separate from centers / student-independent work
+- focused parity coverage is landed for:
+  - export presence/absence rules
+  - Results wording parity with actual artifacts
+  - group-lane separation across package and Results
+- supported source matrix is documented in `docs/project-notes/SUPPORTED_SOURCE_MATRIX_CURRENT.md`
 - local validation is green at this checkpoint:
   - typecheck PASS
-  - test PASS (24 files / 118 tests)
+  - test PASS (24 files / 129 tests)
   - build PASS
 
 ## What is still true
 - large build-chunk warnings still remain, especially around office and pdf
+- manual/browser validation is still pending
 - do not return to Step 6A as the active seam
-- the export seam is no longer the main issue; the upstream package/results truth seam was the real leak and that narrow repair is now landed
-- the narrow Materials/Results trust-copy follow-up is now also landed on main
-- manual browser recheck may still be pending unless already completed locally
+- do not reopen export-model lock or parity hardening unless live proof shows drift
+- broader intake/OCR expansion is still not part of the current finish pass
 
 ## Best next move
-- refresh the active truth docs and latest handoff to the real pushed checkpoint: 13669e7
-- treat the narrow Materials/Results follow-up seam as code-complete
-- choose the next narrow implementation seam intentionally from the current orchard continuation surface
-- do not reopen Results/export wording or Step 6A unless live proof shows drift
+- start the orchard/artifact finish pass
+- make Results the strongest planning-binder / artifact payoff page
+- tighten reusable orchard surfaces and reduce inline-style sprawl
+- keep bundle cleanup narrow and finish-phase appropriate after the orchard pass
 
 ## Export decision lock
 - Official teacher-facing export truth: per-artifact exports plus optional full-package ZIP.
@@ -60,6 +67,5 @@
   - one optional package ZIP bundling the current generated artifacts
 - Do not describe the export model as artifact-only.
 - Do not describe the ZIP as replacing the individual artifact exports.
-- No new export-code seam is required from this decision alone; code/tests were already aligned when this note was added.
-- Next seam after this doc lock should be chosen from live active docs, not by reopening Results/export wording unless live proof shows drift.
-- Decision locked at main@b9bc2d7.
+- No new export-code seam is required from this decision alone.
+- Lock carried forward through `main@f35ca7e`.
