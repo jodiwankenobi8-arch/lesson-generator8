@@ -206,7 +206,7 @@ export default function MaterialsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Source Workbench" title="Materials" introMaxWidth={760}>
         <p style={introStyle}>
-          Add curriculum files and exemplar files to the workbench. Uploaded files stay visible while they move through upload, extraction, analysis, and readiness states.
+          Add curriculum sources and exemplar sources to the workbench. Uploaded materials stay visible while they move through upload, extraction, analysis, and readiness states.
         </p>
         <p style={introStyle}>
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
@@ -248,7 +248,7 @@ Content authority for standards, word lists, texts, examples, and practice activ
             style={buttonStyle}
             onClick={() => curriculumInputRef.current?.click()}
           >
-            Add Curriculum Files
+            Add Curriculum Sources
           </button>
         </div>
 
@@ -265,7 +265,7 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
             style={buttonStyle}
             onClick={() => exemplarInputRef.current?.click()}
           >
-            Add Exemplar Files
+            Add Exemplar Sources
           </button>
         </div>
       </div>
@@ -276,10 +276,10 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
         </h3>
 
         <div style={summaryGridStyle}>
-          <SummaryCard label="Usable content files" value={supportSummary.usableCurriculum} />
-          <SummaryCard label="Usable structure files" value={supportSummary.usableExemplar} />
-          <SummaryCard label="Caution files" value={supportSummary.cautionCount} />
-          <SummaryCard label="Blocked files" value={supportSummary.blockedCount} />
+          <SummaryCard label="Usable content sources" value={supportSummary.usableCurriculum} />
+          <SummaryCard label="Usable structure sources" value={supportSummary.usableExemplar} />
+          <SummaryCard label="Caution sources" value={supportSummary.cautionCount} />
+          <SummaryCard label="Blocked sources" value={supportSummary.blockedCount} />
         </div>
 
         <div style={supportNoticeStyle(supportSummary.overall)}>
@@ -327,8 +327,8 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
           {hasProcessingMaterials
             ? "Lesson generation stays blocked until all uploaded materials finish processing."
             : hasUsableMaterialsForGeneration
-              ? "At least one material is usable for grounded lesson generation."
-              : "Add or replace curriculum or exemplar materials until at least one material is usable for grounded lesson generation."}
+              ? "At least one curriculum or exemplar source is usable for grounded lesson generation."
+              : "Add or replace curriculum or exemplar sources until at least one source is usable for grounded lesson generation."}
         </div>
 
         <div style={{ marginTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -347,8 +347,8 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
               : hasProcessingMaterials
                 ? "Wait until uploaded materials finish processing."
                 : !hasUsableMaterialsForGeneration
-                  ? "At least one curriculum or exemplar material must be usable for grounded lesson generation."
-                  : "Inputs are complete and at least one material is usable for grounded lesson generation."}
+                  ? "At least one curriculum or exemplar source must be usable for grounded lesson generation."
+                  : "Inputs are complete and at least one source is usable for grounded lesson generation."}
           </div>
 
           {generationError && (
@@ -986,6 +986,7 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
+
 
 
 
