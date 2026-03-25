@@ -204,7 +204,7 @@ export default function MaterialsPage() {
 
   return (
     <div style={pageStyle}>
-      <OrchardPageHeader label="Source Workbench" title="Materials">
+      <OrchardPageHeader label="Source Workbench" title="Materials" introMaxWidth={760}>
         <p style={introStyle}>
           Add curriculum files and exemplar files to the workbench. Uploaded files stay visible while they move through upload, extraction, analysis, and readiness states.
         </p>
@@ -986,6 +986,7 @@ const metadataPanelStyle: React.CSSProperties = {
   padding: 10,
   fontSize: 13,
 }
+
 
 
 
