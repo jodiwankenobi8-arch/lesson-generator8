@@ -3,48 +3,48 @@
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
 - Published main checkpoint: f35ca7e
-- Last auto-sync UTC: 2026-03-25T01:15:09Z
+- Last auto-sync UTC: 2026-03-25T01:29:18Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 ## Local verification update
-- checkpoint: 13669e7
-- orchard page-header consistency and Materials pipeline-state text repair are now landed on main
-- targeted local validation previously passed for: src/engine/planning-coverage.test.ts, src/pages/ResultsPage.test.tsx, src/engine/package-outputs.test.ts, src/engine/lesson-spec.test.ts
-- manual browser recheck of Materials + Results remains pending unless already completed locally
+- checkpoint: f35ca7e
+- export-model lock and package/results parity hardening are landed on main
+- targeted validation at this checkpoint:
+  - typecheck PASS
+  - test PASS (24 files / 129 tests)
+  - build PASS
+- manual/browser validation is still pending by choice
 
 ## What is done
 - export/package contract expansion is landed
-- Results exports now support DOCX / PDF / PPTX / ZIP
-- Results export builders are now lazy-loaded at the page/package seam
+- Results exports support DOCX / PDF / PPTX / ZIP
+- Results export builders are lazy-loaded at the page/package seam
 - teacher package truth is tightened in Results
-- missing-area decision prompt text no longer leaks into teacher-facing package sections
-- Results now separates Teacher-Led Support from Intervention Support
-- Teacher-Led Support count now comes from the teacher-support rotation/support line instead of intervention count
-- the narrow results/package truth pass is now published on main
-- the follow-up Materials/Results orchard consistency pass is now also published on main:
-  - Materials uses OrchardPageHeader
-  - Results uses OrchardPageHeader and orchard page shell consistently
-  - Materials processing pipeline text now shows explicit state markers instead of broken placeholder characters
-- prior local validation history remains:
+- package/results parity hardening is landed:
+  - teacher-led-support-only packages no longer invent `No centers defined.`
+  - teacher-led support remains separate from centers / student-independent work
+- focused export/lane parity tests are landed
+- supported source matrix is documented in `docs/project-notes/SUPPORTED_SOURCE_MATRIX_CURRENT.md`
+- current local validation PASS:
   - typecheck PASS
-  - test PASS (24 files / 118 tests)
+  - test PASS (24 files / 129 tests)
   - build PASS
 
 ## What is not done yet
-- active truth docs and latest handoff still need refresh to the real pushed checkpoint
-- manual browser recheck of Materials + Results may still be pending unless already completed locally
+- manual/browser validation is still pending
+- orchard/artifact finish pass is not started yet
 - large build-chunk warnings still remain:
   - office
   - pdf
 - broader intake/OCR expansion is still not started
-- the next seam selection is still pending after doc closeout
+- the next seam selection after orchard finish is still pending
 
 ## Top next steps
-1. refresh START_HERE_CURRENT_TRUTH.md, PROJECT_CURRENT_STATE.md, and LATEST_AUTO_SYNC.md to 13669e7
-2. add one new latest handoff naming the now-landed Materials/Results follow-up seam and the real next seam
-3. choose the next narrow implementation seam from the orchard continuation surface
-4. do not return to Step 6A as the active seam unless current repo truth forces it
+1. start the orchard/artifact finish pass
+2. make Results the strongest planning-binder / artifact payoff page
+3. tighten reusable orchard surfaces and reduce inline-style sprawl
+4. keep bundle cleanup narrow and finish-phase appropriate after the orchard pass
 
 ## Export decision lock
 - Official teacher-facing export truth: per-artifact exports plus optional full-package ZIP.
@@ -53,6 +53,5 @@
   - one optional package ZIP bundling the current generated artifacts
 - Do not describe the export model as artifact-only.
 - Do not describe the ZIP as replacing the individual artifact exports.
-- No new export-code seam is required from this decision alone; code/tests were already aligned when this note was added.
-- Next seam after this doc lock should be chosen from live active docs, not by reopening Results/export wording unless live proof shows drift.
-- Decision locked at main@b9bc2d7.
+- No new export-code seam is required from this decision alone.
+- Lock carried forward through `main@f35ca7e`.
