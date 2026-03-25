@@ -879,22 +879,23 @@ function buildRotationPlan(
     return rotationLines.join("\n")
   }
 
-  const smallGroupLine = resolveTeacherTableLine(
+  const teacherLedSupportLine = resolveTeacherTableLine(
     blueprint,
     planningIdeas,
     missingAreaDecisions
   )
 
   if (rotationLines.length === 0) {
-    return [
-      "No centers defined.",
-      smallGroupLine,
-    ].join("\n")
+    return teacherLedSupportLine
+  }
+
+  if (!teacherLedSupportLine) {
+    return rotationLines.join("\n")
   }
 
   return [
     ...rotationLines,
-    smallGroupLine,
+    teacherLedSupportLine,
   ].join("\n")
 }
 
@@ -1353,6 +1354,24 @@ function buildPrintablesExportText(
       ? centers.map((center) => `- ${center}`)
       : ["- No student centers defined."]
 
+  const { teacherLedSupportLines, rotationOnlyLines } = splitRotationPlanLines(rotationPlan)
+
+  const teacherLedSupportSection = teacherLedSupportLines.length > 0
+    ? [
+        "",
+        "Teacher-Led Support",
+        ...teacherLedSupportLines,
+      ]
+    : []
+
+  const rotationSection = centers.length > 0 || rotationOnlyLines.length > 0
+    ? [
+        "",
+        "Centers / Independent Work Rotation",
+        ...(rotationOnlyLines.length > 0 ? rotationOnlyLines : ["No rotation plan defined."]),
+      ]
+    : []
+
   const interventionLines =
     interventions.length > 0
       ? interventions.map((item) => `- ${item}`)
@@ -1361,17 +1380,31 @@ function buildPrintablesExportText(
   return [
     "Centers & Support Printables Export",
     "",
-    "Current scope: selected centers, rotation plans, and teacher-led support materials where this repo already supports printable output.",
+    "Current scope: selected centers, teacher-led support, independent work rotation, and intervention printables where this repo already supports classroom-ready output.",
     "",
-    "Centers",
+    "Centers / Independent Work",
     ...centerLines,
-    "",
-    "Rotation Plan",
-    rotationPlan || "No rotation plan defined.",
+    ...teacherLedSupportSection,
+    ...rotationSection,
     "",
     "Intervention Support",
     ...interventionLines,
   ].join("\n")
+}
+
+function splitRotationPlanLines(rotationPlan: string): {
+  teacherLedSupportLines: string[]
+  rotationOnlyLines: string[]
+} {
+  const lines = rotationPlan
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  return {
+    teacherLedSupportLines: lines.filter((line) => line.startsWith("Teacher-Led Support Focus:")),
+    rotationOnlyLines: lines.filter((line) => !line.startsWith("Teacher-Led Support Focus:")),
+  }
 }
 
 function sanitizeExportSubject(subject: string): string {

@@ -85,6 +85,26 @@ const binderSmallNoteStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
 }
 
+const sectionLeadStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  margin: "0 0 var(--space-sm) 0",
+}
+
+const exportBundleCardStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  marginBottom: 14,
+  display: "grid",
+  gap: 10,
+  border: "1px solid var(--border-moss)",
+  background: "rgba(110, 139, 107, 0.08)",
+}
+
+const exportBundleNoteStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  fontSize: 14,
+  lineHeight: 1.5,
+}
+
 const detailsSectionGridStyle: React.CSSProperties = {
   marginTop: 12,
   display: "grid",
@@ -994,7 +1014,7 @@ function countTeacherLedSupportLines(rotationPlan: string): number {
   return extractTeacherLedSupportLines(rotationPlan).length
 }
 
-function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
+export function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
   const lessonPlan = lessonPackage.lessonPlan.trim()
   const slides = sanitizeListItems(lessonPackage.slides)
   const interventions = sanitizeListItems(lessonPackage.interventions)
@@ -1186,19 +1206,24 @@ export async function downloadExportArtifact(artifact: ExportArtifact, artifacts
   window.URL.revokeObjectURL(url)
 }
 
-function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
+export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
   const fullPackageArtifact = exports.find((artifact) => artifact.kind === "full_package")
   const sectionArtifacts = exports.filter((artifact) => artifact.kind !== "full_package")
+  const bundleSummary = sectionArtifacts.length > 0
+    ? `Current package ZIP includes: ${sectionArtifacts.map((artifact) => artifact.label).join(", ")}.`
+    : "Current package ZIP includes the current generated artifacts."
 
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Exports</h3>
-      <p style={{ color: "var(--text-secondary)", margin: "0 0 var(--space-sm) 0" }}>
+      <p style={sectionLeadStyle}>
         Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.
       </p>
 
       {fullPackageArtifact ? (
-        <div style={{ marginBottom: 14 }}>
+        <div style={exportBundleCardStyle}>
+          <div style={{ fontWeight: 700, color: "var(--deep-orchard)" }}>Full Lesson Package ZIP</div>
+          <div style={exportBundleNoteStyle}>{bundleSummary}</div>
           <button
             type="button"
             onClick={() => void downloadExportArtifact(fullPackageArtifact, exports)}

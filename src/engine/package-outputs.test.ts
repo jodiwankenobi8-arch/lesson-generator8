@@ -384,8 +384,9 @@ describe("buildPackageOutputs", () => {
     expect(printablesExport!.label).toBe("Centers & Support Printables Export")
     expect(printablesExport!.content).toContain("Centers & Support Printables Export")
     expect(printablesExport!.content).toContain("Current scope:")
-    expect(printablesExport!.content).toContain("Centers")
-    expect(printablesExport!.content).toContain("Rotation Plan")
+    expect(printablesExport!.content).toContain("Centers / Independent Work")
+    expect(printablesExport!.content).toContain("Centers / Independent Work Rotation")
+    expect(printablesExport!.content).toContain("Teacher-Led Support")
     expect(printablesExport!.content).toContain("Intervention Support")
     expect(printablesExport!.content).not.toContain("\nInterventions\n")
   })
@@ -422,10 +423,9 @@ describe("buildPackageOutputs", () => {
     const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
     expect(printablesExport).toBeDefined()
     expect(printablesExport!.content).toContain("Centers & Support Printables Export")
-    expect(printablesExport!.content).toContain("Centers")
+    expect(printablesExport!.content).toContain("Centers / Independent Work")
     expect(printablesExport!.content).toContain("- No student centers defined.")
-    expect(printablesExport!.content).toContain("Rotation Plan")
-    expect(printablesExport!.content).toContain("No rotation plan defined.")
+    expect(printablesExport!.content).not.toContain("Centers / Independent Work Rotation")
     expect(printablesExport!.content).toContain("Intervention Support")
     expect(printablesExport!.content).toContain("- No intervention support defined.")
   })
@@ -457,8 +457,9 @@ describe("buildPackageOutputs", () => {
     expect(printablesExport).toBeDefined()
     expect(printablesExport!.label).toBe("Centers & Support Printables Export")
     expect(printablesExport!.content).toContain("Centers & Support Printables Export")
-    expect(printablesExport!.content).toContain("Rotation Plan")
+    expect(printablesExport!.content).toContain("Teacher-Led Support")
     expect(printablesExport!.content).toContain("Teacher-Led Support Focus:")
+    expect(printablesExport!.content).not.toContain("Centers / Independent Work Rotation")
   })
 
   it("keeps missing-area decision prompt language out of teacher-facing package sections and exports", () => {
@@ -621,6 +622,64 @@ describe("buildPackageOutputs", () => {
 
     expect(result.rotationPlan).toContain("Rotation 1:")
     expect(result.rotationPlan).not.toContain("Teacher-Led Support Focus:")
+  })
+  it("does not invent a centers rotation placeholder for teacher-led support only", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A phonics",
+        topic: "Long A vowel patterns",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas: makePlanningIdeas({ smallGroup: true }),
+      outputContents: makeOutputContents({
+        smallGroup: true,
+        printables: true,
+      }),
+    })
+
+    expect(result.rotationPlan).toContain("Teacher-Led Support Focus:")
+    expect(result.rotationPlan).not.toContain("No centers defined.")
+    expect(result.rotationPlan).not.toContain("Rotation 1:")
+
+    const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
+    expect(printablesExport).toBeDefined()
+    expect(printablesExport!.content).toContain("Teacher-Led Support")
+    expect(printablesExport!.content).toContain("Teacher-Led Support Focus:")
+    expect(printablesExport!.content).not.toContain("Centers / Independent Work Rotation")
+  })
+
+  it("keeps teacher-led support separate from independent work rotation inside the printables export", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A phonics",
+        topic: "Long A vowel patterns",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas: makePlanningIdeas({ centers: true, smallGroup: true, intervention: true }),
+      outputContents: makeOutputContents({
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        printables: true,
+      }),
+    })
+
+    const printablesExport = result.exports.find((artifact) => artifact.kind === "printables")
+    expect(printablesExport).toBeDefined()
+    expect(printablesExport!.content).toContain("Centers / Independent Work")
+    expect(printablesExport!.content).toContain("Teacher-Led Support")
+    expect(printablesExport!.content).toContain("Centers / Independent Work Rotation")
+    expect(printablesExport!.content).toContain("Intervention Support")
   })
 })
 

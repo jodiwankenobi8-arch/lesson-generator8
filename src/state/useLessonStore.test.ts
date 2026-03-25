@@ -297,8 +297,8 @@ describe("useLessonStore outputContents contract", () => {
 
     const nextOutputContents = createDefaultOutputContents()
     nextOutputContents.lessonPlan.parts.teach = false
-    nextOutputContents.assessments.types.formative_assessment = true
-    nextOutputContents.groups.byTier.T2.small_group = true
+    nextOutputContents.assessment.types.formative_assessment = true
+    nextOutputContents.smallGroup.tiers.T2 = true
     nextOutputContents.other.printables = true
 
     useLessonStore.getState().setOutputContents(nextOutputContents)
@@ -330,7 +330,7 @@ describe("useLessonStore outputContents contract", () => {
     expect(state.outputContents.assessments.types.formative_assessment).toBe(true)
     expect(state.outputContents.groups.selected).toBe(true)
     expect(state.outputContents.groups.byTier.T1.centers).toBe(false)
-    expect(state.outputContents.groups.byTier.T2.small_group).toBe(false)
+    expect(state.outputContents.groups.byTier.T2.small_group).toBe(true)
     expect(state.outputContents.groups.byTier.T3.intervention).toBe(true)
     expect(state.outputContents.other.printables).toBe(true)
   })

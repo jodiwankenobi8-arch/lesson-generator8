@@ -23,9 +23,9 @@ import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
 import { exportSlidesPptx } from "../engine/exports/exportSlidesPptx"
 import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
-import { CoverageDecisionsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription } from "./ResultsPage"
+import { CoverageDecisionsSection, PackageOutputsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
-import type { ExportArtifact, LessonInputs, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
+import type { ExportArtifact, LessonInputs, LessonPackage, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
 
 function makeInputs(overrides: Partial<LessonInputs> = {}): LessonInputs {
   return {
@@ -136,6 +136,32 @@ function renderCoverageSection(
     />
   )
 }
+
+function makeLessonPackage(overrides: {
+  lessonPlan?: string
+  slides?: string[]
+  centers?: string[]
+  rotationPlan?: string
+  interventions?: string[]
+  exports?: ExportArtifact[]
+} = {}): LessonPackage {
+  return {
+    slides: overrides.slides ?? ["Slide 1: Opening"],
+    lessonPlan: overrides.lessonPlan ?? "Lesson plan body",
+    centers: overrides.centers ?? [],
+    rotationPlan: overrides.rotationPlan ?? "",
+    interventions: overrides.interventions ?? [],
+    exports: overrides.exports ?? [],
+    readiness: {
+      density: "balanced",
+      lessonShape: "single-focus",
+      contentFit: "grounded",
+      warnings: [],
+      signals: [],
+    },
+  }
+}
+
 
 describe("Results explainability rendering contracts", () => {
   beforeEach(async () => {
@@ -554,6 +580,99 @@ describe("Results export routing - PDF and ZIP", () => {
     }
   })
 })
+describe("Results package output section parity", () => {
+  it("keeps a teacher-led support only package separate from centers and independent rotation", () => {
+    const markup = renderToStaticMarkup(
+      <PackageOutputsSection
+        lessonPackage={makeLessonPackage({
+          rotationPlan: "Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list.",
+          exports: [
+            makeExportArtifact({
+              kind: "full_package",
+              format: "zip",
+              label: "Full Lesson Package",
+              fileName: "ELA-full-lesson-package.zip",
+              mimeType: "application/zip",
+              content: "bundle marker",
+            }),
+            makeExportArtifact({
+              kind: "lesson_plan",
+              format: "docx",
+              label: "Lesson Plan Export",
+              fileName: "ELA-lesson-plan-export.docx",
+              mimeType: DOCX_MIME,
+              content: "Lesson plan body",
+            }),
+          ],
+        })}
+      />
+    )
+
+    expect(markup).toContain("Teacher-Led Support")
+    expect(markup).toContain("Teacher-Led Support Focus:")
+    expect(markup).not.toContain("Centers / Independent Work Rotation")
+    expect(markup).not.toContain("No centers defined.")
+    expect(markup).not.toContain("Intervention Support")
+  })
+
+  it("keeps mixed packages explicit about the ZIP bundle and the current generated artifacts inside it", () => {
+    const markup = renderToStaticMarkup(
+      <PackageOutputsSection
+        lessonPackage={makeLessonPackage({
+          centers: ["Word Sort: Sort long a and short a words."],
+          rotationPlan: [
+            "Rotation 1: Word Sort: Sort long a and short a words.",
+            "Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list.",
+          ].join("\n"),
+          interventions: ["Phonics Reteach: Practice decoding with teacher support."],
+          exports: [
+            makeExportArtifact({
+              kind: "full_package",
+              format: "zip",
+              label: "Full Lesson Package",
+              fileName: "ELA-full-lesson-package.zip",
+              mimeType: "application/zip",
+              content: "bundle marker",
+            }),
+            makeExportArtifact({
+              kind: "lesson_plan",
+              format: "docx",
+              label: "Lesson Plan Export",
+              fileName: "ELA-lesson-plan-export.docx",
+              mimeType: DOCX_MIME,
+              content: "Lesson plan body",
+            }),
+            makeExportArtifact({
+              kind: "slides",
+              format: "pptx",
+              label: "Slides Export",
+              fileName: "ELA-slides-export.pptx",
+              mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+              content: "Slides Export\n\n1. Opening",
+            }),
+            makeExportArtifact({
+              kind: "printables",
+              format: "pdf",
+              label: "Centers & Support Printables Export",
+              fileName: "ELA-printables-export.pdf",
+              mimeType: "application/pdf",
+              content: "Centers & Support Printables Export",
+            }),
+          ],
+        })}
+      />
+    )
+
+    expect(markup).toContain("Teacher-Led Support")
+    expect(markup).toContain("Intervention Support")
+    expect(markup).toContain("Centers / Independent Work")
+    expect(markup).toContain("Centers / Independent Work Rotation")
+    expect(markup).toContain("Full Lesson Package ZIP")
+    expect(markup).toContain("Current package ZIP includes:")
+    expect(markup).toContain("Lesson Plan Export, Slides Export, Centers &amp; Support Printables Export")
+  })
+})
+
 describe("Results export format labels", () => {
   it("maps ZIP, DOCX, PDF, and PPTX exports to the correct teacher-facing labels and descriptions", () => {
     const zipArtifact = makeExportArtifact({
