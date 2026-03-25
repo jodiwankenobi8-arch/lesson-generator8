@@ -418,7 +418,7 @@ export default function InputsPage() {
 
   return (
     <div style={pageStyle}>
-      <OrchardPageHeader label="Planning Notebook" title="Inputs">
+      <OrchardPageHeader label="Planning Notebook" title="Inputs" introMaxWidth={760}>
         <p style={introStyle}>
           Start with the lesson information, then choose the lesson parts and
           outputs you actually want.
@@ -854,3 +854,4 @@ function RequestToggleCard({
     </label>
   )
 }
+
