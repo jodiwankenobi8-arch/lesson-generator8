@@ -111,6 +111,32 @@ const detailsSectionGridStyle: React.CSSProperties = {
   gap: 12,
 }
 
+const exportArtifactGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+  gap: 10,
+}
+
+const exportArtifactCardStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: 14,
+  display: "grid",
+  gap: 10,
+}
+
+const exportMetaListStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 6,
+  fontSize: 13,
+  color: "var(--text-secondary)",
+}
+
+const exportButtonRowStyle: React.CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 8,
+  alignItems: "center",
+}
 
 export default function ResultsPage() {
   const blueprint = useLessonStore((state) => state.blueprint)
@@ -1152,6 +1178,13 @@ const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingm
 const PDF_MIME = "application/pdf"
 const PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 const ZIP_MIME = "application/zip"
+
+export function getArtifactFormatLabel(artifact: ExportArtifact): string {
+  if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) return "ZIP"
+  if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) return "PPTX"
+  if (artifact.format === "pdf" || artifact.mimeType === PDF_MIME) return "PDF"
+  return "DOCX"
+}
 
 export function getArtifactButtonLabel(artifact: ExportArtifact): string {
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) return "Download ZIP"
