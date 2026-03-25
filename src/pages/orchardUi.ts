@@ -299,6 +299,12 @@ export const orchardMetaRowStyle: CSSProperties = {
   alignItems: "center",
 }
 
+export const orchardStatGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+  gap: "var(--space-sm)",
+}
+
 export const orchardPageIntroBlockStyle: CSSProperties = {
   display: "grid",
   gap: "var(--space-sm)",
@@ -309,4 +315,3 @@ export const orchardPageHeaderCardStyle: CSSProperties = {
   ...orchardPageIntroBlockStyle,
   maxWidth: 920,
 }
-

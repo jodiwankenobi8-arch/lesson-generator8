@@ -17,9 +17,12 @@ import {
 import {
   orchardButtonStyle,
   orchardCardStyle,
+  orchardMetaRowStyle,
   orchardNoticeStyle,
   orchardPageShellStyle,
+  orchardSectionHeaderRowStyle,
   orchardSoftCardStyle,
+  orchardStatGridStyle,
   orchardStatusBadgeStyle,
   orchardTagStyle,
 } from "./orchardUi"
@@ -46,7 +49,6 @@ const heroGridStyle: React.CSSProperties = {
   gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
   gap: "var(--space-sm)",
 }
-
 
 const introStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
@@ -136,6 +138,37 @@ const exportButtonRowStyle: React.CSSProperties = {
   flexWrap: "wrap",
   gap: 8,
   alignItems: "center",
+}
+
+const binderSnapshotGridStyle: React.CSSProperties = {
+  ...orchardStatGridStyle,
+  marginBottom: 12,
+}
+
+const binderSnapshotCardStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: 14,
+  display: "grid",
+  gap: 8,
+}
+
+const binderSnapshotStatLabelStyle: React.CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.3,
+  textTransform: "uppercase",
+  color: "var(--text-secondary)",
+}
+
+const binderSnapshotStatValueStyle: React.CSSProperties = {
+  fontSize: 28,
+  fontWeight: 700,
+  color: "var(--orchard-green)",
+}
+
+const binderTagRowStyle: React.CSSProperties = {
+  ...orchardMetaRowStyle,
+  marginTop: 4,
 }
 
 export default function ResultsPage() {
@@ -318,7 +351,7 @@ function PackageSummarySection({
         <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
         <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
-          <div style={binderSmallNoteStyle}>Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.</div>
+        <div style={binderSmallNoteStyle}>Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.</div>
       </div>
     </div>
   )
@@ -788,6 +821,7 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
     </details>
   )
 }
+
 export function CoverageDecisionsSection({
   planningIdeas,
   decisions,
@@ -1040,6 +1074,157 @@ function countTeacherLedSupportLines(rotationPlan: string): number {
   return extractTeacherLedSupportLines(rotationPlan).length
 }
 
+type BinderSurfaceTone = "neutral" | "moss" | "honey" | "cranberry"
+
+type PackageSnapshotItem = {
+  label: string
+  tone: BinderSurfaceTone
+}
+
+function buildVisiblePackageSectionItems(lessonPackage: LessonPackage): PackageSnapshotItem[] {
+  const items: PackageSnapshotItem[] = []
+  const lessonPlan = lessonPackage.lessonPlan.trim()
+  const slides = sanitizeListItems(lessonPackage.slides)
+  const teacherLedSupportLines = extractTeacherLedSupportLines(lessonPackage.rotationPlan)
+  const rotationOnly = extractRotationOnlyText(lessonPackage.rotationPlan)
+  const interventions = sanitizeListItems(lessonPackage.interventions)
+  const centers = sanitizeListItems(lessonPackage.centers)
+
+  if (hasVisibleText(lessonPlan)) {
+    items.push({ label: "Lesson Plan", tone: "moss" })
+  }
+
+  if (slides.length > 0) {
+    items.push({ label: "Slides", tone: "moss" })
+  }
+
+  if (teacherLedSupportLines.length > 0) {
+    items.push({ label: "Teacher-Led Support", tone: "moss" })
+  }
+
+  if (interventions.length > 0) {
+    items.push({ label: "Intervention Support", tone: "honey" })
+  }
+
+  if (centers.length > 0) {
+    items.push({ label: "Centers / Independent Work", tone: "neutral" })
+  }
+
+  if (hasVisibleText(rotationOnly)) {
+    items.push({ label: "Centers / Independent Work Rotation", tone: "neutral" })
+  }
+
+  return items
+}
+
+export function getVisiblePackageSectionLabels(lessonPackage: LessonPackage): string[] {
+  return buildVisiblePackageSectionItems(lessonPackage).map((item) => item.label)
+}
+
+export function getBundledArtifactLabels(exports: ExportArtifact[]): string[] {
+  return exports
+    .filter((artifact) => artifact.kind !== "full_package")
+    .map((artifact) => artifact.label)
+}
+
+function getBinderReadinessTone(lessonPackage: LessonPackage): BinderSurfaceTone {
+  return lessonPackage.readiness.contentFit === "grounded" ? "moss" : "honey"
+}
+
+function getBinderReadinessLabel(lessonPackage: LessonPackage): string {
+  return lessonPackage.readiness.contentFit === "grounded"
+    ? "Grounded package"
+    : "Partially grounded package"
+}
+
+function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
+  const visiblePackageSections = buildVisiblePackageSectionItems(lessonPackage)
+  const exports = lessonPackage.exports ?? []
+  const bundledArtifactLabels = getBundledArtifactLabels(exports)
+  const hasFullPackageZip = exports.some((artifact) => artifact.kind === "full_package")
+  const warningCount = lessonPackage.readiness.warnings.length
+
+  return (
+    <div style={sectionStyle}>
+      <div style={orchardSectionHeaderRowStyle}>
+        <div style={{ display: "grid", gap: 8 }}>
+          <h3 style={sectionHeadingStyle}>Teacher Binder Snapshot</h3>
+          <p style={sectionLeadStyle}>
+            Review the classroom-ready sections included in this package before you export or inspect the evidence details below.
+          </p>
+        </div>
+        <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
+          {getBinderReadinessLabel(lessonPackage)}
+        </span>
+      </div>
+
+      <div style={binderSnapshotGridStyle}>
+        <div style={binderSnapshotCardStyle}>
+          <div style={binderSnapshotStatLabelStyle}>Package sections</div>
+          <div style={binderSnapshotStatValueStyle}>{visiblePackageSections.length}</div>
+          <div style={binderSmallNoteStyle}>Teacher-facing sections currently included in this package.</div>
+        </div>
+
+        <div style={binderSnapshotCardStyle}>
+          <div style={binderSnapshotStatLabelStyle}>Exports ready</div>
+          <div style={binderSnapshotStatValueStyle}>{exports.length}</div>
+          <div style={binderSmallNoteStyle}>
+            Package ZIP plus individual classroom-ready downloads when available.
+          </div>
+        </div>
+
+        <div style={binderSnapshotCardStyle}>
+          <div style={binderSnapshotStatLabelStyle}>Package warnings</div>
+          <div style={binderSnapshotStatValueStyle}>{warningCount}</div>
+          <div style={binderSmallNoteStyle}>
+            {warningCount > 0
+              ? "Review the evidence details below before using the package as-is."
+              : "No package warnings are currently flagged for this lesson."}
+          </div>
+        </div>
+      </div>
+
+      <div style={binderSnapshotCardStyle}>
+        <div style={subHeadingStyle}>Included in this teacher package</div>
+        {visiblePackageSections.length > 0 ? (
+          <div style={binderTagRowStyle}>
+            {visiblePackageSections.map((item) => (
+              <span key={item.label} style={orchardTagStyle(item.tone)}>
+                {item.label}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div style={binderSmallNoteStyle}>
+            No teacher-facing sections are currently included in this package.
+          </div>
+        )}
+      </div>
+
+      <div style={{ ...binderSnapshotCardStyle, marginTop: 12 }}>
+        <div style={subHeadingStyle}>Available exports</div>
+        <div style={binderSmallNoteStyle}>
+          {hasFullPackageZip
+            ? "Use the package ZIP when you want the whole generated binder together, or use the individual exports when you only need one classroom-ready artifact."
+            : "Only individual classroom-ready exports are available in this package right now."}
+        </div>
+        {hasFullPackageZip || bundledArtifactLabels.length > 0 ? (
+          <div style={binderTagRowStyle}>
+            {hasFullPackageZip ? (
+              <span style={orchardTagStyle("moss")}>Package ZIP</span>
+            ) : null}
+            {bundledArtifactLabels.map((label) => (
+              <span key={label} style={orchardTagStyle("neutral")}>
+                {label}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 export function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
   const lessonPlan = lessonPackage.lessonPlan.trim()
   const slides = sanitizeListItems(lessonPackage.slides)
@@ -1061,6 +1246,7 @@ export function PackageOutputsSection({ lessonPackage }: { lessonPackage: Lesson
 
   return (
     <>
+      {hasVisibleOutputs ? <TeacherBinderSnapshotSection lessonPackage={lessonPackage} /> : null}
       {lessonPlan.length > 0 ? <PreSection title="Lesson Plan" content={lessonPlan} /> : null}
       {slides.length > 0 ? <SimpleListSection title="Slides" items={slides} /> : null}
       {teacherLedSupportLines.length > 0 ? <SimpleListSection title="Teacher-Led Support" items={teacherLedSupportLines} /> : null}
@@ -1186,6 +1372,14 @@ export function getArtifactFormatLabel(artifact: ExportArtifact): string {
   return "DOCX"
 }
 
+function getArtifactKindLabel(artifact: ExportArtifact): string {
+  if (artifact.kind === "full_package") return "Package ZIP"
+  if (artifact.kind === "lesson_plan") return "Lesson plan"
+  if (artifact.kind === "slides") return "Slides"
+  if (artifact.kind === "printables") return "Printables"
+  return "Export"
+}
+
 export function getArtifactButtonLabel(artifact: ExportArtifact): string {
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) return "Download ZIP"
   if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) return "Download PPTX"
@@ -1242,8 +1436,9 @@ export async function downloadExportArtifact(artifact: ExportArtifact, artifacts
 export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
   const fullPackageArtifact = exports.find((artifact) => artifact.kind === "full_package")
   const sectionArtifacts = exports.filter((artifact) => artifact.kind !== "full_package")
-  const bundleSummary = sectionArtifacts.length > 0
-    ? `Current package ZIP includes: ${sectionArtifacts.map((artifact) => artifact.label).join(", ")}.`
+  const bundledArtifactLabels = getBundledArtifactLabels(exports)
+  const bundleSummary = bundledArtifactLabels.length > 0
+    ? `Current package ZIP includes: ${bundledArtifactLabels.join(", ")}.`
     : "Current package ZIP includes the current generated artifacts."
 
   return (
@@ -1255,49 +1450,70 @@ export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] 
 
       {fullPackageArtifact ? (
         <div style={exportBundleCardStyle}>
-          <div style={{ fontWeight: 700, color: "var(--deep-orchard)" }}>Full Lesson Package ZIP</div>
+          <div style={orchardSectionHeaderRowStyle}>
+            <div style={{ fontWeight: 700, color: "var(--deep-orchard)" }}>Full Lesson Package ZIP</div>
+            {bundledArtifactLabels.length > 0 ? (
+              <span style={orchardTagStyle("moss")}>
+                {bundledArtifactLabels.length} bundled artifact{bundledArtifactLabels.length === 1 ? "" : "s"}
+              </span>
+            ) : null}
+          </div>
           <div style={exportBundleNoteStyle}>{bundleSummary}</div>
-          <button
-            type="button"
-            onClick={() => void downloadExportArtifact(fullPackageArtifact, exports)}
-            style={{
-              ...orchardButtonStyle(),
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
-          >
-            Download Package ZIP
-          </button>
+          {bundledArtifactLabels.length > 0 ? (
+            <div style={binderTagRowStyle}>
+              {bundledArtifactLabels.map((label) => (
+                <span key={label} style={orchardTagStyle("neutral")}>
+                  {label}
+                </span>
+              ))}
+            </div>
+          ) : null}
+          <div style={exportButtonRowStyle}>
+            <button
+              type="button"
+              onClick={() => void downloadExportArtifact(fullPackageArtifact, exports)}
+              style={{
+                ...orchardButtonStyle(),
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+            >
+              Download Package ZIP
+            </button>
+          </div>
         </div>
       ) : null}
 
-      <div style={{ display: "grid", gap: 10 }}>
+      <div style={exportArtifactGridStyle}>
         {sectionArtifacts.map((artifact) => (
           <div
             key={`${artifact.kind}-${artifact.fileName}`}
-            style={signalCardStyle("neutral")}
+            style={exportArtifactCardStyle}
           >
-            <div style={{ fontWeight: 700 }}>{artifact.label}</div>
-            <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-              <strong>Filename:</strong> {artifact.fileName}
+            <div style={orchardMetaRowStyle}>
+              <span style={orchardTagStyle("neutral")}>{getArtifactFormatLabel(artifact)}</span>
+              <span style={orchardTagStyle("honey")}>{getArtifactKindLabel(artifact)}</span>
             </div>
-            <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-              {getArtifactDescription(artifact)}
+            <div style={{ fontWeight: 700 }}>{artifact.label}</div>
+            <div style={exportMetaListStyle}>
+              <div><strong>Filename:</strong> {artifact.fileName}</div>
+              <div>{getArtifactDescription(artifact)}</div>
             </div>
 
             {artifact.content ? (
-              <button
-                type="button"
-                onClick={() => void downloadExportArtifact(artifact, exports)}
-                style={{
-                  ...orchardButtonStyle({ subtle: true }),
-                  marginTop: 10,
-                  cursor: "pointer",
-                  fontWeight: 600,
-                }}
-              >
-                {getArtifactButtonLabel(artifact)}
-              </button>
+              <div style={exportButtonRowStyle}>
+                <button
+                  type="button"
+                  onClick={() => void downloadExportArtifact(artifact, exports)}
+                  style={{
+                    ...orchardButtonStyle({ subtle: true }),
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  {getArtifactButtonLabel(artifact)}
+                </button>
+              </div>
             ) : null}
           </div>
         ))}
@@ -1565,5 +1781,3 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
-
-

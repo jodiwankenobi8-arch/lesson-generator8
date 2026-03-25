@@ -23,7 +23,7 @@ import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
 import { exportSlidesPptx } from "../engine/exports/exportSlidesPptx"
 import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
-import { CoverageDecisionsSection, PackageOutputsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription } from "./ResultsPage"
+import { CoverageDecisionsSection, PackageOutputsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription, getBundledArtifactLabels, getVisiblePackageSectionLabels } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
 import type { ExportArtifact, LessonInputs, LessonPackage, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
 
@@ -162,7 +162,6 @@ function makeLessonPackage(overrides: {
   }
 }
 
-
 describe("Results explainability rendering contracts", () => {
   beforeEach(async () => {
     await seedAndGenerate()
@@ -214,15 +213,14 @@ describe("Results explainability rendering contracts", () => {
   it("keeps the teacher-facing results package labels and order aligned", () => {
     const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
 
-    const packageSummaryCallIndex = source.indexOf('<PackageSummarySection')
-    const packageOutputsCallIndex = source.indexOf('<PackageOutputsSection lessonPackage={lessonPackage} />')
-    const coverageDecisionsCallIndex = source.indexOf('<CoverageDecisionsSection')
-    const traceabilityCallIndex = source.indexOf('<TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />')
-    const planningDetailsCallIndex = source.indexOf('<PlanningDetailsSection')
-    const blueprintDetailsCallIndex = source.indexOf('<BlueprintDetailsSection blueprint={blueprint} />')
-    const pipelineTraceCallIndex = source.indexOf('{lessonTrace && <PipelineTraceSection trace={lessonTrace} />}')
-
-    const packageSummaryHeadingIndex = source.indexOf('Teacher-facing lesson package first.')
+    const packageSummaryCallIndex = source.indexOf("<PackageSummarySection")
+    const packageOutputsCallIndex = source.indexOf("<PackageOutputsSection lessonPackage={lessonPackage} />")
+    const coverageDecisionsCallIndex = source.indexOf("<CoverageDecisionsSection")
+    const traceabilityCallIndex = source.indexOf("<TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />")
+    const planningDetailsCallIndex = source.indexOf("<PlanningDetailsSection")
+    const blueprintDetailsCallIndex = source.indexOf("<BlueprintDetailsSection blueprint={blueprint} />")
+    const pipelineTraceCallIndex = source.indexOf("{lessonTrace && <PipelineTraceSection trace={lessonTrace} />}")
+    const packageSummaryHeadingIndex = source.indexOf("Teacher-facing lesson package first.")
     const lessonPlanIndex = source.indexOf('PreSection title="Lesson Plan"')
     const slidesIndex = source.indexOf('SimpleListSection title="Slides"')
     const teacherLedSupportIndex = source.indexOf('SimpleListSection title="Teacher-Led Support"')
@@ -244,15 +242,16 @@ describe("Results explainability rendering contracts", () => {
     expect(studentCentersIndex).toBeGreaterThan(teacherLedSupportIndex)
     expect(centerRotationIndex).toBeGreaterThan(studentCentersIndex)
 
-    expect(source).toContain('Teacher-facing lesson package first.')
-    expect(source).toContain('Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.')
-    expect(source).toContain('Download Package ZIP')
-    expect(source).not.toContain('Download Full Package ZIP')
-    expect(source).toContain('Lesson Evidence and Planning Details')
+    expect(source).toContain("Teacher-facing lesson package first.")
+    expect(source).toContain("Teacher Binder Snapshot")
+    expect(source).toContain("Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.")
+    expect(source).toContain("Download Package ZIP")
+    expect(source).not.toContain("Download Full Package ZIP")
+    expect(source).toContain("Lesson Evidence and Planning Details")
     expect(source).toContain('<summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>')
-    expect(source).toContain('<SecondaryEvidenceSection')
-    expect(source).toContain('Source Authority and Lesson Grounding')
-    expect(source).toContain('Teacher Decisions for Source Coverage Gaps')
+    expect(source).toContain("<SecondaryEvidenceSection")
+    expect(source).toContain("Source Authority and Lesson Grounding")
+    expect(source).toContain("Teacher Decisions for Source Coverage Gaps")
     expect(source).toContain('<summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>')
     expect(source).toContain('<summary style={summaryStyle}>Pipeline Trace</summary>')
     expect(source).toContain('<summary style={minorSummaryStyle}>Evidence details</summary>')
@@ -266,12 +265,12 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain('const hasUsableMaterialsForGeneration = useLessonStore((state) => state.hasUsableMaterialsForGeneration)()')
     expect(source).not.toContain('const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()')
 
-    expect(source).toContain('Results are blocked until at least one curriculum or exemplar material is usable for grounded generation.')
-    expect(source).toContain('Inputs are complete and at least one material is usable, but no generated lesson is currently loaded.')
-    expect(source).toContain('Ready files:')
+    expect(source).toContain("Results are blocked until at least one curriculum or exemplar material is usable for grounded generation.")
+    expect(source).toContain("Inputs are complete and at least one material is usable, but no generated lesson is currently loaded.")
+    expect(source).toContain("Ready files:")
 
-    expect(source).not.toContain('Results are blocked until at least one material is analyzed and ready.')
-    expect(source).not.toContain('Inputs and materials are ready, but no generated lesson is currently loaded.')
+    expect(source).not.toContain("Results are blocked until at least one material is analyzed and ready.")
+    expect(source).not.toContain("Inputs and materials are ready, but no generated lesson is currently loaded.")
   })
 
   it("keeps support-vs-generated gap messaging visible in coverage rendering", () => {
@@ -332,6 +331,7 @@ describe("Results explainability rendering contracts", () => {
     expect(coverageMarkup).toContain("Generated support:")
   })
 })
+
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
 function makeExportArtifact(overrides: Partial<ExportArtifact> = {}): ExportArtifact {
@@ -526,7 +526,6 @@ describe("Results export download contract", () => {
   })
 })
 
-
 describe("Results export routing - PDF and ZIP", () => {
   it("routes PDF printables exports through exportPrintablesPdf before download", async () => {
     vi.mocked(exportPrintablesPdf).mockResolvedValue(new Blob(["pdf-binary"], { type: "application/pdf" }))
@@ -580,7 +579,68 @@ describe("Results export routing - PDF and ZIP", () => {
     }
   })
 })
+
 describe("Results package output section parity", () => {
+  it("summarizes visible package sections and bundled artifact labels for the teacher binder snapshot", () => {
+    const lessonPackage = makeLessonPackage({
+      centers: ["Word Sort: Sort long a and short a words."],
+      rotationPlan: [
+        "Rotation 1: Word Sort: Sort long a and short a words.",
+        "Teacher-Led Support Focus: Targeted Blending - Reteach blending with a reduced list.",
+      ].join("\n"),
+      interventions: ["Phonics Reteach: Practice decoding with teacher support."],
+      exports: [
+        makeExportArtifact({
+          kind: "full_package",
+          format: "zip",
+          label: "Full Lesson Package",
+          fileName: "ELA-full-lesson-package.zip",
+          mimeType: "application/zip",
+          content: "bundle marker",
+        }),
+        makeExportArtifact({
+          kind: "lesson_plan",
+          format: "docx",
+          label: "Lesson Plan Export",
+          fileName: "ELA-lesson-plan-export.docx",
+          mimeType: DOCX_MIME,
+          content: "Lesson plan body",
+        }),
+        makeExportArtifact({
+          kind: "slides",
+          format: "pptx",
+          label: "Slides Export",
+          fileName: "ELA-slides-export.pptx",
+          mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          content: "Slides Export\n\n1. Opening",
+        }),
+        makeExportArtifact({
+          kind: "printables",
+          format: "pdf",
+          label: "Centers & Support Printables Export",
+          fileName: "ELA-printables-export.pdf",
+          mimeType: "application/pdf",
+          content: "Centers & Support Printables Export",
+        }),
+      ],
+    })
+
+    expect(getVisiblePackageSectionLabels(lessonPackage)).toEqual([
+      "Lesson Plan",
+      "Slides",
+      "Teacher-Led Support",
+      "Intervention Support",
+      "Centers / Independent Work",
+      "Centers / Independent Work Rotation",
+    ])
+
+    expect(getBundledArtifactLabels(lessonPackage.exports ?? [])).toEqual([
+      "Lesson Plan Export",
+      "Slides Export",
+      "Centers & Support Printables Export",
+    ])
+  })
+
   it("keeps a teacher-led support only package separate from centers and independent rotation", () => {
     const markup = renderToStaticMarkup(
       <PackageOutputsSection
@@ -667,6 +727,10 @@ describe("Results package output section parity", () => {
     expect(markup).toContain("Intervention Support")
     expect(markup).toContain("Centers / Independent Work")
     expect(markup).toContain("Centers / Independent Work Rotation")
+    expect(markup).toContain("Teacher Binder Snapshot")
+    expect(markup).toContain("Included in this teacher package")
+    expect(markup).toContain("Available exports")
+    expect(markup).toContain("Package ZIP")
     expect(markup).toContain("Full Lesson Package ZIP")
     expect(markup).toContain("Current package ZIP includes:")
     expect(markup).toContain("Lesson Plan Export, Slides Export, Centers &amp; Support Printables Export")
