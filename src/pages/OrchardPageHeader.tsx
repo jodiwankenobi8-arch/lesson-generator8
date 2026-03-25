@@ -6,23 +6,63 @@ import {
   orchardSectionTitleStyle,
 } from "./orchardUi"
 
+const headerStyle: CSSProperties = {
+  display: "grid",
+  gap: 12,
+  marginBottom: 8,
+}
+
+const labelStyle: CSSProperties = {
+  ...orchardSectionLabelStyle,
+  alignSelf: "start",
+}
+
 const titleStyle: CSSProperties = {
   ...orchardSectionTitleStyle,
   fontSize: 32,
+  margin: 0,
+  maxWidth: "18ch",
+}
+
+const introCardBaseStyle: CSSProperties = {
+  ...orchardHeroCardStyle,
+  ...orchardPageIntroBlockStyle,
+}
+
+const introContentStyle: CSSProperties = {
+  display: "grid",
+  gap: 12,
 }
 
 type OrchardPageHeaderProps = {
   label: string
   title: string
   children: ReactNode
+  titleId?: string
+  introMaxWidth?: CSSProperties["maxWidth"]
 }
 
-export function OrchardPageHeader({ label, title, children }: OrchardPageHeaderProps) {
+export function OrchardPageHeader({
+  label,
+  title,
+  children,
+  titleId,
+  introMaxWidth = 920,
+}: OrchardPageHeaderProps) {
+  const introCardStyle: CSSProperties = {
+    ...introCardBaseStyle,
+    maxWidth: introMaxWidth,
+  }
+
   return (
-    <>
-      <div style={orchardSectionLabelStyle}>{label}</div>
-      <h2 style={titleStyle}>{title}</h2>
-      <div style={{ ...orchardHeroCardStyle, ...orchardPageIntroBlockStyle }}>{children}</div>
-    </>
+    <header style={headerStyle}>
+      <div style={labelStyle}>{label}</div>
+      <h2 id={titleId} style={titleStyle}>
+        {title}
+      </h2>
+      <div style={introCardStyle}>
+        <div style={introContentStyle}>{children}</div>
+      </div>
+    </header>
   )
 }
