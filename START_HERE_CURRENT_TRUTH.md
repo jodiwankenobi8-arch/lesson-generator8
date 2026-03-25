@@ -2,8 +2,8 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 74e4fe9
-- Last auto-sync UTC: 2026-03-24T23:52:30Z
+- Published main checkpoint: f35ca7e
+- Last auto-sync UTC: 2026-03-25T01:15:09Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
@@ -15,7 +15,7 @@
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 74e4fe9
+- Current published continuation point: f35ca7e
 - Current milestone: results/package truth hardening is landed, and the follow-up Materials/Results orchard consistency pass is now also landed on main
 - Current active seam: doc closeout and next-seam selection from current live repo truth
 
