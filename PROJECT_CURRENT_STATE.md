@@ -42,14 +42,16 @@
 - large build-chunk warnings still remain:
   - office
   - pdf
-- broader intake/OCR expansion is still not started
-- the next seam after doc/commit closeout is still to be started
+- broader source-intake matrix lock is now in progress
+- deliberate OCR expansion remains separate future work
 
 ## Top next steps
-1. commit the orchard/artifact finish pass cleanly
-2. start the broader source-intake matrix
-3. do deliberate OCR expansion after that
-4. keep bounded AI later, only if still wanted
+1. finish the broader source-intake matrix lock across remaining docs and any still-needed UI/test wording
+2. keep curriculum = content authority and exemplar = presentation / structure authority explicit
+3. keep generation gated on usable materials
+4. keep screenshots / photos as a bounded OCR recovery lane, with links / URLs still not first-class intake
+5. do deliberate OCR expansion after that
+6. keep bounded AI later, only if still wanted
 
 ## Export decision lock
 - Official teacher-facing export truth: per-artifact exports plus optional full-package ZIP.

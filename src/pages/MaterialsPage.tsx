@@ -212,7 +212,7 @@ export default function MaterialsPage() {
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
         </p>
         <p style={introStyle}>
-          Current intake is upload based. Supported source formats: .txt, .pdf, .docx, .pptx, .html, and .htm. Add sources here, then generate only from usable curriculum and exemplar sources.
+          Current intake is upload based. Supported source formats: .txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp. Screenshots and photos are supported only through a bounded OCR recovery lane. Links and URLs are not a first-class source lane here. Add sources here, then generate only from usable curriculum and exemplar sources.
         </p>
       </OrchardPageHeader>
 
@@ -220,7 +220,7 @@ export default function MaterialsPage() {
         ref={curriculumInputRef}
         type="file"
         multiple
-        accept=".txt,.pdf,.docx,.pptx,.html,.htm"
+        accept=".txt,.pdf,.docx,.pptx,.html,.htm,.png,.jpg,.jpeg,.webp"
         onChange={(event) => handleFilesSelected("curriculum", event)}
         style={hiddenInputStyle}
       />
@@ -229,7 +229,7 @@ export default function MaterialsPage() {
         ref={exemplarInputRef}
         type="file"
         multiple
-        accept=".txt,.pdf,.docx,.pptx,.html,.htm"
+        accept=".txt,.pdf,.docx,.pptx,.html,.htm,.png,.jpg,.jpeg,.webp"
         onChange={(event) => handleFilesSelected("exemplar", event)}
         style={hiddenInputStyle}
       />

@@ -20,7 +20,7 @@
 - Branch: main
 - Current published continuation point: 1e0ac83
 - Current milestone: orchard/artifact finish pass is landed locally; export truth remains locked; manual/browser validation is still pending
-- Current active seam: doc/commit closeout for the orchard finish pass, then broader source-intake matrix
+- Current active seam: broader source-intake matrix lock
 
 ## What is actually landed
 - orchard shell direction is already present in the live repo
@@ -58,12 +58,17 @@
 - manual/browser validation is still pending
 - do not return to Step 6A as the active seam
 - do not reopen export-model lock or parity hardening unless live proof shows drift
-- broader intake/OCR expansion is still not part of the just-finished orchard pass
+- broader source-intake matrix lock is now the active seam; deliberate OCR expansion remains separate future work
 
 ## Best next move
-- keep the current code/docs aligned by committing this orchard finish pass cleanly
-- after that, move to the broader source-intake matrix
-- then do deliberate OCR expansion
+- finish the broader source-intake matrix lock across the remaining truth/docs surfaces
+- keep current product truth explicit:
+  - curriculum = content authority
+  - exemplar = presentation / structure authority
+  - generation depends on usable materials
+  - screenshots / photos remain a bounded OCR recovery lane
+  - links / URLs are not a first-class intake lane
+- do deliberate OCR expansion only after the matrix lock is complete
 - keep bounded AI later, only if still wanted
 
 ## Export decision lock
