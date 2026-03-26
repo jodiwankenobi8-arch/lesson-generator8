@@ -17,6 +17,7 @@ import {
   MaterialAnalysis,
   MaterialFile,
   MaterialRole,
+  MaterialSourceKind,
   MaterialStatus,
   MissingAreaDecisionChoice,
   OtherOutputKey,
@@ -60,12 +61,23 @@ type LessonStore = {
   toggleGroupOutput: (output: GroupOutputKindKey) => void
   toggleOtherOutput: (output: OtherOutputKey) => void
 
-  addMaterial: (role: MaterialRole, name?: string) => string
+  addMaterial: (
+    role: MaterialRole,
+    name?: string,
+    options?: {
+      sourceKind?: MaterialSourceKind
+      sourceLabel?: string | null
+      sourceMimeType?: string | null
+    }
+  ) => string
   setMaterialSource: (
     id: string,
     source: {
       fileBuffer: ArrayBuffer | null
       fileContent?: string | null
+      sourceKind?: MaterialSourceKind
+      sourceLabel?: string | null
+      sourceMimeType?: string | null
     }
   ) => void
   updateMaterialStatus: (id: string, status: MaterialStatus) => void
@@ -343,7 +355,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
       ...clearedGeneratedState(),
     })),
 
-  addMaterial: (role, name) => {
+  addMaterial: (role, name, options) => {
     const timestamp = Date.now().toString()
     const id = `${role}-${timestamp}`
 
@@ -358,6 +370,9 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
           analysis: null,
           errorMessage: null,
           styleSettings: role === "exemplar" ? defaultExemplarStyleSettings() : null,
+          sourceKind: options?.sourceKind ?? "file_upload",
+          sourceLabel: options?.sourceLabel ?? null,
+          sourceMimeType: options?.sourceMimeType ?? null,
           fileBuffer: null,
           fileContent: null,
         },
@@ -376,6 +391,9 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
               ...material,
               fileBuffer: source.fileBuffer,
               fileContent: source.fileContent ?? null,
+              sourceKind: source.sourceKind ?? material.sourceKind ?? "file_upload",
+              sourceLabel: source.sourceLabel ?? material.sourceLabel ?? null,
+              sourceMimeType: source.sourceMimeType ?? material.sourceMimeType ?? null,
             }
           : material
       ),

@@ -585,6 +585,10 @@ export type MaterialRole = "curriculum" | "exemplar"
 
 
 
+export type MaterialSourceKind = "file_upload" | "pasted_text" | "image_upload"
+
+
+
 export type MaterialStatus =
 
   | "uploaded"
@@ -801,6 +805,30 @@ export type ExtractionQuality = "high" | "medium" | "low"
 
 
 
+export type ExtractionOcrDisposition =
+
+  | "not_needed"
+
+  | "applied"
+
+  | "suggested"
+
+  | "unavailable"
+
+
+
+export type ExtractionProvenance = {
+
+  sourceKind: MaterialSourceKind
+
+  sourceLabel: string
+
+  originalType: string
+
+}
+
+
+
 export type ExtractionMetadata = {
 
   method: ExtractionMethod
@@ -814,6 +842,12 @@ export type ExtractionMetadata = {
   ocrCandidate: boolean
 
   ocrReason: string | null
+
+  provenance?: ExtractionProvenance
+
+  ocrDisposition?: ExtractionOcrDisposition
+
+  fallbackBehavior?: string
 
 }
 
@@ -956,6 +990,12 @@ export type MaterialFile = {
   styleSettings?: ExemplarStyleSettings | null
 
   transformationRequest?: ExemplarTransformationRequest | null
+
+  sourceKind?: MaterialSourceKind
+
+  sourceLabel?: string | null
+
+  sourceMimeType?: string | null
 
   fileBuffer: ArrayBuffer | null
 

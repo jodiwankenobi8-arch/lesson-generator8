@@ -36,6 +36,9 @@ export async function processMaterialForStore(
       fileName: material.name,
       fileBuffer: material.fileBuffer ?? undefined,
       fileContent: material.fileContent ?? undefined,
+      sourceKind: material.sourceKind,
+      sourceLabel: material.sourceLabel ?? undefined,
+      sourceMimeType: material.sourceMimeType ?? undefined,
     })
 
     actions.beginMaterialAnalysis(id)
@@ -44,7 +47,8 @@ export async function processMaterialForStore(
       material.id,
       material.name,
       material.role,
-      extraction.extractedText
+      extraction.extractedText,
+      extraction.extractionMetadata
     )
 
     const analysis: MaterialAnalysis = {

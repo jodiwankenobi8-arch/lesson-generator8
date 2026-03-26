@@ -1,15 +1,19 @@
+import { extractImageTextWithOcr } from "./extractImageOcr"
 import { extractPdfTextWithOcrFallback } from "./extractPdfOcr"
-import { ExtractionMetadata } from "../types"
+import { ExtractionMetadata, MaterialSourceKind } from "../types"
 
 export type ExtractTextInput = {
   fileName: string
   fileContent?: string
   fileBuffer?: ArrayBuffer
+  sourceKind?: MaterialSourceKind
+  sourceLabel?: string
+  sourceMimeType?: string | null
 }
 
 export type ExtractTextResult = {
   fileName: string
-  fileType: "txt" | "pdf" | "docx" | "pptx" | "html" | "unknown"
+  fileType: "txt" | "pdf" | "docx" | "pptx" | "html" | "image" | "unknown"
   extractedText: string[]
   extractionMetadata: ExtractionMetadata
 }
@@ -17,7 +21,10 @@ export type ExtractTextResult = {
 export async function extractTextFromFile(
   input: ExtractTextInput
 ): Promise<ExtractTextResult> {
-  const fileType = detectFileType(input.fileName)
+  const fileType = detectFileType(input.fileName, {
+    sourceKind: input.sourceKind,
+    sourceMimeType: input.sourceMimeType,
+  })
 
   switch (fileType) {
     case "txt": {
@@ -31,6 +38,8 @@ export async function extractTextFromFile(
           method: "parser",
           fileType,
           extractedText,
+          sourceKind: input.sourceKind,
+          sourceLabel: input.sourceLabel,
         }),
       }
     }
@@ -42,6 +51,8 @@ export async function extractTextFromFile(
         method: parserMethod,
         fileType,
         extractedText: parserText,
+        sourceKind: input.sourceKind,
+        sourceLabel: input.sourceLabel,
       })
 
       const upgradedPdfResult = await maybeApplyPdfOcrFallback({
@@ -60,15 +71,18 @@ export async function extractTextFromFile(
 
     case "docx": {
       const extractedText = await extractDocxText(input)
+      const method = isFallbackNoticeResult(extractedText) ? "fallback_notice" : "parser"
 
       return {
         fileName: input.fileName,
         fileType,
         extractedText,
         extractionMetadata: buildExtractionMetadata({
-          method: isFallbackNoticeResult(extractedText) ? "fallback_notice" : "parser",
+          method,
           fileType,
           extractedText,
+          sourceKind: input.sourceKind,
+          sourceLabel: input.sourceLabel,
         }),
       }
     }
@@ -86,23 +100,32 @@ export async function extractTextFromFile(
           method: "parser",
           fileType,
           extractedText,
+          sourceKind: input.sourceKind,
+          sourceLabel: input.sourceLabel,
         }),
       }
     }
 
     case "pptx": {
       const extractedText = await extractPptxText(input)
+      const method = isFallbackNoticeResult(extractedText) ? "fallback_notice" : "parser"
 
       return {
         fileName: input.fileName,
         fileType,
         extractedText,
         extractionMetadata: buildExtractionMetadata({
-          method: isFallbackNoticeResult(extractedText) ? "fallback_notice" : "parser",
+          method,
           fileType,
           extractedText,
+          sourceKind: input.sourceKind,
+          sourceLabel: input.sourceLabel,
         }),
       }
+    }
+
+    case "image": {
+      return extractImageText(input)
     }
 
     default: {
@@ -116,6 +139,8 @@ export async function extractTextFromFile(
           method: "fallback_notice",
           fileType: "unknown",
           extractedText,
+          sourceKind: input.sourceKind,
+          sourceLabel: input.sourceLabel,
         }),
       }
     }
@@ -123,9 +148,22 @@ export async function extractTextFromFile(
 }
 
 export function detectFileType(
-  fileName: string
-): "txt" | "pdf" | "docx" | "pptx" | "html" | "unknown" {
-  const lower = fileName.toLowerCase()
+  fileName: string,
+  options?: {
+    sourceKind?: MaterialSourceKind
+    sourceMimeType?: string | null
+  }
+): "txt" | "pdf" | "docx" | "pptx" | "html" | "image" | "unknown" {
+  if (options?.sourceKind === "pasted_text") {
+    return "txt"
+  }
+
+  const mimeType = options?.sourceMimeType?.toLowerCase().trim()
+  if (mimeType?.startsWith("image/")) {
+    return "image"
+  }
+
+  const lower = fileName.toLowerCase().trim()
 
   if (lower.endsWith(".txt")) {
     return "txt"
@@ -145,6 +183,15 @@ export function detectFileType(
 
   if (lower.endsWith(".html") || lower.endsWith(".htm")) {
     return "html"
+  }
+
+  if (
+    lower.endsWith(".png") ||
+    lower.endsWith(".jpg") ||
+    lower.endsWith(".jpeg") ||
+    lower.endsWith(".webp")
+  ) {
+    return "image"
   }
 
   return "unknown"
@@ -268,6 +315,8 @@ async function maybeApplyPdfOcrFallback({
             ...ocrResult.notes,
             "OCR fallback did not add enough new readable text, so parser output was kept.",
           ],
+          fallbackBehavior:
+            "Parser output stays primary. OCR was tried but did not add enough trustworthy new text to change the teacher-visible source trace.",
         },
       }
     }
@@ -276,18 +325,17 @@ async function maybeApplyPdfOcrFallback({
       method: "mixed",
       fileType: "pdf",
       extractedText: mergedText,
+      sourceKind: input.sourceKind,
+      sourceLabel: input.sourceLabel,
+      notesToAppend: [
+        ...ocrResult.notes,
+        `OCR fallback added ${mergedText.length - parserText.length} additional normalized line(s).`,
+      ],
     })
 
     return {
       extractedText: mergedText,
-      extractionMetadata: {
-        ...mixedMetadata,
-        notes: [
-          ...mixedMetadata.notes,
-          ...ocrResult.notes,
-          `OCR fallback added ${mergedText.length - parserText.length} additional normalized line(s).`,
-        ],
-      },
+      extractionMetadata: mixedMetadata,
     }
   } catch (error) {
     const message =
@@ -301,7 +349,105 @@ async function maybeApplyPdfOcrFallback({
           ...parserMetadata.notes,
           `OCR fallback attempt failed: ${message}`,
         ],
+        ocrDisposition: "unavailable",
+        fallbackBehavior:
+          "Parser output stays primary because OCR could not complete. Keep the source visible, but add a cleaner text source if trust remains thin.",
       },
+    }
+  }
+}
+
+async function extractImageText(input: ExtractTextInput): Promise<ExtractTextResult> {
+  if (!input.fileBuffer) {
+    const extractedText = [
+      `Image source ${input.fileName} was detected, but no fileBuffer was provided.`,
+      "Provide the uploaded screenshot or photo as an ArrayBuffer so OCR can run.",
+    ]
+
+    return {
+      fileName: input.fileName,
+      fileType: "image",
+      extractedText,
+      extractionMetadata: buildExtractionMetadata({
+        method: "fallback_notice",
+        fileType: "image",
+        extractedText,
+        sourceKind: input.sourceKind,
+        sourceLabel: input.sourceLabel,
+        fallbackBehaviorOverride:
+          "This screenshot or photo stays visible for the teacher, but it should not steer lesson generation until OCR or a clearer text source recovers readable text.",
+      }),
+    }
+  }
+
+  try {
+    const ocrResult = await extractImageTextWithOcr(input.fileBuffer, {
+      language: "eng",
+      mimeType: input.sourceMimeType ?? undefined,
+    })
+
+    if (ocrResult.lines.length === 0) {
+      const extractedText = [
+        `Image OCR produced no readable text for ${input.fileName}.`,
+        "Try a clearer screenshot or photo, or add direct text from the source.",
+      ]
+
+      return {
+        fileName: input.fileName,
+        fileType: "image",
+        extractedText,
+        extractionMetadata: buildExtractionMetadata({
+          method: "fallback_notice",
+          fileType: "image",
+          extractedText,
+          sourceKind: input.sourceKind,
+          sourceLabel: input.sourceLabel,
+          confidenceOverride:
+            ocrResult.averageConfidence > 0 ? ocrResult.averageConfidence : undefined,
+          notesToAppend: ocrResult.notes,
+          fallbackBehaviorOverride:
+            "This screenshot or photo stays visible for the teacher, but it should not steer lesson generation until OCR or a clearer text source recovers readable text.",
+        }),
+      }
+    }
+
+    return {
+      fileName: input.fileName,
+      fileType: "image",
+      extractedText: ocrResult.lines,
+      extractionMetadata: buildExtractionMetadata({
+        method: "ocr",
+        fileType: "image",
+        extractedText: ocrResult.lines,
+        sourceKind: input.sourceKind,
+        sourceLabel: input.sourceLabel,
+        confidenceOverride:
+          ocrResult.averageConfidence > 0 ? ocrResult.averageConfidence : undefined,
+        notesToAppend: ocrResult.notes,
+      }),
+    }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown image OCR error"
+    const extractedText = [
+      `Image OCR failed for ${input.fileName}.`,
+      message,
+    ]
+
+    return {
+      fileName: input.fileName,
+      fileType: "image",
+      extractedText,
+      extractionMetadata: buildExtractionMetadata({
+        method: "fallback_notice",
+        fileType: "image",
+        extractedText,
+        sourceKind: input.sourceKind,
+        sourceLabel: input.sourceLabel,
+        notesToAppend: [`Image OCR attempt failed: ${message}`],
+        fallbackBehaviorOverride:
+          "This screenshot or photo stays visible for the teacher, but it should not steer lesson generation until OCR or a clearer text source recovers readable text.",
+      }),
     }
   }
 }
@@ -477,7 +623,7 @@ function buildUnsupportedFormatNotice(
 ): string[] {
   return [
     `Unsupported file type for ${fileName}.`,
-    "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
+    "Supported extraction targets are txt, pdf, docx, pptx, html, htm, png, jpg, jpeg, and webp.",
   ]
 }
 
@@ -493,7 +639,8 @@ function isFallbackNoticeResult(lines: string[]): boolean {
     joined.includes("unsupported file type") ||
     joined.includes("extraction failed") ||
     joined.includes("produced no readable text") ||
-    joined.includes("no html content was provided")
+    joined.includes("no html content was provided") ||
+    joined.includes("image ocr failed")
   )
 }
 
@@ -501,26 +648,56 @@ function buildExtractionMetadata({
   method,
   fileType,
   extractedText,
+  sourceKind,
+  sourceLabel,
+  confidenceOverride,
+  notesToAppend = [],
+  fallbackBehaviorOverride,
 }: {
   method: ExtractionMetadata["method"]
   fileType: ExtractTextResult["fileType"]
   extractedText: string[]
+  sourceKind?: MaterialSourceKind
+  sourceLabel?: string
+  confidenceOverride?: number
+  notesToAppend?: string[]
+  fallbackBehaviorOverride?: string
 }): ExtractionMetadata {
+  const resolvedSourceKind = resolveSourceKind(fileType, sourceKind)
+  const provenance = {
+    sourceKind: resolvedSourceKind,
+    sourceLabel: sourceLabel?.trim() || defaultSourceLabel(resolvedSourceKind),
+    originalType: fileType,
+  }
+
   if (method === "fallback_notice") {
-    const ocrCandidate = fileType === "pdf" || fileType === "pptx"
+    const ocrCandidate = fileType === "pdf" || fileType === "pptx" || fileType === "image"
 
     return {
       method,
       quality: "low",
-      confidence: 0.2,
+      confidence: clampConfidence(confidenceOverride ?? 0.2),
       notes: [
         `Extraction returned fallback notice output for ${fileType}.`,
+        ...notesToAppend,
         "OCR or alternative recovery may be needed later.",
       ],
       ocrCandidate,
       ocrReason: ocrCandidate
-        ? "Parser did not recover usable text from a file type that may contain image-based content."
+        ? fileType === "image"
+          ? "Screenshot and photo sources require OCR to recover readable text."
+          : "Parser did not recover usable text from a file type that may contain image-based content."
         : null,
+      provenance,
+      ocrDisposition: ocrCandidate ? "unavailable" : "not_needed",
+      fallbackBehavior:
+        fallbackBehaviorOverride ??
+        buildFallbackBehavior({
+          method,
+          fileType,
+          sourceKind: resolvedSourceKind,
+          ocrCandidate,
+        }),
     }
   }
 
@@ -538,25 +715,32 @@ function buildExtractionMetadata({
         : "low"
 
   const confidence = clampConfidence(
-    quality === "high"
-      ? 0.82 + signals.alphaCharacterRatio * 0.12
-      : quality === "medium"
-        ? 0.56 + signals.alphaCharacterRatio * 0.18
-        : 0.28 + signals.alphaCharacterRatio * 0.2
+    confidenceOverride ??
+      (quality === "high"
+        ? 0.82 + signals.alphaCharacterRatio * 0.12
+        : quality === "medium"
+          ? 0.56 + signals.alphaCharacterRatio * 0.18
+          : 0.28 + signals.alphaCharacterRatio * 0.2)
   )
 
-  const ocrEligibleFileType = fileType === "pdf" || fileType === "pptx"
+  const sourceRequiresOcr = fileType === "image"
+  const ocrEligibleFileType = fileType === "pdf" || fileType === "pptx" || fileType === "image"
   const ocrCandidate =
-    ocrEligibleFileType &&
-    quality === "low" &&
-    (signals.lineCount <= 6 ||
-      signals.averageLineLength < 14 ||
-      signals.alphaCharacterRatio < 0.55 ||
-      signals.longLineCount === 0)
+    sourceRequiresOcr ||
+    (ocrEligibleFileType &&
+      quality === "low" &&
+      (signals.lineCount <= 6 ||
+        signals.averageLineLength < 14 ||
+        signals.alphaCharacterRatio < 0.55 ||
+        signals.longLineCount === 0))
 
-  const ocrReason = ocrCandidate
-    ? "Parser output looks thin or image-based, so OCR recovery is likely worth trying."
-    : null
+  const ocrReason = sourceRequiresOcr
+    ? "Screenshot and photo sources rely on OCR to recover readable text."
+    : ocrCandidate
+      ? method === "mixed"
+        ? "OCR supplemented thin parser output for this source."
+        : "Parser output looks thin or image-based, so OCR recovery is likely worth trying."
+      : null
 
   const notes = [
     `Primary extraction used ${method} for ${fileType}.`,
@@ -573,6 +757,8 @@ function buildExtractionMetadata({
     notes.push(ocrReason)
   }
 
+  notes.push(...notesToAppend)
+
   return {
     method,
     quality,
@@ -580,7 +766,83 @@ function buildExtractionMetadata({
     notes,
     ocrCandidate,
     ocrReason,
+    provenance,
+    ocrDisposition:
+      method === "ocr" || method === "mixed"
+        ? "applied"
+        : ocrCandidate
+          ? "suggested"
+          : "not_needed",
+    fallbackBehavior:
+      fallbackBehaviorOverride ??
+      buildFallbackBehavior({
+        method,
+        fileType,
+        sourceKind: resolvedSourceKind,
+        ocrCandidate,
+      }),
   }
+}
+
+function resolveSourceKind(
+  fileType: ExtractTextResult["fileType"],
+  sourceKind?: MaterialSourceKind
+): MaterialSourceKind {
+  if (sourceKind) {
+    return sourceKind
+  }
+
+  if (fileType === "image") {
+    return "image_upload"
+  }
+
+  return "file_upload"
+}
+
+function defaultSourceLabel(sourceKind: MaterialSourceKind): string {
+  if (sourceKind === "pasted_text") {
+    return "Pasted text"
+  }
+
+  if (sourceKind === "image_upload") {
+    return "Screenshot or photo"
+  }
+
+  return "Uploaded file"
+}
+
+function buildFallbackBehavior({
+  method,
+  fileType,
+  sourceKind,
+  ocrCandidate,
+}: {
+  method: ExtractionMetadata["method"]
+  fileType: ExtractTextResult["fileType"]
+  sourceKind: MaterialSourceKind
+  ocrCandidate: boolean
+}): string {
+  if (method === "ocr") {
+    return "OCR text is surfaced with confidence and provenance notes. Noisy OCR can still be caution-scored or blocked from lesson grounding."
+  }
+
+  if (method === "mixed") {
+    return "Parser text stays primary and OCR only supplements missing readable text when the parser output is thin."
+  }
+
+  if (method === "fallback_notice" && fileType === "image") {
+    return "This screenshot or photo stays visible for the teacher, but it should not steer lesson generation until OCR or a clearer text source recovers readable text."
+  }
+
+  if (sourceKind === "pasted_text") {
+    return "Direct pasted text stays primary and OCR is ignored because the teacher already provided text instead of an image-based source."
+  }
+
+  if (ocrCandidate) {
+    return "Parser output stays visible for teacher review, but OCR or a stronger source may still be needed before the source is trusted for lesson grounding."
+  }
+
+  return "Parser output stays primary and OCR is ignored unless the extracted text looks thin or image-based."
 }
 
 function computeExtractionSignals(lines: string[]) {
@@ -617,4 +879,3 @@ function computeExtractionSignals(lines: string[]) {
 function clampConfidence(value: number): number {
   return Math.max(0.05, Math.min(0.98, Number(value.toFixed(2))))
 }
-

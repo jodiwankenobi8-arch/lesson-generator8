@@ -128,6 +128,44 @@ describe("useLessonStore regeneration", () => {
     expect(material!.errorMessage).toBe("No file content is available for processing.")
   })
 
+  it("processMaterial preserves pasted-text source provenance for non-file intake", async () => {
+    const store = useLessonStore.getState()
+    const materialId = store.addMaterial("curriculum", "Copied curriculum excerpt", {
+      sourceKind: "pasted_text",
+      sourceLabel: "Pasted text",
+      sourceMimeType: "text/plain",
+    })
+
+    store.setMaterialSource(materialId, {
+      fileBuffer: null,
+      fileContent: [
+        "RF.1.3",
+        "Objective: Blend and read short a CVC words.",
+        "Teacher says: Tap the sounds and read the word.",
+      ].join("\n"),
+      sourceKind: "pasted_text",
+      sourceLabel: "Pasted text",
+      sourceMimeType: "text/plain",
+    })
+
+    await useLessonStore.getState().processMaterial(materialId)
+
+    const material = useLessonStore
+      .getState()
+      .materials.find((item) => item.id === materialId)
+
+    expect(material).toBeTruthy()
+    expect(material!.status).toBe("ready")
+    expect(material!.sourceKind).toBe("pasted_text")
+    expect(material!.sourceLabel).toBe("Pasted text")
+    expect(material!.sourceMimeType).toBe("text/plain")
+    expect(material!.analysis?.extractionMetadata?.provenance).toEqual({
+      sourceKind: "pasted_text",
+      sourceLabel: "Pasted text",
+      originalType: "txt",
+    })
+  })
+
   it("processMaterial drives extracting -> analyzing -> ready and preserves extraction metadata", async () => {
     const store = useLessonStore.getState()
     const materialId = store.addMaterial("curriculum", "contract-curriculum.txt")
@@ -170,6 +208,9 @@ describe("useLessonStore regeneration", () => {
     expect(material!.status).toBe("ready")
     expect(material!.analysis).toBeTruthy()
     expect(material!.analysis!.extractionMetadata).toBeTruthy()
+    expect(material!.analysis!.reliability?.warnings.join(" ")).not.toContain(
+      "No extraction metadata available."
+    )
     expect(statusHistory).toEqual(
       expect.arrayContaining(["extracting", "analyzing", "ready"])
     )
