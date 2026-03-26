@@ -5,6 +5,7 @@ const pdfDestroyMock = vi.fn()
 const mammothExtractRawTextMock = vi.fn()
 const parsePptxMock = vi.fn()
 const extractPdfTextWithOcrFallbackMock = vi.fn()
+const extractImageTextWithOcrMock = vi.fn()
 
 vi.mock("pdf-parse", () => ({
   PDFParse: class {
@@ -33,6 +34,11 @@ vi.mock("./materials/extractPdfOcr", () => ({
     extractPdfTextWithOcrFallbackMock(...args),
 }))
 
+vi.mock("./materials/extractImageOcr", () => ({
+  extractImageTextWithOcr: (...args: unknown[]) =>
+    extractImageTextWithOcrMock(...args),
+}))
+
 import {
   detectFileType,
   extractPlainText,
@@ -46,6 +52,7 @@ describe("extraction contract", () => {
     mammothExtractRawTextMock.mockReset()
     parsePptxMock.mockReset()
     extractPdfTextWithOcrFallbackMock.mockReset()
+    extractImageTextWithOcrMock.mockReset()
 
     pdfDestroyMock.mockResolvedValue(undefined)
     mammothExtractRawTextMock.mockResolvedValue({
@@ -58,6 +65,11 @@ describe("extraction contract", () => {
       averageConfidence: 0,
       notes: ["OCR fallback mock returned no extra text."],
     })
+    extractImageTextWithOcrMock.mockResolvedValue({
+      lines: ["Teacher prompt from screenshot."],
+      averageConfidence: 0.84,
+      notes: ["OCR processed 1 image source.", "Average OCR confidence: 84%."],
+    })
   })
 
   it("detectFileType recognizes supported formats", () => {
@@ -67,6 +79,7 @@ describe("extraction contract", () => {
     expect(detectFileType("slides.PPTX")).toBe("pptx")
     expect(detectFileType("page.html")).toBe("html")
     expect(detectFileType("page.htm")).toBe("html")
+    expect(detectFileType("worksheet-photo.JPG")).toBe("image")
     expect(detectFileType("archive.zip")).toBe("unknown")
   })
 
@@ -104,6 +117,28 @@ describe("extraction contract", () => {
     expect(result.extractionMetadata.quality).toBe("low")
     expect(result.extractionMetadata.ocrCandidate).toBe(false)
     expect(result.extractionMetadata.ocrReason).toBeNull()
+  })
+
+  it("extractTextFromFile treats pasted text as a first-class source even without a file extension", async () => {
+    const result = await extractTextFromFile({
+      fileName: "Copied standards and notes",
+      fileContent: "RF.1.3\nBlend and read short a words.\nTeacher says: We will map the sounds.",
+      sourceKind: "pasted_text",
+      sourceLabel: "Pasted text",
+    })
+
+    expect(result.fileType).toBe("txt")
+    expect(result.extractedText).toEqual([
+      "RF.1.3",
+      "Blend and read short a words.",
+      "Teacher says: We will map the sounds.",
+    ])
+    expect(result.extractionMetadata.provenance).toEqual({
+      sourceKind: "pasted_text",
+      sourceLabel: "Pasted text",
+      originalType: "txt",
+    })
+    expect(result.extractionMetadata.ocrDisposition).toBe("not_needed")
   })
 
   it("extractTextFromFile extracts readable html content and strips scripts/styles", async () => {
@@ -210,12 +245,49 @@ describe("extraction contract", () => {
     expect(result.fileType).toBe("unknown")
     expect(result.extractedText).toEqual([
       "Unsupported file type for materials.csv.",
-      "Supported extraction targets are txt, pdf, docx, pptx, html, and htm.",
+      "Supported extraction targets are txt, pdf, docx, pptx, html, htm, png, jpg, jpeg, and webp.",
     ])
     expect(result.extractionMetadata.method).toBe("fallback_notice")
     expect(result.extractionMetadata.quality).toBe("low")
     expect(result.extractionMetadata.ocrCandidate).toBe(false)
     expect(result.extractionMetadata.ocrReason).toBeNull()
+  })
+
+  it("extractTextFromFile uses OCR for supported image sources", async () => {
+    const result = await extractTextFromFile({
+      fileName: "worksheet-photo.png",
+      fileBuffer: new TextEncoder().encode("fake-image").buffer,
+      sourceKind: "image_upload",
+      sourceLabel: "Worksheet photo",
+      sourceMimeType: "image/png",
+    })
+
+    expect(result.fileType).toBe("image")
+    expect(result.extractedText).toEqual(["Teacher prompt from screenshot."])
+    expect(result.extractionMetadata.method).toBe("ocr")
+    expect(result.extractionMetadata.ocrDisposition).toBe("applied")
+    expect(result.extractionMetadata.provenance).toEqual({
+      sourceKind: "image_upload",
+      sourceLabel: "Worksheet photo",
+      originalType: "image",
+    })
+    expect(extractImageTextWithOcrMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("marks image fallback output as unavailable OCR when no file buffer is provided", async () => {
+    const result = await extractTextFromFile({
+      fileName: "screenshot.jpeg",
+      sourceKind: "image_upload",
+      sourceLabel: "Screenshot or photo",
+      sourceMimeType: "image/jpeg",
+    })
+
+    expect(result.fileType).toBe("image")
+    expect(result.extractionMetadata.method).toBe("fallback_notice")
+    expect(result.extractionMetadata.ocrCandidate).toBe(true)
+    expect(result.extractionMetadata.ocrDisposition).toBe("unavailable")
+    expect(result.extractionMetadata.fallbackBehavior).toContain("should not steer lesson generation")
+    expect(extractImageTextWithOcrMock).not.toHaveBeenCalled()
   })
 
   it("marks thin parsed pdf text as an OCR candidate", async () => {
