@@ -2,8 +2,8 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 1621622
-- Last auto-sync UTC: 2026-03-26T17:45:41Z
+- Published main checkpoint: 1e0ac83
+- Last auto-sync UTC: 2026-03-26T20:20:48Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
@@ -18,7 +18,7 @@
 
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 1621622
+- Current published continuation point: 1e0ac83
 - Current milestone: orchard/artifact finish pass is landed locally; export truth remains locked; manual/browser validation is still pending
 - Current active seam: doc/commit closeout for the orchard finish pass, then broader source-intake matrix
 
