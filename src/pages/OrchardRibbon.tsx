@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react"
+import ribbonSrc from "../assets/orchard/ribbon-header.png"
 
 type OrchardRibbonProps = {
   text: string
