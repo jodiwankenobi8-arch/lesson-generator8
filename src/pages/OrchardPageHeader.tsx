@@ -4,16 +4,12 @@ import {
   orchardSectionLabelStyle,
   orchardSectionTitleStyle,
 } from "./orchardUi"
+import { OrchardRibbon } from "./OrchardRibbon"
 
 const headerStyle: CSSProperties = {
   display: "grid",
   gap: 12,
   marginBottom: 8,
-}
-
-const labelStyle: CSSProperties = {
-  ...orchardSectionLabelStyle,
-  alignSelf: "start",
 }
 
 const titleStyle: CSSProperties = {
@@ -50,7 +46,7 @@ export function OrchardPageHeader({
 
   return (
     <header style={headerStyle}>
-      <div style={labelStyle}>{label}</div>
+      <OrchardRibbon text={label} />
       <h2 id={titleId} style={titleStyle}>
         {title}
       </h2>
