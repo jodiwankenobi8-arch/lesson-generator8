@@ -212,7 +212,7 @@ export default function MaterialsPage() {
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
         </p>
         <p style={introStyle}>
-          Current teacher-facing intake is upload based. Right now the Materials page accepts .txt, .pdf, .docx, .pptx, .html, and .htm. The extraction seam also supports bounded pasted-text and image OCR sources, but those are not yet first-class upload lanes here. Add sources here, then generate only from usable curriculum and exemplar sources.
+          Current teacher-facing intake is upload based. Right now the Materials page accepts .txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp. Image uploads are supported through bounded OCR recovery and may be caution-scored or blocked until readable text is recovered strongly enough to be usable. Pasted text exists in the extraction seam, but it is not a first-class Materials-page upload lane here. Add sources here, then generate only from usable curriculum and exemplar sources.
         </p>
       </OrchardPageHeader>
 
