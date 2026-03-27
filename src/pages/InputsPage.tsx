@@ -427,6 +427,18 @@ export default function InputsPage() {
           Required fields stay narrow. Standards can come from teacher input and
           from curriculum materials later.
         </p>
+        <p style={introStyle}>
+          The next step is upload-based materials intake. Current supported
+          source materials are .txt, .pdf, .docx, .pptx, .html, .htm, plus
+          .png, .jpg, .jpeg, and .webp as a bounded OCR recovery lane when
+          needed.
+        </p>
+        <p style={introStyle}>
+          The next step is upload-based materials intake. Current supported
+          source materials are .txt, .pdf, .docx, .pptx, .html, .htm, plus
+          .png, .jpg, .jpeg, and .webp as a bounded OCR recovery lane when
+          needed.
+        </p>
       </OrchardPageHeader>
 
       <div style={cardStyle}>
@@ -519,7 +531,7 @@ export default function InputsPage() {
           <div style={sectionLabelStyle}>3. Requested Outputs</div>
           <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
             Keep explicit teacher choice here on page 1. Centers and teacher-led
-            small group stay separate lanes. Printable-ready materials are only
+            support stay separate lanes. Printable-ready materials are only
             bundled from the relevant selected sections the current repo already
             supports, rather than as a stand-alone generic bucket.
           </div>

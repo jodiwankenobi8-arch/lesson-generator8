@@ -1,18 +1,26 @@
-# Supported source matrix â€” current live contract
+# SUPPORTED_SOURCE_MATRIX_CURRENT
 
-Status:
-- current intake is upload based through the Materials page
-- current uploaded source formats include text/docs and image uploads
-- broader intake expansion is not locked yet
-- do not imply web links / URLs or pasted text as separate first-class Materials-page lanes until that UI work is explicitly landed
-- do not imply screenshots / photos are equal to clean parser-first text sources; image uploads currently depend on bounded OCR recovery and may still be caution-scored or blocked
+## Purpose
+This file is the teacher-facing and continuation-facing source-intake truth for the current repo state.
+Use it to keep docs, UI copy, and tests aligned.
 
-## Current supported source intake
+## Product truths to preserve
+- curriculum = content authority
+- exemplar = presentation / structure authority
+- generation depends on usable materials, not merely uploaded or ready materials
+- screenshot/photo uploads are a bounded OCR recovery lane
+- do not overclaim links or URLs as first-class intake
 
-Entry point:
-- Materials page upload flow
+## Current intake model
+Current intake is upload-based.
+The app currently works from uploaded source materials, not link-first retrieval.
 
-Supported file types:
+## Supported now
+
+### Curriculum lane
+Use for standards, texts, word lists, practice tasks, examples, and instructional targets.
+
+Supported upload types now:
 - `.txt`
 - `.pdf`
 - `.docx`
@@ -24,36 +32,56 @@ Supported file types:
 - `.jpeg`
 - `.webp`
 
-Lane roles:
-- curriculum = content authority
-- exemplar = presentation / structure authority
+Lane truth:
+- curriculum remains the content authority
+- image uploads can help recover text when needed
+- screenshots/photos should not outrank stronger curriculum documents when stronger content sources exist
 
-Trust rule:
-- generation depends on usable materials, not merely ready materials
-- parser-first document extraction remains the primary path for `.txt`, `.pdf`, `.docx`, `.pptx`, `.html`, and `.htm`
-- screenshots / photos are supported as uploaded image sources through bounded OCR recovery
-- image uploads stay visible for the teacher, but they should not steer lesson generation until OCR recovers readable text strongly enough to be usable
-- OCR exists only as a bounded recovery path inside the current extraction flow
+### Exemplar lane
+Use for slide flow, pacing, prompts, layout cues, teacher moves, and reusable structure.
 
-## Not yet first-class
+Supported upload types now:
+- `.txt`
+- `.pdf`
+- `.docx`
+- `.pptx`
+- `.html`
+- `.htm`
+- `.png`
+- `.jpg`
+- `.jpeg`
+- `.webp`
 
-These should be treated as future-expansion ideas, not current product promises:
-- web links / URLs as a Materials-page source lane
-- pasted text as a separate Materials-page lane
-- audio / video sources
-- multi-provider OCR orchestration
-- AI-first intake interpretation
+Lane truth:
+- exemplar remains the presentation / structure authority
+- image uploads can help recover layout/prompt clues when needed
+- screenshots/photos are still a bounded OCR recovery lane, not stronger authority than a clearer exemplar deck or document
 
-## Teacher-facing wording guardrails
+## Bounded OCR recovery lane
+Image uploads are supported for bounded OCR recovery.
+That means:
+- they are allowed
+- they can contribute extracted text/provenance when readable
+- they are useful when a teacher only has screenshots or photos
+- they should not be described as the preferred or primary intake path when better document sources are available
 
-- say `upload-based intake` rather than implying broad multi-source intake
-- say `screenshots / photos are supported through bounded OCR` rather than implying guaranteed grounding quality
-- keep curriculum and exemplar authority roles explicit
-- keep `usable materials` language explicit whenever generation gating is described
+## Not first-class today
+Do not claim these as first-class intake in UI or docs:
+- raw links / URLs as a primary source lane
+- website crawling
+- screenshot/photo-only workflows as the ideal teacher path
+- broad mixed-source retrieval outside upload-based intake
 
-## Finish recommendation
+## Safe teacher-facing wording
+Prefer wording like:
+- source materials
+- uploads
+- curriculum materials
+- exemplar materials
+- bounded OCR recovery for screenshots/photos when needed
+- generate only from usable curriculum and exemplar materials
 
-Before broader intake is expanded, keep the product contract explicit:
-- upload-based intake is the current truth
-- image uploads are supported, but only through bounded OCR recovery and trust scoring
-- broader source expansion should land only with an explicit source matrix, trust behavior, and validation plan
+Avoid wording like:
+- links are fully supported as source intake
+- screenshots/photos are the primary intake model
+- any uploaded image is automatically strong authority

@@ -128,6 +128,60 @@ describe("useLessonStore regeneration", () => {
     expect(material!.errorMessage).toBe("No file content is available for processing.")
   })
 
+  it("keeps uploaded image provenance so bounded OCR recovery inputs remain traceable", () => {
+    const store = useLessonStore.getState()
+    const imageBytes = new Uint8Array([1, 2, 3, 4]).buffer
+    const materialId = store.addMaterial("curriculum", "source-photo.png")
+
+    store.setMaterialSource(materialId, {
+      fileBuffer: imageBytes,
+      fileContent: null,
+    })
+
+    const material = useLessonStore
+      .getState()
+      .materials.find((item) => item.id === materialId)
+
+    expect(material).toBeTruthy()
+    expect(material!.fileBuffer).toBe(imageBytes)
+    expect(material!.fileContent).toBeNull()
+  })
+  it("keeps uploaded image provenance so bounded OCR recovery inputs remain traceable", () => {
+    const store = useLessonStore.getState()
+    const imageBytes = new Uint8Array([1, 2, 3, 4]).buffer
+    const materialId = store.addMaterial("curriculum", "source-photo.png")
+
+    store.setMaterialSource(materialId, {
+      fileBuffer: imageBytes,
+      fileContent: null,
+    })
+
+    const material = useLessonStore
+      .getState()
+      .materials.find((item) => item.id === materialId)
+
+    expect(material).toBeTruthy()
+    expect(material!.fileBuffer).toBe(imageBytes)
+    expect(material!.fileContent).toBeNull()
+  })
+  it("keeps uploaded image provenance so bounded OCR recovery inputs remain traceable", () => {
+    const store = useLessonStore.getState()
+    const imageBytes = new Uint8Array([1, 2, 3, 4]).buffer
+    const materialId = store.addMaterial("curriculum", "source-photo.png")
+
+    store.setMaterialSource(materialId, {
+      fileBuffer: imageBytes,
+      fileContent: null,
+    })
+
+    const material = useLessonStore
+      .getState()
+      .materials.find((item) => item.id === materialId)
+
+    expect(material).toBeTruthy()
+    expect(material!.fileBuffer).toBe(imageBytes)
+    expect(material!.fileContent).toBeNull()
+  })
   it("processMaterial preserves pasted-text source provenance for non-file intake", async () => {
     const store = useLessonStore.getState()
     const materialId = store.addMaterial("curriculum", "Copied curriculum excerpt", {
@@ -308,7 +362,7 @@ describe("useLessonStore regeneration", () => {
     }))
 
     await expect(useLessonStore.getState().generateLesson()).rejects.toThrow(
-      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source file."
+      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source material."
     )
   })
 })

@@ -154,7 +154,7 @@ export default function MaterialsPage() {
       )
 
       if (duplicateExists) {
-        setGenerationError(`"${file.name}" is already uploaded in ${role} sources.`)
+        setGenerationError(`"${file.name}" is already uploaded in ${role} materials.`)
         continue
       }
 
@@ -206,13 +206,13 @@ export default function MaterialsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Source Workbench" title="Materials" introMaxWidth={760}>
         <p style={introStyle}>
-          Add curriculum sources and exemplar sources to the workbench. Uploaded materials stay visible while they move through upload, extraction, analysis, and readiness states.
+          Add curriculum and exemplar materials to the workbench. Uploaded materials stay visible while they move through upload, extraction, analysis, and readiness states.
         </p>
         <p style={introStyle}>
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
         </p>
         <p style={introStyle}>
-          Current intake is upload based. Supported source formats: .txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp. Screenshots and photos are supported only through a bounded OCR recovery lane. Links and URLs are not a first-class source lane here. Add sources here, then generate only from usable curriculum and exemplar sources.
+          Current teacher-facing intake is upload based. Right now the Materials page accepts .txt, .pdf, .docx, .pptx, .html, and .htm. The extraction seam also supports bounded pasted-text and image OCR sources, but those are not yet first-class upload lanes here. Add sources here, then generate only from usable curriculum and exemplar sources.
         </p>
       </OrchardPageHeader>
 
@@ -241,14 +241,14 @@ export default function MaterialsPage() {
             Curriculum
           </h3>
           <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
-Content authority for standards, word lists, texts, examples, and practice activities across one or more sources.
+Content authority for standards, word lists, texts, examples, and practice activities across one or more source materials.
           </p>
           <button
             type="button"
             style={buttonStyle}
             onClick={() => curriculumInputRef.current?.click()}
           >
-            Add Curriculum Sources
+            Add Curriculum Materials
           </button>
         </div>
 
@@ -258,14 +258,14 @@ Content authority for standards, word lists, texts, examples, and practice activ
             Exemplar
           </h3>
           <p style={{ color: "var(--text-secondary)", marginTop: 0 }}>
-Presentation authority for slide order, pacing, prompts, layout, and timing across one or more sources.
+Presentation authority for slide order, pacing, prompts, layout, and timing across one or more source materials.
           </p>
           <button
             type="button"
             style={buttonStyle}
             onClick={() => exemplarInputRef.current?.click()}
           >
-            Add Exemplar Sources
+            Add Exemplar Materials
           </button>
         </div>
       </div>
@@ -325,10 +325,10 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
           )}
         >
           {hasProcessingMaterials
-            ? "Lesson generation stays blocked until all uploaded sources finish processing."
+            ? "Lesson generation stays blocked until all uploaded materials finish processing."
             : hasUsableMaterialsForGeneration
-              ? "At least one curriculum or exemplar source is usable for grounded lesson generation."
-              : "Add or replace curriculum or exemplar sources until at least one source is usable for grounded lesson generation."}
+              ? "At least one curriculum or exemplar material is usable for grounded lesson generation."
+              : "Add or replace curriculum or exemplar materials until at least one material is usable for grounded lesson generation."}
         </div>
 
         <div style={{ marginTop: "var(--space-md)", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -347,8 +347,8 @@ Presentation authority for slide order, pacing, prompts, layout, and timing acro
               : hasProcessingMaterials
                 ? "Wait until uploaded materials finish processing."
                 : !hasUsableMaterialsForGeneration
-                  ? "At least one curriculum or exemplar source must be usable for grounded lesson generation."
-                  : "Inputs are complete and at least one source is usable for grounded lesson generation."}
+                  ? "At least one curriculum or exemplar material must be usable for grounded lesson generation."
+                  : "Inputs are complete and at least one material is usable for grounded lesson generation."}
           </div>
 
           {generationError && (
