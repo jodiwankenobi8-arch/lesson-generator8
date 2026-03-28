@@ -430,18 +430,6 @@ export default function InputsPage() {
         <p style={introStyle}>
           Current intake on Materials is upload based. Supported source formats there are .txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp. Screenshots and photos are supported through a bounded OCR recovery lane. Links and URLs are not a first-class Materials source lane.
         </p>
-        <p style={introStyle}>
-          The next step is upload-based materials intake. Current supported
-          source materials are .txt, .pdf, .docx, .pptx, .html, .htm, plus
-          .png, .jpg, .jpeg, and .webp as a bounded OCR recovery lane when
-          needed.
-        </p>
-        <p style={introStyle}>
-          The next step is upload-based materials intake. Current supported
-          source materials are .txt, .pdf, .docx, .pptx, .html, .htm, plus
-          .png, .jpg, .jpeg, and .webp as a bounded OCR recovery lane when
-          needed.
-        </p>
       </OrchardPageHeader>
 
       <div style={cardStyle}>
