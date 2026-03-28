@@ -2,9 +2,9 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 8242798
-- Last local implementation UTC: 2026-03-28T22:05:00Z
-- Browser/manual verification is still not available in this environment.
+- Published main checkpoint: 3d6362a
+- Last auto-sync UTC: 2026-03-28T22:37:40Z
+- Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 ## Current milestone
