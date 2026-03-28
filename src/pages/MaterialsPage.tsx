@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { MaterialFile, MaterialRole, MaterialStatus } from "../engine/types"
+import { MaterialFile, MaterialRole, MaterialSourceKind, MaterialStatus } from "../engine/types"
 import {
   orchardButtonStyle,
   orchardCardStyle,
@@ -115,6 +115,42 @@ const hiddenInputStyle: React.CSSProperties = {
   display: "none",
 }
 
+type UploadSourceMetadata = {
+  sourceKind: MaterialSourceKind
+  sourceLabel: string
+  sourceMimeType: string | null
+}
+
+export function buildUploadSourceMetadata(file: Pick<File, "name" | "type">): UploadSourceMetadata {
+  const sourceKind: MaterialSourceKind = file.type.startsWith("image/") ? "image_upload" : "file_upload"
+  const sourceMimeType = file.type.trim() || inferMimeTypeFromName(file.name)
+
+  return {
+    sourceKind,
+    sourceLabel: file.name,
+    sourceMimeType,
+  }
+}
+
+export function inferMimeTypeFromName(fileName: string): string | null {
+  const lower = fileName.trim().toLowerCase()
+
+  if (lower.endsWith(".txt")) return "text/plain"
+  if (lower.endsWith(".pdf")) return "application/pdf"
+  if (lower.endsWith(".docx")) {
+    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  }
+  if (lower.endsWith(".pptx")) {
+    return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  }
+  if (lower.endsWith(".html") || lower.endsWith(".htm")) return "text/html"
+  if (lower.endsWith(".png")) return "image/png"
+  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg"
+  if (lower.endsWith(".webp")) return "image/webp"
+
+  return null
+}
+
 export default function MaterialsPage() {
   const navigate = useNavigate()
   const [isGenerating, setIsGenerating] = useState(false)
@@ -158,8 +194,8 @@ export default function MaterialsPage() {
         continue
       }
 
-      const id = addMaterial(role, file.name)
-
+      const sourceMetadata = buildUploadSourceMetadata(file)
+      const id = addMaterial(role, file.name, sourceMetadata)
 
       try {
         const fileBuffer = await file.arrayBuffer()
@@ -168,6 +204,7 @@ export default function MaterialsPage() {
         setMaterialSource(id, {
           fileBuffer,
           fileContent,
+          ...sourceMetadata,
         })
 
         void processMaterial(id)

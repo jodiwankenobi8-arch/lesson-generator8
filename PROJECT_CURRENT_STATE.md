@@ -8,46 +8,46 @@
 <!-- AUTO_SYNC_END -->
 
 ## Current milestone
-Phase 4 source-intake matrix lock
+Phase 4 source-intake matrix lock — code closeout landed locally
 
 ## Why this seam exists
-The broader source-intake truth had drifted:
-- docs and UI still read as document-only upload intake
-- local engine/state/test work already supported image-upload provenance and bounded OCR recovery
-- teacher-facing wording needed to catch up without overclaiming links/URLs or screenshot-first workflows
+The broader source-intake truth was already visible in docs and page copy, but one live upload path still dropped provenance detail and one generation error string still lagged behind the current teacher-facing wording.
 
-## Files in scope
-- docs/project-notes/SUPPORTED_SOURCE_MATRIX_CURRENT.md
-- src/pages/MaterialsPage.tsx
-- src/pages/InputsPage.tsx
-- src/state/useLessonStore.test.ts
-- START_HERE_CURRENT_TRUTH.md
-- PROJECT_CURRENT_STATE.md
-
-## Truth locked by this seam
+## What is now locked locally
 - current intake is upload-based
 - supported source materials include:
-  - .txt
-  - .pdf
-  - .docx
-  - .pptx
-  - .html
-  - .htm
-  - .png
-  - .jpg
-  - .jpeg
-  - .webp
-- image uploads are a bounded OCR recovery lane
+  - `.txt`
+  - `.pdf`
+  - `.docx`
+  - `.pptx`
+  - `.html`
+  - `.htm`
+  - `.png`
+  - `.jpg`
+  - `.jpeg`
+  - `.webp`
+- image uploads remain a bounded OCR recovery lane
+- Materials uploads now store source kind, label, and MIME metadata as soon as they are added
 - curriculum stays the content authority
 - exemplar stays the presentation / structure authority
 - generation still depends on usable materials
 - links / URLs are not first-class intake in current UI/docs truth
 
+## Files touched in this closeout
+- src/pages/MaterialsPage.tsx
+- src/pages/MaterialsPage.test.ts
+- src/state/useLessonStore.test.ts
+- src/state/workflows/generateLessonForStore.ts
+- START_HERE_CURRENT_TRUTH.md
+- PROJECT_CURRENT_STATE.md
+- docs/chat-handoffs/2026-03-28_2050_phase4-source-intake-closeout.md
+
 ## Validation for this seam
-- `npx vitest run src/state/useLessonStore.test.ts`
+- `npx vitest run src/pages/MaterialsPage.test.ts src/state/useLessonStore.test.ts`
 - `npm run build`
 - brief manual Inputs + Materials copy check
 
-## Commit scope rule
-Do not stack unrelated work on top of this seam.
-Commit only the six Phase 4 target files after validation passes.
+## Current next step
+- finish the brief manual copy check
+- publish this Phase 4 closeout cleanly
+- only then reopen a larger orchard/artifact or intake-expansion seam if live code still proves it is next

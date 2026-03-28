@@ -94,7 +94,7 @@ export async function generateLessonForStore(
 
   if (usableMaterials.length === 0) {
     throw new Error(
-      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source file."
+      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source material."
     )
   }
 
