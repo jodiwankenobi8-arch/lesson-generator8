@@ -1,5 +1,6 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
+import { SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT } from "../engine/materials/sourceIntakeContract"
 import {
   AssessmentOutputTypeKey,
   CenterFocusKey,
@@ -428,7 +429,7 @@ export default function InputsPage() {
           from curriculum materials later.
         </p>
         <p style={introStyle}>
-          Current intake on Materials is upload based. Supported source formats there are .txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp. Screenshots and photos are supported through a bounded OCR recovery lane. Links and URLs are not a first-class Materials source lane.
+          Current intake on Materials is upload based. Supported source formats there are {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}. Screenshots and photos are supported through a bounded OCR recovery lane. Links and URLs are not a first-class Materials source lane.
         </p>
       </OrchardPageHeader>
 

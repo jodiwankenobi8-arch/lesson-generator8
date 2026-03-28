@@ -44,6 +44,9 @@ import {
   extractPlainText,
   extractTextFromFile,
 } from "./materials/extractTextFromFile"
+import {
+  SUPPORTED_EXTRACTION_TARGETS_NOTICE,
+} from "./materials/sourceIntakeContract"
 
 describe("extraction contract", () => {
   beforeEach(() => {
@@ -80,6 +83,7 @@ describe("extraction contract", () => {
     expect(detectFileType("page.html")).toBe("html")
     expect(detectFileType("page.htm")).toBe("html")
     expect(detectFileType("worksheet-photo.JPG")).toBe("image")
+    expect(detectFileType("anchor-chart.webp")).toBe("image")
     expect(detectFileType("archive.zip")).toBe("unknown")
   })
 
@@ -245,7 +249,7 @@ describe("extraction contract", () => {
     expect(result.fileType).toBe("unknown")
     expect(result.extractedText).toEqual([
       "Unsupported file type for materials.csv.",
-      "Supported extraction targets are txt, pdf, docx, pptx, html, htm, png, jpg, jpeg, and webp.",
+      SUPPORTED_EXTRACTION_TARGETS_NOTICE,
     ])
     expect(result.extractionMetadata.method).toBe("fallback_notice")
     expect(result.extractionMetadata.quality).toBe("low")

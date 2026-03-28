@@ -1,5 +1,12 @@
 import React, { useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import {
+  inferSupportedSourceMimeType,
+  isSupportedImageExtension,
+  isSupportedImageMimeType,
+  SUPPORTED_SOURCE_UPLOAD_ACCEPT,
+  SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT,
+} from "../engine/materials/sourceIntakeContract"
 import { MaterialFile, MaterialRole, MaterialSourceKind, MaterialStatus } from "../engine/types"
 import {
   orchardButtonStyle,
@@ -122,7 +129,10 @@ type UploadSourceMetadata = {
 }
 
 export function buildUploadSourceMetadata(file: Pick<File, "name" | "type">): UploadSourceMetadata {
-  const sourceKind: MaterialSourceKind = file.type.startsWith("image/") ? "image_upload" : "file_upload"
+  const sourceKind: MaterialSourceKind =
+    isSupportedImageMimeType(file.type) || isSupportedImageExtension(file.name)
+      ? "image_upload"
+      : "file_upload"
   const sourceMimeType = file.type.trim() || inferMimeTypeFromName(file.name)
 
   return {
@@ -133,22 +143,7 @@ export function buildUploadSourceMetadata(file: Pick<File, "name" | "type">): Up
 }
 
 export function inferMimeTypeFromName(fileName: string): string | null {
-  const lower = fileName.trim().toLowerCase()
-
-  if (lower.endsWith(".txt")) return "text/plain"
-  if (lower.endsWith(".pdf")) return "application/pdf"
-  if (lower.endsWith(".docx")) {
-    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-  }
-  if (lower.endsWith(".pptx")) {
-    return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-  }
-  if (lower.endsWith(".html") || lower.endsWith(".htm")) return "text/html"
-  if (lower.endsWith(".png")) return "image/png"
-  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg"
-  if (lower.endsWith(".webp")) return "image/webp"
-
-  return null
+  return inferSupportedSourceMimeType(fileName)
 }
 
 export default function MaterialsPage() {
@@ -249,7 +244,7 @@ export default function MaterialsPage() {
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
         </p>
         <p style={introStyle}>
-          Current teacher-facing intake is upload based. Right now the Materials page accepts .txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp. Image uploads are supported through bounded OCR recovery and may be caution-scored or blocked until readable text is recovered strongly enough to be usable. Pasted text exists in the extraction seam, but it is not a first-class Materials-page upload lane here. Add sources here, then generate only from usable curriculum and exemplar sources.
+          Current teacher-facing intake is upload based. Right now the Materials page accepts {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}. Image uploads are supported through bounded OCR recovery and may be caution-scored or blocked until readable text is recovered strongly enough to be usable. Pasted text exists in the extraction seam, but it is not a first-class Materials-page upload lane here. Add sources here, then generate only from usable curriculum and exemplar sources.
         </p>
       </OrchardPageHeader>
 
@@ -257,7 +252,7 @@ export default function MaterialsPage() {
         ref={curriculumInputRef}
         type="file"
         multiple
-        accept=".txt,.pdf,.docx,.pptx,.html,.htm,.png,.jpg,.jpeg,.webp"
+        accept={SUPPORTED_SOURCE_UPLOAD_ACCEPT}
         onChange={(event) => handleFilesSelected("curriculum", event)}
         style={hiddenInputStyle}
       />
@@ -266,7 +261,7 @@ export default function MaterialsPage() {
         ref={exemplarInputRef}
         type="file"
         multiple
-        accept=".txt,.pdf,.docx,.pptx,.html,.htm,.png,.jpg,.jpeg,.webp"
+        accept={SUPPORTED_SOURCE_UPLOAD_ACCEPT}
         onChange={(event) => handleFilesSelected("exemplar", event)}
         style={hiddenInputStyle}
       />

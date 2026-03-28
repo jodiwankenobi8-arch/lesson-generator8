@@ -3,6 +3,7 @@
 ## Purpose
 This file is the teacher-facing and continuation-facing source-intake truth for the current repo state.
 Use it to keep docs, UI copy, and tests aligned.
+Code-level extension/accept-string authority lives in `src/engine/materials/sourceIntakeContract.ts`.
 
 ## Product truths to preserve
 - curriculum = content authority
