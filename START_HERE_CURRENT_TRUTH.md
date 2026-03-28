@@ -1,5 +1,12 @@
 # START_HERE_CURRENT_TRUTH.md
 
+## Auto-sync status
+<!-- AUTO_SYNC_START -->
+- Published main checkpoint: 245313d
+- Last auto-sync UTC: 2026-03-28T18:52:16Z
+- Manual/browser verification notes must still be updated by hand.
+<!-- AUTO_SYNC_END -->
+
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
