@@ -1,5 +1,10 @@
 import { extractImageTextWithOcr } from "./extractImageOcr"
 import { extractPdfTextWithOcrFallback } from "./extractPdfOcr"
+import {
+  getSupportedSourceUploadExtension,
+  isSupportedImageMimeType,
+  SUPPORTED_EXTRACTION_TARGETS_NOTICE,
+} from "./sourceIntakeContract"
 import { ExtractionMetadata, MaterialSourceKind } from "../types"
 
 export type ExtractTextInput = {
@@ -158,43 +163,32 @@ export function detectFileType(
     return "txt"
   }
 
-  const mimeType = options?.sourceMimeType?.toLowerCase().trim()
-  if (mimeType?.startsWith("image/")) {
+  if (isSupportedImageMimeType(options?.sourceMimeType)) {
     return "image"
   }
 
-  const lower = fileName.toLowerCase().trim()
+  const extension = getSupportedSourceUploadExtension(fileName)
 
-  if (lower.endsWith(".txt")) {
-    return "txt"
+  switch (extension) {
+    case ".txt":
+      return "txt"
+    case ".pdf":
+      return "pdf"
+    case ".docx":
+      return "docx"
+    case ".pptx":
+      return "pptx"
+    case ".html":
+    case ".htm":
+      return "html"
+    case ".png":
+    case ".jpg":
+    case ".jpeg":
+    case ".webp":
+      return "image"
+    default:
+      return "unknown"
   }
-
-  if (lower.endsWith(".pdf")) {
-    return "pdf"
-  }
-
-  if (lower.endsWith(".docx")) {
-    return "docx"
-  }
-
-  if (lower.endsWith(".pptx")) {
-    return "pptx"
-  }
-
-  if (lower.endsWith(".html") || lower.endsWith(".htm")) {
-    return "html"
-  }
-
-  if (
-    lower.endsWith(".png") ||
-    lower.endsWith(".jpg") ||
-    lower.endsWith(".jpeg") ||
-    lower.endsWith(".webp")
-  ) {
-    return "image"
-  }
-
-  return "unknown"
 }
 
 export function extractPlainText(content: string): string[] {
@@ -668,7 +662,7 @@ function buildUnsupportedFormatNotice(
 ): string[] {
   return [
     `Unsupported file type for ${fileName}.`,
-    "Supported extraction targets are txt, pdf, docx, pptx, html, htm, png, jpg, jpeg, and webp.",
+    SUPPORTED_EXTRACTION_TARGETS_NOTICE,
   ]
 }
 

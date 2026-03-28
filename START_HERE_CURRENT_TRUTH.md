@@ -3,22 +3,23 @@
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
 - Published main checkpoint: 8242798
-- Last auto-sync UTC: 2026-03-28T21:34:31Z
-- Manual/browser verification notes must still be updated by hand.
+- Last local implementation UTC: 2026-03-28T22:05:00Z
+- Browser/manual verification is still not available in this environment.
 <!-- AUTO_SYNC_END -->
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current milestone: Phase 4 source-intake matrix lock — code closeout landed locally
-- Current active seam: preserve upload provenance across Materials/store generation truth, then finish manual copy verification and publish
+- Current milestone: Phase 5 source-intake contract parity hardening — centralized contract landed locally
+- Current active seam: keep the supported-source matrix, upload accept strings, MIME inference, and extractor fallback notices aligned from one code-level contract before any later OCR expansion
 
 ## What is actually landed in this seam
-- source-intake truth stays explicit in the repo docs and page copy
-- Materials uploads now preserve source kind, source label, and source MIME metadata at intake time
-- image uploads are recorded as bounded OCR recovery sources instead of generic file uploads
-- generation wording now matches the teacher-facing source-material language already used elsewhere
-- targeted automated coverage now checks both upload metadata derivation and store-level image provenance persistence
+- the supported-source extension list now lives in one code-level contract
+- Materials and Inputs now read their supported-format wording from that same contract
+- Materials upload inputs now use the centralized accept string instead of page-local copies
+- unsupported extraction fallback notices now reuse the same supported-target wording as the UI
+- extension-based image detection now keeps blank-MIME screenshot/photo uploads in the bounded OCR recovery lane
+- targeted automated coverage now checks the centralized contract and the blank-MIME image upload path
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -29,10 +30,10 @@
 
 ## Validation snapshot for this seam
 Run in this order:
-1. `npx vitest run src/pages/MaterialsPage.test.ts src/state/useLessonStore.test.ts`
+1. `npx vitest run src/engine/materials/sourceIntakeContract.test.ts src/pages/MaterialsPage.test.ts src/engine/extraction.test.ts`
 2. `npm run build`
 
 ## Exact next move after validation
-- brief manual copy check on Inputs and Materials
-- commit the Phase 4 closeout files
-- push the current branch
+- update the supported-source matrix doc and active continuation docs
+- keep browser/manual checking as a separate follow-up outside this environment
+- then decide whether the next live seam is deliberate OCR expansion or a later orchard/artifact tightening pass

@@ -27,6 +27,20 @@ describe("buildUploadSourceMetadata", () => {
       sourceMimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     })
   })
+
+
+  it("keeps image uploads in the OCR recovery lane when the browser omits a MIME type", () => {
+    const metadata = buildUploadSourceMetadata({
+      name: "screenshot-note.webp",
+      type: "",
+    })
+
+    expect(metadata).toEqual({
+      sourceKind: "image_upload",
+      sourceLabel: "screenshot-note.webp",
+      sourceMimeType: "image/webp",
+    })
+  })
 })
 
 describe("inferMimeTypeFromName", () => {
