@@ -280,7 +280,7 @@ async function maybeApplyPdfOcrFallback({
 }): Promise<{ extractedText: string[]; extractionMetadata: ExtractionMetadata }> {
   if (
     !input.fileBuffer ||
-    parserMetadata.method !== "parser" ||
+    (parserMetadata.method !== "parser" && parserMetadata.method !== "fallback_notice") ||
     !parserMetadata.ocrCandidate
   ) {
     return {
@@ -296,14 +296,16 @@ async function maybeApplyPdfOcrFallback({
       scale: 2,
     })
 
+    const baseText = parserMetadata.method === "parser" ? parserText : []
+
     const mergedText = normalizeExtractedText([
-      ...parserText,
+      ...baseText,
       ...ocrResult.combinedLines,
     ])
 
     const gainedEnoughText =
       ocrResult.combinedLines.length >= 3 &&
-      mergedText.length > parserText.length
+      (parserMetadata.method === "fallback_notice" || mergedText.length > parserText.length)
 
     if (!gainedEnoughText) {
       return {
@@ -495,7 +497,17 @@ async function extractPptxText(input: ExtractTextInput): Promise<string[]> {
 
   try {
     const pptxModule = await import("pptx-parser")
-    const parsed = await pptxModule.parsePptx(new Uint8Array(input.fileBuffer))
+    const parsePptx = resolvePptxParser(pptxModule)
+
+    if (!parsePptx) {
+      throw new Error("pptx-parser did not expose a callable parser export.")
+    }
+
+    const pptxBlob = new Blob([input.fileBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    })
+
+    const parsed = await parsePptx(pptxBlob)
     const slideLines = collectMeaningfulText(parsed)
 
     if (slideLines.length === 0) {
@@ -559,6 +571,39 @@ function collectMeaningfulText(value: unknown): string[] {
   return collected
 }
 
+function resolvePptxParser(
+  moduleValue: unknown
+): ((data: unknown) => Promise<unknown>) | null {
+  if (typeof moduleValue === "function") {
+    return moduleValue as (data: unknown) => Promise<unknown>
+  }
+
+  if (!moduleValue || typeof moduleValue !== "object") {
+    return null
+  }
+
+  const moduleRecord = moduleValue as Record<string, unknown>
+
+  if (typeof moduleRecord.parsePptx === "function") {
+    return moduleRecord.parsePptx as (data: unknown) => Promise<unknown>
+  }
+
+  const defaultExport = moduleRecord.default
+
+  if (typeof defaultExport === "function") {
+    return defaultExport as (data: unknown) => Promise<unknown>
+  }
+
+  if (defaultExport && typeof defaultExport === "object") {
+    const defaultRecord = defaultExport as Record<string, unknown>
+
+    if (typeof defaultRecord.parsePptx === "function") {
+      return defaultRecord.parsePptx as (data: unknown) => Promise<unknown>
+    }
+  }
+
+  return null
+}
 function decodeArrayBuffer(buffer?: ArrayBuffer): string {
   if (!buffer) {
     return ""
