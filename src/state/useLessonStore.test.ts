@@ -131,11 +131,18 @@ describe("useLessonStore regeneration", () => {
   it("keeps uploaded image provenance so bounded OCR recovery inputs remain traceable", () => {
     const store = useLessonStore.getState()
     const imageBytes = new Uint8Array([1, 2, 3, 4]).buffer
-    const materialId = store.addMaterial("curriculum", "source-photo.png")
+    const materialId = store.addMaterial("curriculum", "source-photo.png", {
+      sourceKind: "image_upload",
+      sourceLabel: "source-photo.png",
+      sourceMimeType: "image/png",
+    })
 
     store.setMaterialSource(materialId, {
       fileBuffer: imageBytes,
       fileContent: null,
+      sourceKind: "image_upload",
+      sourceLabel: "source-photo.png",
+      sourceMimeType: "image/png",
     })
 
     const material = useLessonStore
@@ -145,42 +152,9 @@ describe("useLessonStore regeneration", () => {
     expect(material).toBeTruthy()
     expect(material!.fileBuffer).toBe(imageBytes)
     expect(material!.fileContent).toBeNull()
-  })
-  it("keeps uploaded image provenance so bounded OCR recovery inputs remain traceable", () => {
-    const store = useLessonStore.getState()
-    const imageBytes = new Uint8Array([1, 2, 3, 4]).buffer
-    const materialId = store.addMaterial("curriculum", "source-photo.png")
-
-    store.setMaterialSource(materialId, {
-      fileBuffer: imageBytes,
-      fileContent: null,
-    })
-
-    const material = useLessonStore
-      .getState()
-      .materials.find((item) => item.id === materialId)
-
-    expect(material).toBeTruthy()
-    expect(material!.fileBuffer).toBe(imageBytes)
-    expect(material!.fileContent).toBeNull()
-  })
-  it("keeps uploaded image provenance so bounded OCR recovery inputs remain traceable", () => {
-    const store = useLessonStore.getState()
-    const imageBytes = new Uint8Array([1, 2, 3, 4]).buffer
-    const materialId = store.addMaterial("curriculum", "source-photo.png")
-
-    store.setMaterialSource(materialId, {
-      fileBuffer: imageBytes,
-      fileContent: null,
-    })
-
-    const material = useLessonStore
-      .getState()
-      .materials.find((item) => item.id === materialId)
-
-    expect(material).toBeTruthy()
-    expect(material!.fileBuffer).toBe(imageBytes)
-    expect(material!.fileContent).toBeNull()
+    expect(material!.sourceKind).toBe("image_upload")
+    expect(material!.sourceLabel).toBe("source-photo.png")
+    expect(material!.sourceMimeType).toBe("image/png")
   })
   it("processMaterial preserves pasted-text source provenance for non-file intake", async () => {
     const store = useLessonStore.getState()

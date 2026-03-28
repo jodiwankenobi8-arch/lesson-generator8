@@ -10,16 +10,15 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current milestone: Phase 4 source-intake matrix lock
-- Current active seam: align docs + UI + targeted store provenance test to the broader upload-based source matrix already supported locally
+- Current milestone: Phase 4 source-intake matrix lock — code closeout landed locally
+- Current active seam: preserve upload provenance across Materials/store generation truth, then finish manual copy verification and publish
 
 ## What is actually landed in this seam
-- source-intake truth is now explicit in one repo doc
-- Materials copy now treats curriculum and exemplar as material lanes, not just document-file lanes
-- Inputs copy now names the current upload-based source model earlier
-- bounded OCR recovery for image uploads is described honestly
-- links / URLs are not overclaimed as first-class intake
-- targeted store provenance coverage includes an image-upload traceability assertion
+- source-intake truth stays explicit in the repo docs and page copy
+- Materials uploads now preserve source kind, source label, and source MIME metadata at intake time
+- image uploads are recorded as bounded OCR recovery sources instead of generic file uploads
+- generation wording now matches the teacher-facing source-material language already used elsewhere
+- targeted automated coverage now checks both upload metadata derivation and store-level image provenance persistence
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -30,10 +29,10 @@
 
 ## Validation snapshot for this seam
 Run in this order:
-1. `npx vitest run src/state/useLessonStore.test.ts`
+1. `npx vitest run src/pages/MaterialsPage.test.ts src/state/useLessonStore.test.ts`
 2. `npm run build`
 
 ## Exact next move after validation
 - brief manual copy check on Inputs and Materials
-- commit only the six Phase 4 target files
+- commit the Phase 4 closeout files
 - push the current branch
