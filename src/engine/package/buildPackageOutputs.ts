@@ -63,7 +63,13 @@ export function buildPackageOutputs(args: {
   const includeSmallGroupOutput = isGroupOutputSelected(outputContents, "small_group")
   const includeInterventionOutput = isGroupOutputSelected(outputContents, "intervention")
 
-  const slides = includeLessonSlidesOutput ? buildSlides(blueprint, spec) : []
+  const slides = includeLessonSlidesOutput
+    ? buildSlides(blueprint, spec, {
+        includeCentersOutput,
+        includeSmallGroupOutput,
+        includeInterventionOutput,
+      })
+    : []
   const lessonPlan = includeLessonPlanOutput
     ? buildLessonPlan(
         inputs,
@@ -135,8 +141,16 @@ export function buildPackageOutputs(args: {
   }
 }
 
-function buildSlides(blueprint: LessonBlueprint, spec: LessonSpec): string[] {
-  const assembled = assembleSlideDeck(blueprint, spec)
+function buildSlides(
+  blueprint: LessonBlueprint,
+  spec: LessonSpec,
+  options: {
+    includeCentersOutput: boolean
+    includeSmallGroupOutput: boolean
+    includeInterventionOutput: boolean
+  }
+): string[] {
+  const assembled = filterSlidesForSelectedOutputs(assembleSlideDeck(blueprint, spec), options)
 
   if (assembled.length > 0) {
     return assembled
@@ -156,6 +170,24 @@ function buildSlides(blueprint: LessonBlueprint, spec: LessonSpec): string[] {
   return shell.map((label, index) => `Slide ${index + 1}: ${label}`)
 }
 
+function filterSlidesForSelectedOutputs(
+  slides: string[],
+  options: {
+    includeCentersOutput: boolean
+    includeSmallGroupOutput: boolean
+    includeInterventionOutput: boolean
+  }
+): string[] {
+  return slides.filter((slide) => {
+    const normalized = slide.toLowerCase()
+
+    if (!options.includeCentersOutput && normalized.includes("| kind: centers |")) {
+      return false
+    }
+
+    return true
+  })
+}
 function buildLessonPlan(
   inputs: LessonInputs,
   blueprint: LessonBlueprint,

@@ -6,7 +6,7 @@ Teacher-facing lesson generation studio with a 3-step flow:
 
 The app takes teacher lesson inputs plus uploaded curriculum and exemplar source files, analyzes them, builds a blueprint, and generates a classroom-ready lesson package.
 
-Current intake is upload-file based. Supported source files on the Materials page are `.txt`, `.pdf`, `.docx`, `.pptx`, `.html`, and `.htm`.
+Current intake is upload-file based. Supported source files on the Materials page are `.txt`, `.pdf`, `.docx`, `.pptx`, `.html`, `.htm`, `.png`, `.jpg`, `.jpeg`, and `.webp`.
 
 Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
 
@@ -42,7 +42,7 @@ Current focus:
 ## Current repo status summary
 
 The repo already includes:
-- real extraction with parser-first behavior and partial OCR fallback
+- real extraction with parser-first document parsing, bounded PDF OCR fallback, and bounded image OCR for uploaded screenshots and photos
 - role-specific structured material analysis
 - blueprint construction with content/structure separation
 - planning / spec / package layers
@@ -55,9 +55,10 @@ The repo already includes:
 
 Current repo truth:
 - Materials upload-type visibility seam is closed on current main
-- The Materials page explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, and .htm
-- Both Materials upload inputs use `accept=".txt,.pdf,.docx,.pptx,.html,.htm"`
+- The Materials page explicitly lists supported source files: .txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp
+- Both Materials upload inputs use `accept=".txt,.pdf,.docx,.pptx,.html,.htm,.png,.jpg,.jpeg,.webp"`
 - Results uses the newer teacher-first support lane structure
+- Uploaded screenshots and photos are supported through a bounded OCR recovery lane and may still be caution-scored or blocked if OCR does not recover strong readable text
 - `useLessonStore` remains the orchestration seam
 - A live local inspect confirmed `main` matched `origin/main` and the worktree was clean when this README was refreshed
 
