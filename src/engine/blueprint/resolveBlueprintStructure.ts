@@ -39,7 +39,10 @@ function buildTiming(
   exemplarAnalyses: ExemplarAnalysis[],
   target: LessonBlueprint["content"]["target"]
 ): string[] {
-  const exemplarTiming = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.pacing))
+  const exemplarTiming = sanitizeStructureValues(
+    cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.pacing)),
+    "timing"
+  )
   const features = getDetectedFeatures(exemplarAnalyses)
 
   if (exemplarTiming.length > 0) {
@@ -61,13 +64,16 @@ function buildLessonSegments(
   exemplarAnalyses: ExemplarAnalysis[],
   target: LessonBlueprint["content"]["target"]
 ): string[] {
-  const structureDrivenSegments = cleanUnique([
-    ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
-    ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
-    ...buildSegmentsFromDetectedFeatures(exemplarAnalyses),
-  ])
-    .map(normalizeSegmentLabel)
-    .filter((segment) => segment.length > 0)
+  const structureDrivenSegments = sanitizeStructureValues(
+    cleanUnique([
+      ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
+      ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
+      ...buildSegmentsFromDetectedFeatures(exemplarAnalyses),
+    ])
+      .map(normalizeSegmentLabel)
+      .filter((segment) => segment.length > 0),
+    "segment"
+  )
 
   if (structureDrivenSegments.length > 0) {
     return structureDrivenSegments.slice(0, 8)
@@ -85,10 +91,13 @@ function buildTeacherMoves(
   target: LessonBlueprint["content"]["target"]
 ): string[] {
   const features = getDetectedFeatures(exemplarAnalyses)
-  const moves = cleanUnique([
-    ...exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves),
-    ...buildTeacherMovesFromFeatures(features),
-  ])
+  const moves = sanitizeStructureValues(
+    cleanUnique([
+      ...exemplarAnalyses.flatMap((analysis) => analysis.teacherMoves),
+      ...buildTeacherMovesFromFeatures(features),
+    ]),
+    "teacherMove"
+  )
 
   if (moves.length > 0) {
     return moves.slice(0, 6)
@@ -110,10 +119,13 @@ function buildPromptStyle(
   target: LessonBlueprint["content"]["target"]
 ): string[] {
   const features = getDetectedFeatures(exemplarAnalyses)
-  const prompts = cleanUnique([
-    ...exemplarAnalyses.flatMap((analysis) => analysis.promptStyle),
-    ...buildPromptStyleFromFeatures(features),
-  ])
+  const prompts = sanitizeStructureValues(
+    cleanUnique([
+      ...exemplarAnalyses.flatMap((analysis) => analysis.promptStyle),
+      ...buildPromptStyleFromFeatures(features),
+    ]),
+    "prompt"
+  )
 
   if (prompts.length > 0) {
     return prompts.slice(0, 6)
@@ -131,7 +143,10 @@ function buildPromptStyle(
 }
 
 function buildTone(exemplarAnalyses: ExemplarAnalysis[]): string[] {
-  const tones = cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.tone))
+  const tones = sanitizeStructureValues(
+    cleanUnique(exemplarAnalyses.flatMap((analysis) => analysis.tone)),
+    "tone"
+  )
 
   if (tones.length > 0) {
     return tones.slice(0, 4)
@@ -159,10 +174,12 @@ function buildTemplateShell(
     ...lessonSegments,
   ])
 
-  const slideShell = rawSlideCandidates
-    .map(normalizeSlideShellLabel)
-    .filter((label) => label.length > 0)
-    .slice(0, Math.max(reusableSegments.length, 3))
+  const slideShell = sanitizeStructureValues(
+    rawSlideCandidates
+      .map(normalizeSlideShellLabel)
+      .filter((label) => label.length > 0),
+    "slideShell"
+  ).slice(0, Math.max(reusableSegments.length, 3))
 
   return {
     segmentOrder: reusableSegments.length > 0 ? reusableSegments : ["Teach", "Practice", "Closure"],
@@ -352,6 +369,7 @@ function normalizeSlideShellLabel(value: string): string {
   const cleaned = value
     .replace(/^slide\s*\d+\s*[:\-]?\s*/i, "")
     .replace(/^\d+\s*[:\-]?\s*/, "")
+    .replace(/^part\s+[a-z0-9]+\s*:\s*/i, "")
     .trim()
 
   if (cleaned.length === 0) {
@@ -398,6 +416,153 @@ function toTitleCase(value: string): string {
     .join(" ")
 }
 
+type StructureValueKind = "timing" | "segment" | "teacherMove" | "prompt" | "tone" | "slideShell"
+
+function sanitizeStructureValues(values: string[], kind: StructureValueKind): string[] {
+  return cleanUnique(
+    values
+      .map((value) => normalizeStructureValue(value))
+      .filter((value) => value.length > 0)
+      .filter((value) => !isWeakStructureValue(value, kind))
+  )
+}
+
+function normalizeStructureValue(value: string): string {
+  return value
+    .replace(/^[\s*•\-–—]+/, "")
+    .replace(/^part\s+[a-z0-9]+\s*:\s*/i, "")
+    .replace(/^next\s*:\s*/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function isWeakStructureValue(value: string, kind: StructureValueKind): boolean {
+  const lower = value.toLowerCase()
+  const wordCount = value.split(/\s+/).length
+  const commaCount = (value.match(/,/g) || []).length
+
+  if (/students?\s*:\s*\d+/i.test(value)) {
+    return true
+  }
+
+  if (/time\s*[:=]/i.test(lower)) {
+    return true
+  }
+
+  if (/\b\d+\s*(min|mins|minutes)\b/i.test(lower)) {
+    return true
+  }
+
+  if (
+    lower.includes("smartboard") ||
+    lower.includes("projector") ||
+    lower.includes("desks") ||
+    lower.includes("carpet") ||
+    lower.includes("lesson flow overview") ||
+    lower.includes("block 1") ||
+    lower.includes("block 2") ||
+    lower.includes("students are not") ||
+    lower.includes("teacher says") ||
+    lower.includes("teacher prompts") ||
+    lower.includes("slideslink") ||
+    lower.includes("whiteboards") ||
+    lower.includes("ed tech") ||
+    lower.includes("resource")
+  ) {
+    return true
+  }
+
+  if (commaCount >= 3) {
+    return true
+  }
+
+  if (wordCount > 12) {
+    return true
+  }
+
+  if (kind === "teacherMove") {
+    return !containsAnyStructureTerm(lower, [
+      "model",
+      "guided",
+      "prompt",
+      "check",
+      "support",
+      "conference",
+      "reteach",
+      "monitor",
+      "facilitate",
+      "explain",
+      "script",
+      "talk",
+      "response",
+    ])
+  }
+
+  if (kind === "prompt") {
+    return !containsAnyStructureTerm(lower, [
+      "prompt",
+      "question",
+      "turn and talk",
+      "response",
+      "frame",
+      "discussion",
+      "say the sound",
+      "read the word",
+      "explain the pattern",
+      "quick check",
+    ])
+  }
+
+  if (kind === "timing") {
+    return !containsAnyStructureTerm(lower, [
+      "launch",
+      "opening",
+      "mini-lesson",
+      "teach",
+      "practice",
+      "guided",
+      "independent",
+      "closure",
+      "transition",
+      "flexible timing",
+      "part 1",
+      "part 2",
+    ])
+  }
+
+  if (kind === "segment") {
+    return !["opening", "teach", "guided practice", "independent practice", "centers", "closure", "close"].includes(lower)
+  }
+
+  if (kind === "slideShell") {
+    return !["opening", "teach", "guided practice", "independent practice", "centers", "closure", "teaching notes"].includes(lower)
+  }
+
+  if (kind === "tone") {
+    return !containsAnyStructureTerm(lower, [
+      "clear",
+      "instructional",
+      "supportive",
+      "calm",
+      "warm",
+      "direct",
+    ])
+  }
+
+  return false
+}
+
+function containsAnyStructureTerm(text: string, terms: string[]): boolean {
+  return terms.some((term) => text.includes(term))
+}
+
 function cleanUnique(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter((value) => value.length > 0)))
+  return Array.from(
+    new Set(
+      values
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0)
+        .filter((value, index, items) => items.findIndex((other) => other.toLowerCase() === value.toLowerCase()) === index)
+    )
+  )
 }

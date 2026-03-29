@@ -27,14 +27,40 @@ export function buildLessonPlanningIdeas(
     toneCount: 3,
   })
 
-  const target = blueprint.content.target
-  const vocabulary = blueprint.content.vocabulary
-  const texts = blueprint.content.texts
-  const practiceIdeas = blueprint.content.practiceIdeas
-  const wordLists = blueprint.content.wordLists
-  const standards = blueprint.content.standards
-  const lessonSegments = blueprint.structure.lessonSegments
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
 
+  const vocabulary = withFallback(
+    sanitizePlanningValues(blueprint.content.vocabulary, "vocabulary"),
+    hasFoundationalArea && !hasMeaningArea
+      ? ["key skill vocabulary"]
+      : ["key lesson vocabulary"]
+  )
+  const texts = withFallback(
+    sanitizePlanningValues(blueprint.content.texts, "text"),
+    ["teacher-provided lesson text"]
+  )
+  const practiceIdeas = withFallback(
+    sanitizePlanningValues(blueprint.content.practiceIdeas, "practice"),
+    hasFoundationalArea && !hasMeaningArea
+      ? ["guided foundational-skill practice"]
+      : ["guided lesson task"]
+  )
+  const wordLists = withFallback(
+    sanitizePlanningValues(blueprint.content.wordLists, "wordList"),
+    hasFoundationalArea
+      ? ["target word examples"]
+      : ["teacher-selected examples"]
+  )
+  const standards = withFallback(
+    sanitizePlanningValues(blueprint.content.standards, "standard"),
+    ["teacher-selected standard"]
+  )
+  const lessonSegments = withFallback(
+    sanitizePlanningValues(blueprint.structure.lessonSegments, "segment"),
+    blueprint.structure.lessonSegments
+  )
   const lessonPlanSections = buildLessonPlanSections(
     blueprint,
     standards,
@@ -124,6 +150,109 @@ function shouldIncludeOptionalComponent(
   return isPlanningComponentSelected(outputContents, component)
 }
 
+function resolvePlanningAreaKeys(blueprint: LessonBlueprint): string[] {
+  const profileKeys = (
+    blueprint as LessonBlueprint & {
+      content?: { profile?: { dominantAreaKeys?: string[] | null } | null }
+    }
+  ).content?.profile?.dominantAreaKeys ?? []
+
+  if (profileKeys.length > 0) {
+    return uniqueStrings(profileKeys.flatMap((key) => normalizePlanningAreaAliases(key)))
+  }
+
+  const target = blueprint.content.target
+  const targetKeys = uniqueStrings([
+    ...normalizePlanningAreaAliases(target.primary),
+    ...normalizePlanningAreaAliases(target.secondary ?? undefined),
+  ])
+
+  if (targetKeys.length > 0) {
+    return targetKeys
+  }
+
+  if (target.isMixedTarget) {
+    return ["foundational", "comprehension"]
+  }
+
+  return ["general"]
+}
+
+function normalizePlanningAreaAliases(value?: string | null): string[] {
+  const normalized = (value ?? "").trim().toLowerCase()
+
+  switch (normalized) {
+    case "":
+    case "mixed":
+    case "general":
+      return []
+    case "phonological_awareness":
+    case "phonemic_awareness":
+    case "phonics":
+    case "decoding":
+    case "encoding":
+    case "spelling":
+    case "word_recognition":
+    case "high_frequency_words":
+    case "foundational_skills":
+    case "foundational":
+      return ["foundational"]
+    case "language_comprehension":
+    case "comprehension":
+    case "vocabulary":
+    case "oral_language":
+    case "knowledge_building":
+    case "writing_about_reading":
+      return ["comprehension"]
+    default:
+      return [normalized]
+  }
+}
+
+function planningHasArea(areaKeys: string[], candidates: string[]): boolean {
+  return areaKeys.some((key) => candidates.includes(key))
+}
+
+function planningHasFoundationalArea(areaKeys: string[]): boolean {
+  return planningHasArea(areaKeys, ["foundational"])
+}
+
+function planningHasMeaningArea(areaKeys: string[]): boolean {
+  return planningHasArea(areaKeys, ["comprehension", "fluency", "writing"])
+}
+
+function planningHasMultipleMeaningfulAreas(areaKeys: string[]): boolean {
+  return uniqueStrings(areaKeys.filter((key) => key !== "general")).length > 1
+}
+
+function formatPlanningAreaKey(areaKey: string): string {
+  switch (areaKey) {
+    case "foundational":
+      return "foundational skill"
+    case "comprehension":
+      return "meaning-making"
+    default:
+      return areaKey.replace(/_/g, " ")
+  }
+}
+
+function formatPlanningFocus(areaKeys: string[]): string {
+  const meaningful = uniqueStrings(areaKeys.filter((key) => key !== "general"))
+
+  if (meaningful.length === 0) {
+    return "lesson focus"
+  }
+
+  if (meaningful.length === 1) {
+    return `${formatPlanningAreaKey(meaningful[0])} focus`
+  }
+
+  if (meaningful.length === 2) {
+    return `${formatPlanningAreaKey(meaningful[0])} and ${formatPlanningAreaKey(meaningful[1])} focus`
+  }
+
+  return `${meaningful.slice(0, -1).map(formatPlanningAreaKey).join(", ")}, and ${formatPlanningAreaKey(meaningful[meaningful.length - 1])} focus`
+}
 function inferSlideAction(shellLabel: string): "reuse" | "adapt" | "create_new" {
   const lower = shellLabel.toLowerCase()
 
@@ -147,43 +276,53 @@ function inferSlidePurpose(
   shellLabel: string,
   blueprint: LessonBlueprint
 ): string {
-  const target = blueprint.content.target
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
   const lowerSegment = segmentLabel.toLowerCase()
   const lowerShell = shellLabel.toLowerCase()
 
   if (lowerSegment.includes("opening") || lowerShell.includes("objective")) {
-    return target.isMixedTarget
-      ? "Introduce the combined lesson focus and preview both parts of the lesson."
+    return hasMultipleAreas
+      ? `Introduce the combined ${formatPlanningFocus(areaKeys)} and preview how the lesson moves across the selected areas.`
       : "Introduce the lesson goal and frame the learning."
   }
 
   if (lowerSegment.includes("teach")) {
-    return target.primary === "phonics"
-      ? "Model the target phonics pattern or decoding move with curriculum-aligned examples."
-      : "Model the key comprehension or content thinking with curriculum-aligned text."
+    if (hasMultipleAreas) {
+      return "Model the first major lesson area clearly, then bridge into the next selected area with curriculum-aligned examples and text."
+    }
+
+    return hasFoundationalArea && !hasMeaningArea
+      ? "Model the target foundational skill or decoding move with curriculum-aligned examples."
+      : "Model the key meaning-making or content thinking with curriculum-aligned text."
   }
 
   if (lowerSegment.includes("guided")) {
-    return "Support students through scaffolded practice using the exemplar’s structure and prompts."
+    return "Support students through scaffolded practice using the exemplar's structure and prompts."
   }
 
   if (lowerSegment.includes("independent")) {
-    return "Move students into independent application of the target skill with curriculum-grounded tasks."
+    return hasMultipleAreas
+      ? "Move students into independent application that reflects the selected areas without collapsing them into one vague task."
+      : "Move students into independent application of the target skill with curriculum-grounded tasks."
   }
 
   if (lowerSegment.includes("center")) {
-    return "Set up center or rotation tasks that continue the lesson target with clear expectations."
+    return hasMultipleAreas
+      ? "Set up center or rotation tasks that continue the selected lesson areas with clear expectations."
+      : "Set up center or rotation tasks that continue the lesson target with clear expectations."
   }
 
   if (lowerSegment.includes("closure")) {
-    return target.isMixedTarget
-      ? "Close the lesson by reconnecting both parts and checking what students retained."
+    return hasMultipleAreas
+      ? "Close the lesson by reconnecting the selected areas and checking what students retained."
       : "Wrap up the lesson and check understanding."
   }
 
   return "Carry the exemplar shell forward while swapping in curriculum-aligned content."
 }
-
 function buildSlideNotes(args: {
   index: number
   shellLabel: string
@@ -213,11 +352,13 @@ function selectSlideContentAnchor(
   segmentLabel: string,
   blueprint: LessonBlueprint
 ): string {
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
   const lower = segmentLabel.toLowerCase()
-  const primaryTarget = blueprint.content.target.primary
 
   if (lower.includes("teach")) {
-    return primaryTarget === "phonics"
+    return hasFoundationalArea && !hasMeaningArea
       ? blueprint.content.wordLists.slice(0, 3).join(", ") || "target word examples"
       : blueprint.content.texts.slice(0, 1).join(", ") || "lesson text"
   }
@@ -227,14 +368,13 @@ function selectSlideContentAnchor(
   }
 
   if (lower.includes("closure")) {
-    return primaryTarget === "phonics"
+    return hasFoundationalArea && !hasMeaningArea
       ? blueprint.content.wordLists.slice(0, 2).join(", ") || "target words"
       : blueprint.content.vocabulary.slice(0, 2).join(", ") || "key vocabulary"
   }
 
   return blueprint.content.standards.slice(0, 1).join(", ") || "lesson objective"
 }
-
 function buildLessonPlanSections(
   blueprint: LessonBlueprint,
   standards: string[],
@@ -243,63 +383,66 @@ function buildLessonPlanSections(
   practiceIdeas: string[],
   wordLists: string[]
 ): LessonPlanSectionIdeas[] {
-  const target = blueprint.content.target
-
   return [
     {
       section: "teach",
       title: "Teach Plan Ideas",
-      ideas: buildTeachIdeas(target, standards, vocabulary, texts, wordLists),
+      ideas: buildTeachIdeas(blueprint, standards, vocabulary, texts, wordLists),
     },
     {
       section: "guided_practice",
       title: "Guided Practice Plan Ideas",
-      ideas: buildGuidedPracticeIdeas(target, standards, practiceIdeas, texts, wordLists),
+      ideas: buildGuidedPracticeIdeas(blueprint, standards, practiceIdeas, texts, wordLists),
     },
     {
       section: "independent_practice",
       title: "Independent Practice Plan Ideas",
-      ideas: buildIndependentPracticeIdeas(target, practiceIdeas, texts, wordLists),
+      ideas: buildIndependentPracticeIdeas(blueprint, practiceIdeas, texts, wordLists),
     },
     {
       section: "closure",
       title: "Closure Plan Ideas",
-      ideas: buildClosureIdeas(target, vocabulary, texts, wordLists),
+      ideas: buildClosureIdeas(blueprint, vocabulary, texts, wordLists),
     },
   ]
 }
-
 function buildTeachIdeas(
-  target: LessonBlueprint["content"]["target"],
+  blueprint: LessonBlueprint,
   standards: string[],
   vocabulary: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (target.isMixedTarget && target.recommendedMode === "full") {
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
+  const focusLabel = formatPlanningFocus(areaKeys)
+
+  if (hasMultipleAreas) {
     return [
       {
-        title: "Teach Part 1 explicitly",
-        description: `Open with the first lesson target and model it clearly using ${wordLists.slice(0, 3).join(", ") || texts.slice(0, 1).join(", ")}.`,
-        rationale: "Mixed lessons work better when the first part is taught explicitly instead of blending everything together immediately.",
+        title: "Teach the first major area explicitly",
+        description: `Open with the first selected area and model it clearly using ${wordLists.slice(0, 3).join(", ") || texts.slice(0, 1).join(", ")}.`,
+        rationale: `Multi-area lessons work better when ${focusLabel} is sequenced clearly instead of blended together immediately.`,
       },
       {
-        title: "Bridge into Part 2 intentionally",
-        description: `After the first model, transition into the second target using ${texts.slice(0, 1).join(", ") || vocabulary.slice(0, 3).join(", ")} so students feel the lesson connection.`,
-        rationale: "Creates a true two-part lesson instead of a muddled mixed block.",
+        title: "Bridge into the next selected area",
+        description: `After the first model, transition into the next selected area using ${texts.slice(0, 1).join(", ") || vocabulary.slice(0, 3).join(", ")} so students feel the lesson connection.`,
+        rationale: "Keeps the lesson coherent while still respecting more than one resolved area.",
       },
     ]
   }
 
-  if (target.primary === "phonics") {
+  if (hasFoundationalArea && !hasMeaningArea) {
     return [
       {
-        title: "Model the target pattern",
-        description: `Explicitly model the phonics focus using words such as ${wordLists.slice(0, 4).join(", ")}.`,
+        title: "Model the target foundational skill",
+        description: `Explicitly model the foundational focus using examples such as ${wordLists.slice(0, 4).join(", ")}.`,
         rationale: `Keeps the lesson anchored to curriculum examples and standard(s): ${standards.slice(0, 2).join(", ")}.`,
       },
       {
-        title: "Teach key phonics language",
+        title: "Teach key skill language",
         description: `Introduce or revisit language such as ${vocabulary.slice(0, 3).join(", ")} before practice begins.`,
         rationale: "Supports students in naming and explaining what they are learning.",
       },
@@ -319,38 +462,42 @@ function buildTeachIdeas(
     },
   ]
 }
-
 function buildGuidedPracticeIdeas(
-  target: LessonBlueprint["content"]["target"],
+  blueprint: LessonBlueprint,
   standards: string[],
   practiceIdeas: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (target.isMixedTarget && target.recommendedMode === "full") {
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
+
+  if (hasMultipleAreas) {
     return [
       {
-        title: "Guide practice for Part 1 first",
-        description: "Provide scaffolded support with the first target before asking students to integrate it with the second part of the lesson.",
-        rationale: "Reduces overload in mixed lessons.",
+        title: "Guide practice for the first selected area",
+        description: "Provide scaffolded support with the first selected area before asking students to integrate it with the next part of the lesson.",
+        rationale: "Reduces overload in multi-area lessons.",
       },
       {
-        title: "Then connect both parts",
-        description: `Use tasks such as ${practiceIdeas.slice(0, 2).join(", ")} to help students move from one target into the next.`,
-        rationale: "Keeps the lesson coherent while still respecting both targets.",
+        title: "Then connect the selected areas",
+        description: `Use tasks such as ${practiceIdeas.slice(0, 2).join(", ")} to help students move from one selected area into the next.`,
+        rationale: "Keeps the lesson coherent while still respecting more than one resolved area.",
       },
     ]
   }
 
-  if (target.primary === "phonics") {
+  if (hasFoundationalArea && !hasMeaningArea) {
     return [
       {
-        title: "Guided word practice",
+        title: "Guided skill practice",
         description: `Use structured support while students practice with ${wordLists.slice(0, 4).join(", ")}.`,
         rationale: `Bridges teacher modeling into student practice while staying aligned to ${standards.slice(0, 2).join(", ")}.`,
       },
       {
-        title: "Supported phonics task",
+        title: "Supported foundational-skill task",
         description: `Guide students through curriculum tasks such as ${practiceIdeas.slice(0, 2).join(", ")}.`,
         rationale: "Keeps guided practice grounded in actual curriculum routines instead of generic drill.",
       },
@@ -370,38 +517,42 @@ function buildGuidedPracticeIdeas(
     },
   ]
 }
-
 function buildIndependentPracticeIdeas(
-  target: LessonBlueprint["content"]["target"],
+  blueprint: LessonBlueprint,
   practiceIdeas: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (target.isMixedTarget && target.recommendedMode === "full") {
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
+
+  if (hasMultipleAreas) {
     return [
       {
-        title: "Independent Part 1 application",
-        description: "Let students first apply the first target with manageable support and materials.",
-        rationale: "Builds independence without collapsing both targets into one unclear task.",
+        title: "Independent application for the first selected area",
+        description: "Let students first apply the first selected area with manageable support and materials.",
+        rationale: "Builds independence without collapsing multiple areas into one unclear task.",
       },
       {
         title: "Integrated final application",
-        description: `Then ask students to complete a second task tied to ${practiceIdeas.slice(0, 2).join(", ")} that reflects the full lesson.`,
-        rationale: "Allows the lesson to culminate in a fuller combined task once each part has been supported.",
+        description: `Then ask students to complete a second task tied to ${practiceIdeas.slice(0, 2).join(", ")} that reflects the selected areas together.`,
+        rationale: "Allows the lesson to culminate in a fuller application once each area has been supported.",
       },
     ]
   }
 
-  if (target.primary === "phonics") {
+  if (hasFoundationalArea && !hasMeaningArea) {
     return [
       {
-        title: "Independent phonics application",
+        title: "Independent foundational-skill application",
         description: `Students complete practice such as ${practiceIdeas.slice(0, 2).join(", ")} using ${wordLists.slice(0, 4).join(", ")}.`,
-        rationale: "Moves students from supported decoding to independent application.",
+        rationale: "Moves students from supported skill work to independent application.",
       },
       {
         title: "Transfer check",
-        description: "Ask students to apply the pattern in reading, sorting, or writing without immediate teacher support.",
+        description: "Ask students to apply the skill in reading, sorting, or writing without immediate teacher support.",
         rationale: "Shows whether the skill transfers beyond the modeled examples.",
       },
     ]
@@ -416,33 +567,37 @@ function buildIndependentPracticeIdeas(
     {
       title: "Reasoning and evidence application",
       description: "Require students to show understanding through a written, oral, or partner-based response.",
-      rationale: "Checks whether students can independently apply the comprehension focus.",
+      rationale: "Checks whether students can independently apply the selected focus.",
     },
   ]
 }
-
 function buildClosureIdeas(
-  target: LessonBlueprint["content"]["target"],
+  blueprint: LessonBlueprint,
   vocabulary: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  if (target.isMixedTarget && target.recommendedMode === "full") {
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
+
+  if (hasMultipleAreas) {
     return [
       {
-        title: "Reconnect both lesson parts",
-        description: "Close by naming what students learned in each part of the lesson and how the two targets connected.",
-        rationale: "Prevents mixed lessons from feeling like two unrelated mini-lessons.",
+        title: "Reconnect the selected lesson areas",
+        description: "Close by naming what students learned across the selected areas and how those parts of the lesson connected.",
+        rationale: "Prevents multi-area lessons from feeling like unrelated mini-lessons.",
       },
     ]
   }
 
-  if (target.primary === "phonics") {
+  if (hasFoundationalArea && !hasMeaningArea) {
     return [
       {
-        title: "Review the target pattern",
-        description: `Revisit a short set of words such as ${wordLists.slice(0, 3).join(", ")} and restate the lesson focus.`,
-        rationale: "Ends the lesson by reinforcing the exact target students practiced.",
+        title: "Review the target skill",
+        description: `Revisit a short set of examples such as ${wordLists.slice(0, 3).join(", ")} and restate the lesson focus.`,
+        rationale: "Ends the lesson by reinforcing the exact skill students practiced.",
       },
     ]
   }
@@ -455,7 +610,6 @@ function buildClosureIdeas(
     },
   ]
 }
-
 function buildFormativeIdeas(
   blueprint: LessonBlueprint,
   vocabulary: string[],
@@ -463,33 +617,36 @@ function buildFormativeIdeas(
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  const target = blueprint.content.target
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
 
-  if (target.isMixedTarget && target.recommendedMode === "full") {
+  if (hasMultipleAreas) {
     return [
       {
-        title: "Part 1 checkpoint",
-        description: "Pause after the first lesson part and quickly check whether students can do the first target before moving on.",
-        rationale: "Prevents the second lesson part from piling onto an unstable foundation.",
+        title: "Checkpoint after the first selected area",
+        description: "Pause after the first lesson area and quickly check whether students can do that work before moving on.",
+        rationale: "Prevents the next selected area from piling onto an unstable foundation.",
       },
       {
         title: "End-of-lesson integration check",
-        description: `Use a short task tied to ${practiceIdeas.slice(0, 2).join(", ")} to see whether students can bring both targets together.`,
-        rationale: "Shows whether the two-part lesson held together instructionally.",
+        description: `Use a short task tied to ${practiceIdeas.slice(0, 2).join(", ")} to see whether students can bring the selected areas together.`,
+        rationale: "Shows whether the lesson held together instructionally across the resolved areas.",
       },
     ]
   }
 
-  if (target.primary === "phonics") {
+  if (hasFoundationalArea && !hasMeaningArea) {
     return [
       {
-        title: "Mid-lesson decoding check",
-        description: `Ask students to read or sort a short set of target words such as ${wordLists.slice(0, 3).join(", ")}.`,
+        title: "Mid-lesson skill check",
+        description: `Ask students to read or sort a short set of target examples such as ${wordLists.slice(0, 3).join(", ")}.`,
         rationale: "Provides a quick understanding check before releasing students to fuller practice.",
       },
       {
-        title: "Pattern explanation prompt",
-        description: `Have students explain the sound or pattern using vocabulary like ${vocabulary.slice(0, 3).join(", ")}.`,
+        title: "Skill explanation prompt",
+        description: `Have students explain the skill using vocabulary like ${vocabulary.slice(0, 3).join(", ")}.`,
         rationale: "Checks whether students can verbalize the target concept, not just perform it.",
       },
     ]
@@ -497,7 +654,7 @@ function buildFormativeIdeas(
 
   return [
     {
-      title: "Turn-and-talk comprehension check",
+      title: "Turn-and-talk meaning check",
       description: `Pause after modeled reading and ask students to answer a short prompt tied to ${texts.slice(0, 1).join(", ")}.`,
       rationale: "Checks understanding before independent response work begins.",
     },
@@ -508,41 +665,43 @@ function buildFormativeIdeas(
     },
   ]
 }
-
 function buildCenterIdeas(
   blueprint: LessonBlueprint,
   practiceIdeas: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  const target = blueprint.content.target
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
 
-  if (target.isMixedTarget && target.recommendedMode === "full") {
+  if (hasMultipleAreas) {
     return [
       {
-        title: "Part 1 practice center",
-        description: "Create one center that isolates the first lesson target for repeated supported practice.",
-        rationale: "Keeps center work focused instead of overloading students with both targets at once.",
+        title: "First-area practice center",
+        description: "Create one center that isolates the first selected area for repeated supported practice.",
+        rationale: "Keeps center work focused instead of overloading students with multiple areas at once.",
       },
       {
-        title: "Part 2 application center",
-        description: `Create a second center tied to ${texts.slice(0, 1).join(", ") || practiceIdeas.slice(0, 2).join(", ")} for applying the second target.`,
-        rationale: "Preserves the two-part lesson structure during rotation work.",
+        title: "Second-area application center",
+        description: `Create a second center tied to ${texts.slice(0, 1).join(", ") || practiceIdeas.slice(0, 2).join(", ")} for applying the next selected area.`,
+        rationale: "Preserves the multi-area lesson structure during rotation work.",
       },
     ]
   }
 
-  if (target.primary === "phonics") {
+  if (hasFoundationalArea && !hasMeaningArea) {
     return [
       {
         title: "Word work center",
-        description: `Students sort, read, or build target words such as ${wordLists.slice(0, 4).join(", ")}.`,
-        rationale: "Keeps students practicing the target pattern with hands-on repetition.",
+        description: `Students sort, read, or build target examples such as ${wordLists.slice(0, 4).join(", ")}.`,
+        rationale: "Keeps students practicing the target skill with hands-on repetition.",
       },
       {
-        title: "Partner decoding center",
-        description: "Students read words or short decodable phrases and coach each other using the modeled routine.",
-        rationale: "Extends modeled phonics work into supported peer practice.",
+        title: "Partner skill center",
+        description: "Students practice with a partner using the modeled routine and clear success criteria.",
+        rationale: "Extends modeled foundational work into supported peer practice.",
       },
     ]
   }
@@ -551,7 +710,7 @@ function buildCenterIdeas(
     {
       title: "Reading response center",
       description: `Students respond to a prompt tied to ${texts.slice(0, 1).join(", ")}.`,
-      rationale: "Extends comprehension thinking into independent written or oral response.",
+      rationale: "Extends meaning-making into independent written or oral response.",
     },
     {
       title: "Partner discussion center",
@@ -560,40 +719,42 @@ function buildCenterIdeas(
     },
   ]
 }
-
 function buildSmallGroupIdeas(
   blueprint: LessonBlueprint,
   vocabulary: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  const target = blueprint.content.target
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
 
-  if (target.isMixedTarget && target.recommendedMode === "full") {
+  if (hasMultipleAreas) {
     return [
       {
-        title: "Part-specific reteach group",
-        description: "Pull students for reteach on whichever lesson part broke down first rather than reteaching the entire lesson at once.",
-        rationale: "Makes mixed-lesson support more precise and manageable.",
+        title: "Area-specific reteach group",
+        description: "Pull students for reteach on the exact selected area that broke down first rather than reteaching the entire lesson at once.",
+        rationale: "Makes multi-area support more precise and manageable.",
       },
       {
-        title: "Part-integration extension group",
-        description: "Meet with students who are ready to connect both targets in a more complex way.",
+        title: "Cross-area extension group",
+        description: "Meet with students who are ready to connect the selected areas in a more complex way.",
         rationale: "Provides extension without making the whole class lesson more complicated.",
       },
     ]
   }
 
-  if (target.primary === "phonics") {
+  if (hasFoundationalArea && !hasMeaningArea) {
     return [
       {
-        title: "Targeted pattern reteach group",
+        title: "Targeted skill reteach group",
         description: `Pull a small group to reteach and practice with ${wordLists.slice(0, 3).join(", ")}.`,
         rationale: "Supports students who need more explicit modeling and guided rehearsal.",
       },
       {
         title: "Advanced transfer group",
-        description: "Challenge students to apply the target pattern in reading and writing beyond the modeled examples.",
+        description: "Challenge students to apply the target skill in reading and writing beyond the modeled examples.",
         rationale: "Provides extension without changing the core lesson focus.",
       },
     ]
@@ -612,29 +773,31 @@ function buildSmallGroupIdeas(
     },
   ]
 }
-
 function buildInterventionIdeas(
   blueprint: LessonBlueprint,
   vocabulary: string[],
   texts: string[],
   wordLists: string[]
 ): LessonPlanIdea[] {
-  const target = blueprint.content.target
+  const areaKeys = resolvePlanningAreaKeys(blueprint)
+  const hasFoundationalArea = planningHasFoundationalArea(areaKeys)
+  const hasMeaningArea = planningHasMeaningArea(areaKeys)
+  const hasMultipleAreas = planningHasMultipleMeaningfulAreas(areaKeys)
 
-  if (target.isMixedTarget && target.recommendedMode === "full") {
+  if (hasMultipleAreas) {
     return [
       {
-        title: "Intervene on the first broken step",
-        description: "Identify which part of the two-part lesson caused difficulty first and intervene there before reteaching everything.",
-        rationale: "Makes mixed-lesson intervention cleaner and more targeted.",
+        title: "Intervene on the first unresolved area",
+        description: "Identify which selected area caused difficulty first and intervene there before reteaching everything.",
+        rationale: "Makes multi-area intervention cleaner and more targeted.",
       },
     ]
   }
 
-  if (target.primary === "phonics") {
+  if (hasFoundationalArea && !hasMeaningArea) {
     return [
       {
-        title: "Immediate phonics reteach",
+        title: "Immediate foundational-skill reteach",
         description: `Reteach with a reduced set of examples such as ${wordLists.slice(0, 3).join(", ")}.`,
         rationale: "Makes the skill more manageable for students who are not yet secure.",
       },
@@ -643,13 +806,12 @@ function buildInterventionIdeas(
 
   return [
     {
-      title: "Guided comprehension support",
+      title: "Guided meaning-making support",
       description: `Use a shortened text chunk from ${texts.slice(0, 1).join(", ")} and revisit vocabulary such as ${vocabulary.slice(0, 3).join(", ")}.`,
       rationale: "Reduces complexity while preserving the lesson objective.",
     },
   ]
 }
-
 function buildComponentCoverage(args: {
   blueprint: LessonBlueprint
   lessonPlanSections: LessonPlanSectionIdeas[]
@@ -904,13 +1066,15 @@ function collectCoverageSignals(args: {
   const lessonSegmentSignals =
     lessonSegmentTerms.length === 0
       ? []
-      : coverage.lessonSegments.filter((segment) =>
+      : sanitizePlanningValues(coverage.lessonSegments, "segment").filter((segment) =>
           lessonSegmentTerms.some((term) => segment.toLowerCase().includes(term))
         )
 
-  const coverageSignals = coverageKeys.flatMap((key) => coverage[key].slice(0, 2))
+  const coverageSignals = coverageKeys.flatMap((key) =>
+    sanitizePlanningValues(coverage[key], mapCoverageKeyToPlanningKind(key)).slice(0, 2)
+  )
 
-  return uniqueStrings([...lessonSegmentSignals, ...coverageSignals])
+  return uniqueStrings([...lessonSegmentSignals, ...coverageSignals]).slice(0, 4)
 }
 
 function buildMissingAreaPromptCandidates(
@@ -969,6 +1133,134 @@ function addPromptIfSourceCoverageMissing(
       ...candidate,
     })
   }
+}
+
+type PlanningValueKind =
+  | "standard"
+  | "vocabulary"
+  | "wordList"
+  | "text"
+  | "practice"
+  | "segment"
+
+function withFallback(values: string[], fallback: string[]): string[] {
+  return values.length > 0 ? values : fallback
+}
+
+function mapCoverageKeyToPlanningKind(
+  key: keyof BlueprintContentCoverage
+): PlanningValueKind {
+  if (key === "standards") return "standard"
+  if (key === "vocabulary") return "vocabulary"
+  if (key === "wordLists" || key === "sightWords" || key === "foundationalSkills") return "wordList"
+  if (key === "texts") return "text"
+  if (key === "lessonSegments") return "segment"
+  return "practice"
+}
+
+function sanitizePlanningValues(
+  values: string[],
+  kind: PlanningValueKind
+): string[] {
+  return uniqueStrings(
+    values
+      .map((value) => normalizePlanningValue(value))
+      .filter((value) => value.length > 0)
+      .filter((value) => !isWeakPlanningValue(value, kind))
+  )
+}
+
+function normalizePlanningValue(value: string): string {
+  return value
+    .replace(/^[\s*Ã¢â‚¬Â¢\-Ã¢â‚¬â€œÃ¢â‚¬â€]+/, "")
+    .replace(/^\[/, "")
+    .replace(/\s+/g, " ")
+    .replace(/[;:]+$/g, "")
+    .trim()
+}
+
+function isWeakPlanningValue(
+  value: string,
+  kind: PlanningValueKind
+): boolean {
+  const lower = value.toLowerCase()
+  const wordCount = value.split(/\s+/).length
+
+  if (/students?\s*:\s*\d+/i.test(value)) {
+    return true
+  }
+
+  if (/time\s*[:=]/i.test(lower)) {
+    return true
+  }
+
+  if (/\(=|\(x/i.test(value)) {
+    return true
+  }
+
+  if (
+    lower.includes("students have been taught") ||
+    lower.includes("today's instruction is focused") ||
+    lower.includes("students are not") ||
+    lower.includes("students respond") ||
+    lower.includes("students see the letter") ||
+    lower.includes("story/skill") ||
+    lower.includes("phonological awareness") ||
+    lower.includes("lesson flow") ||
+    lower.includes("smartboard") ||
+    lower.includes("projector") ||
+    lower.includes("whiteboards") ||
+    lower.includes("ed tech") ||
+    lower.includes("resource") ||
+    lower.includes("slideslink")
+  ) {
+    return true
+  }
+
+  if (kind === "segment") {
+    return !["opening", "teach", "guided practice", "independent practice", "centers", "closure", "close"].includes(lower)
+  }
+
+  if (kind === "standard") {
+    return lower === "standard" || lower === "standards"
+  }
+
+  if (kind === "vocabulary") {
+    return (
+      lower.startsWith("i can ") ||
+      lower.startsWith("read ") ||
+      lower.includes("main topic") ||
+      lower.includes("key details") ||
+      lower.includes("author's purpose") ||
+      wordCount > 10
+    )
+  }
+
+  if (kind === "wordList") {
+    return (
+      lower.startsWith("i can ") ||
+      lower.startsWith("read ") ||
+      lower.startsWith("identify ") ||
+      lower.includes("sight words") ||
+      wordCount > 8
+    )
+  }
+
+  if (kind === "text") {
+    return (
+      lower.startsWith("i can ") ||
+      lower.startsWith("read ") ||
+      lower.includes("main topic") ||
+      lower.includes("key details") ||
+      lower.includes("author's purpose")
+    )
+  }
+
+  if (kind === "practice") {
+    return wordCount > 10
+  }
+
+  return false
 }
 
 function uniqueStrings(values: string[]): string[] {

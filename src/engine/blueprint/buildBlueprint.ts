@@ -1,4 +1,8 @@
-import { detectLessonTargets, resolveLessonMode } from "./detectLessonTargets"
+import {
+  detectLessonTargetsFromProfile,
+  resolveLessonMode,
+  resolveLessonProfile,
+} from "./detectLessonTargets"
 import { resolveBlueprintContent } from "./resolveBlueprintContent"
 import { resolveBlueprintStructure } from "./resolveBlueprintStructure"
 import { buildBlueprintSourceReadiness } from "./buildBlueprintSourceReadiness"
@@ -44,7 +48,13 @@ export function buildBlueprint(
     )
     .filter((analysis): analysis is ExemplarAnalysis => Boolean(analysis))
 
-  const rawTarget = detectLessonTargets(inputs, selectedMode)
+  const profile = resolveLessonProfile({
+    inputs,
+    selectedMode,
+    curriculumAnalyses,
+  })
+
+  const rawTarget = detectLessonTargetsFromProfile(profile, selectedMode)
   const resolvedMode = resolveLessonMode(selectedMode, rawTarget)
   const target = buildResolvedTarget(rawTarget, resolvedMode)
 
@@ -82,6 +92,7 @@ export function buildBlueprint(
   return {
     content: {
       target,
+      profile,
       ...content,
     },
     structure,
@@ -161,7 +172,7 @@ function filterDetectedFeaturesForStyleSettings(
 }
 
 function buildResolvedTarget(
-  rawTarget: ReturnType<typeof detectLessonTargets>,
+  rawTarget: ReturnType<typeof detectLessonTargetsFromProfile>,
   resolvedMode: LessonMode
 ) {
   if (resolvedMode === "phonics_only") {
@@ -198,4 +209,3 @@ function buildResolvedTarget(
     recommendedMode: resolvedMode,
   }
 }
-

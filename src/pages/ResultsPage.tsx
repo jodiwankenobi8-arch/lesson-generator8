@@ -1323,7 +1323,7 @@ export function getArtifactButtonLabel(artifact: ExportArtifact): string {
 
 export function getArtifactDescription(artifact: ExportArtifact): string {
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) {
-    return "This download bundles the current generated files into a ZIP file."
+    return "This download bundles the current generated artifacts into a ZIP file."
   }
 
   if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) {
@@ -1379,7 +1379,7 @@ export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] 
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Exports</h3>
       <p style={sectionLeadStyle}>
-        Download the current package as one ZIP bundle, or download each file on its own.
+        Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.
       </p>
 
       {fullPackageArtifact ? (
