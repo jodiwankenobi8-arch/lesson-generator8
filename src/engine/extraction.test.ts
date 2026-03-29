@@ -280,6 +280,60 @@ describe("extraction contract", () => {
     expect(extractImageTextWithOcrMock).toHaveBeenCalledTimes(1)
   })
 
+  it("normalizes noisy image OCR output before analysis", async () => {
+    extractImageTextWithOcrMock.mockResolvedValueOnce({
+      lines: [
+        "1",
+        "Slide 3",
+        "Teacher prompt from screenshot.",
+        "Teacher prompt from screenshot.",
+        "https://district.example.org/resource",
+      ],
+      averageConfidence: 0.77,
+      notes: ["OCR processed 1 image source.", "Average OCR confidence: 77%."],
+    })
+
+    const result = await extractTextFromFile({
+      fileName: "worksheet-photo.png",
+      fileBuffer: new TextEncoder().encode("fake-image").buffer,
+      sourceKind: "image_upload",
+      sourceLabel: "Worksheet photo",
+      sourceMimeType: "image/png",
+    })
+
+    expect(result.fileType).toBe("image")
+    expect(result.extractedText).toEqual(["Teacher prompt from screenshot."])
+    expect(result.extractionMetadata.method).toBe("ocr")
+    expect(result.extractionMetadata.notes.join(" ")).toContain(
+      "Image OCR normalization removed low-value noise before analysis."
+    )
+  })
+
+  it("falls back when image OCR only returns low-value noise", async () => {
+    extractImageTextWithOcrMock.mockResolvedValueOnce({
+      lines: ["1", "Slide 2", "https://district.example.org/resource"],
+      averageConfidence: 0.41,
+      notes: ["OCR processed 1 image source.", "Average OCR confidence: 41%."],
+    })
+
+    const result = await extractTextFromFile({
+      fileName: "worksheet-photo.png",
+      fileBuffer: new TextEncoder().encode("fake-image").buffer,
+      sourceKind: "image_upload",
+      sourceLabel: "Worksheet photo",
+      sourceMimeType: "image/png",
+    })
+
+    expect(result.fileType).toBe("image")
+    expect(result.extractedText).toEqual([
+      "Image OCR produced no readable text for worksheet-photo.png.",
+      "Try a clearer screenshot or photo, or add direct text from the source.",
+    ])
+    expect(result.extractionMetadata.method).toBe("fallback_notice")
+    expect(result.extractionMetadata.notes.join(" ")).toContain(
+      "Image OCR only recovered low-value lines after normalization."
+    )
+  })
 
   it("does not silently route unsupported image MIME uploads into OCR before expansion", async () => {
     const result = await extractTextFromFile({
