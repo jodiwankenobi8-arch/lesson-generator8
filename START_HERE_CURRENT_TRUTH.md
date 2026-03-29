@@ -2,7 +2,7 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: b15bef7
+- Published main checkpoint: 6301992
 - Last auto-sync UTC: 2026-03-29T17:08:44Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
@@ -22,8 +22,7 @@
 - detectLessonTargets coverage now includes the dominant-area-key seam
 - Results coverage remained green through the spec follow-up
 - the existing large-chunk build warning remains non-blocking
-
-## Product truths to preserve
+- dominant-area-key code checkpoint 380e54f refactors ELA blueprint, planning, and spec around dominant area keys## Product truths to preserve
 - do not force every lesson into phonics/comprehension/mixed
 - a lesson may contain one meaningful area, two areas, or more than two
 - planning and spec should derive from the resolved ELA area list first
@@ -32,8 +31,7 @@
 - generation depends on usable materials
 - centers = student-independent work
 - teacher-led support stays separate from centers
-
-## Validation snapshot for this seam
+- latest pushed checkpoint 6301992 refreshes continuation docs around that landed code seam## Validation snapshot for this seam
 Run in this order inside the full repo:
 1. `npx vitest run src/engine/lesson-spec.test.ts src/engine/blueprint/detectLessonTargets.test.ts src/pages/ResultsPage.test.ts src/pages/ResultsPage.test.tsx`
 2. `npm run build`
@@ -50,3 +48,4 @@ Local note:
 - verify single-mode selection across area families produces the intended planning/spec/results behavior
 - verify teacher-facing Results still reads cleanly after the blueprint/planning/spec refactor
 - only after that, choose any additional narrow polish from direct live evidence instead of reopening older seams
+- if browser/manual validation is not possible in-chat, the narrowest follow-on seam is continuation-doc truth alignment only; do not reopen supported-source matrix work unless direct live regression appears

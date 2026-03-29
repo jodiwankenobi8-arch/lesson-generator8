@@ -18,7 +18,7 @@ The older continuation docs were still pointing at the teacher-minimal drag-and-
 - the continuation chain needed to be updated so future chats stop relaunching from stale seam guidance
 
 ## What is now locked locally
-- pushed checkpoint 380e54f is the current main truth for this pass
+- latest pushed checkpoint 6301992 is the current continuation-doc truth for this pass
 - buildBlueprint now participates in the ELA profile foundation seam
 - detectLessonTargets and its new focused test cover the dominant-area-key path
 - resolveBlueprintContent and resolveBlueprintStructure now support the profile-first ELA routing seam
@@ -26,8 +26,7 @@ The older continuation docs were still pointing at the teacher-minimal drag-and-
 - buildLessonSpec now resolves dominantAreaKeys first instead of routing only through legacy phonics/comprehension labels
 - buildPackageOutputs and ResultsPage stayed aligned enough for focused Results coverage to remain green
 - the current build is still green with the same non-blocking large-chunk warning
-
-## Files touched in this pass
+- dominant-area-key code checkpoint 380e54f remains the landed code seam this doc is describing## Files touched in this pass
 - src/engine/blueprint/buildBlueprint.ts
 - src/engine/blueprint/detectLessonTargets.ts
 - src/engine/blueprint/detectLessonTargets.test.ts
@@ -39,8 +38,7 @@ The older continuation docs were still pointing at the teacher-minimal drag-and-
 - src/engine/spec/buildLessonSpec.ts
 - src/engine/types.ts
 - src/pages/ResultsPage.tsx
-
-## Validation for this seam
+- supported-source matrix work is already explicit across docs/UI/engine/tests and should not be reopened without direct regression evidence## Validation for this seam
 - `npx vitest run src/engine/lesson-spec.test.ts src/engine/blueprint/detectLessonTargets.test.ts src/pages/ResultsPage.test.ts src/pages/ResultsPage.test.tsx`
 - `npm run build`
 
@@ -55,3 +53,4 @@ Local result:
 - verify single-mode cross-family area selection behaves correctly in the live UI
 - verify planning/spec/results still read teacher-first after the refactor
 - keep any further edits narrow and live-evidence-driven
+- if browser/manual validation is not possible in-chat, do continuation-doc truth alignment only before any new implementation seam
