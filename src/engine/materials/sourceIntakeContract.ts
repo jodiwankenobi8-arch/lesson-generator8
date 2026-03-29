@@ -38,6 +38,14 @@ const SUPPORTED_SOURCE_MIME_TYPES: Record<SupportedSourceUploadExtension, string
 export const SUPPORTED_SOURCE_UPLOAD_ACCEPT =
   SUPPORTED_SOURCE_UPLOAD_EXTENSIONS.join(",")
 
+export const SUPPORTED_DOCUMENT_UPLOAD_FORMATS_TEXT = formatSupportedList(
+  SUPPORTED_DOCUMENT_UPLOAD_EXTENSIONS
+)
+
+export const SUPPORTED_IMAGE_UPLOAD_FORMATS_TEXT = formatSupportedList(
+  SUPPORTED_IMAGE_UPLOAD_EXTENSIONS
+)
+
 export const SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT = formatSupportedList(
   SUPPORTED_SOURCE_UPLOAD_EXTENSIONS
 )
@@ -48,6 +56,24 @@ export const SUPPORTED_EXTRACTION_TARGETS_TEXT = formatSupportedList(
 
 export const SUPPORTED_EXTRACTION_TARGETS_NOTICE =
   `Supported extraction targets are ${SUPPORTED_EXTRACTION_TARGETS_TEXT}.`
+
+export const CURRENT_SOURCE_INTAKE_MODEL_TEXT =
+  "Current teacher-facing intake is upload based."
+
+export const BOUNDED_IMAGE_OCR_RECOVERY_LANE_TEXT =
+  "Screenshots and photos are a bounded OCR recovery lane, not the primary intake path, and may still be caution-scored or blocked until readable text is recovered strongly enough to be usable."
+
+export const LINKS_AND_URLS_NOT_FIRST_CLASS_TEXT =
+  "Links and URLs are not a first-class Materials source lane."
+
+export const PASTED_TEXT_NOT_FIRST_CLASS_MATERIALS_UPLOAD_LANE_TEXT =
+  "Pasted text exists in the extraction seam, but it is not a first-class Materials-page upload lane here."
+
+export const CURRENT_INPUTS_PAGE_SOURCE_INTRO_TEXT =
+  `Current intake on Materials is upload based. Materials currently accepts document uploads (${SUPPORTED_DOCUMENT_UPLOAD_FORMATS_TEXT}) plus screenshots/photos (${SUPPORTED_IMAGE_UPLOAD_FORMATS_TEXT}) as a bounded OCR recovery lane when needed. ${LINKS_AND_URLS_NOT_FIRST_CLASS_TEXT}`
+
+export const CURRENT_MATERIALS_PAGE_SOURCE_INTRO_TEXT =
+  `${CURRENT_SOURCE_INTAKE_MODEL_TEXT} Upload documents (${SUPPORTED_DOCUMENT_UPLOAD_FORMATS_TEXT}) or screenshots/photos (${SUPPORTED_IMAGE_UPLOAD_FORMATS_TEXT}). ${BOUNDED_IMAGE_OCR_RECOVERY_LANE_TEXT} ${PASTED_TEXT_NOT_FIRST_CLASS_MATERIALS_UPLOAD_LANE_TEXT} Add sources here, then generate only from usable curriculum and exemplar sources.`
 
 export function getSupportedSourceUploadExtension(
   fileName: string
