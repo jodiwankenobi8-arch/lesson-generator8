@@ -3,7 +3,7 @@
 ## Purpose
 This file is the teacher-facing and continuation-facing source-intake truth for the current repo state.
 Use it to keep docs, UI copy, and tests aligned.
-Code-level extension/accept-string authority lives in `src/engine/materials/sourceIntakeContract.ts`.
+Code-level extension/accept-string authority and teacher-facing Inputs/Materials wording authority live in `src/engine/materials/sourceIntakeContract.ts`.
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -16,62 +16,57 @@ Code-level extension/accept-string authority lives in `src/engine/materials/sour
 Current intake is upload-based.
 The app currently works from uploaded source materials, not link-first retrieval.
 
-## Supported now
+Both curriculum and exemplar lanes currently accept the same source categories:
+- document uploads: `.txt`, `.pdf`, `.docx`, `.pptx`, `.html`, and `.htm`
+- screenshot/photo uploads: `.png`, `.jpg`, `.jpeg`, and `.webp`
+
+The difference between the two lanes is source authority, not file-type support.
+
+## Lane truth
 
 ### Curriculum lane
 Use for standards, texts, word lists, practice tasks, examples, and instructional targets.
 
-Supported upload types now:
-- `.txt`
-- `.pdf`
-- `.docx`
-- `.pptx`
-- `.html`
-- `.htm`
-- `.png`
-- `.jpg`
-- `.jpeg`
-- `.webp`
-
 Lane truth:
 - curriculum remains the content authority
-- image uploads can help recover text when needed
+- document uploads are the primary intake path when they are available
+- screenshots/photos can help recover text when needed, but they are still a bounded OCR recovery lane
 - screenshots/photos should not outrank stronger curriculum documents when stronger content sources exist
 
 ### Exemplar lane
 Use for slide flow, pacing, prompts, layout cues, teacher moves, and reusable structure.
 
-Supported upload types now:
-- `.txt`
-- `.pdf`
-- `.docx`
-- `.pptx`
-- `.html`
-- `.htm`
-- `.png`
-- `.jpg`
-- `.jpeg`
-- `.webp`
-
 Lane truth:
 - exemplar remains the presentation / structure authority
-- image uploads can help recover layout/prompt clues when needed
-- screenshots/photos are still a bounded OCR recovery lane, not stronger authority than a clearer exemplar deck or document
+- document uploads are the primary intake path when they are available
+- screenshots/photos can help recover layout and prompt clues when needed, but they are still a bounded OCR recovery lane
+- screenshots/photos are not stronger authority than a clearer exemplar deck or document
 
 ## Bounded OCR recovery lane
 Image uploads are supported for bounded OCR recovery.
 That means:
 - they are allowed
-- they can contribute extracted text/provenance when readable
+- they can contribute extracted text and provenance when readable
 - they are useful when a teacher only has screenshots or photos
 - they should not be described as the preferred or primary intake path when better document sources are available
+- they may still be caution-scored or blocked until readable text is recovered strongly enough to be usable
 
 ## Not first-class today
 Do not claim these as first-class intake in UI or docs:
 - raw links / URLs as a primary source lane
 - website crawling
+- pasted text as a first-class Materials-page upload lane
 - screenshot/photo-only workflows as the ideal teacher path
 - broad mixed-source retrieval outside upload-based intake
+
+## Current UI wording lock
+Teacher-facing page wording now stays aligned from the code-level contract in `src/engine/materials/sourceIntakeContract.ts`.
+
+Inputs wording:
+> Current intake on Materials is upload based. Materials currently accepts document uploads (.txt, .pdf, .docx, .pptx, .html, and .htm) plus screenshots/photos (.png, .jpg, .jpeg, and .webp) as a bounded OCR recovery lane when needed. Links and URLs are not a first-class Materials source lane.
+
+Materials wording:
+> Current teacher-facing intake is upload based. Upload documents (.txt, .pdf, .docx, .pptx, .html, and .htm) or screenshots/photos (.png, .jpg, .jpeg, and .webp). Screenshots and photos are a bounded OCR recovery lane, not the primary intake path, and may still be caution-scored or blocked until readable text is recovered strongly enough to be usable. Pasted text exists in the extraction seam, but it is not a first-class Materials-page upload lane here. Add sources here, then generate only from usable curriculum and exemplar sources.
 
 ## Safe teacher-facing wording
 Prefer wording like:

@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  BOUNDED_IMAGE_OCR_RECOVERY_LANE_TEXT,
+  CURRENT_INPUTS_PAGE_SOURCE_INTRO_TEXT,
+  CURRENT_MATERIALS_PAGE_SOURCE_INTRO_TEXT,
+  CURRENT_SOURCE_INTAKE_MODEL_TEXT,
+  LINKS_AND_URLS_NOT_FIRST_CLASS_TEXT,
+  PASTED_TEXT_NOT_FIRST_CLASS_MATERIALS_UPLOAD_LANE_TEXT,
+  SUPPORTED_DOCUMENT_UPLOAD_FORMATS_TEXT,
   SUPPORTED_EXTRACTION_TARGETS_NOTICE,
+  SUPPORTED_IMAGE_UPLOAD_FORMATS_TEXT,
   SUPPORTED_SOURCE_UPLOAD_ACCEPT,
   SUPPORTED_SOURCE_UPLOAD_EXTENSIONS,
   SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT,
@@ -11,7 +19,7 @@ import {
 } from "./sourceIntakeContract"
 
 describe("sourceIntakeContract", () => {
-  it("keeps the upload accept string, human-readable list, and extraction notice aligned", () => {
+  it("keeps the upload accept string, grouped human-readable lists, and extraction notice aligned", () => {
     expect(SUPPORTED_SOURCE_UPLOAD_EXTENSIONS).toEqual([
       ".txt",
       ".pdf",
@@ -28,11 +36,38 @@ describe("sourceIntakeContract", () => {
     expect(SUPPORTED_SOURCE_UPLOAD_ACCEPT).toBe(
       ".txt,.pdf,.docx,.pptx,.html,.htm,.png,.jpg,.jpeg,.webp"
     )
+    expect(SUPPORTED_DOCUMENT_UPLOAD_FORMATS_TEXT).toBe(
+      ".txt, .pdf, .docx, .pptx, .html, and .htm"
+    )
+    expect(SUPPORTED_IMAGE_UPLOAD_FORMATS_TEXT).toBe(
+      ".png, .jpg, .jpeg, and .webp"
+    )
     expect(SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT).toBe(
       ".txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp"
     )
     expect(SUPPORTED_EXTRACTION_TARGETS_NOTICE).toBe(
       "Supported extraction targets are txt, pdf, docx, pptx, html, htm, png, jpg, jpeg, and webp."
+    )
+  })
+
+  it("locks the teacher-facing source-matrix wording from one contract", () => {
+    expect(CURRENT_SOURCE_INTAKE_MODEL_TEXT).toBe(
+      "Current teacher-facing intake is upload based."
+    )
+    expect(BOUNDED_IMAGE_OCR_RECOVERY_LANE_TEXT).toBe(
+      "Screenshots and photos are a bounded OCR recovery lane, not the primary intake path, and may still be caution-scored or blocked until readable text is recovered strongly enough to be usable."
+    )
+    expect(LINKS_AND_URLS_NOT_FIRST_CLASS_TEXT).toBe(
+      "Links and URLs are not a first-class Materials source lane."
+    )
+    expect(PASTED_TEXT_NOT_FIRST_CLASS_MATERIALS_UPLOAD_LANE_TEXT).toBe(
+      "Pasted text exists in the extraction seam, but it is not a first-class Materials-page upload lane here."
+    )
+    expect(CURRENT_INPUTS_PAGE_SOURCE_INTRO_TEXT).toBe(
+      "Current intake on Materials is upload based. Materials currently accepts document uploads (.txt, .pdf, .docx, .pptx, .html, and .htm) plus screenshots/photos (.png, .jpg, .jpeg, and .webp) as a bounded OCR recovery lane when needed. Links and URLs are not a first-class Materials source lane."
+    )
+    expect(CURRENT_MATERIALS_PAGE_SOURCE_INTRO_TEXT).toBe(
+      "Current teacher-facing intake is upload based. Upload documents (.txt, .pdf, .docx, .pptx, .html, and .htm) or screenshots/photos (.png, .jpg, .jpeg, and .webp). Screenshots and photos are a bounded OCR recovery lane, not the primary intake path, and may still be caution-scored or blocked until readable text is recovered strongly enough to be usable. Pasted text exists in the extraction seam, but it is not a first-class Materials-page upload lane here. Add sources here, then generate only from usable curriculum and exemplar sources."
     )
   })
 

@@ -4,8 +4,8 @@ import {
   inferSupportedSourceMimeType,
   isSupportedImageExtension,
   isSupportedImageMimeType,
+  CURRENT_MATERIALS_PAGE_SOURCE_INTRO_TEXT,
   SUPPORTED_SOURCE_UPLOAD_ACCEPT,
-  SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT,
 } from "../engine/materials/sourceIntakeContract"
 import { MaterialFile, MaterialRole, MaterialSourceKind, MaterialStatus } from "../engine/types"
 import {
@@ -244,7 +244,7 @@ export default function MaterialsPage() {
           Curriculum remains the content authority. Exemplar remains the presentation and structure authority.
         </p>
         <p style={introStyle}>
-          Current teacher-facing intake is upload based. Right now the Materials page accepts {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}. Image uploads are supported through bounded OCR recovery and may be caution-scored or blocked until readable text is recovered strongly enough to be usable. Pasted text exists in the extraction seam, but it is not a first-class Materials-page upload lane here. Add sources here, then generate only from usable curriculum and exemplar sources.
+          {CURRENT_MATERIALS_PAGE_SOURCE_INTRO_TEXT}
         </p>
       </OrchardPageHeader>
 
