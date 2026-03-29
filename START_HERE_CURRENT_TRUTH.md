@@ -2,8 +2,8 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 3b20ad5
-- Last auto-sync UTC: 2026-03-29T01:54:02Z
+- Published main checkpoint: 73944f4
+- Last auto-sync UTC: 2026-03-29T02:51:11Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
