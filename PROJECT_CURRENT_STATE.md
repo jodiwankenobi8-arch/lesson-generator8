@@ -26,7 +26,9 @@ The older continuation docs were still pointing at the teacher-minimal drag-and-
 - buildLessonSpec now resolves dominantAreaKeys first instead of routing only through legacy phonics/comprehension labels
 - buildPackageOutputs and ResultsPage stayed aligned enough for focused Results coverage to remain green
 - the current build is still green with the same non-blocking large-chunk warning
-- dominant-area-key code checkpoint 380e54f remains the landed code seam this doc is describing## Files touched in this pass
+- dominant-area-key code checkpoint 380e54f remains the landed code seam this doc is describing
+
+## Files touched in this pass
 - src/engine/blueprint/buildBlueprint.ts
 - src/engine/blueprint/detectLessonTargets.ts
 - src/engine/blueprint/detectLessonTargets.test.ts
@@ -38,7 +40,9 @@ The older continuation docs were still pointing at the teacher-minimal drag-and-
 - src/engine/spec/buildLessonSpec.ts
 - src/engine/types.ts
 - src/pages/ResultsPage.tsx
-- supported-source matrix work is already explicit across docs/UI/engine/tests and should not be reopened without direct regression evidence## Validation for this seam
+- supported-source matrix work is already explicit across docs/UI/engine/tests and should not be reopened without direct regression evidence
+
+## Validation for this seam
 - `npx vitest run src/engine/lesson-spec.test.ts src/engine/blueprint/detectLessonTargets.test.ts src/pages/ResultsPage.test.ts src/pages/ResultsPage.test.tsx`
 - `npm run build`
 

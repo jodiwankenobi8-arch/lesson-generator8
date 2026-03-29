@@ -22,7 +22,9 @@
 - detectLessonTargets coverage now includes the dominant-area-key seam
 - Results coverage remained green through the spec follow-up
 - the existing large-chunk build warning remains non-blocking
-- dominant-area-key code checkpoint 380e54f refactors ELA blueprint, planning, and spec around dominant area keys## Product truths to preserve
+- dominant-area-key code checkpoint 380e54f refactors ELA blueprint, planning, and spec around dominant area keys
+
+## Product truths to preserve
 - do not force every lesson into phonics/comprehension/mixed
 - a lesson may contain one meaningful area, two areas, or more than two
 - planning and spec should derive from the resolved ELA area list first
@@ -31,7 +33,9 @@
 - generation depends on usable materials
 - centers = student-independent work
 - teacher-led support stays separate from centers
-- latest pushed checkpoint 6301992 refreshes continuation docs around that landed code seam## Validation snapshot for this seam
+- latest pushed checkpoint 6301992 refreshes continuation docs around that landed code seam
+
+## Validation snapshot for this seam
 Run in this order inside the full repo:
 1. `npx vitest run src/engine/lesson-spec.test.ts src/engine/blueprint/detectLessonTargets.test.ts src/pages/ResultsPage.test.ts src/pages/ResultsPage.test.tsx`
 2. `npm run build`
