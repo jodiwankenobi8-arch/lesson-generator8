@@ -10,12 +10,14 @@ import {
   SUPPORTED_DOCUMENT_UPLOAD_FORMATS_TEXT,
   SUPPORTED_EXTRACTION_TARGETS_NOTICE,
   SUPPORTED_IMAGE_UPLOAD_FORMATS_TEXT,
+  SUPPORTED_IMAGE_UPLOAD_MIME_TYPES,
   SUPPORTED_SOURCE_UPLOAD_ACCEPT,
   SUPPORTED_SOURCE_UPLOAD_EXTENSIONS,
   SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT,
   getSupportedSourceUploadExtension,
   inferSupportedSourceMimeType,
   isSupportedImageExtension,
+  isSupportedImageMimeType,
 } from "./sourceIntakeContract"
 
 describe("sourceIntakeContract", () => {
@@ -42,6 +44,11 @@ describe("sourceIntakeContract", () => {
     expect(SUPPORTED_IMAGE_UPLOAD_FORMATS_TEXT).toBe(
       ".png, .jpg, .jpeg, and .webp"
     )
+    expect(SUPPORTED_IMAGE_UPLOAD_MIME_TYPES).toEqual([
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+    ])
     expect(SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT).toBe(
       ".txt, .pdf, .docx, .pptx, .html, .htm, .png, .jpg, .jpeg, and .webp"
     )
@@ -87,5 +94,13 @@ describe("sourceIntakeContract", () => {
     expect(isSupportedImageExtension("worksheet-photo.png")).toBe(true)
     expect(isSupportedImageExtension("screenshot-note.webp")).toBe(true)
     expect(isSupportedImageExtension("lesson-outline.docx")).toBe(false)
+  })
+
+  it("only routes the currently supported screenshot/photo MIME types into the OCR lane", () => {
+    expect(isSupportedImageMimeType("image/png")).toBe(true)
+    expect(isSupportedImageMimeType(" image/jpeg ")).toBe(true)
+    expect(isSupportedImageMimeType("IMAGE/WEBP")).toBe(true)
+    expect(isSupportedImageMimeType("image/bmp")).toBe(false)
+    expect(isSupportedImageMimeType("image/gif")).toBe(false)
   })
 })
