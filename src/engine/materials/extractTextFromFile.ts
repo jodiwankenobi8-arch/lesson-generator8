@@ -381,8 +381,15 @@ async function extractImageText(input: ExtractTextInput): Promise<ExtractTextRes
       language: "eng",
       mimeType: input.sourceMimeType ?? undefined,
     })
+    const normalizedOcrLines = normalizeExtractedText(ocrResult.lines)
+    const imageOcrNormalizationNotes =
+      normalizedOcrLines.length < ocrResult.lines.length
+        ? normalizedOcrLines.length > 0
+          ? ["Image OCR normalization removed low-value noise before analysis."]
+          : ["Image OCR only recovered low-value lines after normalization."]
+        : []
 
-    if (ocrResult.lines.length === 0) {
+    if (normalizedOcrLines.length === 0) {
       const extractedText = [
         `Image OCR produced no readable text for ${input.fileName}.`,
         "Try a clearer screenshot or photo, or add direct text from the source.",
@@ -400,7 +407,7 @@ async function extractImageText(input: ExtractTextInput): Promise<ExtractTextRes
           sourceLabel: input.sourceLabel,
           confidenceOverride:
             ocrResult.averageConfidence > 0 ? ocrResult.averageConfidence : undefined,
-          notesToAppend: ocrResult.notes,
+          notesToAppend: [...ocrResult.notes, ...imageOcrNormalizationNotes],
           fallbackBehaviorOverride:
             "This screenshot or photo stays visible for the teacher, but it should not steer lesson generation until OCR or a clearer text source recovers readable text.",
         }),
@@ -410,16 +417,16 @@ async function extractImageText(input: ExtractTextInput): Promise<ExtractTextRes
     return {
       fileName: input.fileName,
       fileType: "image",
-      extractedText: ocrResult.lines,
+      extractedText: normalizedOcrLines,
       extractionMetadata: buildExtractionMetadata({
         method: "ocr",
         fileType: "image",
-        extractedText: ocrResult.lines,
+        extractedText: normalizedOcrLines,
         sourceKind: input.sourceKind,
         sourceLabel: input.sourceLabel,
         confidenceOverride:
           ocrResult.averageConfidence > 0 ? ocrResult.averageConfidence : undefined,
-        notesToAppend: ocrResult.notes,
+        notesToAppend: [...ocrResult.notes, ...imageOcrNormalizationNotes],
       }),
     }
   } catch (error) {
