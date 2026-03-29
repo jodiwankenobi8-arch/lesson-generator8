@@ -231,7 +231,7 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Results are blocked until all required lesson inputs are completed."
-        details="Complete grade, subject, skill focus, lesson topic, and duration before generating results. Standard is optional here; if left blank, the app will use standards detected from ready curriculum materials when available."
+        details="Complete grade, subject, and skill / focus before generating results. Standard, topic / text / unit, duration, and extra notes stay optional here."
         linkTo="/inputs"
         linkLabel="Go to Inputs"
       />
@@ -243,7 +243,7 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Results are blocked until at least one curriculum or exemplar material is usable for grounded generation."
-        details="Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one material is usable for grounded generation."
+        details="Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one material is ready to use."
         linkTo="/materials"
         linkLabel="Go to Materials"
       />
@@ -266,7 +266,7 @@ export default function ResultsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Planning Binder" title="Results">
         <p style={introStyle}>
-          Teacher-facing lesson package first. Review the generated package, confirm the lesson details, and export only the artifacts you want to use.
+          Teacher-facing lesson package first. Review the generated package, confirm the lesson details, and download only the files you want to use.
         </p>
         <p style={introStyle}>
           {getResultsHeaderStatusText()}
@@ -1042,11 +1042,11 @@ export function shouldShowSecondaryEvidencePanel(): boolean {
 }
 
 export function getResultsHeaderStatusText(): string {
-  return "Status notes stay visible when something needs attention."
+  return "Status stays visible if anything needs attention before export."
 }
 
 export function getTeacherBinderLeadText(): string {
-  return "Review the classroom-ready sections included in this package before you export."
+  return "Review what is included, then download only the pieces you need."
 }
 
 export function getPackageWarningsMessage(warningCount: number): string {
@@ -1103,7 +1103,7 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
           <div style={binderSnapshotStatLabelStyle}>Exports ready</div>
           <div style={binderSnapshotStatValueStyle}>{exports.length}</div>
           <div style={binderSmallNoteStyle}>
-            Package ZIP plus individual classroom-ready downloads when available.
+            Package ZIP plus individual downloads when available.
           </div>
         </div>
 
@@ -1139,8 +1139,8 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
         <div style={subHeadingStyle}>Available exports</div>
         <div style={binderSmallNoteStyle}>
           {hasFullPackageZip
-            ? "Use the package ZIP when you want the whole generated binder together, or use the individual exports when you only need one classroom-ready artifact."
-            : "Only individual classroom-ready exports are available in this package right now."}
+            ? "Use the package ZIP when you want the whole generated binder together, or use the individual downloads when you only need one file."
+            : "Only individual downloads are available in this package right now."}
         </div>
         {hasFullPackageZip || bundledArtifactLabels.length > 0 ? (
           <div style={binderTagRowStyle}>
@@ -1323,18 +1323,18 @@ export function getArtifactButtonLabel(artifact: ExportArtifact): string {
 
 export function getArtifactDescription(artifact: ExportArtifact): string {
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) {
-    return "This export bundles the current generated artifacts into a ZIP file."
+    return "This download bundles the current generated files into a ZIP file."
   }
 
   if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) {
-    return "This export is generated from the current lesson package and downloads as a PPTX slide deck."
+    return "This download is generated from the current lesson package and saves as a PPTX slide deck."
   }
 
   if (artifact.format === "pdf" || artifact.mimeType === PDF_MIME) {
-    return "This export is generated from the current lesson package and downloads as a PDF handout."
+    return "This download is generated from the current lesson package and saves as a PDF handout."
   }
 
-  return "This export is generated from the current lesson package and downloads as a DOCX lesson plan."
+  return "This download is generated from the current lesson package and saves as a DOCX lesson plan."
 }
 
 export async function downloadExportArtifact(artifact: ExportArtifact, artifacts: ExportArtifact[] = []) {
@@ -1373,13 +1373,13 @@ export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] 
   const bundledArtifactLabels = getBundledArtifactLabels(exports)
   const bundleSummary = bundledArtifactLabels.length > 0
     ? `Current package ZIP includes: ${bundledArtifactLabels.join(", ")}.`
-    : "Current package ZIP includes the current generated artifacts."
+    : "Current package ZIP includes the current generated files."
 
   return (
     <div style={sectionStyle}>
       <h3 style={sectionHeadingStyle}>Exports</h3>
       <p style={sectionLeadStyle}>
-        Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.
+        Download the current package as one ZIP bundle, or download each file on its own.
       </p>
 
       {fullPackageArtifact ? (
@@ -1388,7 +1388,7 @@ export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] 
             <div style={{ fontWeight: 700, color: "var(--deep-orchard)" }}>Full Lesson Package ZIP</div>
             {bundledArtifactLabels.length > 0 ? (
               <span style={orchardTagStyle("moss")}>
-                {bundledArtifactLabels.length} bundled artifact{bundledArtifactLabels.length === 1 ? "" : "s"}
+                {bundledArtifactLabels.length} bundled download{bundledArtifactLabels.length === 1 ? "" : "s"}
               </span>
             ) : null}
           </div>

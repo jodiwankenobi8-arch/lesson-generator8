@@ -13,13 +13,13 @@ describe("teacher-minimal results surface", () => {
 
   it("uses a status-only helper line in the results header", () => {
     expect(getResultsHeaderStatusText()).toBe(
-      "Status notes stay visible when something needs attention."
+      "Status stays visible if anything needs attention before export."
     )
   })
 
   it("keeps the binder lead text focused on exports", () => {
     expect(getTeacherBinderLeadText()).toBe(
-      "Review the classroom-ready sections included in this package before you export."
+      "Review what is included, then download only the pieces you need."
     )
   })
 

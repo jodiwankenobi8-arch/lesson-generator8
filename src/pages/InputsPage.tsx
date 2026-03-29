@@ -421,22 +421,20 @@ export default function InputsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Planning Notebook" title="Inputs" introMaxWidth={760}>
         <p style={introStyle}>
-          Start with the lesson information, then choose the lesson parts and
-          outputs you actually want.
+          Start with the lesson basics, then choose what you want included in the lesson and exports.
         </p>
         <p style={introStyle}>
-          Required fields stay narrow. Standards can come from teacher input and
-          from curriculum materials later.
+          Only the truly required fields are marked. Standards can come from teacher input now or from curriculum materials later.
         </p>
         <p style={introStyle}>
-          You will add materials on the next step. Drag-and-drop and click-to-upload both work there. Supported uploads: {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
+          You will add curriculum and exemplar materials on the next step. Drag and drop or browse from your device there. Supported uploads: {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
         </p>
       </OrchardPageHeader>
 
       <div style={cardStyle}>
         <div style={sectionLabelStyle}>1. Lesson Information</div>
         <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-          Cranberry stars only mark the fields the current flow truly requires.
+          Cranberry stars mark the fields required to move forward.
         </div>
 
         <div style={{ ...infoGridStyle, marginTop: "var(--space-md)" }}>
@@ -500,11 +498,9 @@ export default function InputsPage() {
         </div>
 
         <div style={{ marginTop: "var(--space-xl)" }}>
-          <div style={sectionLabelStyle}>2. Requested Lesson Parts</div>
+          <div style={sectionLabelStyle}>2. Lesson Plan Parts</div>
           <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-            Choose the lesson parts you want planned. This page does not make the
-            teacher-facing decision in terms of phonics-only, comprehension-only,
-            or a forced binary lesson shape.
+            Choose the lesson parts you want included in this lesson plan.
           </div>
           <div style={requestGridStyle}>
             {lessonPartOptions.map((option) => (
@@ -520,25 +516,19 @@ export default function InputsPage() {
         </div>
 
         <div style={{ marginTop: "var(--space-xl)" }}>
-          <div style={sectionLabelStyle}>3. Requested Outputs</div>
+          <div style={sectionLabelStyle}>3. Lesson Outputs</div>
           <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-            Keep explicit teacher choice here on page 1. Centers and teacher-led
-            support stay separate lanes. Printable-ready materials are only
-            bundled from the relevant selected sections the current repo already
-            supports, rather than as a stand-alone generic bucket.
+            Choose the outputs you want for this lesson. Centers stay separate from teacher-led support.
           </div>
 
           <div style={{ ...noticeStyle, marginTop: 12 }}>
-            {selectedOutputSections} output section(s) selected. Requested lesson
-            parts: {selectedRequestedParts}. Assessment choices: {selectedAssessmentCount}.
-            Center formats: {selectedCenterFormats}. Center focuses: {selectedCenterFocuses}.
-            Small-group tiers: {selectedSmallGroupTiers}.
+            Selected now: {selectedOutputSections} output section(s). Lesson plan parts: {selectedRequestedParts}. Assessment choices: {selectedAssessmentCount}. Center formats: {selectedCenterFormats}. Center focuses: {selectedCenterFocuses}. Small-group tiers: {selectedSmallGroupTiers}.
           </div>
 
           <div style={{ display: "grid", gap: "var(--space-md)", marginTop: "var(--space-md)" }}>
             <OutputSectionCard
               title="Lesson Plan"
-              description="Core teacher-facing output. The selected lesson parts above drive later planning and package behavior."
+              description="Core teacher plan. The lesson plan parts above decide what is included here later."
               statusLabel={outputContents.lessonPlan.selected ? "Selected" : "Not selected"}
               active={outputContents.lessonPlan.selected}
             >
@@ -598,14 +588,14 @@ export default function InputsPage() {
             </OutputSectionCard>
 
             <OutputSectionCard
-              title="Small Group"
-              description="Teacher-led groups. This stays separate from centers and can coexist with centers during the same lesson block."
+              title="Teacher-Led Support"
+              description="Teacher-led support. Keep this separate from centers; both can happen in the same lesson block."
               statusLabel={outputContents.smallGroup.selected ? "Selected" : "Optional"}
               active={outputContents.smallGroup.selected}
             >
               <div style={subgroupBlockStyle}>
                 <div style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 10 }}>
-                  Teacher-led groups.
+                  Choose the teacher-led groups you want.
                 </div>
                 <div style={{ display: "grid", gap: 12 }}>
                   {smallGroupTierOptions.map((option) => (
@@ -623,7 +613,7 @@ export default function InputsPage() {
 
             <OutputSectionCard
               title="Assessment"
-              description="Choose the assessment outputs you want. Answer keys generate automatically where applicable."
+              description="Choose the assessment pieces you want for this lesson. Answer keys generate automatically where applicable."
               statusLabel={outputContents.assessment.selected ? "Selected" : "Optional"}
               active={outputContents.assessment.selected}
             >
@@ -661,14 +651,14 @@ export default function InputsPage() {
 
             <OutputSectionCard
               title="Lesson Slides"
-              description="Student-facing only for now. Slides follow the lesson plan and exemplar-grounded structure when selected."
+              description="Student-facing slide deck that follows the lesson plan and exemplar-supported structure."
               statusLabel={outputContents.lessonSlides.selected ? "Selected" : "Optional"}
               active={outputContents.lessonSlides.selected}
             >
               <RequestToggleCard
                 checked={outputContents.lessonSlides.selected}
                 title="Include student-facing lesson slides"
-                description="Keep slides as an explicit requested output instead of a hidden hard-locked default."
+                description="Include student-facing lesson slides when you want a matching slide deck."
                 onToggle={toggleLessonSlidesOutput}
               />
             </OutputSectionCard>
@@ -677,9 +667,7 @@ export default function InputsPage() {
 
         <div style={{ marginTop: "var(--space-lg)" }}>
           <div style={noticeStyle}>
-            Results can generate once the truly required lesson information is in
-            place: grade, subject, and skill / focus. Standard(s), topic / text /
-            unit, duration, and extra notes stay optional on this page.
+            You can continue once grade, subject, and skill / focus are filled in. Standards, topic / text / unit, duration, and extra notes stay optional here.
           </div>
         </div>
 
@@ -690,7 +678,7 @@ export default function InputsPage() {
               fontWeight: 700,
             }}
           >
-            {hasRequiredInputs ? "Inputs complete" : "Complete the required lesson fields"}
+            {hasRequiredInputs ? "Ready for Materials" : "Complete the required lesson details"}
           </div>
 
           <button
