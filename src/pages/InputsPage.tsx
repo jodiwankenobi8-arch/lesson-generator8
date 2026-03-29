@@ -1,6 +1,6 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
-import { CURRENT_INPUTS_PAGE_SOURCE_INTRO_TEXT } from "../engine/materials/sourceIntakeContract"
+import { SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT } from "../engine/materials/sourceIntakeContract"
 import {
   AssessmentOutputTypeKey,
   CenterFocusKey,
@@ -429,7 +429,7 @@ export default function InputsPage() {
           from curriculum materials later.
         </p>
         <p style={introStyle}>
-          {CURRENT_INPUTS_PAGE_SOURCE_INTRO_TEXT}
+          You will add materials on the next step. Drag-and-drop and click-to-upload both work there. Supported uploads: {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
         </p>
       </OrchardPageHeader>
 

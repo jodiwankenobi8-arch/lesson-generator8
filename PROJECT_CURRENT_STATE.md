@@ -3,47 +3,48 @@
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
 - Published main checkpoint: 73944f4
-- Last auto-sync UTC: 2026-03-29T02:51:11Z
+- Last auto-sync UTC: 2026-03-29T00:00:00Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 ## Current milestone
-Phase 5 OCR support-contract hardening — keep the bounded OCR lane aligned to the currently listed image formats before broader OCR expansion
+Teacher-minimal surface and drag-and-drop hardening on top of the pushed OCR runtime stability checkpoint
 
 ## Why this seam exists
-The centralized source-intake contract is landed, but one live-code gap remained: generic image/* MIME detection could still route unsupported image uploads into the OCR lane even though current docs and Inputs/Materials only list png/jpg/jpeg/webp. That had to be closed before any broader OCR expansion.
+The pushed OCR runtime seam is already locked. The biggest safe finish-oriented next chunk in the current bundle was teacher-facing surface cleanup:
+- keep only the information a teacher needs visible on the main interface
+- keep status and generation readiness visible
+- remove reasoning/trust-profile style detail from the main Materials and Results surfaces
+- add drag-and-drop upload lanes without weakening the current supported upload contract
 
 ## What is now locked locally
-- current intake remains upload-based
-- the supported source extension list now lives in `src/engine/materials/sourceIntakeContract.ts`
-- the Materials upload accept string now comes from that same contract
-- Inputs and Materials supported-format copy now comes from that same contract
-- unsupported extractor notices now reuse the same supported-target wording as the UI contract
-- image uploads remain a bounded OCR recovery lane
-- blank-MIME screenshot/photo uploads now stay in the image upload lane through extension-based detection
-- generic unsupported image/* MIME uploads no longer silently enter the OCR lane
-- supported MIME-only screenshots/photos can still enter the current OCR lane even when the browser-provided name is weak
-- curriculum stays the content authority
-- exemplar stays the presentation / structure authority
-- generation still depends on usable materials
-- links / URLs are not first-class intake in current UI/docs truth
+- OCR runtime stability at 73944f4 remains current pushed truth
+- the visible Inputs intro is shorter and more teacher-facing
+- Materials now supports drag-and-drop plus browse-file upload lanes for curriculum and exemplar
+- drag-and-drop uses the same supported upload contract instead of silently accepting broader types
+- Materials now focuses on upload actions, file status, counts, and generation readiness
+- Materials no longer surfaces extraction trace, preview, or trust-profile style diagnostics in the main interface
+- Results now keeps the main surface focused on package overview, package outputs, teacher decisions, and exports
+- Results no longer renders the secondary evidence panel on the main interface
+- teacher decision prompts are simplified to the choices a teacher actually needs to make
 
-## Files touched in this closeout
-- src/engine/materials/sourceIntakeContract.ts
-- src/engine/materials/sourceIntakeContract.test.ts
-- src/engine/extraction.test.ts
+## Files touched in this pass
+- src/pages/InputsPage.tsx
+- src/pages/MaterialsPage.tsx
 - src/pages/MaterialsPage.test.ts
-- docs/project-notes/SUPPORTED_SOURCE_MATRIX_CURRENT.md
+- src/pages/ResultsPage.tsx
+- src/pages/ResultsPage.test.ts
 - START_HERE_CURRENT_TRUTH.md
 - PROJECT_CURRENT_STATE.md
-- docs/chat-handoffs/2026-03-29_ocr-support-contract-hardening.md
+- docs/chat-handoffs/2026-03-29_teacher-minimal-interface-and-drag-drop.md
 
 ## Validation for this seam
-- `npx vitest run src/engine/materials/sourceIntakeContract.test.ts src/pages/MaterialsPage.test.ts src/engine/extraction.test.ts`
+- `npx vitest run src/pages/MaterialsPage.test.ts src/pages/ResultsPage.test.ts src/engine/materials/sourceIntakeContract.test.ts src/engine/extraction.test.ts`
 - `npm run build`
-- or, in a bundle-only environment, run the isolated contract assertions in `verify_changes.ps1` and treat full repo vitest/build as local follow-up
+- or, in a bundle-only environment, run `verify_changes.ps1` for static transpile/content checks and treat full vitest/build/browser work as local follow-up
 
 ## Current next step
-- keep browser/manual checking as a separate follow-up outside this environment
-- then choose one deliberate OCR-expansion seam from the honest current baseline instead of widening support implicitly
-- prefer current-runtime hardening in `extractImageOcr.ts` / `extractTextFromFile.ts` before adding new listed formats
+- do a short browser/manual pass on Inputs, Materials, and Results
+- confirm drag-and-drop works for supported uploads and rejects unsupported uploads clearly
+- confirm Results now shows only teacher-needed package/status/export surfaces by default
+- keep additional polish narrow and live-evidence-driven
