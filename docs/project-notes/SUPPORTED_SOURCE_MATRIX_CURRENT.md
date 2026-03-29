@@ -20,6 +20,8 @@ Both curriculum and exemplar lanes currently accept the same source categories:
 - document uploads: `.txt`, `.pdf`, `.docx`, `.pptx`, `.html`, and `.htm`
 - screenshot/photo uploads: `.png`, `.jpg`, `.jpeg`, and `.webp`
 
+Only those listed screenshot/photo formats are intentionally routed into the OCR lane today.
+
 The difference between the two lanes is source authority, not file-type support.
 
 ## Lane truth

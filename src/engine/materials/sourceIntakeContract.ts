@@ -35,6 +35,14 @@ const SUPPORTED_SOURCE_MIME_TYPES: Record<SupportedSourceUploadExtension, string
   ".webp": "image/webp",
 }
 
+export const SUPPORTED_IMAGE_UPLOAD_MIME_TYPES = Array.from(
+  new Set(
+    SUPPORTED_IMAGE_UPLOAD_EXTENSIONS.map(
+      (extension) => SUPPORTED_SOURCE_MIME_TYPES[extension]
+    )
+  )
+) as readonly string[]
+
 export const SUPPORTED_SOURCE_UPLOAD_ACCEPT =
   SUPPORTED_SOURCE_UPLOAD_EXTENSIONS.join(",")
 
@@ -102,7 +110,13 @@ export function isSupportedImageExtension(fileName: string): boolean {
 }
 
 export function isSupportedImageMimeType(mimeType?: string | null): boolean {
-  return mimeType?.trim().toLowerCase().startsWith("image/") ?? false
+  const normalized = mimeType?.trim().toLowerCase()
+
+  return normalized
+    ? SUPPORTED_IMAGE_UPLOAD_MIME_TYPES.some(
+        (supportedMimeType) => supportedMimeType === normalized
+      )
+    : false
 }
 
 function formatSupportedList(items: readonly string[]): string {

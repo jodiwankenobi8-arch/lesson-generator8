@@ -8,10 +8,10 @@
 <!-- AUTO_SYNC_END -->
 
 ## Current milestone
-Phase 5 source-intake contract parity hardening — centralized contract landed locally
+Phase 5 OCR support-contract hardening — keep the bounded OCR lane aligned to the currently listed image formats before broader OCR expansion
 
 ## Why this seam exists
-The broader source-intake truth was already visible in docs, UI copy, extractor behavior, and tests, but the supported extension list and accept string were still duplicated across pages and engine notices. That duplication made future OCR/intake expansion easy to drift.
+The centralized source-intake contract is landed, but one live-code gap remained: generic image/* MIME detection could still route unsupported image uploads into the OCR lane even though current docs and Inputs/Materials only list png/jpg/jpeg/webp. That had to be closed before any broader OCR expansion.
 
 ## What is now locked locally
 - current intake remains upload-based
@@ -21,6 +21,8 @@ The broader source-intake truth was already visible in docs, UI copy, extractor 
 - unsupported extractor notices now reuse the same supported-target wording as the UI contract
 - image uploads remain a bounded OCR recovery lane
 - blank-MIME screenshot/photo uploads now stay in the image upload lane through extension-based detection
+- generic unsupported image/* MIME uploads no longer silently enter the OCR lane
+- supported MIME-only screenshots/photos can still enter the current OCR lane even when the browser-provided name is weak
 - curriculum stays the content authority
 - exemplar stays the presentation / structure authority
 - generation still depends on usable materials
@@ -29,20 +31,19 @@ The broader source-intake truth was already visible in docs, UI copy, extractor 
 ## Files touched in this closeout
 - src/engine/materials/sourceIntakeContract.ts
 - src/engine/materials/sourceIntakeContract.test.ts
-- src/engine/materials/extractTextFromFile.ts
 - src/engine/extraction.test.ts
-- src/pages/InputsPage.tsx
-- src/pages/MaterialsPage.tsx
 - src/pages/MaterialsPage.test.ts
 - docs/project-notes/SUPPORTED_SOURCE_MATRIX_CURRENT.md
 - START_HERE_CURRENT_TRUTH.md
 - PROJECT_CURRENT_STATE.md
-- docs/chat-handoffs/2026-03-28_2205_source-intake-contract-parity-hardening.md
+- docs/chat-handoffs/2026-03-29_ocr-support-contract-hardening.md
 
 ## Validation for this seam
 - `npx vitest run src/engine/materials/sourceIntakeContract.test.ts src/pages/MaterialsPage.test.ts src/engine/extraction.test.ts`
 - `npm run build`
+- or, in a bundle-only environment, run the isolated contract assertions in `verify_changes.ps1` and treat full repo vitest/build as local follow-up
 
 ## Current next step
-- decide whether the next live seam is deliberate OCR expansion or a later orchard/artifact tightening pass
 - keep browser/manual checking as a separate follow-up outside this environment
+- then choose one deliberate OCR-expansion seam from the honest current baseline instead of widening support implicitly
+- prefer current-runtime hardening in `extractImageOcr.ts` / `extractTextFromFile.ts` before adding new listed formats

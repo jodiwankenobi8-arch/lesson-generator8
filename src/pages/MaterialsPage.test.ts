@@ -15,6 +15,33 @@ describe("buildUploadSourceMetadata", () => {
     })
   })
 
+
+  it("keeps supported MIME-only screenshots in the OCR recovery lane", () => {
+    const metadata = buildUploadSourceMetadata({
+      name: "Camera Upload",
+      type: "image/png",
+    })
+
+    expect(metadata).toEqual({
+      sourceKind: "image_upload",
+      sourceLabel: "Camera Upload",
+      sourceMimeType: "image/png",
+    })
+  })
+
+  it("does not silently route unsupported image MIME uploads into the OCR recovery lane yet", () => {
+    const metadata = buildUploadSourceMetadata({
+      name: "district-scan.bmp",
+      type: "image/bmp",
+    })
+
+    expect(metadata).toEqual({
+      sourceKind: "file_upload",
+      sourceLabel: "district-scan.bmp",
+      sourceMimeType: "image/bmp",
+    })
+  })
+
   it("falls back to file-name inference when the browser omits a MIME type", () => {
     const metadata = buildUploadSourceMetadata({
       name: "lesson-outline.docx",

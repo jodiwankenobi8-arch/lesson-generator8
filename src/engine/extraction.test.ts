@@ -84,6 +84,8 @@ describe("extraction contract", () => {
     expect(detectFileType("page.htm")).toBe("html")
     expect(detectFileType("worksheet-photo.JPG")).toBe("image")
     expect(detectFileType("anchor-chart.webp")).toBe("image")
+    expect(detectFileType("Camera Upload", { sourceMimeType: "image/png" })).toBe("image")
+    expect(detectFileType("district-scan.bmp", { sourceMimeType: "image/bmp" })).toBe("unknown")
     expect(detectFileType("archive.zip")).toBe("unknown")
   })
 
@@ -276,6 +278,25 @@ describe("extraction contract", () => {
       originalType: "image",
     })
     expect(extractImageTextWithOcrMock).toHaveBeenCalledTimes(1)
+  })
+
+
+  it("does not silently route unsupported image MIME uploads into OCR before expansion", async () => {
+    const result = await extractTextFromFile({
+      fileName: "district-scan.bmp",
+      fileBuffer: new TextEncoder().encode("fake-image").buffer,
+      sourceKind: "file_upload",
+      sourceLabel: "District scan",
+      sourceMimeType: "image/bmp",
+    })
+
+    expect(result.fileType).toBe("unknown")
+    expect(result.extractedText).toEqual([
+      "Unsupported file type for district-scan.bmp.",
+      SUPPORTED_EXTRACTION_TARGETS_NOTICE,
+    ])
+    expect(result.extractionMetadata.ocrCandidate).toBe(false)
+    expect(extractImageTextWithOcrMock).not.toHaveBeenCalled()
   })
 
   it("marks image fallback output as unavailable OCR when no file buffer is provided", async () => {
