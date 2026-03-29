@@ -48,11 +48,11 @@ function makeBlueprint(overrides: Partial<LessonBlueprint> = {}): LessonBlueprin
     sourceReadiness: {
       curriculumSupport: "strong",
       exemplarSupport: "strong",
-    coverageSupport: "strong",
+      coverageSupport: "strong",
       overall: "balanced",
       selectedCurriculumMaterialIds: [],
-    selectedExemplarMaterialIds: [],
-    warnings: [],
+      selectedExemplarMaterialIds: [],
+      warnings: [],
       signals: [],
       ...overrides.sourceReadiness,
     },
@@ -285,23 +285,49 @@ describe("buildLessonSpec", () => {
     )
   })
 
-  it("keeps phonics-specific lesson language for phonics lessons", () => {
+  it("uses dominant area keys before legacy target labels", () => {
+    const spec = buildLessonSpec(
+      makeBlueprint({
+        content: {
+          target: {
+            primary: "general",
+            secondary: null,
+            isMixedTarget: false,
+            recommendedMode: "single",
+          },
+          profile: {
+            dominantAreaKeys: ["phonics"],
+          },
+        },
+      } as unknown as Partial<LessonBlueprint>),
+      makePlanningIdeas()
+    )
+
+    expect(spec.teach.steps.join(" ")).toContain(
+      "Model the foundational-skill focus with these curriculum examples"
+    )
+    expect(spec.guidedPractice.steps.join(" ")).toContain(
+      "Guide practice with these curriculum-aligned foundational-skill tasks"
+    )
+    expect(spec.closure.steps.join(" ")).toContain(
+      "Review the target foundational skill or pattern."
+    )
+  })
+
+  it("keeps foundational-skill lesson language for foundational lessons", () => {
     const spec = buildLessonSpec(makeBlueprint(), makePlanningIdeas())
 
     expect(spec.teach.steps.join(" ")).toContain(
-      "Model the phonics focus with these curriculum examples"
+      "Model the foundational-skill focus with these curriculum examples"
     )
     expect(spec.guidedPractice.steps.join(" ")).toContain(
-      "Guide practice with these curriculum-aligned phonics tasks"
+      "Guide practice with these curriculum-aligned foundational-skill tasks"
     )
     expect(spec.independentPractice.steps.join(" ")).toContain(
-      "Students complete independent phonics work using"
+      "Students complete independent foundational-skill work using"
     )
     expect(spec.closure.steps.join(" ")).toContain(
-      "Review the target sound, pattern, or decoding skill."
+      "Review the target foundational skill or pattern."
     )
   })
 })
-
-
-

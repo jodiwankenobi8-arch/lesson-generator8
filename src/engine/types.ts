@@ -1,4 +1,4 @@
-export type LessonInputs = {
+﻿export type LessonInputs = {
 
   grade: string
 
@@ -103,6 +103,18 @@ export type CenterFocusKey =
   | "comprehension"
 
   | "writing_sentence_work"
+
+
+
+export type ElaAreaKey =
+
+  | CenterFocusKey
+
+  | "spelling_encoding"
+
+  | "grammar_language_conventions"
+
+  | "speaking_listening"
 
 
 
@@ -1023,6 +1035,36 @@ export type LessonTargetInfo = {
 
 
 
+export type ResolvedElaArea = {
+
+  key: ElaAreaKey
+
+  score: number
+
+  evidence: string[]
+
+  sources: Array<"teacher_input" | "curriculum_analysis" | "curriculum_text" | "standards_match">
+
+}
+
+
+
+export type ResolvedLessonProfile = {
+
+  areas: ResolvedElaArea[]
+
+  dominantAreaKeys: ElaAreaKey[]
+
+  pinnedAreaKeys: ElaAreaKey[]
+
+  excludedAreaKeys: ElaAreaKey[]
+
+  lessonShape: "single" | "combined"
+
+}
+
+
+
 export type BlueprintContentCoverage = {
 
   standards: string[]
@@ -1050,6 +1092,8 @@ export type BlueprintContentCoverage = {
 export type BlueprintContent = {
 
   target: LessonTargetInfo
+
+  profile?: ResolvedLessonProfile
 
   standards: string[]
 
@@ -1654,6 +1698,9 @@ export type LessonGenerationResult = {
   trace: LessonPipelineTrace
 
 }
+
+
+
 
 
 

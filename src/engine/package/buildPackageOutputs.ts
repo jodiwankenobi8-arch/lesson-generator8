@@ -395,8 +395,14 @@ function buildObjectiveSummary(
   inputs: LessonInputs,
   blueprint: LessonBlueprint
 ): string {
-  const topic = inputs.topic.trim() || selectTextFocus(blueprint, "the requested lesson context")
-  return `Students will work on ${inputs.skill} through ${topic}.`
+  const skill = inputs.skill.trim() || "the lesson focus"
+  const explicitTopic = inputs.topic.trim()
+
+  if (explicitTopic.length > 0) {
+    return `Students will work on ${skill} through ${explicitTopic}.`
+  }
+
+  return `Students will work on ${skill} using the selected lesson materials.`
 }
 
 function buildDifferentiationSteps(
@@ -583,6 +589,9 @@ function dedupeStrings(items: string[]): string[] {
 }
 
 function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
+  const hasReusableFlow = blueprint.structure.lessonSegments.length > 0
+  const hasReusableSlideStructure = blueprint.structure.templateShell.slideShell.length > 0
+
   return [
     "Lesson Grounding",
     `- Primary Target: ${blueprint.content.target.primary}`,
@@ -609,14 +618,8 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
       blueprint.content.practiceIdeas.slice(0, 4),
       "guided practice"
     )}`,
-    `- Exemplar Segment Order: ${joinOrFallback(
-      blueprint.structure.templateShell.segmentOrder.slice(0, 6),
-      "Teach -> Practice -> Closure"
-    )}`,
-    `- Exemplar Slide Shell: ${joinOrFallback(
-      blueprint.structure.templateShell.slideShell.slice(0, 6),
-      "Objective -> Teach -> Guided Practice -> Closure"
-    )}`,
+    `- Exemplar Segment Order: ${hasReusableFlow ? "Reusable lesson flow available" : "Default lesson flow"}`,
+    `- Exemplar Slide Shell: ${hasReusableSlideStructure ? "Reusable slide structure available" : "Default slide structure"}`,
     `- Exemplar Teacher Moves: ${joinOrFallback(
       blueprint.structure.teacherMoves.slice(0, 4),
       "teacher model, guided support"
@@ -1285,10 +1288,71 @@ function takeClean(items: string[], count: number): string[] {
   return Array.from(
     new Set(
       (items ?? [])
-        .map((item) => stripTrailingPunctuation(item.trim()))
+        .map((item) => sanitizePackageValue(item))
         .filter((item) => item.length > 0)
+        .filter((item) => !isWeakPackageValue(item))
     )
   ).slice(0, count)
+}
+
+function sanitizePackageValue(value: string): string {
+  return stripTrailingPunctuation(
+    value
+      .replace(/^[\s*•\-–—]+/, "")
+      .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
+      .replace(/^[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:\s*/, "")
+      .replace(/\s+/g, " ")
+      .trim()
+  )
+}
+
+function isWeakPackageValue(value: string): boolean {
+  const lower = value.toLowerCase()
+  const wordCount = value.split(/\s+/).length
+  const commaCount = (value.match(/,/g) || []).length
+
+  if (/\.(pdf|pptx|docx|html|htm|png|jpg|jpeg|webp)\b/i.test(lower)) {
+    return true
+  }
+
+  if (lower.includes("|")) {
+    return true
+  }
+
+  if (/students?\s*:\s*\d+/i.test(value)) {
+    return true
+  }
+
+  if (/time\s*[:=]/i.test(lower)) {
+    return true
+  }
+
+  if (/\b\d+\s*(min|mins|minutes)\b/i.test(lower)) {
+    return true
+  }
+
+  if (
+    lower.includes("smartboard") ||
+    lower.includes("projector") ||
+    lower.includes("desks") ||
+    lower.includes("carpet")
+  ) {
+    return true
+  }
+
+  if (commaCount >= 4) {
+    return true
+  }
+
+  if (wordCount > 18) {
+    return true
+  }
+
+  if (["standard", "standards", "slide", "visual / image"].includes(lower)) {
+    return true
+  }
+
+  return false
 }
 
 function stripTrailingPunctuation(value: string): string {

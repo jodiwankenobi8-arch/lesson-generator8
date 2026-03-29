@@ -16,8 +16,11 @@ type LessonSpecSectionKey =
 
 type LessonSpecContext = {
   target: LessonBlueprint["content"]["target"]
-  primary: string
-  isFullMixed: boolean
+  areaKeys: string[]
+  primaryArea: string
+  hasFoundationalArea: boolean
+  hasMeaningArea: boolean
+  hasMultipleAreas: boolean
   vocabulary: string[]
   wordList: string[]
   texts: string[]
@@ -50,9 +53,9 @@ export function buildLessonSpec(
   planningIdeas?: LessonPlanningIdeas
 ): LessonSpec {
   const context = buildLessonSpecContext(blueprint, planningIdeas)
-  const { primary, isFullMixed } = context
+  const { primaryArea, hasMultipleAreas } = context
 
-  if (isFullMixed) {
+  if (hasMultipleAreas) {
     return {
       teach: createSection("Teach", buildMixedTeachSteps(context)),
       guidedPractice: createSection(
@@ -68,7 +71,7 @@ export function buildLessonSpec(
     }
   }
 
-  if (primary === "phonics") {
+  if (primaryArea === "foundational") {
     return {
       teach: createSection("Teach", buildPhonicsTeachSteps(context)),
       guidedPractice: createSection(
@@ -84,7 +87,7 @@ export function buildLessonSpec(
     }
   }
 
-  if (primary === "comprehension") {
+  if (primaryArea === "comprehension") {
     return {
       teach: createSection("Teach", buildComprehensionTeachSteps(context)),
       guidedPractice: createSection(
@@ -120,8 +123,11 @@ function buildLessonSpecContext(
   planningIdeas?: LessonPlanningIdeas
 ): LessonSpecContext {
   const target = blueprint.content.target
-  const primary = target.primary.toLowerCase()
-  const isFullMixed = target.isMixedTarget && target.recommendedMode === "full"
+  const areaKeys = resolveSpecAreaKeys(blueprint)
+  const hasFoundationalArea = specHasFoundationalArea(areaKeys)
+  const hasMeaningArea = specHasMeaningArea(areaKeys)
+  const hasMultipleAreas = specHasMultipleMeaningfulAreas(areaKeys)
+  const primaryArea = selectPrimarySpecArea(areaKeys)
 
   const vocabulary = take(blueprint.content.vocabulary, 4, ["key vocabulary"])
   const wordList = take(blueprint.content.wordLists, 5, ["teacher-selected examples"])
@@ -136,11 +142,16 @@ function buildLessonSpecContext(
     toneCount: 2,
   })
 
-  const openingLine = buildOpeningLine(target.primary, target.secondary, standards, shell.tone)
-  const modeledResources = buildModeledResources(primary, wordList, texts)
-  const guidedTaskLine = buildGuidedTaskLine(primary, practiceIdeas, standards)
-  const independentTaskLine = buildIndependentTaskLine(primary, practiceIdeas, wordList, texts)
-  const closureLine = buildClosureLine(primary, vocabulary, wordList)
+  const openingLine = buildOpeningLine(areaKeys, standards, shell.tone)
+  const modeledResources = buildModeledResources(primaryArea, wordList, texts)
+  const guidedTaskLine = buildGuidedTaskLine(primaryArea, practiceIdeas, standards)
+  const independentTaskLine = buildIndependentTaskLine(
+    primaryArea,
+    practiceIdeas,
+    wordList,
+    texts
+  )
+  const closureLine = buildClosureLine(primaryArea, vocabulary, wordList)
   const flowLine = `Follow the exemplar lesson flow: ${shell.lessonSegments.join(" -> ")}.`
   const slideShellLine = `Preserve the exemplar slide shell: ${shell.slideShell.join(" -> ")}.`
   const timingLine = `Keep pacing aligned to: ${shell.timing.join(" | ")}.`
@@ -150,8 +161,11 @@ function buildLessonSpecContext(
 
   return {
     target,
-    primary,
-    isFullMixed,
+    areaKeys,
+    primaryArea,
+    hasFoundationalArea,
+    hasMeaningArea,
+    hasMultipleAreas,
     vocabulary,
     wordList,
     texts,
@@ -177,6 +191,106 @@ function buildLessonSpecContext(
     smallGroupPlanLines: ideaLines(planningIdeas?.smallGroupIdeas),
     interventionPlanLines: ideaLines(planningIdeas?.interventionIdeas),
     formativePlanLines: ideaLines(planningIdeas?.formativeAssessmentIdeas),
+  }
+}
+
+function resolveSpecAreaKeys(blueprint: LessonBlueprint): string[] {
+  const profileKeys = (
+    blueprint as LessonBlueprint & {
+      content?: { profile?: { dominantAreaKeys?: string[] | null } | null }
+    }
+  ).content?.profile?.dominantAreaKeys ?? []
+
+  if (profileKeys.length > 0) {
+    return uniqueStrings(profileKeys.flatMap((key) => normalizeSpecAreaAliases(key)))
+  }
+
+  const target = blueprint.content.target
+  const targetKeys = uniqueStrings([
+    ...normalizeSpecAreaAliases(target.primary),
+    ...normalizeSpecAreaAliases(target.secondary ?? undefined),
+  ])
+
+  if (targetKeys.length > 0) {
+    return targetKeys
+  }
+
+  if (target.isMixedTarget) {
+    return ["foundational", "comprehension"]
+  }
+
+  return ["general"]
+}
+
+function normalizeSpecAreaAliases(value?: string | null): string[] {
+  const normalized = (value ?? "").trim().toLowerCase()
+
+  switch (normalized) {
+    case "":
+    case "mixed":
+    case "general":
+      return []
+    case "phonological_awareness":
+    case "phonemic_awareness":
+    case "phonics":
+    case "decoding":
+    case "encoding":
+    case "spelling":
+    case "word_recognition":
+    case "high_frequency_words":
+    case "foundational_skills":
+    case "foundational":
+      return ["foundational"]
+    case "language_comprehension":
+    case "comprehension":
+    case "vocabulary":
+    case "oral_language":
+    case "knowledge_building":
+    case "writing_about_reading":
+      return ["comprehension"]
+    default:
+      return [normalized]
+  }
+}
+
+function specHasArea(areaKeys: string[], candidates: string[]): boolean {
+  return areaKeys.some((key) => candidates.includes(key))
+}
+
+function specHasFoundationalArea(areaKeys: string[]): boolean {
+  return specHasArea(areaKeys, ["foundational"])
+}
+
+function specHasMeaningArea(areaKeys: string[]): boolean {
+  return specHasArea(areaKeys, ["comprehension", "fluency", "writing"])
+}
+
+function specHasMultipleMeaningfulAreas(areaKeys: string[]): boolean {
+  return uniqueStrings(areaKeys.filter((key) => key !== "general")).length > 1
+}
+
+function selectPrimarySpecArea(areaKeys: string[]): string {
+  const meaningful = uniqueStrings(areaKeys.filter((key) => key !== "general"))
+
+  if (specHasFoundationalArea(meaningful) && !specHasMeaningArea(meaningful)) {
+    return "foundational"
+  }
+
+  if (specHasMeaningArea(meaningful) && !specHasFoundationalArea(meaningful)) {
+    return "comprehension"
+  }
+
+  return meaningful[0] ?? "general"
+}
+
+function formatSpecAreaKey(areaKey: string): string {
+  switch (areaKey) {
+    case "foundational":
+      return "foundational skill"
+    case "comprehension":
+      return "meaning-making"
+    default:
+      return areaKey.replace(/_/g, " ")
   }
 }
 
@@ -250,9 +364,9 @@ function buildMixedClosureSteps(context: LessonSpecContext): string[] {
 function buildPhonicsTeachSteps(context: LessonSpecContext): string[] {
   return [
     context.openingLine,
-    `Model the phonics focus with these curriculum examples: ${context.wordList.join(", ")}.`,
-    `Teach and reinforce the key language students will use: ${context.vocabulary.join(", ")}.`,
-    "Think aloud while blending, reading, sorting, or encoding target words.",
+    `Model the foundational-skill focus with these curriculum examples: ${context.wordList.join(", ")}.`,
+    `Teach and reinforce the key skill language students will use: ${context.vocabulary.join(", ")}.`,
+    "Think aloud while reading, sorting, encoding, or applying the target examples.",
     ...context.teachPlanLines,
     context.teacherMoveLine,
     context.flowLine,
@@ -263,8 +377,8 @@ function buildPhonicsTeachSteps(context: LessonSpecContext): string[] {
 function buildPhonicsGuidedPracticeSteps(context: LessonSpecContext): string[] {
   return [
     context.guidedTaskLine,
-    `Use the lesson word list during support: ${context.wordList.join(", ")}.`,
-    "Require students to explain or show the target pattern with teacher guidance.",
+    `Use the lesson examples during support: ${context.wordList.join(", ")}.`,
+    "Require students to explain or show the target skill with teacher guidance.",
     ...context.guidedPlanLines,
     ...takeLines(context.formativePlanLines, 1),
     context.promptLine,
@@ -275,10 +389,10 @@ function buildPhonicsGuidedPracticeSteps(context: LessonSpecContext): string[] {
 function buildPhonicsIndependentPracticeSteps(context: LessonSpecContext): string[] {
   return [
     context.independentTaskLine,
-    `Use these words or examples during practice: ${context.wordList.join(", ")}.`,
+    `Use these examples during practice: ${context.wordList.join(", ")}.`,
     ...context.independentPlanLines,
     ...takeLines(context.formativePlanLines, 1, 1),
-    "Check for accurate decoding, sorting, encoding, and pattern application.",
+    "Check for accurate reading, sorting, encoding, and skill application.",
     context.toneLine,
   ]
 }
@@ -288,15 +402,15 @@ function buildPhonicsCentersSteps(context: LessonSpecContext): string[] {
     ...context.centerPlanLines,
     ...takeLines(context.smallGroupPlanLines, 1),
     ...takeLines(context.interventionPlanLines, 1),
-    "Word work / phonics center",
-    "Partner reading or decoding center",
+    "Word work / foundational-skill center",
+    "Partner reading or skill practice center",
     "Teacher table for intervention or extension",
   ]
 }
 
 function buildPhonicsClosureSteps(context: LessonSpecContext): string[] {
   return [
-    "Review the target sound, pattern, or decoding skill.",
+    "Review the target foundational skill or pattern.",
     context.closureLine,
     ...context.closurePlanLines,
     context.promptLine,
@@ -307,7 +421,7 @@ function buildPhonicsClosureSteps(context: LessonSpecContext): string[] {
 function buildComprehensionTeachSteps(context: LessonSpecContext): string[] {
   return [
     context.openingLine,
-    `Model comprehension thinking with these lesson texts: ${context.texts.join(", ")}.`,
+    `Model meaning-making with these lesson texts: ${context.texts.join(", ")}.`,
     `Preteach or revisit the lesson vocabulary: ${context.vocabulary.join(", ")}.`,
     "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
     ...context.teachPlanLines,
@@ -349,13 +463,13 @@ function buildComprehensionCentersSteps(context: LessonSpecContext): string[] {
     ...takeLines(context.interventionPlanLines, 1),
     "Reading response center",
     "Partner discussion / retell center",
-    "Teacher table for guided comprehension support",
+    "Teacher table for guided meaning-making support",
   ]
 }
 
 function buildComprehensionClosureSteps(context: LessonSpecContext): string[] {
   return [
-    "Review the comprehension objective and key takeaway from the text.",
+    "Review the meaning-making objective and key takeaway from the text.",
     context.closureLine,
     ...context.closurePlanLines,
     context.promptLine,
@@ -451,21 +565,20 @@ function compactSteps(steps: string[]): string[] {
 }
 
 function buildOpeningLine(
-  primary: string,
-  secondary: string | null,
+  areaKeys: string[],
   standards: string[],
   tone: string[]
 ): string {
-  const targetLabel = formatTargetLabel(primary, secondary)
+  const targetLabel = formatTargetLabel(areaKeys)
   return `Introduce the lesson target: ${targetLabel}. Connect the work to: ${standards.join(", ")}. Set the tone with: ${tone.join(", ")}.`
 }
 
-function buildModeledResources(primary: string, wordList: string[], texts: string[]): string {
-  if (primary === "phonics") {
+function buildModeledResources(primaryArea: string, wordList: string[], texts: string[]): string {
+  if (primaryArea === "foundational") {
     return wordList.join(", ")
   }
 
-  if (primary === "comprehension") {
+  if (primaryArea === "comprehension") {
     return texts.join(", ")
   }
 
@@ -473,48 +586,62 @@ function buildModeledResources(primary: string, wordList: string[], texts: strin
 }
 
 function buildGuidedTaskLine(
-  primary: string,
+  primaryArea: string,
   practiceIdeas: string[],
   standards: string[]
 ): string {
-  if (primary === "phonics") {
-    return `Guide practice with these curriculum-aligned phonics tasks: ${practiceIdeas.join(", ")}. Keep practice aligned to: ${standards.join(", ")}.`
+  if (primaryArea === "foundational") {
+    return `Guide practice with these curriculum-aligned foundational-skill tasks: ${practiceIdeas.join(", ")}. Keep practice aligned to: ${standards.join(", ")}.`
   }
 
-  if (primary === "comprehension") {
-    return `Guide students through these curriculum-based comprehension tasks: ${practiceIdeas.join(", ")}. Keep the work aligned to: ${standards.join(", ")}.`
+  if (primaryArea === "comprehension") {
+    return `Guide students through these curriculum-based meaning-making tasks: ${practiceIdeas.join(", ")}. Keep the work aligned to: ${standards.join(", ")}.`
   }
 
   return `Guide students through these lesson tasks: ${practiceIdeas.join(", ")}. Keep support aligned to: ${standards.join(", ")}.`
 }
 
 function buildIndependentTaskLine(
-  primary: string,
+  primaryArea: string,
   practiceIdeas: string[],
   wordList: string[],
   texts: string[]
 ): string {
-  if (primary === "phonics") {
-    return `Students complete independent phonics work using: ${practiceIdeas.slice(0, 2).join(", ")}.`
+  if (primaryArea === "foundational") {
+    return `Students complete independent foundational-skill work using: ${practiceIdeas.slice(0, 2).join(", ")}.`
   }
 
-  if (primary === "comprehension") {
-    return `Students complete an independent response task using: ${practiceIdeas.slice(0, 2).join(", ")}.`
+  if (primaryArea === "comprehension") {
+    return `Students complete an independent meaning-making response task using: ${practiceIdeas.slice(0, 2).join(", ")}.`
   }
 
   return `Students complete independent practice using: ${practiceIdeas.slice(0, 2).join(", ")}. Reference ${wordList.join(", ")} and ${texts.join(", ")} as needed.`
 }
 
-function buildClosureLine(primary: string, vocabulary: string[], wordList: string[]): string {
-  if (primary === "phonics") {
-    return `Revisit the strongest word examples: ${wordList.slice(0, 3).join(", ")}.`
+function buildClosureLine(primaryArea: string, vocabulary: string[], wordList: string[]): string {
+  if (primaryArea === "foundational") {
+    return `Revisit the strongest lesson examples: ${wordList.slice(0, 3).join(", ")}.`
   }
 
   return `Reinforce key lesson vocabulary: ${vocabulary.slice(0, 3).join(", ")}.`
 }
 
-function formatTargetLabel(primary: string, secondary: string | null): string {
-  return secondary ? `${primary} + ${secondary}` : primary
+function formatTargetLabel(areaKeys: string[]): string {
+  const meaningful = uniqueStrings(areaKeys.filter((key) => key !== "general"))
+
+  if (meaningful.length === 0) {
+    return "lesson focus"
+  }
+
+  if (meaningful.length === 1) {
+    return `${formatSpecAreaKey(meaningful[0])} focus`
+  }
+
+  if (meaningful.length === 2) {
+    return `${formatSpecAreaKey(meaningful[0])} + ${formatSpecAreaKey(meaningful[1])}`
+  }
+
+  return meaningful.map((key) => formatSpecAreaKey(key)).join(" + ")
 }
 
 function take(items: string[], count: number, fallback: string[]): string[] {
@@ -523,4 +650,10 @@ function take(items: string[], count: number, fallback: string[]): string[] {
   ).slice(0, count)
 
   return cleaned.length ? cleaned : fallback
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return Array.from(
+    new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))
+  )
 }
