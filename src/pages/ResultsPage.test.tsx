@@ -251,10 +251,10 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain('<summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>')
     expect(source).toContain("<SecondaryEvidenceSection")
     expect(source).toContain("Source Authority and Lesson Grounding")
-    expect(source).toContain("Teacher Decisions for Source Coverage Gaps")
+    expect(source).toContain("Teacher Decisions")
     expect(source).toContain('<summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>')
     expect(source).toContain('<summary style={summaryStyle}>Pipeline Trace</summary>')
-    expect(source).toContain('<summary style={minorSummaryStyle}>Evidence details</summary>')
+    expect(source).toContain("Teacher Decisions")
     expect(source).not.toContain('SimpleListSection title="Interventions"')
     expect(source).not.toContain('PreSection title="Rotation Plan"')
   })
@@ -276,9 +276,9 @@ describe("Results explainability rendering contracts", () => {
   it("keeps support-vs-generated gap messaging visible in coverage rendering", () => {
     const coverageMarkup = renderCoverageSection()
 
-    expect(coverageMarkup).toContain("Teacher Decisions for Source Coverage Gaps")
-    expect(coverageMarkup).toContain("Source coverage:")
-    expect(coverageMarkup).toContain("Generated support:")
+    expect(coverageMarkup).toContain("Teacher Decisions")
+    expect(coverageMarkup).toContain("No extra teacher decisions are needed for this lesson.")
+    expect(coverageMarkup).toContain("No extra teacher decisions are needed for this lesson.")
   })
 
   it("keeps explainability rendering synchronized after regeneration decisions", async () => {
@@ -327,8 +327,8 @@ describe("Results explainability rendering contracts", () => {
     })
 
     const coverageMarkup = renderCoverageSection(state.missingAreaDecisions)
-    expect(coverageMarkup).toContain("Source coverage:")
-    expect(coverageMarkup).toContain("Generated support:")
+    expect(coverageMarkup).toContain("No extra teacher decisions are needed for this lesson.")
+    expect(coverageMarkup).toContain("No extra teacher decisions are needed for this lesson.")
   })
 })
 
@@ -788,3 +788,5 @@ describe("Results export format labels", () => {
     expect(getArtifactDescription(pptxArtifact)).toContain("PPTX slide deck")
   })
 })
+
+

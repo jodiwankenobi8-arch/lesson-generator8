@@ -3,40 +3,42 @@
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
 - Published main checkpoint: 73944f4
-- Last auto-sync UTC: 2026-03-29T02:51:11Z
+- Last auto-sync UTC: 2026-03-29T00:00:00Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current milestone: Phase 5 OCR support-contract hardening — keep the bounded OCR lane aligned to the currently listed image formats before broader OCR expansion
-- Current active seam: do not silently route unsupported image/* uploads into the OCR lane; keep supported screenshot/photo MIME handling aligned to the current listed formats before any broader OCR expansion
+- Current milestone: teacher-minimal surface and drag-and-drop hardening on top of the pushed OCR runtime stability checkpoint
+- Current active seam: keep the main interface limited to teacher-needed status, package outputs, and clear actions while adding drag-and-drop upload lanes that still obey the current supported upload contract
 
-## What is actually landed in this seam
-- the supported-source extension list now lives in one code-level contract
-- Materials and Inputs now read their supported-format wording from that same contract
-- Materials upload inputs now use the centralized accept string instead of page-local copies
-- unsupported extraction fallback notices now reuse the same supported-target wording as the UI
-- extension-based image detection now keeps blank-MIME screenshot/photo uploads in the bounded OCR recovery lane
-- targeted automated coverage now checks the centralized contract, the blank-MIME image upload path, and the unsupported-image-MIME guardrail
+## What is actually landed in this local bundle
+- the pushed OCR runtime stability seam at 73944f4 is treated as locked current truth and is not reopened here
+- Inputs now points to Materials with a shorter teacher-facing upload summary instead of contract-heavy intake wording
+- Materials now shows teacher-minimal upload lanes with drag-and-drop plus browse-file fallback
+- drag-and-drop upload handling still honors the current supported upload contract instead of widening formats implicitly
+- Materials now keeps the main surface focused on upload actions, status, ready/processing counts, and generation readiness
+- Materials no longer shows extraction trace, preview, trust-profile, or reasoning-heavy detail on the main interface
+- Results now keeps the main surface teacher-first and status-first, hides the secondary evidence panel from the main page, and simplifies teacher decision cards
 
 ## Product truths to preserve
 - curriculum = content authority
 - exemplar = presentation / structure authority
 - generation depends on usable materials
-- screenshot/photo uploads are a bounded OCR recovery lane
-- only the currently listed screenshot/photo formats should enter that OCR lane today
-- do not overclaim links / URLs as first-class intake
+- status may stay visible; internal reasoning/trust diagnostics should stay out of the main teacher surface
+- screenshots/photos remain a bounded OCR recovery lane under the current listed formats only
+- do not widen supported upload types implicitly while improving UX
 
 ## Validation snapshot for this seam
-Run in this order:
-1. `npx vitest run src/engine/materials/sourceIntakeContract.test.ts src/pages/MaterialsPage.test.ts src/engine/extraction.test.ts`
+Run in this order inside the full repo:
+1. `npx vitest run src/pages/MaterialsPage.test.ts src/pages/ResultsPage.test.ts src/engine/materials/sourceIntakeContract.test.ts src/engine/extraction.test.ts`
 2. `npm run build`
 
-If the repo is unavailable in this environment, run the isolated contract checks in `verify_changes.ps1` and treat full vitest/build as local follow-up.
+If the full repo is unavailable in this environment, run `verify_changes.ps1` and treat browser/manual checking as the next local follow-up.
 
 ## Exact next move after validation
-- keep browser/manual checking as a separate follow-up outside this environment
-- then inspect one deliberate OCR-expansion seam from the now-honest current support baseline
-- prefer current-runtime hardening in `extractImageOcr.ts` / `extractTextFromFile.ts` before adding new listed formats
+- do a short browser/manual pass on Inputs, Materials, and Results
+- confirm drag-and-drop works for supported files and rejects unsupported files cleanly
+- confirm Results now feels teacher-minimal with package/status/exports first
+- only after that, choose any additional small polish from direct live UI evidence instead of reopening hidden evidence/trust surfaces

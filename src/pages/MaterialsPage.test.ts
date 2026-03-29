@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { buildUploadSourceMetadata, inferMimeTypeFromName } from "./MaterialsPage"
+import {
+  buildUploadSourceMetadata,
+  getTeacherVisibleMaterialNote,
+  inferMimeTypeFromName,
+  isSupportedUploadFile,
+} from "./MaterialsPage"
 
 describe("buildUploadSourceMetadata", () => {
   it("classifies image uploads as bounded OCR recovery sources with traceable metadata", () => {
@@ -14,7 +19,6 @@ describe("buildUploadSourceMetadata", () => {
       sourceMimeType: "image/png",
     })
   })
-
 
   it("keeps supported MIME-only screenshots in the OCR recovery lane", () => {
     const metadata = buildUploadSourceMetadata({
@@ -55,7 +59,6 @@ describe("buildUploadSourceMetadata", () => {
     })
   })
 
-
   it("keeps image uploads in the OCR recovery lane when the browser omits a MIME type", () => {
     const metadata = buildUploadSourceMetadata({
       name: "screenshot-note.webp",
@@ -67,6 +70,77 @@ describe("buildUploadSourceMetadata", () => {
       sourceLabel: "screenshot-note.webp",
       sourceMimeType: "image/webp",
     })
+  })
+})
+
+describe("isSupportedUploadFile", () => {
+  it("accepts supported document uploads for drag and drop", () => {
+    expect(
+      isSupportedUploadFile({
+        name: "lesson-outline.docx",
+        type: "",
+      })
+    ).toBe(true)
+  })
+
+  it("keeps MIME-only screenshots compatible with drag and drop", () => {
+    expect(
+      isSupportedUploadFile({
+        name: "Camera Upload",
+        type: "image/png",
+      })
+    ).toBe(true)
+  })
+
+  it("rejects unsupported dropped files before they reach the workbench", () => {
+    expect(
+      isSupportedUploadFile({
+        name: "district-scan.bmp",
+        type: "image/bmp",
+      })
+    ).toBe(false)
+  })
+})
+
+describe("getTeacherVisibleMaterialNote", () => {
+  it("returns a simple ready status for usable materials", () => {
+    expect(
+      getTeacherVisibleMaterialNote({
+        status: "ready",
+        errorMessage: null,
+        analysis: {
+          reliability: {
+            usableForContent: true,
+            usableForStructure: false,
+          },
+        },
+      } as never)
+    ).toBe("Ready to use in generation.")
+  })
+
+  it("keeps blocked ready materials teacher-readable", () => {
+    expect(
+      getTeacherVisibleMaterialNote({
+        status: "ready",
+        errorMessage: null,
+        analysis: {
+          reliability: {
+            usableForContent: false,
+            usableForStructure: false,
+          },
+        },
+      } as never)
+    ).toBe("Ready, but it still needs teacher review before use.")
+  })
+
+  it("uses the error message directly when a file needs attention", () => {
+    expect(
+      getTeacherVisibleMaterialNote({
+        status: "error",
+        errorMessage: "Unsupported file content",
+        analysis: null,
+      } as never)
+    ).toBe("Unsupported file content")
   })
 })
 

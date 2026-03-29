@@ -266,10 +266,10 @@ export default function ResultsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Planning Binder" title="Results">
         <p style={introStyle}>
-          Teacher-facing lesson package first. Review the generated package, confirm standards and source support, and export only the artifacts you want to use.
+          Teacher-facing lesson package first. Review the generated package, confirm the lesson details, and export only the artifacts you want to use.
         </p>
         <p style={introStyle}>
-          Evidence and planning details stay available below as secondary review surfaces when you need to inspect grounding more closely.
+          {getResultsHeaderStatusText()}
         </p>
       </OrchardPageHeader>
 
@@ -313,13 +313,15 @@ export default function ResultsPage() {
           isRegenerating={isRegenerating}
         />
 
-        <SecondaryEvidenceSection
-          blueprint={blueprint}
-          lessonPackage={lessonPackage}
-          materials={materials}
-          planningIdeas={planningIdeas}
-          lessonTrace={lessonTrace}
-        />
+        {shouldShowSecondaryEvidencePanel() ? (
+          <SecondaryEvidenceSection
+            blueprint={blueprint}
+            lessonPackage={lessonPackage}
+            materials={materials}
+            planningIdeas={planningIdeas}
+            lessonTrace={lessonTrace}
+          />
+        ) : null}
       </div>
     </div>
   )
@@ -351,7 +353,7 @@ function PackageSummarySection({
         <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
         <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
-        <div style={binderSmallNoteStyle}>Standards snapshot: use this to confirm the primary detected alignment before reviewing traceability or exporting.</div>
+        <div style={binderSmallNoteStyle}>Standards snapshot: use this to confirm the primary detected alignment before exporting.</div>
       </div>
     </div>
   )
@@ -833,183 +835,95 @@ export function CoverageDecisionsSection({
   onSetDecision: (component: PlanningComponentKey, choice: MissingAreaDecisionChoice) => Promise<void>
   isRegenerating: boolean
 }) {
-  const componentCoverage = planningIdeas.componentCoverage ?? []
   const missingAreaPrompts = planningIdeas.missingAreaPrompts ?? []
+  const componentCoverage = planningIdeas.componentCoverage ?? []
   const coverageByComponent = new Map(
     componentCoverage.map((entry) => [entry.component, entry] as const)
   )
 
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Teacher Decisions for Source Coverage Gaps</h3>
+      <h3 style={sectionHeadingStyle}>Teacher Decisions</h3>
+      <p style={sectionLeadStyle}>
+        Only the lesson parts that still need a teacher choice are shown here.
+      </p>
 
-      <div style={{ display: "grid", gap: 12 }}>
-        <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Major Component Coverage</div>
-          {componentCoverage.length > 0 ? (
-            <div style={{ display: "grid", gap: 8 }}>
-              {componentCoverage.map((entry) => {
-                const hasEvidenceDetails =
-                  entry.evidence.length > 0 || Boolean(entry.sourceCoverage) || Boolean(entry.generatedCoverage)
+      {missingAreaPrompts.length > 0 ? (
+        <div style={{ display: "grid", gap: 12 }}>
+          {missingAreaPrompts.map((prompt, index) => {
+            const currentChoice = decisions[prompt.component] ?? "undecided"
+            const coverage = coverageByComponent.get(prompt.component)
+            const sourceStatus = coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
+            const generatedStatus = coverage?.generatedCoverage?.status ?? "missing"
 
-                return (
-                  <div key={entry.component} style={signalCardStyle(mapCoverageTone(entry.status))}>
-                    <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
-                      {entry.component.replace(/_/g, " ")}: {entry.status}
-                    </div>
+            return (
+              <div
+                key={`${prompt.component}-${index}`}
+                style={signalCardStyle(prompt.importance === "high" ? "warn" : "neutral")}
+              >
+                <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
+                  {prompt.component.replace(/_/g, " ")}
+                </div>
 
-                    <div style={{ marginTop: 4 }}>{entry.rationale}</div>
+                <div style={{ marginTop: 4 }}>{prompt.prompt}</div>
 
-                    {hasEvidenceDetails ? (
-                      <details style={{ marginTop: 8 }}>
-                        <summary style={minorSummaryStyle}>Evidence details</summary>
-                        <div style={{ marginTop: 8, display: "grid", gap: 6, fontSize: 13 }}>
-                          {entry.evidence.length > 0 ? (
-                            <div>
-                              <strong>Combined evidence:</strong> {entry.evidence.join(", ")}
-                            </div>
-                          ) : null}
+                <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+                  <strong>Current source coverage:</strong> {sourceStatus}
+                </div>
 
-                          {entry.sourceCoverage ? (
-                            <div>
-                              <strong>Source coverage:</strong> {entry.sourceCoverage.status}
-                              {entry.sourceCoverage.evidence.length > 0
-                                ? ` | ${entry.sourceCoverage.evidence.join(", ")}`
-                                : ""}
-                            </div>
-                          ) : null}
-
-                          {entry.generatedCoverage ? (
-                            <div>
-                              <strong>Generated support:</strong> {entry.generatedCoverage.status}
-                              {entry.generatedCoverage.evidence.length > 0
-                                ? ` | ${entry.generatedCoverage.evidence.join(", ")}`
-                                : ""}
-                            </div>
-                          ) : null}
-                        </div>
-                      </details>
-                    ) : null}
+                {generatedStatus !== "missing" ? (
+                  <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                    <strong>Package support available:</strong> {generatedStatus}
                   </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div style={{ color: "var(--text-secondary)" }}>
-              No component coverage summary is available for this lesson yet.
-            </div>
-          )}
-        </div>
+                ) : null}
 
-        <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Teacher Decision Prompts</div>
-          {missingAreaPrompts.length > 0 ? (
-            <div style={{ display: "grid", gap: 12 }}>
-              {missingAreaPrompts.map((prompt, index) => {
-                const currentChoice = decisions[prompt.component] ?? "undecided"
-                const coverage = coverageByComponent.get(prompt.component)
-                const sourceStatus =
-                  coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
-                const generatedStatus =
-                  coverage?.generatedCoverage?.status ?? "missing"
-                const hasEvidenceDetails =
-                  (coverage?.sourceCoverage?.evidence?.length ?? 0) > 0 ||
-                  (coverage?.generatedCoverage?.evidence?.length ?? 0) > 0
+                <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                  {prompt.rationale}
+                </div>
 
-                return (
-                  <div
-                    key={`${prompt.component}-${index}`}
-                    style={signalCardStyle(prompt.importance === "high" ? "warn" : "neutral")}
-                  >
-                    <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
-                      {prompt.component.replace(/_/g, " ")} ({prompt.importance})
-                    </div>
+                <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <DecisionButton
+                    label="Add it"
+                    active={currentChoice === "add"}
+                    disabled={isRegenerating}
+                    onClick={() => onSetDecision(prompt.component, "add")}
+                  />
+                  <DecisionButton
+                    label="Leave it out"
+                    active={currentChoice === "leave_out"}
+                    disabled={isRegenerating}
+                    onClick={() => onSetDecision(prompt.component, "leave_out")}
+                  />
+                  <DecisionButton
+                    label="Decide later"
+                    active={currentChoice === "undecided"}
+                    disabled={isRegenerating}
+                    onClick={() => onSetDecision(prompt.component, "undecided")}
+                  />
+                </div>
 
-                    <div style={{ marginTop: 4 }}>{prompt.prompt}</div>
+                <div style={{ marginTop: 8, fontSize: 13 }}>
+                  <strong>Current decision:</strong> {formatDecisionChoice(currentChoice)}
+                </div>
 
-                    <div style={{ marginTop: 4, fontSize: 13 }}>
-                      <strong>Why:</strong> {prompt.rationale}
-                    </div>
+                <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                  This teacher decision stays in the package until you change it.
+                </div>
 
-                    <div style={{ marginTop: 6, fontSize: 13 }}>
-                      <strong>Source coverage:</strong> {sourceStatus}
-                    </div>
-
-                    <div style={{ marginTop: 4, fontSize: 13 }}>
-                      <strong>Generated support:</strong> {generatedStatus}
-                    </div>
-
-                    {hasEvidenceDetails ? (
-                      <details style={{ marginTop: 8 }}>
-                        <summary style={minorSummaryStyle}>Evidence details</summary>
-                        <div style={{ marginTop: 8, display: "grid", gap: 6, fontSize: 13 }}>
-                          {coverage?.sourceCoverage?.evidence && coverage.sourceCoverage.evidence.length > 0 ? (
-                            <div>
-                              <strong>Source evidence:</strong> {coverage.sourceCoverage.evidence.join(", ")}
-                            </div>
-                          ) : null}
-
-                          {coverage?.generatedCoverage?.evidence && coverage.generatedCoverage.evidence.length > 0 ? (
-                            <div>
-                              <strong>Generated evidence:</strong> {coverage.generatedCoverage.evidence.join(", ")}
-                            </div>
-                          ) : null}
-                        </div>
-                      </details>
-                    ) : null}
-
-                    {sourceStatus === "missing" && generatedStatus !== "missing" ? (
-                      <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
-                        The engine can generate support here even when the source materials do not clearly cover it.
-                        Choose whether to include that generated support or leave it out.
-                      </div>
-                    ) : null}
-
-                    <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <DecisionButton
-                        label="Add it"
-                        active={currentChoice === "add"}
-                        disabled={isRegenerating}
-                        onClick={() => onSetDecision(prompt.component, "add")}
-                      />
-                      <DecisionButton
-                        label="Leave it out"
-                        active={currentChoice === "leave_out"}
-                        disabled={isRegenerating}
-                        onClick={() => onSetDecision(prompt.component, "leave_out")}
-                      />
-                      <DecisionButton
-                        label="Decide later"
-                        active={currentChoice === "undecided"}
-                        disabled={isRegenerating}
-                        onClick={() => onSetDecision(prompt.component, "undecided")}
-                      />
-                    </div>
-
-                    <div style={{ marginTop: 8, fontSize: 13 }}>
-                      <strong>Current decision:</strong> {formatDecisionChoice(currentChoice)}
-                    </div>
-
-                    <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-                      This teacher decision is applied to the current package and will remain active until you change it.
-                    </div>
-
-                    {isRegenerating ? (
-                      <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-                        Refreshing the lesson package with the latest decision...
-                      </div>
-                    ) : null}
+                {isRegenerating ? (
+                  <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                    Refreshing the lesson package with the latest decision...
                   </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div style={{ color: "var(--text-secondary)" }}>
-              No major missing-area prompts were triggered for this lesson.
-            </div>
-          )}
+                ) : null}
+              </div>
+            )
+          })}
         </div>
-      </div>
+      ) : (
+        <div style={{ color: "var(--text-secondary)" }}>
+          No extra teacher decisions are needed for this lesson.
+        </div>
+      )}
     </div>
   )
 }
@@ -1121,6 +1035,26 @@ export function getVisiblePackageSectionLabels(lessonPackage: LessonPackage): st
   return buildVisiblePackageSectionItems(lessonPackage).map((item) => item.label)
 }
 
+const SHOW_SECONDARY_EVIDENCE = false
+
+export function shouldShowSecondaryEvidencePanel(): boolean {
+  return SHOW_SECONDARY_EVIDENCE
+}
+
+export function getResultsHeaderStatusText(): string {
+  return "Status notes stay visible when something needs attention."
+}
+
+export function getTeacherBinderLeadText(): string {
+  return "Review the classroom-ready sections included in this package before you export."
+}
+
+export function getPackageWarningsMessage(warningCount: number): string {
+  return warningCount > 0
+    ? "This package needs a teacher review before classroom use."
+    : "No package warnings are currently flagged for this lesson."
+}
+
 export function getBundledArtifactLabels(exports: ExportArtifact[]): string[] {
   return exports
     .filter((artifact) => artifact.kind !== "full_package")
@@ -1133,8 +1067,8 @@ function getBinderReadinessTone(lessonPackage: LessonPackage): BinderSurfaceTone
 
 function getBinderReadinessLabel(lessonPackage: LessonPackage): string {
   return lessonPackage.readiness.contentFit === "grounded"
-    ? "Grounded package"
-    : "Partially grounded package"
+    ? "Ready to review"
+    : "Needs teacher review"
 }
 
 function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
@@ -1150,7 +1084,7 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
         <div style={{ display: "grid", gap: 8 }}>
           <h3 style={sectionHeadingStyle}>Teacher Binder Snapshot</h3>
           <p style={sectionLeadStyle}>
-            Review the classroom-ready sections included in this package before you export or inspect the evidence details below.
+            {getTeacherBinderLeadText()}
           </p>
         </div>
         <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
@@ -1174,12 +1108,12 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
         </div>
 
         <div style={binderSnapshotCardStyle}>
-          <div style={binderSnapshotStatLabelStyle}>Package warnings</div>
+          <div style={binderSnapshotStatLabelStyle}>Needs review</div>
           <div style={binderSnapshotStatValueStyle}>{warningCount}</div>
           <div style={binderSmallNoteStyle}>
             {warningCount > 0
-              ? "Review the evidence details below before using the package as-is."
-              : "No package warnings are currently flagged for this lesson."}
+              ? getPackageWarningsMessage(warningCount)
+              : getPackageWarningsMessage(warningCount)}
           </div>
         </div>
       </div>
