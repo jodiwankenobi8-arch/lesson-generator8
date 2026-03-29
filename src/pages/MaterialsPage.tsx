@@ -178,21 +178,21 @@ export function getTeacherVisibleMaterialNote(
     const reliability = material.analysis?.reliability
 
     if (reliability && !reliability.usableForContent && !reliability.usableForStructure) {
-      return "Ready, but it still needs teacher review before use."
+      return "Ready, but it still needs teacher review."
     }
 
-    return "Ready to use in generation."
+    return "Ready to use."
   }
 
   if (material.status === "uploaded") {
-    return "Queued for extraction."
+    return "Uploaded. Getting it ready now."
   }
 
   if (material.status === "extracting") {
-    return "Reading text from the upload."
+    return "Reading this material now."
   }
 
-  return "Building lesson signals from the recovered text."
+  return "Checking what this material can support."
 }
 
 export default function MaterialsPage() {
@@ -309,8 +309,7 @@ export default function MaterialsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Source Workbench" title="Materials" introMaxWidth={760}>
         <p style={introStyle}>
-          Add curriculum and exemplar materials here. Drag files in or browse from your
-          device, then generate from the materials that finish ready to use.
+          Add the curriculum and exemplar materials you want this lesson to follow. Drag files in or browse from your device, then generate once at least one material is ready to use.
         </p>
         <p style={introStyle}>
           Curriculum shapes lesson content. Exemplar shapes pacing, prompts, and structure.
@@ -384,10 +383,10 @@ export default function MaterialsPage() {
           )}
         >
           {hasProcessingMaterials
-            ? "Lesson generation stays paused until uploads finish processing."
+            ? "Wait for the current uploads to finish before generating."
             : hasUsableMaterialsForGeneration
-              ? "At least one material is ready to use in grounded lesson generation."
-              : "Add materials until at least one curriculum or exemplar file finishes ready to use."}
+              ? "You can generate now. At least one material is ready to use."
+              : "Add materials until at least one curriculum or exemplar file is ready to use."}
         </div>
 
         <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 10 }}>
@@ -404,10 +403,10 @@ export default function MaterialsPage() {
             {!hasRequiredInputs
               ? "Complete the required lesson inputs before generating."
               : hasProcessingMaterials
-                ? "Wait until the current uploads finish processing."
+                ? "Wait until the current uploads finish."
                 : !hasUsableMaterialsForGeneration
-                  ? "At least one curriculum or exemplar material must finish ready to use."
-                  : "Inputs are complete and at least one material is ready to use."}
+                  ? "At least one curriculum or exemplar material needs to finish ready to use."
+                  : "Inputs are complete and you can generate now."}
           </div>
 
           {generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
@@ -419,7 +418,7 @@ export default function MaterialsPage() {
           Uploaded Materials
         </h3>
         <p style={{ ...helperTextStyle, marginTop: 0, marginBottom: "var(--space-md)" }}>
-          Status stays visible while each file moves through upload, extraction, analysis, and ready.
+          Each file shows whether it is being prepared, ready to use, or needs attention.
         </p>
 
         {materials.length === 0 ? (
@@ -514,7 +513,7 @@ function UploadLaneCard({
           <div style={dragPromptTitleStyle}>
             {dragging ? "Drop files to add them" : "Drag and drop files here"}
           </div>
-          <div style={dragPromptBodyStyle}>You can also browse and select multiple files.</div>
+          <div style={dragPromptBodyStyle}>You can also browse and choose more than one file.</div>
         </div>
 
         <button type="button" style={buttonStyle()} onClick={onBrowse}>

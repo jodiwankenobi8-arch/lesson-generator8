@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import {
   buildUploadSourceMetadata,
@@ -115,7 +116,7 @@ describe("getTeacherVisibleMaterialNote", () => {
           },
         },
       } as never)
-    ).toBe("Ready to use in generation.")
+    ).toBe("Ready to use.")
   })
 
   it("keeps blocked ready materials teacher-readable", () => {
@@ -130,7 +131,7 @@ describe("getTeacherVisibleMaterialNote", () => {
           },
         },
       } as never)
-    ).toBe("Ready, but it still needs teacher review before use.")
+    ).toBe("Ready, but it still needs teacher review.")
   })
 
   it("uses the error message directly when a file needs attention", () => {
@@ -147,5 +148,58 @@ describe("getTeacherVisibleMaterialNote", () => {
 describe("inferMimeTypeFromName", () => {
   it("returns null for unknown extensions so upload provenance stays honest", () => {
     expect(inferMimeTypeFromName("notes.custom")).toBeNull()
+  })
+})
+
+
+describe("getTeacherVisibleMaterialNote progress wording", () => {
+  it("keeps upload and processing notes teacher-readable", () => {
+    expect(
+      getTeacherVisibleMaterialNote({
+        status: "uploaded",
+        errorMessage: null,
+        analysis: null,
+      } as never)
+    ).toBe("Uploaded. Getting it ready now.")
+
+    expect(
+      getTeacherVisibleMaterialNote({
+        status: "extracting",
+        errorMessage: null,
+        analysis: null,
+      } as never)
+    ).toBe("Reading this material now.")
+
+    expect(
+      getTeacherVisibleMaterialNote({
+        status: "analyzing",
+        errorMessage: null,
+        analysis: null,
+      } as never)
+    ).toBe("Checking what this material can support.")
+  })
+})
+
+describe("Materials page teacher-facing copy", () => {
+  it("keeps the visible workbench language simple and classroom-facing", () => {
+    const source = readFileSync("src/pages/MaterialsPage.tsx", "utf8")
+
+    expect(source).toContain(
+      "Add the curriculum and exemplar materials you want this lesson to follow."
+    )
+    expect(source).toContain("You can generate now. At least one material is ready to use.")
+    expect(source).toContain(
+      "Each file shows whether it is being prepared, ready to use, or needs attention."
+    )
+
+    expect(source).not.toContain(
+      "Lesson generation stays paused until uploads finish processing."
+    )
+    expect(source).not.toContain(
+      "At least one material is ready to use in grounded lesson generation."
+    )
+    expect(source).not.toContain(
+      "Status stays visible while each file moves through upload, extraction, analysis, and ready."
+    )
   })
 })
