@@ -8,46 +8,50 @@
 <!-- AUTO_SYNC_END -->
 
 ## Current milestone
-Teacher-minimal surface, drag-and-drop hardening, and teacher-facing wording/status consistency on top of the pushed OCR runtime stability checkpoint
+ELA profile foundation and dominant-area-key routing across blueprint, planning, and spec on top of the pushed teacher-minimal / OCR / drag-and-drop checkpoint
 
 ## Why this seam exists
-The pushed OCR runtime seam is already locked. The biggest safe finish-oriented next chunk in the current bundle was teacher-facing surface cleanup:
-- keep only the information a teacher needs visible on the main interface
-- keep status and generation readiness visible
-- remove reasoning/trust-profile style detail from the main Materials and Results surfaces
-- add drag-and-drop upload lanes without weakening the current supported upload contract
-- make Inputs, Materials, and Results use consistent teacher-facing wording for readiness, generation, and downloads
+The older continuation docs were still pointing at the teacher-minimal drag-and-drop follow-up seam even though the current pushed checkpoint moved the repo further into the ELA profile foundation seam:
+- dominant-area resolution now matters more than legacy phonics/comprehension branching
+- planning should derive from the resolved ELA area list first
+- spec should derive from the resolved ELA area list first
+- the continuation chain needed to be updated so future chats stop relaunching from stale seam guidance
 
 ## What is now locked locally
-- OCR runtime stability at 73944f4 remains current pushed truth
-- the visible Inputs intro is shorter and more teacher-facing
-- Inputs now uses clearer teacher-facing labels for lesson-plan parts and lesson outputs
-- Materials now supports drag-and-drop plus browse-file upload lanes for curriculum and exemplar
-- drag-and-drop uses the same supported upload contract instead of silently accepting broader types
-- Materials now focuses on upload actions, file status, counts, and generation readiness
-- Materials no longer surfaces extraction trace, preview, or trust-profile style diagnostics in the main interface
-- Materials status notes are simpler and more teacher-readable
-- Results now keeps the main surface focused on package overview, package outputs, teacher decisions, and downloads
-- Results required-input blocked-state copy is more consistent with the actual current required fields
-- Results download/export copy is more teacher-facing and less internal/technical
-- Results no longer renders the secondary evidence panel on the main interface
+- pushed checkpoint 380e54f is the current main truth for this pass
+- buildBlueprint now participates in the ELA profile foundation seam
+- detectLessonTargets and its new focused test cover the dominant-area-key path
+- resolveBlueprintContent and resolveBlueprintStructure now support the profile-first ELA routing seam
+- buildLessonPlanningIdeas now resolves dominantAreaKeys first, with sanitized planning values and area-family-first fallback behavior
+- buildLessonSpec now resolves dominantAreaKeys first instead of routing only through legacy phonics/comprehension labels
+- buildPackageOutputs and ResultsPage stayed aligned enough for focused Results coverage to remain green
+- the current build is still green with the same non-blocking large-chunk warning
 
 ## Files touched in this pass
-- src/pages/InputsPage.tsx
-- src/pages/MaterialsPage.tsx
-- src/pages/MaterialsPage.test.ts
+- src/engine/blueprint/buildBlueprint.ts
+- src/engine/blueprint/detectLessonTargets.ts
+- src/engine/blueprint/detectLessonTargets.test.ts
+- src/engine/blueprint/resolveBlueprintContent.ts
+- src/engine/blueprint/resolveBlueprintStructure.ts
+- src/engine/lesson-spec.test.ts
+- src/engine/package/buildPackageOutputs.ts
+- src/engine/planning/buildLessonPlanningIdeas.ts
+- src/engine/spec/buildLessonSpec.ts
+- src/engine/types.ts
 - src/pages/ResultsPage.tsx
-- src/pages/ResultsPage.test.ts
-- START_HERE_CURRENT_TRUTH.md
-- PROJECT_CURRENT_STATE.md
-- docs/chat-handoffs/2026-03-29_teacher-facing-wording-status-followup.md
 
 ## Validation for this seam
-- `npx vitest run src/pages/MaterialsPage.test.ts src/pages/ResultsPage.test.ts`
+- `npx vitest run src/engine/lesson-spec.test.ts src/engine/blueprint/detectLessonTargets.test.ts src/pages/ResultsPage.test.ts src/pages/ResultsPage.test.tsx`
 - `npm run build`
 
+Local result:
+- 4 test files passed
+- 25 tests passed
+- build passed
+- existing chunk warning remained non-blocking
+
 ## Current next step
-- do a short browser/manual pass on Inputs, Materials, and Results
-- confirm drag-and-drop works for supported uploads and rejects unsupported uploads clearly
-- confirm Materials status language and Results download/export language feel teacher-facing in the live UI
-- keep additional polish narrow and live-evidence-driven
+- do a short browser/manual pass on the pushed dominant-area-key checkpoint
+- verify single-mode cross-family area selection behaves correctly in the live UI
+- verify planning/spec/results still read teacher-first after the refactor
+- keep any further edits narrow and live-evidence-driven

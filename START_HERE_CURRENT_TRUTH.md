@@ -10,40 +10,43 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current milestone: teacher-minimal surface, drag-and-drop upload lanes, and teacher-facing wording/status consistency on top of the pushed OCR runtime stability checkpoint
-- Current active seam: keep the main interface limited to teacher-needed status, upload actions, ready/useful outputs, and clear export language without reopening hidden evidence or diagnostics
+- Current milestone: ELA profile foundation and dominant-area-key routing across blueprint, planning, and spec on top of the pushed teacher-minimal / OCR / drag-and-drop checkpoint
+- Current active seam: short browser/manual closeout plus continuation-doc alignment for the pushed dominant-area-key checkpoint
 
 ## What is actually landed in this local bundle
-- the pushed OCR runtime stability seam at 73944f4 is treated as locked current truth and is not reopened here
-- Inputs now uses more teacher-facing setup language for lesson basics, lesson-plan parts, and lesson outputs
-- Inputs continues to keep centers separate from teacher-led support
-- Materials now shows teacher-minimal upload lanes with drag-and-drop plus browse-file fallback
-- drag-and-drop upload handling still honors the current supported upload contract instead of widening formats implicitly
-- Materials now uses simpler teacher-facing status text like ready to use / needs teacher review / getting it ready now
-- Results now keeps the main surface teacher-first and status-first, with clearer download/export wording
-- Results required-input messaging now matches the actual current required fields more closely
+- pushed main checkpoint 380e54f refactors ELA blueprint, planning, and spec around dominant area keys
+- cross-family dominant-area selection in single mode is working
+- buildBlueprint / resolveBlueprintContent / resolveBlueprintStructure now participate in the ELA profile foundation seam
+- planning now resolves blueprint.content.profile.dominantAreaKeys first and falls back to legacy target fields only if needed
+- lesson spec now resolves dominantAreaKeys first instead of legacy phonics/comprehension branching
+- detectLessonTargets coverage now includes the dominant-area-key seam
+- Results coverage remained green through the spec follow-up
+- the existing large-chunk build warning remains non-blocking
 
 ## Product truths to preserve
+- do not force every lesson into phonics/comprehension/mixed
+- a lesson may contain one meaningful area, two areas, or more than two
+- planning and spec should derive from the resolved ELA area list first
 - curriculum = content authority
 - exemplar = presentation / structure authority
 - generation depends on usable materials
-- status may stay visible; internal reasoning/trust diagnostics should stay out of the main teacher surface
-- screenshots/photos remain a bounded OCR recovery lane under the current listed formats only
-- do not widen supported upload types implicitly while improving UX
 - centers = student-independent work
 - teacher-led support stays separate from centers
 
 ## Validation snapshot for this seam
 Run in this order inside the full repo:
-1. `npx vitest run src/pages/MaterialsPage.test.ts src/pages/ResultsPage.test.ts`
+1. `npx vitest run src/engine/lesson-spec.test.ts src/engine/blueprint/detectLessonTargets.test.ts src/pages/ResultsPage.test.ts src/pages/ResultsPage.test.tsx`
 2. `npm run build`
 
 Local note:
-- targeted page tests passed after the wording/status consistency pass
+- 4 test files passed
+- 25 tests passed
+- build passed
 - browser/manual verification still needs to be updated by hand
+- existing chunk warning remains non-blocking
 
 ## Exact next move after validation
-- do a short browser/manual pass on Inputs, Materials, and Results
-- confirm drag-and-drop works for supported files and rejects unsupported files cleanly
-- confirm Materials status copy and Results export/download language feel teacher-facing in the live UI
-- only after that, choose any additional small polish from direct live UI evidence instead of reopening hidden evidence/trust surfaces
+- do a short browser/manual pass on the dominant-area-key checkpoint
+- verify single-mode selection across area families produces the intended planning/spec/results behavior
+- verify teacher-facing Results still reads cleanly after the blueprint/planning/spec refactor
+- only after that, choose any additional narrow polish from direct live evidence instead of reopening older seams
