@@ -1,4 +1,4 @@
-import {
+﻿import {
   detectLessonTargetsFromProfile,
   resolveLessonMode,
   resolveLessonProfile,
@@ -40,7 +40,7 @@ export function buildBlueprint(
     .filter((analysis): analysis is CurriculumAnalysis => Boolean(analysis))
 
   const exemplarAnalyses = exemplarMaterials
-    .slice(0, 1)
+    .slice(0, 2)
     .map((material) =>
       material.analysis?.exemplar
         ? applyExemplarStyleSettings(material.analysis.exemplar, material.styleSettings)
@@ -209,3 +209,4 @@ function buildResolvedTarget(
     recommendedMode: resolvedMode,
   }
 }
+

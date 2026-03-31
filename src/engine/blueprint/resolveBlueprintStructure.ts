@@ -1,4 +1,4 @@
-import {
+﻿import {
   ExemplarAnalysis,
   ExemplarDetectedFeature,
   ExemplarDetectedFeatureKey,
@@ -57,7 +57,7 @@ function buildTiming(
     return ["Part 1 - 10 min", "Part 2 - 10 min", "Closure - 5 min"]
   }
 
-  return ["Mini-lesson", "Practice", "Closure"]
+  return ["Part 1 - 10 min", "Part 2 - 10 min", "Closure - 5 min"]
 }
 
 function buildLessonSegments(
@@ -83,7 +83,7 @@ function buildLessonSegments(
     return ["Part 1", "Part 2", "Closure"]
   }
 
-  return ["Teach", "Practice", "Close"]
+  return ["Part 1", "Part 2", "Closure"]
 }
 
 function buildTeacherMoves(
@@ -429,7 +429,7 @@ function sanitizeStructureValues(values: string[], kind: StructureValueKind): st
 
 function normalizeStructureValue(value: string): string {
   return value
-    .replace(/^[\s*•\-–—]+/, "")
+    .replace(/^[\s*â€¢\-â€“â€”]+/, "")
     .replace(/^part\s+[a-z0-9]+\s*:\s*/i, "")
     .replace(/^next\s*:\s*/i, "")
     .replace(/\s+/g, " ")
@@ -449,7 +449,7 @@ function isWeakStructureValue(value: string, kind: StructureValueKind): boolean 
     return true
   }
 
-  if (/\b\d+\s*(min|mins|minutes)\b/i.test(lower)) {
+  if (kind !== "timing" && /\b\d+\s*(min|mins|minute|minutes)\b/i.test(lower)) {
     return true
   }
 
@@ -462,8 +462,8 @@ function isWeakStructureValue(value: string, kind: StructureValueKind): boolean 
     lower.includes("block 1") ||
     lower.includes("block 2") ||
     lower.includes("students are not") ||
-    lower.includes("teacher says") ||
-    lower.includes("teacher prompts") ||
+    (kind !== "teacherMove" && kind !== "prompt" && lower.includes("teacher says")) ||
+    (kind !== "teacherMove" && kind !== "prompt" && lower.includes("teacher prompts")) ||
     lower.includes("slideslink") ||
     lower.includes("whiteboards") ||
     lower.includes("ed tech") ||
@@ -502,10 +502,13 @@ function isWeakStructureValue(value: string, kind: StructureValueKind): boolean 
     return !containsAnyStructureTerm(lower, [
       "prompt",
       "question",
+      "teacher prompt block",
       "turn and talk",
       "response",
       "frame",
       "discussion",
+      "what do you notice",
+      "explain your thinking",
       "say the sound",
       "read the word",
       "explain the pattern",
@@ -514,11 +517,16 @@ function isWeakStructureValue(value: string, kind: StructureValueKind): boolean 
   }
 
   if (kind === "timing") {
+    if (/\b\d+\s*(min|mins|minute|minutes)\b/i.test(lower)) {
+      return false
+    }
+
     return !containsAnyStructureTerm(lower, [
       "launch",
       "opening",
       "mini-lesson",
       "teach",
+      "model",
       "practice",
       "guided",
       "independent",
@@ -531,11 +539,11 @@ function isWeakStructureValue(value: string, kind: StructureValueKind): boolean 
   }
 
   if (kind === "segment") {
-    return !["opening", "teach", "guided practice", "independent practice", "centers", "closure", "close"].includes(lower)
+    return !["opening", "teach", "practice", "guided practice", "independent practice", "centers", "closure", "close"].includes(lower)
   }
 
   if (kind === "slideShell") {
-    return !["opening", "teach", "guided practice", "independent practice", "centers", "closure", "teaching notes"].includes(lower)
+    return !["opening", "teach", "practice", "guided practice", "independent practice", "centers", "closure", "teaching notes", "passage / text", "practice task", "visual / image", "word list / cards"].includes(lower)
   }
 
   if (kind === "tone") {
@@ -566,3 +574,6 @@ function cleanUnique(values: string[]): string[] {
     )
   )
 }
+
+
+
