@@ -1,4 +1,4 @@
-﻿export type LessonInputs = {
+export type LessonInputs = {
 
   grade: string
 
@@ -1602,7 +1602,6 @@ export type ExportArtifactKind = "slides" | "lesson_plan" | "printables" | "full
 
 export type ExportArtifactFormat = "docx" | "pdf" | "pptx" | "zip"
 
-export type ExportArtifactStatus = "ready"
 
 export type ExportArtifact = {
   kind: ExportArtifactKind
@@ -1610,7 +1609,6 @@ export type ExportArtifact = {
   label: string
   fileName: string
   mimeType?: string
-  status?: ExportArtifactStatus
   content?: string
 }
 

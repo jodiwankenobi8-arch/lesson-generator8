@@ -8,23 +8,25 @@
 <!-- AUTO_SYNC_END -->
 
 - Active branch: main
-- Current published continuation point: 10aadc7
-- Last meaningful code checkpoint: 10aadc7 Add automated smoke coverage for route and input gating
+- Use `git log -1 --oneline` on `main` for the exact latest local continuation commit
+- Last completed seam: export-status contract cleanup plus doc-truth refresh
 
 ## Current milestone
-Engine repair and automated smoke gating are published on main
+Smoke-gating coverage is already on main, and the export-status contract cleanup plus truth-doc refresh are now closed out locally and ready to push.
 
 ## Validated state
-- current published continuation point is 10aadc7
-- published main checkpoint is currently 7c9328e
-- last meaningful code checkpoint is 10aadc7 Add automated smoke coverage for route and input gating
-- fetch/rebase/push already published the smoke-test code seam on main
-- prior local validation for the smoke-test addition remained green:
+- the seam changed exactly one live code file:
+  - `src/engine/types.ts`
+- the export contract cleanup removed:
+  - `ExportArtifactStatus`
+  - `status?: ExportArtifactStatus` from `ExportArtifact`
+- the same edit also removed a UTF-8 BOM at the top of `src/engine/types.ts`
+- validation for the seam remained green:
   - full test PASS (31 files / 175 tests)
   - typecheck PASS
   - build PASS
 - warning noise remains non-blocking and unchanged
-- this docs closeout is being rebased on top of the latest auto-refresh docs commit before push
+- active truth docs were refreshed to match the completed seam and stop stale checkpoint drift
 
 ## Product truths to preserve
 - curriculum = content authority
@@ -32,15 +34,22 @@ Engine repair and automated smoke gating are published on main
 - generation depends on usable materials
 - active product flow remains Inputs -> Materials -> Results
 - useLessonStore remains the orchestration seam
-- do not reopen engine repair without fresh regression evidence
+- do not reopen engine repair or broader refactors without fresh regression evidence
+
+## Current risks
+- active truth docs can drift if small validated seams are not closed out immediately
+- `types.ts` still contains broader contract duplication beyond this narrow export seam
+- warning noise remains distracting but non-blocking
+- remote connectivity may delay publication even when the seam is locally complete
 
 ## Top next steps
-1. Publish this docs closeout cleanly
-2. Then choose the next narrow seam from live repo truth
-3. Keep the active continuation set small and obvious
-4. Do not let overridden notes compete with the active continuation set
+1. Push this local commit when network access to GitHub is available
+2. Reconfirm the pushed state on `main`
+3. Choose the next narrow seam from live repo truth
+4. Keep the active continuation set small and obvious
 
 ## Local doc policy
 - Keep continuation docs authoritative and small
 - Preserve automation-compatible anchors and auto-sync blocks
-- Do not reopen engine repair without fresh regression evidence
+- Prefer durable truth over transitional pre-push snapshots
+- Do not reopen broader engine or Results refactors without fresh regression evidence
