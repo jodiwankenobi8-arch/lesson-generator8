@@ -10,6 +10,8 @@
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
+- Live published/main checkpoint confirmed locally: `3269121 Remove export artifact status leftover and refresh truth docs`
+- The auto-sync block above is stale until automation or a manual sync refresh catches up
 - Last completed seam: export-status contract cleanup plus doc-truth refresh
 - Use `git log -1 --oneline` on `main` for the exact latest local continuation commit
 - Last meaningful code checkpoint is the export-contract cleanup in `src/engine/types.ts`
@@ -31,7 +33,8 @@
   - full test PASS (31 files / 175 tests)
   - typecheck PASS
   - build PASS
-- active truth docs were refreshed so they no longer compete with stale smoke-gating-only continuation notes
+- the seam was successfully fetched, rebased, and pushed
+- local `HEAD` matched `origin/main` at `3269121` after publication
 
 ## Non-blocking warnings
 - useLayoutEffect SSR warnings in integration output
@@ -39,9 +42,9 @@
 - build chunk-size warnings
 
 ## Exact next move
-- push this completed seam when remote connectivity is available
-- then inspect live repo truth on `main`
+- inspect live repo truth on `main`
 - choose the next narrow seam
+- keep the active continuation set small and obvious
 - do not widen into broader refactors without fresh evidence
 
 ## Retrieval fallback rule
