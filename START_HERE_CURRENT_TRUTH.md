@@ -2,15 +2,15 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 10aadc7
-- Last auto-sync UTC: 2026-03-31T13:09:26Z
+- Published main checkpoint: 65d7d5d
+- Last auto-sync UTC: 2026-03-31T13:48:09Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Current published continuation point: 10aadc7
+- Current published continuation point: 65d7d5d
 - Last meaningful code checkpoint: 10aadc7 Add automated smoke coverage for route and input gating
 - Current active seam: docs closeout after smoke-test route and input gating push
 
