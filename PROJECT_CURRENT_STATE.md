@@ -7,54 +7,40 @@
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
+- Active branch: main
+- Current published continuation point: 10aadc7
+- Last meaningful code checkpoint: 10aadc7 Add automated smoke coverage for route and input gating
+
 ## Current milestone
-ELA profile foundation and dominant-area-key routing across blueprint, planning, and spec on top of the pushed teacher-minimal / OCR / drag-and-drop checkpoint
+Engine repair and automated smoke gating are published on main
 
-## Why this seam exists
-The older continuation docs were still pointing at the teacher-minimal drag-and-drop follow-up seam even though the current pushed checkpoint moved the repo further into the ELA profile foundation seam:
-- dominant-area resolution now matters more than legacy phonics/comprehension branching
-- planning should derive from the resolved ELA area list first
-- spec should derive from the resolved ELA area list first
-- the continuation chain needed to be updated so future chats stop relaunching from stale seam guidance
+## Validated state
+- current published continuation point is 10aadc7
+- published main checkpoint is currently 7c9328e
+- last meaningful code checkpoint is 10aadc7 Add automated smoke coverage for route and input gating
+- fetch/rebase/push already published the smoke-test code seam on main
+- prior local validation for the smoke-test addition remained green:
+  - full test PASS (31 files / 175 tests)
+  - typecheck PASS
+  - build PASS
+- warning noise remains non-blocking and unchanged
+- this docs closeout is being rebased on top of the latest auto-refresh docs commit before push
 
-## What is now locked locally
-- latest pushed checkpoint 6301992 is the current continuation-doc truth for this pass
-- buildBlueprint now participates in the ELA profile foundation seam
-- detectLessonTargets and its new focused test cover the dominant-area-key path
-- resolveBlueprintContent and resolveBlueprintStructure now support the profile-first ELA routing seam
-- buildLessonPlanningIdeas now resolves dominantAreaKeys first, with sanitized planning values and area-family-first fallback behavior
-- buildLessonSpec now resolves dominantAreaKeys first instead of routing only through legacy phonics/comprehension labels
-- buildPackageOutputs and ResultsPage stayed aligned enough for focused Results coverage to remain green
-- the current build is still green with the same non-blocking large-chunk warning
-- dominant-area-key code checkpoint 380e54f remains the landed code seam this doc is describing
+## Product truths to preserve
+- curriculum = content authority
+- exemplar = presentation / structure authority
+- generation depends on usable materials
+- active product flow remains Inputs -> Materials -> Results
+- useLessonStore remains the orchestration seam
+- do not reopen engine repair without fresh regression evidence
 
-## Files touched in this pass
-- src/engine/blueprint/buildBlueprint.ts
-- src/engine/blueprint/detectLessonTargets.ts
-- src/engine/blueprint/detectLessonTargets.test.ts
-- src/engine/blueprint/resolveBlueprintContent.ts
-- src/engine/blueprint/resolveBlueprintStructure.ts
-- src/engine/lesson-spec.test.ts
-- src/engine/package/buildPackageOutputs.ts
-- src/engine/planning/buildLessonPlanningIdeas.ts
-- src/engine/spec/buildLessonSpec.ts
-- src/engine/types.ts
-- src/pages/ResultsPage.tsx
-- supported-source matrix work is already explicit across docs/UI/engine/tests and should not be reopened without direct regression evidence
+## Top next steps
+1. Publish this docs closeout cleanly
+2. Then choose the next narrow seam from live repo truth
+3. Keep the active continuation set small and obvious
+4. Do not let overridden notes compete with the active continuation set
 
-## Validation for this seam
-- `npx vitest run src/engine/lesson-spec.test.ts src/engine/blueprint/detectLessonTargets.test.ts src/pages/ResultsPage.test.ts src/pages/ResultsPage.test.tsx`
-- `npm run build`
-
-Local result:
-- 4 test files passed
-- 25 tests passed
-- build passed
-- existing chunk warning remained non-blocking
-
-## Current next step
-- do a short browser/manual pass on the pushed dominant-area-key checkpoint
-- verify single-mode cross-family area selection behaves correctly in the live UI
-- verify planning/spec/results still read teacher-first after the refactor
-- keep any further edits narrow and live-evidence-driven
-- if browser/manual validation is not possible in-chat, do continuation-doc truth alignment only before any new implementation seam
+## Local doc policy
+- Keep continuation docs authoritative and small
+- Preserve automation-compatible anchors and auto-sync blocks
+- Do not reopen engine repair without fresh regression evidence
