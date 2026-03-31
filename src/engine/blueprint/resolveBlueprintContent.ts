@@ -1,4 +1,4 @@
-import {
+﻿import {
   BlueprintContentCoverage,
   CurriculumAnalysis,
   LessonBlueprint,
@@ -547,14 +547,14 @@ function sanitizeTeacherFacingItems(
       .map((value) => normalizeTeacherFacingValue(value))
       .filter((value) => value.length > 0)
       .filter((value) => !isWeakFallbackValue(value))
-      .filter((value) => !isObviouslyNoisyTeacherFacingItem(value))
+      .filter((value) => kind === "wordList" || !isObviouslyNoisyTeacherFacingItem(value))
       .filter((value) => !isWeakTeacherFacingValueForKind(value, kind))
   )
 }
 
 function normalizeTeacherFacingValue(value: string): string {
   return value
-    .replace(/^[\s*•\-–—]+/, "")
+    .replace(/^[\s*â€¢\-â€“â€”]+/, "")
     .replace(/^\[/, "")
     .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
     .replace(/^[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:\s*/, "")
@@ -758,3 +758,6 @@ function containsAny(text: string, terms: string[]): boolean {
   const lower = text.toLowerCase()
   return terms.some((term) => lower.includes(term))
 }
+
+
+

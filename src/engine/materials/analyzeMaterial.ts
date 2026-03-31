@@ -1,4 +1,4 @@
-import { extractCurriculumCoverageCandidates } from "./extractCurriculumCoverageCandidates"
+﻿import { extractCurriculumCoverageCandidates } from "./extractCurriculumCoverageCandidates"
 
 import {
   CurriculumAnalysis,
@@ -843,34 +843,33 @@ function selectVocabulary(lines: string[]): string[] {
   )
 }
 
-function selectWordLists(lines: string[]): string[] {
-  return takeBestMatches(
-    lines,
-    (line) =>
-      containsAny(line, [
-        "word list",
-        "target words",
-        "heart words",
-        "decodable words",
-        "decode",
-        "blending",
-        "blend",
-        "sort",
-        "phonics",
-        "pattern",
-        "syllable",
-        "cvce",
-        "cvc",
-        "digraph",
-        "vowel team",
-        "silent e",
-        "long a",
-        "short a",
-      ]) || looksLikeWordList(line),
-    MAX_FIELD_ITEMS
-  )
-}
-
+function selectWordLists(lines: string[]): string[] {
+  const explicitWordListLines = lines
+    .filter(
+      (line) =>
+        /^(word list|target words|heart words?|sight words?|decodable words|word bank)\b/i.test(line) ||
+        looksLikeWordList(line)
+    )
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .filter(
+      (line, index, items) =>
+        items.findIndex((other) => other.toLowerCase() === line.toLowerCase()) === index
+    )
+
+  if (explicitWordListLines.length > 0) {
+    return explicitWordListLines.slice(0, MAX_FIELD_ITEMS)
+  }
+
+  return takeBestMatches(
+    lines,
+    (line) =>
+      /^(word list|target words|heart words?|sight words?|decodable words|word bank)\b/i.test(line) ||
+      looksLikeWordList(line),
+    MAX_FIELD_ITEMS
+  )
+}
+
 function selectTexts(lines: string[]): string[] {
   return takeBestMatches(
     lines,
@@ -1227,15 +1226,21 @@ function looksLikeVocabularyLine(line: string): boolean {
   )
 }
 
-function looksLikeWordList(line: string): boolean {
-  const parts = line
-    .split(/[,:;�|]/)
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0)
-
-  if (parts.length < 3) return false
-
-  return parts.every((part) => part.split(/\s+/).length <= 3)
+function looksLikeWordList(line: string): boolean {
+  const lower = line.toLowerCase().trim()
+
+  if (/^(vocabulary|objective|practice|text|passage|example|examples|teacher prompt|teacher says)\b/.test(lower)) {
+    return false
+  }
+
+  const parts = line
+    .split(/[,:;•|]/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+
+  if (parts.length < 3) return false
+
+  return parts.every((part) => part.split(/\s+/).length <= 3)
 }
 
 function inferPhonicsTags(lines: string[]): string[] {
@@ -1352,5 +1357,11 @@ function computeExemplarSignalStrength(e: ExemplarAnalysis): number {
 
 
 
+
+
+
+
+
+
 
 

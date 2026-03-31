@@ -99,7 +99,7 @@ const AREA_SIGNAL_LIBRARY: Record<ElaAreaKey, AreaSignalConfig> = {
   },
   comprehension: {
     strong: ["comprehension", "main idea", "theme", "retell", "author's purpose", "key details"],
-    support: ["story", "passage", "article", "text evidence", "character"],
+    support: ["story", "article", "text evidence", "character"],
   },
   writing_sentence_work: {
     strong: ["writing", "sentence writing", "write a sentence", "shared writing", "dictated sentence"],
@@ -491,6 +491,8 @@ function scoreFamily(
     .filter((area) => family.has(area.key))
     .reduce((total, area) => total + area.score, 0)
 }
+
+
 
 
 
