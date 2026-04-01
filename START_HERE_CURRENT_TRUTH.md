@@ -50,3 +50,4 @@
 ## Retrieval fallback rule
 - if continuation notes conflict, prefer live repo code/tests, live repo state on `main`, and the newest handoff
 - treat auto-sync files as synchronization helpers, not replacements for human seam handoffs
+
