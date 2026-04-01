@@ -1,25 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const pdfGetTextMock = vi.fn()
-const pdfDestroyMock = vi.fn()
+const extractPdfTextWithPdfJsMock = vi.fn()
 const mammothExtractRawTextMock = vi.fn()
 const parsePptxMock = vi.fn()
 const extractPdfTextWithOcrFallbackMock = vi.fn()
 const extractImageTextWithOcrMock = vi.fn()
-
-vi.mock("pdf-parse", () => ({
-  PDFParse: class {
-    constructor(_options: unknown) {}
-
-    getText() {
-      return pdfGetTextMock()
-    }
-
-    destroy() {
-      return pdfDestroyMock()
-    }
-  },
-}))
 
 vi.mock("mammoth", () => ({
   extractRawText: (...args: unknown[]) => mammothExtractRawTextMock(...args),
@@ -30,6 +15,8 @@ vi.mock("pptx-parser", () => ({
 }))
 
 vi.mock("./materials/extractPdfOcr", () => ({
+  extractPdfTextWithPdfJs: (...args: unknown[]) =>
+    extractPdfTextWithPdfJsMock(...args),
   extractPdfTextWithOcrFallback: (...args: unknown[]) =>
     extractPdfTextWithOcrFallbackMock(...args),
 }))
@@ -50,18 +37,17 @@ import {
 
 describe("extraction contract", () => {
   beforeEach(() => {
-    pdfGetTextMock.mockReset()
-    pdfDestroyMock.mockReset()
+    extractPdfTextWithPdfJsMock.mockReset()
     mammothExtractRawTextMock.mockReset()
     parsePptxMock.mockReset()
     extractPdfTextWithOcrFallbackMock.mockReset()
     extractImageTextWithOcrMock.mockReset()
 
-    pdfDestroyMock.mockResolvedValue(undefined)
     mammothExtractRawTextMock.mockResolvedValue({
       value: "",
       messages: [],
     })
+    extractPdfTextWithPdfJsMock.mockResolvedValue([])
     extractPdfTextWithOcrFallbackMock.mockResolvedValue({
       pages: [],
       combinedLines: [],
@@ -370,13 +356,9 @@ describe("extraction contract", () => {
   })
 
   it("marks thin parsed pdf text as an OCR candidate", async () => {
-    pdfGetTextMock.mockResolvedValue({
-      text: `
-        Scan
-        1
-        2
-      `,
-    })
+    extractPdfTextWithPdfJsMock.mockResolvedValue([
+      "Scan",
+    ])
 
     const result = await extractTextFromFile({
       fileName: "scan.pdf",
@@ -388,16 +370,15 @@ describe("extraction contract", () => {
     expect(result.extractionMetadata.quality).toBe("low")
     expect(result.extractionMetadata.ocrCandidate).toBe(true)
     expect(result.extractionMetadata.ocrReason).toContain("OCR recovery is likely worth trying")
-    expect(pdfDestroyMock).toHaveBeenCalledTimes(1)
     expect(extractPdfTextWithOcrFallbackMock).toHaveBeenCalledTimes(1)
   })
 
   it("does not mark strong parsed pdf text as an OCR candidate", async () => {
-    pdfGetTextMock.mockResolvedValue({
-      text: Array.from({ length: 25 }, (_, index) =>
+    extractPdfTextWithPdfJsMock.mockResolvedValue(
+      Array.from({ length: 25 }, (_, index) =>
         `This is a readable lesson line number ${index} with phonics practice and teacher guidance.`
-      ).join("\n"),
-    })
+      )
+    )
 
     const result = await extractTextFromFile({
       fileName: "readable.pdf",
@@ -409,7 +390,6 @@ describe("extraction contract", () => {
     expect(result.extractionMetadata.quality).toBe("high")
     expect(result.extractionMetadata.ocrCandidate).toBe(false)
     expect(result.extractionMetadata.ocrReason).toBeNull()
-    expect(pdfDestroyMock).toHaveBeenCalledTimes(1)
     expect(extractPdfTextWithOcrFallbackMock).not.toHaveBeenCalled()
   })
 
@@ -431,13 +411,9 @@ describe("extraction contract", () => {
   })
 
   it("keeps parser output when OCR adds too little new text", async () => {
-    pdfGetTextMock.mockResolvedValue({
-      text: `
-        Scan
-        1
-        2
-      `,
-    })
+    extractPdfTextWithPdfJsMock.mockResolvedValue([
+      "Scan",
+    ])
 
     extractPdfTextWithOcrFallbackMock.mockResolvedValue({
       pages: [
@@ -465,13 +441,9 @@ describe("extraction contract", () => {
   })
 
   it("upgrades pdf extraction to mixed when OCR adds enough useful text", async () => {
-    pdfGetTextMock.mockResolvedValue({
-      text: `
-        Scan
-        1
-        2
-      `,
-    })
+    extractPdfTextWithPdfJsMock.mockResolvedValue([
+      "Scan",
+    ])
 
     extractPdfTextWithOcrFallbackMock.mockResolvedValue({
       pages: [
@@ -508,13 +480,9 @@ describe("extraction contract", () => {
   })
 
   it("falls back gracefully when OCR throws", async () => {
-    pdfGetTextMock.mockResolvedValue({
-      text: `
-        Scan
-        1
-        2
-      `,
-    })
+    extractPdfTextWithPdfJsMock.mockResolvedValue([
+      "Scan",
+    ])
 
     extractPdfTextWithOcrFallbackMock.mockRejectedValue(
       new Error("OCR worker crashed")
