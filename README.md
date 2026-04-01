@@ -73,11 +73,10 @@ For current continuation, use this order:
 1. AGENTS.md
 2. START_HERE_CURRENT_TRUTH.md
 3. PROJECT_CURRENT_STATE.md
-4. docs/project-notes/OFFICIAL_DESIGN_SOURCE_OF_TRUTH.txt
+4. docs/chat-handoffs/README.md
 5. the latest relevant file in docs/chat-handoffs/
 
-Treat older notes and deleted architecture docs as historical context only unless explicitly re-adopted.
-
+Treat older notes as historical context only unless they still match the live repo.
 ## Current workflow rules
 
 - Beginner-safe steps

@@ -1,6 +1,6 @@
-﻿import React from "react"
+import React from "react"
 import { beforeEach, describe, expect, it } from "vitest"
-import { MemoryRouter } from "react-router-dom"
+import { StaticRouter } from "react-router-dom/server"
 import { renderToStaticMarkup } from "react-dom/server"
 import InputsPage from "./InputsPage"
 import { useLessonStore } from "../state/useLessonStore"
@@ -28,9 +28,9 @@ function seedInputs(inputs: Partial<LessonInputs>) {
 
 function renderInputsPage(): string {
   return renderToStaticMarkup(
-    <MemoryRouter>
+    <StaticRouter location="/inputs">
       <InputsPage />
-    </MemoryRouter>
+    </StaticRouter>
   )
 }
 

@@ -1,6 +1,6 @@
-﻿import React from "react"
+import React from "react"
 import { beforeEach, describe, expect, it } from "vitest"
-import { MemoryRouter } from "react-router-dom"
+import { StaticRouter } from "react-router-dom/server"
 import { renderToStaticMarkup } from "react-dom/server"
 import App from "./App"
 import { useLessonStore } from "./state/useLessonStore"
@@ -60,9 +60,9 @@ function seedState(overrides: {
 
 function renderAppAt(path: string): string {
   return renderToStaticMarkup(
-    <MemoryRouter initialEntries={[path]}>
+    <StaticRouter location={path}>
       <App />
-    </MemoryRouter>
+    </StaticRouter>
   )
 }
 

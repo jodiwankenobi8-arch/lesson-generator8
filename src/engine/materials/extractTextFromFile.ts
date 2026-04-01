@@ -1,5 +1,5 @@
 import { extractImageTextWithOcr } from "./extractImageOcr"
-import { extractPdfTextWithOcrFallback } from "./extractPdfOcr"
+import { extractPdfTextWithOcrFallback, extractPdfTextWithPdfJs } from "./extractPdfOcr"
 import {
   getSupportedSourceUploadExtension,
   isSupportedImageMimeType,
@@ -233,33 +233,22 @@ async function extractPdfText(input: ExtractTextInput): Promise<string[]> {
     ]
   }
 
-  let parser: { getText: () => Promise<{ text: string }>; destroy: () => Promise<void> } | null = null
-
   try {
-    const pdfModule = await import("pdf-parse")
-    const PDFParse = pdfModule.PDFParse
+    const extractedLines = await extractPdfTextWithPdfJs(input.fileBuffer)
 
-    parser = new PDFParse({
-      data: new Uint8Array(input.fileBuffer),
-    })
+    if (extractedLines.length === 0) {
+      return [
+        `PDF extraction produced no readable text for ${input.fileName}.`,
+        "The PDF may be image-based, password-protected, or use unsupported embedded text encoding.",
+      ]
+    }
 
-    const result = await parser.getText()
-
-    return normalizeExtractedText(
-      result.text
-        .split(/\r?\n/)
-        .map((line: string) => line.trim())
-        .filter((line: string) => line.length > 0)
-    )
+    return normalizeExtractedText(extractedLines)
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown PDF extraction error"
 
     return [`PDF extraction failed for ${input.fileName}.`, message]
-  } finally {
-    if (parser) {
-      await parser.destroy()
-    }
   }
 }
 
