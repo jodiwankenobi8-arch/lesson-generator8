@@ -172,17 +172,144 @@ function defaultOutputContents(): LessonOutputContents {
   return createDefaultOutputContents()
 }
 
+const LESSON_STORE_SNAPSHOT_KEY = "lesson-generator8__workspace_v1"
+
+function getLessonWorkspaceStorage(): Storage | null {
+  if (typeof globalThis === "undefined") {
+    return null
+  }
+
+  const candidate = (globalThis as { localStorage?: Storage }).localStorage
+  return candidate ?? null
+}
+
+type LessonWorkspaceSnapshot = {
+  inputs: LessonInputs
+  materials: MaterialFile[]
+  selectedLessonMode: LessonMode
+  blueprint: LessonBlueprint | null
+  planningIdeas: LessonPlanningIdeas | null
+  lessonSpec: LessonSpec | null
+  lessonPackage: LessonPackage | null
+  lessonTrace: LessonPipelineTrace | null
+  outputContents: LessonOutputContents
+  missingAreaDecisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
+}
+
+function rehydratePersistedMaterials(materials: MaterialFile[]): MaterialFile[] {
+  return materials.map((material) => {
+    const lostUploadSource =
+      !material.analysis &&
+      !material.fileContent &&
+      (material.status === "uploaded" ||
+        material.status === "extracting" ||
+        material.status === "analyzing")
+
+    return {
+      ...material,
+      fileBuffer: null,
+      fileContent: material.fileContent ?? null,
+      sourceKind: material.sourceKind ?? "file_upload",
+      sourceLabel: material.sourceLabel ?? null,
+      sourceMimeType: material.sourceMimeType ?? null,
+      styleSettings:
+        material.role === "exemplar"
+          ? material.styleSettings ?? defaultExemplarStyleSettings()
+          : null,
+      status: lostUploadSource ? "error" : material.status,
+      errorMessage: lostUploadSource
+        ? material.errorMessage ?? "Re-upload this source after refresh to continue processing."
+        : material.errorMessage ?? null,
+    }
+  })
+}
+
+function safeLoadLessonWorkspace(): LessonWorkspaceSnapshot | null {
+  const storage = getLessonWorkspaceStorage()
+  if (!storage) {
+    return null
+  }
+
+  try {
+    const raw = storage.getItem(LESSON_STORE_SNAPSHOT_KEY)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as Partial<LessonWorkspaceSnapshot>
+
+    return {
+      inputs: {
+        ...emptyInputs,
+        ...(parsed.inputs ?? {}),
+      },
+      materials: rehydratePersistedMaterials(
+        Array.isArray(parsed.materials) ? (parsed.materials as MaterialFile[]) : []
+      ),
+      selectedLessonMode: parsed.selectedLessonMode ?? "single",
+      blueprint: parsed.blueprint ?? null,
+      planningIdeas: parsed.planningIdeas ?? null,
+      lessonSpec: parsed.lessonSpec ?? null,
+      lessonPackage: parsed.lessonPackage ?? null,
+      lessonTrace: parsed.lessonTrace ?? null,
+      outputContents: normalizeOutputContents(
+        parsed.outputContents ?? defaultOutputContents()
+      ),
+      missingAreaDecisions: parsed.missingAreaDecisions ?? {},
+    }
+  } catch {
+    return null
+  }
+}
+
+function safeSaveLessonWorkspace(state: LessonStore) {
+  const storage = getLessonWorkspaceStorage()
+  if (!storage) {
+    return
+  }
+
+  try {
+    const snapshot: LessonWorkspaceSnapshot = {
+      inputs: state.inputs,
+      materials: state.materials.map((material) => ({
+        ...material,
+        fileBuffer: null,
+        fileContent: material.fileContent ?? null,
+        sourceKind: material.sourceKind ?? "file_upload",
+        sourceLabel: material.sourceLabel ?? null,
+        sourceMimeType: material.sourceMimeType ?? null,
+        styleSettings:
+          material.role === "exemplar"
+            ? material.styleSettings ?? defaultExemplarStyleSettings()
+            : null,
+      })),
+      selectedLessonMode: state.selectedLessonMode,
+      blueprint: state.blueprint,
+      planningIdeas: state.planningIdeas,
+      lessonSpec: state.lessonSpec,
+      lessonPackage: state.lessonPackage,
+      lessonTrace: state.lessonTrace,
+      outputContents: state.outputContents,
+      missingAreaDecisions: state.missingAreaDecisions,
+    }
+
+    storage.setItem(LESSON_STORE_SNAPSHOT_KEY, JSON.stringify(snapshot))
+  } catch {
+    // ignore persistence failures
+  }
+}
+
+const hydratedWorkspace = safeLoadLessonWorkspace()
+
 export const useLessonStore = create<LessonStore>((set, get) => ({
-  inputs: emptyInputs,
-  materials: [],
-  selectedLessonMode: "single",
-  blueprint: null,
-  planningIdeas: null,
-  lessonSpec: null,
-  lessonPackage: null,
-  lessonTrace: null,
-  outputContents: defaultOutputContents(),
-  missingAreaDecisions: {},
+  inputs: hydratedWorkspace?.inputs ?? emptyInputs,
+  materials: hydratedWorkspace?.materials ?? [],
+  selectedLessonMode: hydratedWorkspace?.selectedLessonMode ?? "single",
+  blueprint: hydratedWorkspace?.blueprint ?? null,
+  planningIdeas: hydratedWorkspace?.planningIdeas ?? null,
+  lessonSpec: hydratedWorkspace?.lessonSpec ?? null,
+  lessonPackage: hydratedWorkspace?.lessonPackage ?? null,
+  lessonTrace: hydratedWorkspace?.lessonTrace ?? null,
+  outputContents: hydratedWorkspace?.outputContents ?? defaultOutputContents(),
+  missingAreaDecisions: hydratedWorkspace?.missingAreaDecisions ?? {},
 
   setInputs: (updates) =>
     set((state) => ({
@@ -590,4 +717,6 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
 }))
 
-
+useLessonStore.subscribe((state) => {
+  safeSaveLessonWorkspace(state)
+})
