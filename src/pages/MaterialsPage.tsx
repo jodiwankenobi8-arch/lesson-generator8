@@ -39,6 +39,11 @@ import {
   statusBadgeStyle,
   uploadCardStyle,
 } from "./materialsPageUiHelpers"
+import {
+  EXEMPLAR_ASPECT_OPTIONS,
+  EXEMPLAR_INFLUENCE_MODE_OPTIONS,
+  getDefaultExemplarStyleSettings,
+} from "./materialsPageExemplarHelpers"
 
 export {
   buildUploadSourceMetadata,
@@ -216,15 +221,6 @@ const exemplarTextareaStyle: React.CSSProperties = {
   background: "rgba(255,255,255,0.94)",
   boxSizing: "border-box",
 }
-
-const EXEMPLAR_ASPECT_OPTIONS: Array<{ value: ExemplarStyleAspect; label: string }> = [
-  { value: "structure", label: "Structure" },
-  { value: "slide_flow", label: "Slide flow" },
-  { value: "teacher_prompts", label: "Teacher prompts" },
-  { value: "pacing", label: "Pacing" },
-  { value: "visual_layout", label: "Visual layout" },
-  { value: "wording_tone", label: "Wording / tone" },
-]
 
 export default function MaterialsPage() {
   const navigate = useNavigate()
@@ -487,33 +483,8 @@ export default function MaterialsPage() {
                       </div>
 
                       <div style={exemplarOptionListStyle}>
-                        {[
-                          {
-                            value: "inspiration",
-                            label: "Use as inspiration",
-                            help: "Borrow broad feel and direction without trying to mirror the source closely.",
-                          },
-                          {
-                            value: "copy_closely",
-                            label: "Copy closely",
-                            help: "Preserve as much structure, pacing, and teacher-facing style as possible.",
-                          },
-                          {
-                            value: "selected_aspects",
-                            label: "Choose specific aspects",
-                            help: "Apply only the exemplar features you explicitly select below.",
-                          },
-                          {
-                            value: "custom",
-                            label: "Custom instructions",
-                            help: "Write a teacher-facing note about how this exemplar should influence the lesson.",
-                          },
-                        ].map((option) => {
-                          const settings = material.styleSettings ?? {
-                            mode: "inspiration",
-                            aspects: [],
-                            customInstructions: "",
-                          }
+                        {EXEMPLAR_INFLUENCE_MODE_OPTIONS.map((option) => {
+                          const settings = getDefaultExemplarStyleSettings(material.styleSettings)
 
                           return (
                             <label key={option.value} style={exemplarLabelStyle}>
@@ -544,11 +515,7 @@ export default function MaterialsPage() {
                           </div>
                           <div style={exemplarCheckboxGridStyle}>
                             {EXEMPLAR_ASPECT_OPTIONS.map((aspect) => {
-                              const settings = material.styleSettings ?? {
-                                mode: "inspiration",
-                                aspects: [],
-                                customInstructions: "",
-                              }
+                              const settings = getDefaultExemplarStyleSettings(material.styleSettings)
                               const checked = settings.aspects.includes(aspect.value)
 
                               return (
@@ -581,11 +548,7 @@ export default function MaterialsPage() {
                           <textarea
                             value={material.styleSettings?.customInstructions ?? ""}
                             onChange={(event) => {
-                              const settings = material.styleSettings ?? {
-                                mode: "custom",
-                                aspects: [],
-                                customInstructions: "",
-                              }
+                              const settings = getDefaultExemplarStyleSettings(material.styleSettings)
 
                               setMaterialStyleSettings(material.id, {
                                 ...settings,
