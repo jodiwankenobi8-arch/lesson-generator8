@@ -439,6 +439,11 @@ export function TraceabilitySection({
     materials,
     blueprint.sourceReadiness.selectedExemplarMaterialIds
   )
+
+  const selectedExemplarInfluenceSummary = summarizeSelectedExemplarInfluence(
+    materials,
+    blueprint.sourceReadiness.selectedExemplarMaterialIds
+  )
   const contentMaterials = buildReliabilityDecisions(
     materials,
     "curriculum",
@@ -496,7 +501,8 @@ export function TraceabilitySection({
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Exemplar Support:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
             <div><strong>Selected Exemplar Source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
-            <div><strong>Lesson Flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
+              <div><strong>Selected Influence:</strong> {selectedExemplarInfluenceSummary}</div>
+              <div><strong>Lesson Flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
             <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
             <div><strong>Teacher Moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
             <div><strong>Prompt Style:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher prompt")}</div>
@@ -1714,4 +1720,70 @@ const subHeadingStyle: React.CSSProperties = {
   fontWeight: 700,
   marginBottom: 6,
   color: "var(--orchard-green)",
+}
+function summarizeSelectedExemplarInfluence(
+  materials: Array<{
+    id: string
+    role: string
+    styleSettings?: {
+      mode?: string | null
+      aspects?: string[] | null
+      customInstructions?: string | null
+    } | null
+  }>,
+  selectedIds: string[]
+): string {
+  const selected = materials.filter(
+    (material) => material.role === "exemplar" && selectedIds.includes(material.id)
+  )
+
+  if (selected.length === 0) {
+    return "Default exemplar influence"
+  }
+
+  const summaries = selected.map((material) => {
+    const settings = material.styleSettings
+    if (!settings || !settings.mode || settings.mode === "inspiration") {
+      return "Use as inspiration"
+    }
+
+    if (settings.mode === "copy_closely") {
+      return "Copy closely"
+    }
+
+    if (settings.mode === "selected_aspects") {
+      const aspects = (settings.aspects ?? []).map(formatExemplarAspectLabel)
+      return aspects.length > 0
+        ? `Choose specific aspects: ${aspects.join(", ")}`
+        : "Choose specific aspects"
+    }
+
+    if (settings.mode === "custom") {
+      const custom = settings.customInstructions?.trim()
+      return custom ? `Custom instructions: ${custom}` : "Custom instructions"
+    }
+
+    return "Default exemplar influence"
+  })
+
+  return summaries.join(" | ")
+}
+
+function formatExemplarAspectLabel(value: string): string {
+  switch (value) {
+    case "structure":
+      return "structure"
+    case "slide_flow":
+      return "slide flow"
+    case "teacher_prompts":
+      return "teacher prompts"
+    case "pacing":
+      return "pacing"
+    case "visual_layout":
+      return "visual layout"
+    case "wording_tone":
+      return "wording / tone"
+    default:
+      return value.replace(/_/g, " ")
+  }
 }

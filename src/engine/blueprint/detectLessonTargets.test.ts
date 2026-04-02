@@ -64,6 +64,33 @@ describe("resolveLessonProfile", () => {
     expect(detected.primary).toBe("phonics")
   })
 
+
+  it("keeps long a with brief comprehension support as phonics-primary instead of general", () => {
+    const inputs = makeInputs({
+      skill: "Long A phonics",
+      topic: "Focus: long a spelled a_e",
+      notes: "Students will decode and read words with a_e and answer brief comprehension questions.",
+    })
+
+    const curriculumAnalyses: CurriculumAnalysis[] = [
+      {
+        standards: ["Focus: long a spelled a_e"],
+        vocabulary: ["long a", "decode"],
+        wordLists: ["cake", "make", "same"],
+        texts: ["Decodable Reader Lesson"],
+        practiceTasks: [
+          "Students practice decoding, sentence reading, and brief comprehension.",
+          "Include teacher modeling, guided practice, independent practice, and exit ticket.",
+        ],
+        instructionalTargets: ["students decode and read words with a_e"],
+        examples: ["cake", "same"],
+      },
+    ]
+
+    const detected = detectLessonTargets(inputs, "single", curriculumAnalyses)
+    expect(detected.primary).toBe("phonics")
+    expect(detected.primary).not.toBe("general")
+  })
   it("still resolves a clearly comprehension-focused lesson as comprehension", () => {
     const inputs = makeInputs({
       skill: "Author's purpose comprehension",
@@ -75,3 +102,33 @@ describe("resolveLessonProfile", () => {
     expect(detected.primary).toBe("comprehension")
   })
 })
+
+  it("keeps brief comprehension support inside a phonics-led lesson out of mixed mode", () => {
+    const inputs = makeInputs({
+      skill: "Long A phonics",
+      topic: "Focus: long a spelled a_e",
+      notes: "Students will decode and read words with a_e and answer brief comprehension questions.",
+    })
+
+    const curriculumAnalyses: CurriculumAnalysis[] = [
+      {
+        standards: ["Focus: long a spelled a_e"],
+        vocabulary: ["long a", "decode"],
+        wordLists: ["cake", "make", "same"],
+        texts: ["Decodable Reader Lesson"],
+        practiceTasks: [
+          "Students practice decoding, sentence reading, and brief comprehension.",
+          "Include teacher modeling, guided practice, independent practice, and exit ticket.",
+        ],
+        instructionalTargets: ["students decode and read words with a_e"],
+        examples: ["cake", "same"],
+      },
+    ]
+
+    const detected = detectLessonTargets(inputs, "single", curriculumAnalyses)
+    expect(detected.primary).toBe("phonics")
+    expect(detected.secondary).toBeNull()
+    expect(detected.isMixedTarget).toBe(false)
+    expect(detected.recommendedMode).toBe("phonics_only")
+  })
+

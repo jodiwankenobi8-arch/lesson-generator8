@@ -6,13 +6,17 @@ export function buildSlidePlan(
   spec: LessonSpec
 ): SlideOutline[] {
   const shell = blueprint.structure.templateShell
-  const segmentOrder = take(shell.segmentOrder, 8, ["Teach", "Practice", "Closure"])
-  const slideShell = take(shell.slideShell, Math.max(segmentOrder.length, 3), segmentOrder)
-  const timingShell = take(
-    shell.timingShell,
-    Math.max(segmentOrder.length, 3),
-    ["Mini-lesson", "Practice", "Closure"]
+  const rawSegmentOrder = take(
+    shell.segmentOrder,
+    8,
+    ["Teach", "Guided Practice", "Independent Practice", "Closure"]
   )
+  const rawSlideShell = take(shell.slideShell, Math.max(rawSegmentOrder.length, 3), rawSegmentOrder)
+
+  const orderedSlides = buildOrderedInstructionalShell(rawSegmentOrder, rawSlideShell)
+  const segmentOrder = orderedSlides.map((slide) => slide.segmentLabel)
+  const slideShell = orderedSlides.map((slide) => slide.shellLabel)
+  const timingShell = orderedSlides.map((slide) => inferTimingForKind(slide.kind))
   const teacherMoveShell = take(shell.teacherMoveShell, 5, ["teacher model", "guided support"])
   const promptShell = take(shell.promptShell, 5, ["teacher prompt"])
   const toneShell = take(shell.toneShell, 3, ["clear instructional tone"])
@@ -239,6 +243,57 @@ function formatTargetLabel(primary: string, secondary: string | null): string {
   return secondary ? `${primary} + ${secondary}` : primary
 }
 
+function buildOrderedInstructionalShell(
+  segmentOrder: string[],
+  slideShell: string[]
+): Array<{ segmentLabel: string; shellLabel: string; kind: SlideKind }> {
+  const maxLength = Math.max(segmentOrder.length, slideShell.length)
+  const rows = Array.from({ length: maxLength }, (_, index) => {
+    const segmentLabel = segmentOrder[index] ?? slideShell[index] ?? "Guided Practice"
+    const shellLabel = slideShell[index] ?? segmentLabel
+    const kind = normalizeSlideKind(segmentLabel)
+
+    return {
+      segmentLabel,
+      shellLabel,
+      kind,
+      rank: getInstructionalRank(kind),
+      index,
+    }
+  })
+
+  rows.sort((a, b) => {
+    if (a.rank !== b.rank) return a.rank - b.rank
+    return a.index - b.index
+  })
+
+  return rows.map(({ segmentLabel, shellLabel, kind }) => ({
+    segmentLabel,
+    shellLabel,
+    kind,
+  }))
+}
+
+function getInstructionalRank(kind: SlideKind): number {
+  if (kind === "opening") return 0
+  if (kind === "teach") return 1
+  if (kind === "guided_practice") return 2
+  if (kind === "independent_practice") return 3
+  if (kind === "centers") return 4
+  if (kind === "closure") return 5
+  return 6
+}
+
+function inferTimingForKind(kind: SlideKind): string {
+  if (kind === "opening") return "Opening"
+  if (kind === "teach") return "Mini-lesson"
+  if (kind === "guided_practice") return "Guided Practice"
+  if (kind === "independent_practice") return "Independent Practice"
+  if (kind === "centers") return "Centers"
+  if (kind === "closure") return "Closure"
+  return "Flexible timing"
+}
+
 function take(items: string[], count: number, fallback: string[]): string[] {
   const cleaned = Array.from(
     new Set((items ?? []).map((item) => item.trim()).filter((item) => item.length > 0))
@@ -250,3 +305,4 @@ function take(items: string[], count: number, fallback: string[]): string[] {
 function compact(items: string[]): string[] {
   return Array.from(new Set(items.map((item) => item.trim()).filter((item) => item.length > 0)))
 }
+

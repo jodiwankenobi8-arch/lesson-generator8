@@ -172,3 +172,38 @@ describe("slide engine", () => {
   })
 })
 
+it("orders teach before guided and independent even when exemplar shell is inverted", () => {
+  const inputs = makeInputs()
+
+  const materials = [
+    makeCurriculumMaterial([
+      "Focus long a spelled a_e",
+      "Practice decoding and sentence reading",
+      "Use guided practice before independent work",
+    ]),
+    makeExemplarMaterial([
+      "Independent Practice",
+      "Teach",
+      "Passage / Text",
+      "Closure",
+      "Teacher prompts",
+    ]),
+  ]
+
+  const result = runLessonPipeline(inputs, materials, "single")
+  const plan = buildSlidePlan(result.blueprint, result.lessonSpec)
+  const contentKinds = plan
+    .filter((slide) => slide.kind !== "objective" && slide.kind !== "teaching_notes")
+    .map((slide) => slide.kind)
+
+  const teachIndex = contentKinds.indexOf("teach")
+  const guidedIndex = contentKinds.indexOf("guided_practice")
+  const independentIndex = contentKinds.indexOf("independent_practice")
+
+  expect(teachIndex).toBeGreaterThanOrEqual(0)
+  expect(guidedIndex).toBeGreaterThanOrEqual(0)
+  expect(independentIndex).toBeGreaterThanOrEqual(0)
+  expect(teachIndex).toBeLessThan(guidedIndex)
+  expect(guidedIndex).toBeLessThan(independentIndex)
+})
+

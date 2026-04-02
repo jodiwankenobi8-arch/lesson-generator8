@@ -7,7 +7,14 @@ import {
   SUPPORTED_SOURCE_UPLOAD_ACCEPT,
   SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT,
 } from "../engine/materials/sourceIntakeContract"
-import { MaterialFile, MaterialRole, MaterialSourceKind, MaterialStatus } from "../engine/types"
+import {
+  ExemplarStyleAspect,
+  ExemplarStyleSettings,
+  MaterialFile,
+  MaterialRole,
+  MaterialSourceKind,
+  MaterialStatus,
+} from "../engine/types"
 import {
   orchardButtonStyle,
   orchardCardStyle,
@@ -139,6 +146,65 @@ const errorTextStyle: React.CSSProperties = {
   color: "var(--cranberry)",
 }
 
+const exemplarControlCardStyle: React.CSSProperties = {
+  marginTop: 10,
+  padding: 12,
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--border-paper)",
+  background: "rgba(255,255,255,0.78)",
+  display: "grid",
+  gap: 10,
+  justifyItems: "stretch",
+}
+
+const exemplarOptionListStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 8,
+}
+
+const exemplarCheckboxGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: 8,
+}
+
+const exemplarLabelStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "flex-start",
+  gap: 8,
+  color: "var(--text-primary)",
+  fontSize: 13,
+  lineHeight: 1.4,
+}
+
+const exemplarSubtleTextStyle: React.CSSProperties = {
+  fontSize: 12,
+  color: "var(--text-secondary)",
+  lineHeight: 1.5,
+}
+
+const exemplarTextareaStyle: React.CSSProperties = {
+  width: "100%",
+  minHeight: 72,
+  resize: "vertical",
+  borderRadius: "var(--radius-sm)",
+  border: "1px solid var(--border-paper)",
+  padding: "10px 12px",
+  font: "inherit",
+  color: "var(--text-primary)",
+  background: "rgba(255,255,255,0.94)",
+  boxSizing: "border-box",
+}
+
+const EXEMPLAR_ASPECT_OPTIONS: Array<{ value: ExemplarStyleAspect; label: string }> = [
+  { value: "structure", label: "Structure" },
+  { value: "slide_flow", label: "Slide flow" },
+  { value: "teacher_prompts", label: "Teacher prompts" },
+  { value: "pacing", label: "Pacing" },
+  { value: "visual_layout", label: "Visual layout" },
+  { value: "wording_tone", label: "Wording / tone" },
+]
+
 type UploadSourceMetadata = {
   sourceKind: MaterialSourceKind
   sourceLabel: string
@@ -206,6 +272,7 @@ export default function MaterialsPage() {
   const setMaterialSource = useLessonStore((state) => state.setMaterialSource)
   const removeMaterial = useLessonStore((state) => state.removeMaterial)
   const processMaterial = useLessonStore((state) => state.processMaterial)
+  const setMaterialStyleSettings = useLessonStore((state) => state.setMaterialStyleSettings)
   const generateLesson = useLessonStore((state) => state.generateLesson)
   const counts = useLessonStore((state) => state.getMaterialCounts)()
   const hasProcessingMaterials = useLessonStore((state) => state.hasProcessingMaterials)()
@@ -447,6 +514,127 @@ export default function MaterialsPage() {
                       {material.errorMessage}
                     </div>
                   ) : null}
+
+                  {material.role === "exemplar" ? (
+                    <div style={exemplarControlCardStyle}>
+                      <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 13 }}>
+                        Exemplar Influence
+                      </div>
+
+                      <div style={exemplarOptionListStyle}>
+                        {[
+                          {
+                            value: "inspiration",
+                            label: "Use as inspiration",
+                            help: "Borrow broad feel and direction without trying to mirror the source closely.",
+                          },
+                          {
+                            value: "copy_closely",
+                            label: "Copy closely",
+                            help: "Preserve as much structure, pacing, and teacher-facing style as possible.",
+                          },
+                          {
+                            value: "selected_aspects",
+                            label: "Choose specific aspects",
+                            help: "Apply only the exemplar features you explicitly select below.",
+                          },
+                          {
+                            value: "custom",
+                            label: "Custom instructions",
+                            help: "Write a teacher-facing note about how this exemplar should influence the lesson.",
+                          },
+                        ].map((option) => {
+                          const settings = material.styleSettings ?? {
+                            mode: "inspiration",
+                            aspects: [],
+                            customInstructions: "",
+                          }
+
+                          return (
+                            <label key={option.value} style={exemplarLabelStyle}>
+                              <input
+                                type="radio"
+                                name={`exemplar-style-${material.id}`}
+                                checked={settings.mode === option.value}
+                                onChange={() =>
+                                  setMaterialStyleSettings(material.id, {
+                                    ...settings,
+                                    mode: option.value as ExemplarStyleSettings["mode"],
+                                  })
+                                }
+                              />
+                              <span>
+                                <strong>{option.label}</strong>
+                                <div style={exemplarSubtleTextStyle}>{option.help}</div>
+                              </span>
+                            </label>
+                          )
+                        })}
+                      </div>
+
+                      {(material.styleSettings?.mode ?? "inspiration") === "selected_aspects" ? (
+                        <div style={{ display: "grid", gap: 8 }}>
+                          <div style={exemplarSubtleTextStyle}>
+                            Select the exemplar aspects this lesson should preserve.
+                          </div>
+                          <div style={exemplarCheckboxGridStyle}>
+                            {EXEMPLAR_ASPECT_OPTIONS.map((aspect) => {
+                              const settings = material.styleSettings ?? {
+                                mode: "inspiration",
+                                aspects: [],
+                                customInstructions: "",
+                              }
+                              const checked = settings.aspects.includes(aspect.value)
+
+                              return (
+                                <label key={aspect.value} style={exemplarLabelStyle}>
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() =>
+                                      setMaterialStyleSettings(material.id, {
+                                        ...settings,
+                                        aspects: checked
+                                          ? settings.aspects.filter((value) => value !== aspect.value)
+                                          : [...settings.aspects, aspect.value],
+                                      })
+                                    }
+                                  />
+                                  <span>{aspect.label}</span>
+                                </label>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {(material.styleSettings?.mode ?? "inspiration") === "custom" ? (
+                        <div style={{ display: "grid", gap: 8 }}>
+                          <div style={exemplarSubtleTextStyle}>
+                            Describe how this exemplar should influence the lesson package.
+                          </div>
+                          <textarea
+                            value={material.styleSettings?.customInstructions ?? ""}
+                            onChange={(event) => {
+                              const settings = material.styleSettings ?? {
+                                mode: "custom",
+                                aspects: [],
+                                customInstructions: "",
+                              }
+
+                              setMaterialStyleSettings(material.id, {
+                                ...settings,
+                                customInstructions: event.target.value,
+                              })
+                            }}
+                            placeholder="Example: Keep the I do / We do / You do flow and concise slide titles, but do not copy wording."
+                            style={exemplarTextareaStyle}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   <button
                     type="button"
                     onClick={() => removeMaterial(material.id)}
@@ -662,4 +850,9 @@ const summaryValueStyle: React.CSSProperties = {
   fontSize: 30,
   color: "var(--orchard-green)",
 }
+
+
+
+
+
 
