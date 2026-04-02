@@ -787,6 +787,14 @@ describe("Results export format labels", () => {
     expect(getArtifactButtonLabel(pptxArtifact)).toBe("Download PPTX")
     expect(getArtifactDescription(pptxArtifact)).toContain("PPTX slide deck")
   })
+
+  it("keeps explicit source grounding labels in results traceability", () => {
+    const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
+
+    expect(source).toContain("Selected Influence:")
+    expect(source).toContain("Content Grounded By:")
+    expect(source).toContain("Structure Shaped By:")
+  })
 })
 
 

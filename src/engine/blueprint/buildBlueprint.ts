@@ -85,8 +85,10 @@ export function buildBlueprint(
     texts: content.texts,
     practiceIdeas: content.practiceIdeas,
     lessonSegments: structure.lessonSegments,
+    timing: structure.timing,
     teacherMoves: structure.teacherMoves,
     promptStyle: structure.promptStyle,
+    slideShell: structure.templateShell.slideShell,
   })
 
   return {

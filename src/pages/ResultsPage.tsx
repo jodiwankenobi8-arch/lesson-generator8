@@ -444,6 +444,8 @@ export function TraceabilitySection({
     materials,
     blueprint.sourceReadiness.selectedExemplarMaterialIds
   )
+  const contentGroundingSummary = summarizeContentGrounding(blueprint)
+  const structureImpactSummary = summarizeStructureImpact(blueprint)
   const contentMaterials = buildReliabilityDecisions(
     materials,
     "curriculum",
@@ -506,6 +508,8 @@ export function TraceabilitySection({
             <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
             <div><strong>Teacher Moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
             <div><strong>Prompt Style:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher prompt")}</div>
+            <div><strong>Content Grounded By:</strong> {contentGroundingSummary}</div>
+            <div><strong>Structure Shaped By:</strong> {structureImpactSummary}</div>
           </div>
         </div>
 
@@ -1721,6 +1725,36 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
+function summarizeContentGrounding(blueprint: LessonBlueprint): string {
+  const coverage = blueprint.content.coverage
+
+  return joinOrFallback(
+    [
+      ...(coverage?.instructionalTargets ?? []),
+      ...(coverage?.standards ?? blueprint.content.standards),
+      ...(coverage?.vocabulary ?? blueprint.content.vocabulary),
+      ...(coverage?.wordLists ?? blueprint.content.wordLists),
+      ...(coverage?.texts ?? blueprint.content.texts),
+      ...(coverage?.practiceIdeas ?? blueprint.content.practiceIdeas),
+    ],
+    "Standards, vocabulary, examples, texts, and practice are using default lesson grounding."
+  )
+}
+
+function summarizeStructureImpact(blueprint: LessonBlueprint): string {
+  return joinOrFallback(
+    [
+      ...blueprint.structure.lessonSegments,
+      ...blueprint.structure.timing,
+      ...blueprint.structure.teacherMoves,
+      ...blueprint.structure.promptStyle,
+      ...blueprint.structure.templateShell.slideShell,
+    ],
+    "Flow, pacing, prompts, and slide shell are using default structure."
+  )
+}
+
 function summarizeSelectedExemplarInfluence(
   materials: Array<{
     id: string
