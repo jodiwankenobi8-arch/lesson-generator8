@@ -1,4 +1,4 @@
-﻿import {
+import {
   CurriculumAnalysis,
   ElaAreaKey,
   LessonInputs,
@@ -66,8 +66,8 @@ const AREA_SIGNAL_LIBRARY: Record<ElaAreaKey, AreaSignalConfig> = {
     support: ["segment", "blend", "sound boxes", "isolate sounds"],
   },
   phonics: {
-    strong: ["phonics", "cvce", "cvc", "digraph", "long a", "short a", "word work"],
-    support: ["vowel pattern", "decode", "encoding", "sound spelling", "blend"],
+    strong: ["phonics", "cvce", "cvc", "digraph", "long a", "short a", "word work", "a_e", "magic e", "silent e"],
+    support: ["vowel pattern", "decode", "encoding", "sound spelling", "blend", "long vowel", "cvce pattern"],
   },
   high_frequency_words: {
     strong: ["high frequency words", "high-frequency words", "sight words", "heart words"],
@@ -103,7 +103,7 @@ const AREA_SIGNAL_LIBRARY: Record<ElaAreaKey, AreaSignalConfig> = {
   },
   writing_sentence_work: {
     strong: ["writing", "sentence writing", "write a sentence", "shared writing", "dictated sentence"],
-    support: ["sentence", "write about", "compose", "respond in writing"],
+    support: ["write about", "compose a sentence", "compose in writing", "respond in writing"],
   },
   spelling_encoding: {
     strong: ["spelling", "encoding", "dictation", "spell words", "spelling pattern"],
@@ -187,11 +187,24 @@ export function detectLessonTargetsFromProfile(
   const hasCompositionDominant = profile.dominantAreaKeys.some((key) => COMPOSITION_AREAS.has(key))
 
   if (hasFoundationalDominant && hasComprehensionDominant && compositionScore === 0) {
+    const comprehensionStrongEnoughForMixed =
+      selectedMode === "full" ||
+      comprehensionScore >= Math.max(10, Math.ceil(foundationalScore * 0.75))
+
+    if (comprehensionStrongEnoughForMixed) {
+      return {
+        primary: "phonics",
+        secondary: "comprehension",
+        isMixedTarget: true,
+        recommendedMode: "full",
+      }
+    }
+
     return {
       primary: "phonics",
-      secondary: "comprehension",
-      isMixedTarget: true,
-      recommendedMode: "full",
+      secondary: null,
+      isMixedTarget: false,
+      recommendedMode: "phonics_only",
     }
   }
 
@@ -223,11 +236,25 @@ export function detectLessonTargetsFromProfile(
   }
 
   if (foundationalScore > 0 && comprehensionScore > 0 && compositionScore === 0) {
+    const comprehensionStrongEnoughForMixed =
+      selectedMode === "full" ||
+      comprehensionScore >= Math.max(10, Math.ceil(foundationalScore * 0.75))
+
+    if (comprehensionStrongEnoughForMixed) {
+      return {
+        primary: foundationalScore >= comprehensionScore ? "phonics" : "comprehension",
+        secondary: foundationalScore >= comprehensionScore ? "comprehension" : "phonics",
+        isMixedTarget: true,
+        recommendedMode: "full",
+      }
+    }
+
     return {
       primary: foundationalScore >= comprehensionScore ? "phonics" : "comprehension",
-      secondary: foundationalScore >= comprehensionScore ? "comprehension" : "phonics",
-      isMixedTarget: true,
-      recommendedMode: "full",
+      secondary: null,
+      isMixedTarget: false,
+      recommendedMode:
+        foundationalScore >= comprehensionScore ? "phonics_only" : "comprehension_only",
     }
   }
 
@@ -491,6 +518,11 @@ function scoreFamily(
     .filter((area) => family.has(area.key))
     .reduce((total, area) => total + area.score, 0)
 }
+
+
+
+
+
 
 
 
