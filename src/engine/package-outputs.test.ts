@@ -717,17 +717,28 @@ describe("buildPackageOutputs", () => {
 
     expect(teacherFacingContent).not.toContain("Launch Move: Independent Practice, Teach")
     expect(teacherFacingContent).not.toContain(
+      "Launch Move: Guided Practice, Independent Practice"
+    )
+    expect(teacherFacingContent).not.toContain(
       "Follow the exemplar lesson flow: Independent Practice -> Teach -> Guided Practice"
     )
     expect(teacherFacingContent).not.toContain(
       "Preserve the exemplar slide shell: Independent Practice -> Teach -> Passage / Text"
     )
     expect(teacherFacingContent).not.toContain(
+      "Slide Shell Cue: Guided Practice, Independent Practice, Closure"
+    )
+    expect(teacherFacingContent).not.toContain(
       "teacher-directed pacing | Practice | Closure"
+    )
+    expect(teacherFacingContent).not.toContain(
+      "Timing Cue: 5 min launch, 10 min model, 10 min practice"
     )
 
     expect(teacherFacingContent).toContain("Launch Move: Opening, Teach")
     expect(teacherFacingContent).toContain("Slide Shell Cue: Opening, Teach, Practice")
-    expect(teacherFacingContent).toContain("Timing Cue: 5 min launch, 10 min model, 10 min practice")
+    expect(teacherFacingContent).toContain(
+      "Timing Cue: Opening, Mini-lesson, Guided Practice"
+    )
   })
   })
