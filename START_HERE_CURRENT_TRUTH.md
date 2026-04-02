@@ -2,8 +2,8 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: 474f384
-- Last auto-sync UTC: 2026-04-01T02:43:23Z
+- Published main checkpoint: bd7222d
+- Last auto-sync UTC: 2026-04-02T00:56:25Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
@@ -50,4 +50,3 @@
 ## Retrieval fallback rule
 - if continuation notes conflict, prefer live repo code/tests, live repo state on `main`, and the newest handoff
 - treat auto-sync files as synchronization helpers, not replacements for human seam handoffs
-
