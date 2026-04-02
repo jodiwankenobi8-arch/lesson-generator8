@@ -12,6 +12,10 @@ import {
 import { beforeEach, describe, expect, it } from "vitest"
 import { useLessonStore } from "./useLessonStore"
 
+beforeEach(() => {
+  installTestLocalStorage()
+})
+
 function makeInputs(overrides: Partial<LessonInputs> = {}): LessonInputs {
   return {
     grade: "1",
@@ -62,6 +66,39 @@ function makeAnalysis(role: MaterialRole, overrides: Partial<MaterialAnalysis> =
   }
 }
 
+function createMemoryLocalStorage(): Storage {
+  const backing = new Map<string, string>()
+
+  return {
+    get length() {
+      return backing.size
+    },
+    clear() {
+      backing.clear()
+    },
+    getItem(key: string) {
+      return backing.has(key) ? backing.get(key)! : null
+    },
+    key(index: number) {
+      return Array.from(backing.keys())[index] ?? null
+    },
+    removeItem(key: string) {
+      backing.delete(key)
+    },
+    setItem(key: string, value: string) {
+      backing.set(key, String(value))
+    },
+  } as Storage
+}
+
+function installTestLocalStorage() {
+  Object.defineProperty(globalThis, "localStorage", {
+    value: createMemoryLocalStorage(),
+    configurable: true,
+    writable: true,
+  })
+}
+
 function makeMaterial(args: {
   id: string
   name: string
@@ -87,6 +124,7 @@ function makeMaterial(args: {
 
 describe("useLessonStore regeneration", () => {
   beforeEach(() => {
+    globalThis.localStorage.clear()
     useLessonStore.setState((state) => ({
       ...state,
       inputs: makeInputs(),
@@ -367,8 +405,58 @@ describe("useLessonStore regeneration", () => {
   })
 })
 
+
+  it("persists lightweight workspace state for refresh-safe recovery", async () => {
+    useLessonStore.setState((state) => ({
+      ...state,
+      inputs: makeInputs({ notes: "Persist me" }),
+      selectedLessonMode: "single",
+      materials: [
+        makeMaterial({ id: "curriculum-1", name: "curriculum.txt", role: "curriculum" }),
+        makeMaterial({ id: "exemplar-1", name: "exemplar.txt", role: "exemplar" }),
+      ],
+      blueprint: null,
+      planningIdeas: null,
+      lessonSpec: null,
+      lessonPackage: null,
+      lessonTrace: null,
+      outputContents: createDefaultOutputContents(),
+      missingAreaDecisions: {},
+    }))
+
+    await useLessonStore.getState().generateLesson()
+
+    useLessonStore.getState().toggleOtherOutput("printables")
+    useLessonStore.getState().setMaterialStyleSettings("exemplar-1", {
+      mode: "selected_aspects",
+      aspects: ["pacing", "teacher_prompts"],
+      customInstructions: "Keep pacing and prompts.",
+    })
+
+    const raw = globalThis.localStorage.getItem("lesson-generator8__workspace_v1")
+    expect(raw).toBeTruthy()
+
+    const snapshot = JSON.parse(raw!) as any
+
+    expect(snapshot.inputs.notes).toBe("Persist me")
+    expect(snapshot.outputContents.other.printables).toBe(true)
+    expect(
+      snapshot.materials.find((item: { id: string }) => item.id === "exemplar-1")?.styleSettings
+    ).toEqual({
+      mode: "selected_aspects",
+      aspects: ["pacing", "teacher_prompts"],
+      customInstructions: "Keep pacing and prompts.",
+    })
+    expect(
+      snapshot.materials.every((item: { fileBuffer: null }) => item.fileBuffer === null)
+    ).toBe(true)
+    expect(snapshot.blueprint).toBeNull()
+    expect(snapshot.lessonPackage).toBeNull()
+    expect(snapshot.lessonTrace).toBeNull()
+  })
 describe("useLessonStore outputContents contract", () => {
   beforeEach(() => {
+    globalThis.localStorage.clear()
     useLessonStore.setState((state) => ({
       ...state,
       inputs: makeInputs(),
