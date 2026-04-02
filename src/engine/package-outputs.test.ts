@@ -681,4 +681,53 @@ describe("buildPackageOutputs", () => {
     expect(printablesExport!.content).toContain("Centers / Independent Work Rotation")
     expect(printablesExport!.content).toContain("Intervention Support")
   })
+
+  it("keeps normalized exemplar flow language in teacher-facing package outputs", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "K",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A phonics",
+        topic: "Long A phonics",
+        duration: "25 mins",
+      },
+      blueprint,
+      spec,
+      planningIdeas: makePlanningIdeas({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+      }),
+      outputContents: makeOutputContents({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        printables: true,
+      }),
+    })
+
+    const teacherFacingContent = [
+      result.lessonPlan,
+      result.rotationPlan,
+      ...result.exports.map((artifact) => artifact.content ?? ""),
+    ].join("\n")
+
+    expect(teacherFacingContent).not.toContain("Launch Move: Independent Practice, Teach")
+    expect(teacherFacingContent).not.toContain(
+      "Follow the exemplar lesson flow: Independent Practice -> Teach -> Guided Practice"
+    )
+    expect(teacherFacingContent).not.toContain(
+      "Preserve the exemplar slide shell: Independent Practice -> Teach -> Passage / Text"
+    )
+    expect(teacherFacingContent).not.toContain(
+      "teacher-directed pacing | Practice | Closure"
+    )
+
+    expect(teacherFacingContent).toContain("Launch Move: Opening, Teach")
+    expect(teacherFacingContent).toContain("Slide Shell Cue: Opening, Teach, Practice")
+    expect(teacherFacingContent).toContain("Timing Cue: 5 min launch, 10 min model, 10 min practice")
+  })
   })
