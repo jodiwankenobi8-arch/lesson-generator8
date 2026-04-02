@@ -1081,12 +1081,6 @@ export function getPackageWarningsMessage(warningCount: number): string {
     : "No package warnings are currently flagged for this lesson."
 }
 
-export function getBundledArtifactLabels(exports: ExportArtifact[]): string[] {
-  return exports
-    .filter((artifact) => artifact.kind !== "full_package")
-    .map((artifact) => artifact.label)
-}
-
 function getBinderReadinessTone(lessonPackage: LessonPackage): BinderSurfaceTone {
   return lessonPackage.readiness.contentFit === "grounded" ? "moss" : "honey"
 }
