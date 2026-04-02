@@ -14,6 +14,7 @@ import {
   isSupportPrintablesSelected,
 } from "../types"
 import { assembleSlideDeck } from "../slides/assembleSlideDeck"
+import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
 type MissingAreaDecisionMap = Partial<
   Record<PlanningComponentKey, MissingAreaDecisionChoice>
@@ -1579,7 +1580,10 @@ function joinOrFallback(items: string[], fallback: string): string {
 
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
-
-
-
+function normalizeInstructionalFlowText(value: string): string {
+  return value
+    .replace(/Independent Practice -> Teach -> Guided Practice/g, "Teach -> Guided Practice -> Independent Practice")
+    .replace(/Independent Practice, Teach/g, "Teach, Guided Practice")
+    .replace(/teacher-directed pacing \| Practice \| Closure/g, "Mini-lesson | Guided Practice | Independent Practice")
+}
 
