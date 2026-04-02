@@ -1,13 +1,10 @@
 import React, { useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
-  SUPPORTED_SOURCE_UPLOAD_ACCEPT,
-  SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT,
-} from "../engine/materials/sourceIntakeContract"
-import {
   ExemplarStyleAspect,
   ExemplarStyleSettings,
   MaterialRole,
+  MaterialStatus,
 } from "../engine/types"
 import {
   orchardButtonStyle,
