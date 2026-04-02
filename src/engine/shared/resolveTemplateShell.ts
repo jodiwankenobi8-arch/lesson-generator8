@@ -125,12 +125,17 @@ function normalizeInstructionalKind(value: string): InstructionalKind {
     return "teach"
   }
 
-  if (lower.includes("guided") || lower.includes("passage") || lower.includes("text")) {
-    return "guided_practice"
-  }
-
   if (lower.includes("independent") || lower.includes("you do")) {
     return "independent_practice"
+  }
+
+  if (
+    lower.includes("guided") ||
+    lower.includes("practice") ||
+    lower.includes("passage") ||
+    lower.includes("text")
+  ) {
+    return "guided_practice"
   }
 
   if (lower.includes("center")) {

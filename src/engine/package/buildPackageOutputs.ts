@@ -209,6 +209,15 @@ function buildLessonPlan(
     includeInterventionOutput,
   } = lessonPlanOutputs
 
+  const resolvedTemplateShell = resolveTemplateShell(blueprint, {
+    lessonSegmentsCount: 5,
+    slideShellCount: 5,
+    timingCount: 5,
+    teacherMovesCount: 4,
+    promptStyleCount: 4,
+    toneCount: 2,
+  })
+
   const header = buildLessonHeader(inputs)
   const groundingBlock = buildLessonGroundingBlock(blueprint)
   const readinessBlock = buildBlueprintReadinessBlock(blueprint)
@@ -229,17 +238,17 @@ function buildLessonPlan(
   const openingBlock = isLessonPlanPartSelected(outputContents, "opening")
     ? buildSectionNarrativeBlock("Opening", [
         `Launch Move: ${joinOrFallback(
-          blueprint.structure.templateShell.segmentOrder.slice(0, 2),
-          "Opening, objective, quick warm start"
+          resolvedTemplateShell.lessonSegments.slice(0, 2),
+          "Opening, Teach"
         )}`,
         `Prompt Style: ${joinOrFallback(
-          blueprint.structure.promptStyle.slice(0, 2),
+          resolvedTemplateShell.promptStyle.slice(0, 2),
           "teacher prompt"
         )}`,
       ], [
         `Introduce the focus using ${selectModelResources(blueprint)}.`,
         `Set the purpose for the lesson in a ${joinOrFallback(
-          blueprint.structure.tone.slice(0, 2),
+          resolvedTemplateShell.tone.slice(0, 2),
           "clear, supportive"
         )} tone.`,
       ])
@@ -252,12 +261,12 @@ function buildLessonPlan(
     ? buildSectionNarrativeBlock("Direct Instruction / Modeling", [
         `Model Resources: ${selectModelResources(blueprint)}`,
         `Teacher Moves: ${joinOrFallback(
-          blueprint.structure.teacherMoves.slice(0, 3),
+          resolvedTemplateShell.teacherMoves.slice(0, 3),
           "teacher model, guided support"
         )}`,
         `Slide Shell Cue: ${joinOrFallback(
-          blueprint.structure.templateShell.slideShell.slice(0, 3),
-          "Objective -> Teach -> Guided Practice"
+          resolvedTemplateShell.slideShell.slice(0, 3),
+          "Opening, Teach, Guided Practice"
         )}`,
       ], spec.teach.steps)
     : ""
@@ -269,12 +278,12 @@ function buildLessonPlan(
           "curriculum-aligned guided practice"
         )}`,
         `Prompt Style: ${joinOrFallback(
-          blueprint.structure.promptStyle.slice(0, 3),
+          resolvedTemplateShell.promptStyle.slice(0, 3),
           "teacher prompt"
         )}`,
         `Timing Cue: ${joinOrFallback(
-          blueprint.structure.templateShell.timingShell.slice(0, 3),
-          "Mini-lesson | Practice | Closure"
+          resolvedTemplateShell.timing.slice(0, 3),
+          "Opening, Mini-lesson, Guided Practice"
         )}`,
       ], spec.guidedPractice.steps)
     : ""
@@ -293,7 +302,7 @@ function buildLessonPlan(
     ? buildSectionNarrativeBlock("Closure", [
         `Review Focus: ${selectClosureResources(blueprint)}`,
         `Delivery Tone: ${joinOrFallback(
-          blueprint.structure.tone.slice(0, 2),
+          resolvedTemplateShell.tone.slice(0, 2),
           "clear instructional tone"
         )}`,
       ], spec.closure.steps)
