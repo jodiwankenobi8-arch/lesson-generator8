@@ -13,8 +13,10 @@ export function buildBlueprintSourceReadiness(args: {
   texts: string[]
   practiceIdeas: string[]
   lessonSegments: string[]
+  timing: string[]
   teacherMoves: string[]
   promptStyle: string[]
+  slideShell: string[]
 }): BlueprintSourceReadiness {
   const {
     curriculumMaterials,
@@ -25,8 +27,10 @@ export function buildBlueprintSourceReadiness(args: {
     texts,
     practiceIdeas,
     lessonSegments,
+    timing,
     teacherMoves,
     promptStyle,
+    slideShell,
   } = args
 
   const selectedCurriculumMaterialIds = curriculumMaterials.slice(0, 2).map((material) => material.id)
@@ -41,8 +45,10 @@ export function buildBlueprintSourceReadiness(args: {
 
   const exemplarSignalCount = countStrongExemplarSignals(
     lessonSegments,
+    timing,
     teacherMoves,
-    promptStyle
+    promptStyle,
+    slideShell
   )
 
   const coverageSignalCount = countCoverageDimensions(
@@ -216,8 +222,10 @@ function countStrongCurriculumSignals(
 
 function countStrongExemplarSignals(
   lessonSegments: string[],
+  timing: string[],
   teacherMoves: string[],
-  promptStyle: string[]
+  promptStyle: string[],
+  slideShell: string[]
 ): number {
   let count = 0
 
@@ -228,6 +236,21 @@ function countStrongExemplarSignals(
     "part 1",
     "part 2",
     "closure",
+  ])) {
+    count += 1
+  }
+
+  if (hasStrongValues(timing, [
+    "part 1 - 10 min",
+    "part 2 - 10 min",
+    "closure - 5 min",
+    "mini-lesson",
+    "practice",
+    "closure",
+    "opening",
+    "guided practice",
+    "independent practice",
+    "flexible timing",
   ])) {
     count += 1
   }
@@ -253,6 +276,17 @@ function countStrongExemplarSignals(
     "turn and talk",
     "what evidence helps you know?",
     "retell the important part",
+  ])) {
+    count += 1
+  }
+
+  if (hasStrongValues(slideShell, [
+    "objective / opening",
+    "model / teach",
+    "guided practice",
+    "independent practice",
+    "closure / check",
+    "centers / rotation",
   ])) {
     count += 1
   }

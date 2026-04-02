@@ -149,6 +149,7 @@ describe("blueprint respects exemplar style settings", () => {
     expect(result.structure.lessonSegments).toEqual(
       expect.arrayContaining(["Opening", "Teach", "Guided Practice", "Closure"])
     )
+    expect(result.sourceReadiness.exemplarSupport).toBe("strong")
 
     expect(result.structure.teacherMoves).not.toEqual(
       expect.arrayContaining(["Teacher says: model first", "Guide partner response"])
