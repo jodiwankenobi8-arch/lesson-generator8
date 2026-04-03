@@ -9,7 +9,7 @@ import {
   createDefaultOutputContents,
   normalizeOutputContents,
 } from "../engine/types"
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { useLessonStore } from "./useLessonStore"
 
 beforeEach(() => {
@@ -97,6 +97,12 @@ function installTestLocalStorage() {
     configurable: true,
     writable: true,
   })
+}
+
+async function loadFreshLessonStore() {
+  vi.resetModules()
+  const module = await import("./useLessonStore")
+  return module.useLessonStore
 }
 
 function makeMaterial(args: {
@@ -389,8 +395,13 @@ describe("useLessonStore regeneration", () => {
     }))
 
     await useLessonStore.getState().generateLesson()
+    const nextOutputContents = createDefaultOutputContents()
+    nextOutputContents.lessonPlan.parts.teach = false
+    nextOutputContents.assessments.types.formative_assessment = true
+    nextOutputContents.groups.byTier.T2.small_group = true
+    nextOutputContents.other.printables = true
 
-    useLessonStore.getState().toggleOtherOutput("printables")
+    useLessonStore.getState().setOutputContents(nextOutputContents)
     useLessonStore.getState().setMaterialStyleSettings("exemplar-1", {
       mode: "selected_aspects",
       aspects: ["pacing", "teacher_prompts"],
@@ -404,7 +415,7 @@ describe("useLessonStore regeneration", () => {
     const snapshot = JSON.parse(raw!) as any
 
     expect(snapshot.inputs.notes).toBe("Persist me")
-    expect(snapshot.outputContents.other.printables).toBe(true)
+    expect(snapshot.outputContents).toEqual(normalizeOutputContents(nextOutputContents))
     expect(
       snapshot.materials.find((item: { id: string }) => item.id === "exemplar-1")?.styleSettings
     ).toEqual({
@@ -420,6 +431,68 @@ describe("useLessonStore regeneration", () => {
     expect(snapshot.lessonPackage).toBeNull()
     expect(snapshot.lessonTrace).toBeNull()
   })
+
+it("rehydrates persisted workspace state on fresh store load", async () => {
+  globalThis.localStorage.clear()
+
+  useLessonStore.setState((state) => ({
+    ...state,
+    inputs: makeInputs({ notes: "Persist me after refresh" }),
+    materials: [
+      makeMaterial({ id: "curriculum-refresh-1", name: "curriculum.txt", role: "curriculum" }),
+      makeMaterial({ id: "exemplar-refresh-1", name: "exemplar.txt", role: "exemplar" }),
+    ],
+    blueprint: null,
+    planningIdeas: null,
+    lessonSpec: null,
+    lessonPackage: null,
+    lessonTrace: null,
+    outputContents: createDefaultOutputContents(),
+    missingAreaDecisions: {},
+  }))
+
+  const nextOutputContents = createDefaultOutputContents()
+  nextOutputContents.lessonPlan.parts.opening = false
+  nextOutputContents.lessonPlan.parts.differentiation = true
+  nextOutputContents.assessments.types.formative_assessment = true
+  nextOutputContents.groups.byTier.T2.small_group = true
+  nextOutputContents.other.printables = true
+
+  useLessonStore.getState().setOutputContents(nextOutputContents)
+  useLessonStore.getState().setMaterialStyleSettings("exemplar-refresh-1", {
+    mode: "selected_aspects",
+    aspects: ["pacing", "teacher_prompts"],
+    customInstructions: "Keep pacing and prompts after refresh.",
+    targets: ["lesson_plan", "lesson_slides"],
+  })
+
+  await useLessonStore.getState().generateLesson()
+  useLessonStore.getState().setMissingAreaDecision("centers", "leave_out")
+
+  const expectedSelectedLessonMode = useLessonStore.getState().selectedLessonMode
+
+  const freshStore = await loadFreshLessonStore()
+  const state = freshStore.getState()
+
+  expect(state.inputs.notes).toBe("Persist me after refresh")
+  expect(state.selectedLessonMode).toBe(expectedSelectedLessonMode)
+  expect(state.outputContents).toEqual(normalizeOutputContents(nextOutputContents))
+  expect(state.missingAreaDecisions.centers).toBe("leave_out")
+  expect(
+    state.materials.find((item) => item.id === "exemplar-refresh-1")?.styleSettings
+  ).toEqual({
+    mode: "selected_aspects",
+    aspects: ["pacing", "teacher_prompts"],
+    customInstructions: "Keep pacing and prompts after refresh.",
+    targets: ["lesson_plan", "lesson_slides"],
+  })
+  expect(state.blueprint).toBeTruthy()
+  expect(state.planningIdeas).toBeTruthy()
+  expect(state.lessonSpec).toBeTruthy()
+  expect(state.lessonPackage).toBeTruthy()
+  expect(state.lessonTrace).toBeTruthy()
+})
+
 describe("useLessonStore outputContents contract", () => {
   beforeEach(() => {
     globalThis.localStorage.clear()
