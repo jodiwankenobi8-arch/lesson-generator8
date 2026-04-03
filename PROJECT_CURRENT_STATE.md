@@ -2,8 +2,8 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: dfc580c
-- Last auto-sync UTC: 2026-04-03T17:31:02Z
+- Published main checkpoint: 85260d8
+- Last auto-sync UTC: 2026-04-03T18:12:25Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
