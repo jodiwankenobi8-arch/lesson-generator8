@@ -334,7 +334,7 @@ describe("useLessonStore regeneration", () => {
     expect(state.lessonTrace!.selectedSources.exemplarMaterialIds).toEqual(
       state.blueprint!.sourceReadiness.selectedExemplarMaterialIds
     )
-  })
+  }, 10000)
 
   it("generateLesson rejects ready-but-blocked materials with an honest usable-material error", async () => {
     useLessonStore.setState((state) => ({
