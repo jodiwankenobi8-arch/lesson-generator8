@@ -411,24 +411,24 @@ export function PackageSummarySection({
       </div>
 
       <div style={binderMetaListStyle}>
-        <div><strong>Primary Lesson Area:</strong> {blueprint.content.target.primary}</div>
-        <div><strong>Additional Lesson Area:</strong> {blueprint.content.target.secondary || "None"}</div>
-        <div><strong>Multiple Lesson Areas:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
-        <div><strong>Lesson Area Mode:</strong> {selectedLessonMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
+        <div><strong>Primary focus:</strong> {blueprint.content.target.primary}</div>
+        <div><strong>Additional focus:</strong> {blueprint.content.target.secondary || "None"}</div>
+        <div><strong>Multi-area lesson:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
+        <div><strong>Lesson coverage:</strong> {selectedLessonMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
-        <div style={binderSmallNoteStyle}>Standards snapshot: use this to confirm the primary detected alignment before exporting.</div>
+        <div style={binderSmallNoteStyle}>Use this snapshot to confirm the lesson focus and standards before exporting.</div>
       </div>
 
       <div style={{ ...subCardStyle, marginTop: 14 }}>
         <div style={subHeadingStyle}>Grounding Snapshot</div>
         <div style={{ display: "grid", gap: 6 }}>
-          <div><strong>Content authority:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
-          <div><strong>Presentation authority:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
-          <div><strong>Exemplar influence:</strong> {selectedExemplarInfluenceSummary}</div>
-          <div><strong>Exemplar routing:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
-          <div><strong>Content grounded by:</strong> {contentGroundingSummary}</div>
-          <div><strong>Structure shaped by:</strong> {structureImpactSummary}</div>
-          <div><strong>Fallback usage:</strong> {fallbackUsageLabel}</div>
+          <div><strong>Content source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+          <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+          <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
+          <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
+          <div><strong>Content came from:</strong> {contentGroundingSummary}</div>
+          <div><strong>Structure came from:</strong> {structureImpactSummary}</div>
+          <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
         </div>
       </div>
     </div>
@@ -553,14 +553,14 @@ export function TraceabilitySection({
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Authority at a Glance</div>
           <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Content authority:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
-            <div><strong>Presentation authority:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
-            <div><strong>Package grounding:</strong> {packageConfidenceLabel}</div>
-            <div><strong>Fallback usage:</strong> {fallbackUsageLabel}</div>
-            <div><strong>Used with caution or blocked:</strong> {joinOrFallback(cautionOrBlockedSummary, "None")}</div>
+            <div><strong>Content source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+            <div><strong>Lesson grounding:</strong> {packageConfidenceLabel}</div>
+            <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
+            <div><strong>Materials used carefully or not used:</strong> {joinOrFallback(cautionOrBlockedSummary, "None")}</div>
           </div>
           <div style={{ color: "var(--text-secondary)", marginTop: 8 }}>
-            This is the shortest teacher-facing summary of what grounded the lesson and where the engine had to be more careful.
+            This is the quickest summary of what shaped the lesson and where extra review may help.
           </div>
         </div>
 
@@ -568,12 +568,12 @@ export function TraceabilitySection({
           <div style={subHeadingStyle}>Content Authority</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{contentSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Curriculum Support:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
-            <div><strong>Selected Curriculum Source(s):</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
-            <div><strong>Standards Source:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
-            <div><strong>Vocabulary Source:</strong> {joinOrFallback(blueprint.content.vocabulary, "Key vocabulary")}</div>
-            <div><strong>Text/Topic Source:</strong> {joinOrFallback(blueprint.content.texts, "Teacher-provided lesson text")}</div>
-            <div><strong>Practice Source:</strong> {joinOrFallback(blueprint.content.practiceIdeas, "Curriculum-aligned practice task")}</div>
+            <div><strong>Curriculum support strength:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
+            <div><strong>Curriculum sources used:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Standards used:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
+            <div><strong>Vocabulary used:</strong> {joinOrFallback(blueprint.content.vocabulary, "Key vocabulary")}</div>
+            <div><strong>Text or topic used:</strong> {joinOrFallback(blueprint.content.texts, "Teacher-provided lesson text")}</div>
+            <div><strong>Practice used:</strong> {joinOrFallback(blueprint.content.practiceIdeas, "Curriculum-aligned practice task")}</div>
           </div>
         </div>
 
@@ -581,16 +581,16 @@ export function TraceabilitySection({
           <div style={subHeadingStyle}>Presentation Authority</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{structureSourceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Exemplar Support:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
-            <div><strong>Selected Exemplar Source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
-              <div><strong>Selected Influence:</strong> {selectedExemplarInfluenceSummary}</div>
-              <div><strong>Exemplar Routing:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
-              <div><strong>Lesson Flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
+            <div><strong>Exemplar support strength:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
+            <div><strong>Exemplar sources used:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+            <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
+            <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
+            <div><strong>Lesson flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
             <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
-            <div><strong>Teacher Moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
-            <div><strong>Prompt Style:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher prompt")}</div>
-            <div><strong>Content Grounded By:</strong> {contentGroundingSummary}</div>
-            <div><strong>Structure Shaped By:</strong> {structureImpactSummary}</div>
+            <div><strong>Teacher moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
+            <div><strong>Prompt style:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher prompt")}</div>
+            <div><strong>Content came from:</strong> {contentGroundingSummary}</div>
+            <div><strong>Structure came from:</strong> {structureImpactSummary}</div>
           </div>
         </div>
 
@@ -598,12 +598,12 @@ export function TraceabilitySection({
           <div style={subHeadingStyle}>Package Confidence</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{packageConfidenceLabel}</div>
           <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Source Balance:</strong> {blueprint.sourceReadiness.overall}</div>
-            <div><strong>Coverage Support:</strong> {blueprint.sourceReadiness.coverageSupport}</div>
-            <div><strong>Content Fit:</strong> {lessonPackage.readiness.contentFit}</div>
-            <div><strong>Lesson Area Shape:</strong> {lessonPackage.readiness.lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area"}</div>
-            <div><strong>Package Density:</strong> {lessonPackage.readiness.density}</div>
-            <div><strong>Fallback Usage:</strong> {fallbackUsageLabel}</div>
+            <div><strong>Source balance:</strong> {blueprint.sourceReadiness.overall}</div>
+            <div><strong>Coverage support:</strong> {blueprint.sourceReadiness.coverageSupport}</div>
+            <div><strong>Content fit:</strong> {lessonPackage.readiness.contentFit}</div>
+            <div><strong>Lesson shape:</strong> {lessonPackage.readiness.lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area"}</div>
+            <div><strong>Package density:</strong> {lessonPackage.readiness.density}</div>
+            <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
           </div>
         </div>
 
