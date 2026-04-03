@@ -169,7 +169,7 @@ function buildSlides(
 
   if (shell.length === 0) {
     return [
-      "Slide 1: Opening - Introduce the lesson target and objective.",
+      "Slide 1: Opening - Launch the lesson and connect students to the work.",
       "Slide 2: Teach - Model the focus skill with curriculum-aligned content.",
       "Slide 3: Practice - Guide students into supported application.",
       "Slide 4: Closure - Review learning and check understanding.",
@@ -383,7 +383,7 @@ function buildLessonPlan(
     .filter(Boolean)
     .join("\n\n")
 
-  return normalizeInstructionalFlowText(lessonPlan)
+  return lessonPlan
 }
 
 function buildLessonHeader(inputs: LessonInputs): string {
@@ -1299,14 +1299,3 @@ function joinOrFallback(items: string[], fallback: string): string {
 
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
-function normalizeInstructionalFlowText(value: string): string {
-  return value
-    .replace(/Launch Move: Independent Practice, Teach/g, "Launch Move: Teach, Guided Practice")
-    .replace(/Follow the exemplar lesson flow: Independent Practice -> Teach -> Guided Practice/g, "Follow the exemplar lesson flow: Teach -> Guided Practice -> Independent Practice")
-    .replace(/Preserve the exemplar slide shell: Independent Practice -> Teach -> Passage \/ Text/g, "Preserve the exemplar slide shell: Teach -> Passage / Text")
-    .replace(/Independent Practice -> Teach -> Guided Practice/g, "Teach -> Guided Practice -> Independent Practice")
-    .replace(/Independent Practice -> Teach -> Passage \/ Text/g, "Teach -> Passage / Text")
-    .replace(/Independent Practice, Teach/g, "Teach, Guided Practice")
-    .replace(/teacher-directed pacing \| Practice \| Closure/g, "Mini-lesson | Guided Practice | Independent Practice")
-}
-

@@ -1,25 +1,31 @@
 import { LessonBlueprint, LessonSpec } from "../types"
+import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 import { SlideAction, SlideKind, SlideOutline } from "./slideTypes"
 
 export function buildSlidePlan(
   blueprint: LessonBlueprint,
   spec: LessonSpec
 ): SlideOutline[] {
-  const shell = blueprint.structure.templateShell
-  const rawSegmentOrder = take(
-    shell.segmentOrder,
-    8,
-    ["Teach", "Guided Practice", "Independent Practice", "Closure"]
+  const templateShell = blueprint.structure.templateShell
+  const segmentCount = Math.max(
+    templateShell.segmentOrder.length,
+    templateShell.slideShell.length,
+    4
   )
-  const rawSlideShell = take(shell.slideShell, Math.max(rawSegmentOrder.length, 3), rawSegmentOrder)
+  const resolvedShell = resolveTemplateShell(blueprint, {
+    lessonSegmentsCount: segmentCount,
+    slideShellCount: Math.max(templateShell.slideShell.length, segmentCount, 3),
+    teacherMovesCount: 5,
+    promptStyleCount: 5,
+    toneCount: 3,
+  })
 
-  const orderedSlides = buildOrderedInstructionalShell(rawSegmentOrder, rawSlideShell)
-  const segmentOrder = orderedSlides.map((slide) => slide.segmentLabel)
-  const slideShell = orderedSlides.map((slide) => slide.shellLabel)
-  const timingShell = orderedSlides.map((slide) => inferTimingForKind(slide.kind))
-  const teacherMoveShell = take(shell.teacherMoveShell, 5, ["teacher model", "guided support"])
-  const promptShell = take(shell.promptShell, 5, ["teacher prompt"])
-  const toneShell = take(shell.toneShell, 3, ["clear instructional tone"])
+  const segmentOrder = resolvedShell.lessonSegments
+  const slideShell = resolvedShell.slideShell
+  const timingShell = resolvedShell.timing
+  const teacherMoveShell = resolvedShell.teacherMoves
+  const promptShell = resolvedShell.promptStyle
+  const toneShell = resolvedShell.tone
 
   const contentSlides = slideShell.map((shellLabel, index) => {
     const segmentLabel = segmentOrder[index] ?? shellLabel
@@ -241,57 +247,6 @@ function getSectionForKind(kind: SlideKind, spec: LessonSpec) {
 
 function formatTargetLabel(primary: string, secondary: string | null): string {
   return secondary ? `${primary} + ${secondary}` : primary
-}
-
-function buildOrderedInstructionalShell(
-  segmentOrder: string[],
-  slideShell: string[]
-): Array<{ segmentLabel: string; shellLabel: string; kind: SlideKind }> {
-  const maxLength = Math.max(segmentOrder.length, slideShell.length)
-  const rows = Array.from({ length: maxLength }, (_, index) => {
-    const segmentLabel = segmentOrder[index] ?? slideShell[index] ?? "Guided Practice"
-    const shellLabel = slideShell[index] ?? segmentLabel
-    const kind = normalizeSlideKind(segmentLabel)
-
-    return {
-      segmentLabel,
-      shellLabel,
-      kind,
-      rank: getInstructionalRank(kind),
-      index,
-    }
-  })
-
-  rows.sort((a, b) => {
-    if (a.rank !== b.rank) return a.rank - b.rank
-    return a.index - b.index
-  })
-
-  return rows.map(({ segmentLabel, shellLabel, kind }) => ({
-    segmentLabel,
-    shellLabel,
-    kind,
-  }))
-}
-
-function getInstructionalRank(kind: SlideKind): number {
-  if (kind === "opening") return 0
-  if (kind === "teach") return 1
-  if (kind === "guided_practice") return 2
-  if (kind === "independent_practice") return 3
-  if (kind === "centers") return 4
-  if (kind === "closure") return 5
-  return 6
-}
-
-function inferTimingForKind(kind: SlideKind): string {
-  if (kind === "opening") return "Opening"
-  if (kind === "teach") return "Mini-lesson"
-  if (kind === "guided_practice") return "Guided Practice"
-  if (kind === "independent_practice") return "Independent Practice"
-  if (kind === "centers") return "Centers"
-  if (kind === "closure") return "Closure"
-  return "Flexible timing"
 }
 
 function take(items: string[], count: number, fallback: string[]): string[] {
