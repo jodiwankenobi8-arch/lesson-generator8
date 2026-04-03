@@ -82,26 +82,34 @@ function makeCurriculumMaterial(): MaterialFile {
 }
 
 function makeExemplarMaterial(): MaterialFile {
-  return makeMaterial({
-    id: "exemplar-1",
-    name: "exemplar.txt",
-    role: "exemplar",
-    analysis: {
-      sourceRole: "exemplar",
-      summary: "Exemplar material with lesson structure support.",
-      extractedText: ["Opening", "Teach", "Guided Practice", "Closure"],
-      tags: ["exemplar", "structure", "slides"],
-      exemplar: {
-        slideFlow: ["Opening", "Teach", "Guided Practice", "Closure"],
-        pacing: ["5 min launch", "10 min model", "10 min practice"],
-        teacherMoves: ["Model blending", "Guide student response"],
-        promptStyle: ["What do you notice?", "Turn and talk"],
-        layoutCues: ["Large word display"],
-        tone: ["explicit", "supportive"],
-        reusableStructure: ["I do, we do, you do", "Center rotation"],
+  return {
+    ...makeMaterial({
+      id: "exemplar-1",
+      name: "exemplar.txt",
+      role: "exemplar",
+      analysis: {
+        sourceRole: "exemplar",
+        summary: "Exemplar material with lesson structure support.",
+        extractedText: ["Opening", "Teach", "Guided Practice", "Closure"],
+        tags: ["exemplar", "structure", "slides"],
+        exemplar: {
+          slideFlow: ["Opening", "Teach", "Guided Practice", "Closure"],
+          pacing: ["5 min launch", "10 min model", "10 min practice"],
+          teacherMoves: ["Model blending", "Guide student response"],
+          promptStyle: ["What do you notice?", "Turn and talk"],
+          layoutCues: ["Large word display"],
+          tone: ["explicit", "supportive"],
+          reusableStructure: ["I do, we do, you do", "Center rotation"],
+        },
       },
+    }),
+    styleSettings: {
+      mode: "selected_aspects",
+      aspects: ["slide_flow", "pacing"],
+      customInstructions: "",
+      targets: ["lesson_slides", "lesson_plan"],
     },
-  })
+  }
 }
 
 function seedAndGenerate() {
@@ -190,6 +198,9 @@ describe("Results explainability rendering contracts", () => {
     expect(traceabilityMarkup).toContain("Authority at a Glance")
     expect(traceabilityMarkup).toContain("Content authority:")
     expect(traceabilityMarkup).toContain("Presentation authority:")
+    expect(traceabilityMarkup).toContain("Exemplar Routing:")
+    expect(traceabilityMarkup).toContain("lesson plan")
+    expect(traceabilityMarkup).toContain("slides")
     expect(traceabilityMarkup).toContain("Used with caution or blocked:")
     expect(traceabilityMarkup).toContain("Fallback usage:")
 
@@ -307,6 +318,9 @@ describe("Results explainability rendering contracts", () => {
     expect(traceabilityMarkup).toContain("Authority at a Glance")
     expect(traceabilityMarkup).toContain("Content authority:")
     expect(traceabilityMarkup).toContain("Presentation authority:")
+    expect(traceabilityMarkup).toContain("Exemplar Routing:")
+    expect(traceabilityMarkup).toContain("lesson plan")
+    expect(traceabilityMarkup).toContain("slides")
     expect(traceabilityMarkup).toContain("Used with caution or blocked:")
     expect(traceabilityMarkup).toContain("Fallback usage:")
 

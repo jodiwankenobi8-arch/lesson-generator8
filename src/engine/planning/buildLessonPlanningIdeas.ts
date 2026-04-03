@@ -20,6 +20,7 @@ export function buildLessonPlanningIdeas(
   outputContents: LessonOutputContents = createDefaultOutputContents()
 ): LessonPlanningIdeas {
   const shell = resolveTemplateShell(blueprint, {
+    scope: "lesson_plan",
     lessonSegmentsCount: 8,
     timingCount: 8,
     teacherMovesCount: 5,
@@ -192,18 +193,35 @@ function normalizePlanningAreaAliases(value?: string | null): string[] {
     case "decoding":
     case "encoding":
     case "spelling":
+    case "spelling_encoding":
     case "word_recognition":
     case "high_frequency_words":
+    case "letter_identification":
+    case "word_building":
+    case "decodable_reading":
     case "foundational_skills":
     case "foundational":
       return ["foundational"]
     case "language_comprehension":
     case "comprehension":
-    case "vocabulary":
-    case "oral_language":
-    case "knowledge_building":
-    case "writing_about_reading":
+    case "reading_response":
       return ["comprehension"]
+    case "vocabulary":
+    case "vocabulary_oral_language":
+    case "oral_language":
+    case "speaking_listening":
+      return ["vocabulary_oral_language"]
+    case "fluency":
+      return ["fluency"]
+    case "writing_about_reading":
+    case "writing_sentence_work":
+    case "writing":
+      return ["writing"]
+    case "grammar_language_conventions":
+    case "grammar":
+      return ["grammar_language_conventions"]
+    case "knowledge_building":
+      return ["knowledge_building"]
     default:
       return [normalized]
   }
@@ -218,7 +236,14 @@ function planningHasFoundationalArea(areaKeys: string[]): boolean {
 }
 
 function planningHasMeaningArea(areaKeys: string[]): boolean {
-  return planningHasArea(areaKeys, ["comprehension", "fluency", "writing"])
+  return planningHasArea(areaKeys, [
+    "comprehension",
+    "vocabulary_oral_language",
+    "fluency",
+    "writing",
+    "grammar_language_conventions",
+    "knowledge_building",
+  ])
 }
 
 function planningHasMultipleMeaningfulAreas(areaKeys: string[]): boolean {
@@ -230,7 +255,13 @@ function formatPlanningAreaKey(areaKey: string): string {
     case "foundational":
       return "foundational skill"
     case "comprehension":
-      return "meaning-making"
+      return "comprehension"
+    case "vocabulary_oral_language":
+      return "vocabulary / oral language"
+    case "grammar_language_conventions":
+      return "grammar / language conventions"
+    case "knowledge_building":
+      return "knowledge building"
     default:
       return areaKey.replace(/_/g, " ")
   }

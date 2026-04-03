@@ -6,15 +6,10 @@ export function buildSlidePlan(
   blueprint: LessonBlueprint,
   spec: LessonSpec
 ): SlideOutline[] {
-  const templateShell = blueprint.structure.templateShell
-  const segmentCount = Math.max(
-    templateShell.segmentOrder.length,
-    templateShell.slideShell.length,
-    4
-  )
   const resolvedShell = resolveTemplateShell(blueprint, {
-    lessonSegmentsCount: segmentCount,
-    slideShellCount: Math.max(templateShell.slideShell.length, segmentCount, 3),
+    scope: "lesson_slides",
+    lessonSegmentsCount: 8,
+    slideShellCount: 8,
     teacherMovesCount: 5,
     promptStyleCount: 5,
     toneCount: 3,

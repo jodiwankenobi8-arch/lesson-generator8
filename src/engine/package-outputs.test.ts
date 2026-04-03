@@ -735,10 +735,70 @@ describe("buildPackageOutputs", () => {
       "Timing Cue: 5 min launch, 10 min model, 10 min practice"
     )
 
-    expect(teacherFacingContent).toContain("Launch Move: Opening, Teach")
+    expect(teacherFacingContent).toContain("Launch Move: Opening")
     expect(teacherFacingContent).toContain("Slide Shell Cue: Opening, Teach, Practice")
     expect(teacherFacingContent).toContain(
       "Timing Cue: Opening, Mini-lesson, Guided Practice"
     )
   })
   })
+
+  it("keeps opening distinct from the teacher-facing objective in the lesson plan", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      outputContents: makeOutputContents(),
+    })
+
+    expect(result.lessonPlan).toContain("Teacher-Facing Objective:")
+    expect(result.lessonPlan).toContain("Opening Purpose: Start the lesson")
+    expect(result.lessonPlan).toContain("The objective can be shared here if helpful, but it is not the same thing as the opening.")
+    expect(result.lessonPlan).not.toContain("Opening - Introduce the lesson target and objective")
+  })
+
+  it("surfaces multi-area lesson portions instead of one vague mixed block", () => {
+    const mixedBlueprint: LessonBlueprint = {
+      ...blueprint,
+      content: {
+        ...blueprint.content,
+        target: {
+          primary: "phonics",
+          secondary: "writing_sentence_work",
+          isMixedTarget: true,
+          recommendedMode: "full",
+        },
+        profile: {
+          dominantAreaKeys: ["phonics", "writing_sentence_work"],
+        } as never,
+      },
+    }
+
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint: mixedBlueprint,
+      spec,
+      outputContents: makeOutputContents(),
+    })
+
+    expect(result.lessonPlan).toContain("Lesson Portions")
+    expect(result.lessonPlan).toContain("Portion Order: foundational skill -> writing")
+    expect(result.lessonPlan).toContain("Lesson Portion 1 (foundational skill):")
+    expect(result.lessonPlan).toContain("Lesson Portion 2 (writing):")
+    expect(result.lessonPlan).toContain("Independent Practice")
+  })
+

@@ -115,7 +115,7 @@ function makeMaterial(args: {
     errorMessage: null,
     styleSettings:
       args.role === "exemplar"
-        ? { mode: "inspiration", aspects: [], customInstructions: "" }
+        ? { mode: "inspiration", aspects: [], customInstructions: "", targets: ["shared"] }
         : null,
     fileBuffer: null,
     fileContent: "seeded content",
@@ -395,6 +395,7 @@ describe("useLessonStore regeneration", () => {
       mode: "selected_aspects",
       aspects: ["pacing", "teacher_prompts"],
       customInstructions: "Keep pacing and prompts.",
+      targets: ["lesson_plan", "lesson_slides"],
     })
 
     const raw = globalThis.localStorage.getItem("lesson-generator8__workspace_v1")
@@ -410,6 +411,7 @@ describe("useLessonStore regeneration", () => {
       mode: "selected_aspects",
       aspects: ["pacing", "teacher_prompts"],
       customInstructions: "Keep pacing and prompts.",
+      targets: ["lesson_plan", "lesson_slides"],
     })
     expect(
       snapshot.materials.every((item: { fileBuffer: null }) => item.fileBuffer === null)

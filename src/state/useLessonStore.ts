@@ -165,6 +165,20 @@ function defaultExemplarStyleSettings(): ExemplarStyleSettings {
     mode: "inspiration",
     aspects: [],
     customInstructions: "",
+    targets: ["shared"],
+  }
+}
+
+function normalizeExemplarStyleSettings(
+  settings?: ExemplarStyleSettings | null
+): ExemplarStyleSettings {
+  const defaults = defaultExemplarStyleSettings()
+
+  return {
+    mode: settings?.mode ?? defaults.mode,
+    aspects: [...(settings?.aspects ?? defaults.aspects)],
+    customInstructions: settings?.customInstructions ?? defaults.customInstructions,
+    targets: [...((settings?.targets && settings.targets.length > 0) ? settings.targets : defaults.targets)],
   }
 }
 
@@ -214,7 +228,7 @@ function rehydratePersistedMaterials(materials: MaterialFile[]): MaterialFile[] 
       sourceMimeType: material.sourceMimeType ?? null,
       styleSettings:
         material.role === "exemplar"
-          ? material.styleSettings ?? defaultExemplarStyleSettings()
+          ? normalizeExemplarStyleSettings(material.styleSettings)
           : null,
       status: lostUploadSource ? "error" : material.status,
       errorMessage: lostUploadSource
@@ -278,7 +292,7 @@ function safeSaveLessonWorkspace(state: LessonStore) {
         sourceMimeType: material.sourceMimeType ?? null,
         styleSettings:
           material.role === "exemplar"
-            ? material.styleSettings ?? defaultExemplarStyleSettings()
+            ? normalizeExemplarStyleSettings(material.styleSettings)
             : null,
       })),
       selectedLessonMode: state.selectedLessonMode,
@@ -574,7 +588,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
         material.id === id
           ? {
               ...material,
-              styleSettings: settings,
+              styleSettings: normalizeExemplarStyleSettings(settings),
             }
           : material
       ),
