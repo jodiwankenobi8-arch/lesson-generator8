@@ -1,4 +1,4 @@
-import { LessonBlueprint } from "../types"
+import { ExemplarInfluenceTarget, LessonBlueprint } from "../types"
 
 export type ResolvedTemplateShell = {
   lessonSegments: string[]
@@ -21,6 +21,7 @@ type InstructionalKind =
 export function resolveTemplateShell(
   blueprint: LessonBlueprint,
   options?: {
+    scope?: ExemplarInfluenceTarget
     lessonSegmentsCount?: number
     slideShellCount?: number
     timingCount?: number
@@ -29,7 +30,9 @@ export function resolveTemplateShell(
     toneCount?: number
   }
 ): ResolvedTemplateShell {
-  const templateShell = blueprint.structure.templateShell
+  const templateShell =
+    (options?.scope ? blueprint.structure.scopedTemplateShells?.[options.scope] : undefined) ??
+    blueprint.structure.templateShell
 
   const lessonSegmentsCount = options?.lessonSegmentsCount ?? 6
   const slideShellCount = options?.slideShellCount ?? Math.max(lessonSegmentsCount, 3)

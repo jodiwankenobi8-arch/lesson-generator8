@@ -110,6 +110,7 @@ describe("blueprint respects exemplar style settings", () => {
           mode: "copy_closely",
           aspects: [],
           customInstructions: "",
+          targets: ["shared"],
         }),
       ],
       "single"
@@ -140,6 +141,7 @@ describe("blueprint respects exemplar style settings", () => {
           mode: "selected_aspects",
           aspects: ["slide_flow", "pacing"],
           customInstructions: "",
+          targets: ["shared"],
         }),
       ],
       "single"
@@ -174,6 +176,7 @@ describe("blueprint respects exemplar style settings", () => {
           mode: "selected_aspects",
           aspects: ["teacher_prompts"],
           customInstructions: "",
+          targets: ["shared"],
         }),
       ],
       "single"
@@ -185,6 +188,73 @@ describe("blueprint respects exemplar style settings", () => {
     )
     expect(result.structure.promptStyle).toEqual(
       expect.arrayContaining(["Turn and talk", "What do you notice?"])
+    )
+  })
+
+  it("builds scoped template shells when exemplars target different package areas", () => {
+    const slidesOnlyAnalysis = makeExemplarAnalysis({
+      slideFlow: ["Opening", "Mini-Lesson", "Guided Practice", "Closing Reflection"],
+      pacing: ["3 min launch", "12 min model"],
+      reusableStructure: ["Slides-focused shell"],
+    })
+    const centersOnlyAnalysis = makeExemplarAnalysis({
+      slideFlow: ["Rotation Launch", "Center Directions", "Independent Rotation", "Share"],
+      pacing: ["4 min rotation launch", "12 min center work"],
+      reusableStructure: ["Centers-focused shell"],
+    })
+
+    const result = buildBlueprint(
+      {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      [
+        {
+          ...makeExemplarMaterial("ex-shared", {
+            mode: "selected_aspects",
+            aspects: ["slide_flow", "pacing"],
+            customInstructions: "",
+            targets: ["shared"],
+          }),
+          analysis: makeExemplarAnalysis(),
+        },
+        {
+          ...makeExemplarMaterial("ex-slides", {
+            mode: "selected_aspects",
+            aspects: ["slide_flow", "pacing"],
+            customInstructions: "",
+            targets: ["lesson_slides"],
+          }),
+          analysis: slidesOnlyAnalysis,
+        },
+        {
+          ...makeExemplarMaterial("ex-centers", {
+            mode: "selected_aspects",
+            aspects: ["slide_flow", "pacing"],
+            customInstructions: "",
+            targets: ["centers"],
+          }),
+          analysis: centersOnlyAnalysis,
+        },
+      ],
+      "single"
+    )
+
+    expect(result.structure.scopedTemplateShells?.lesson_slides?.timingShell).toEqual(
+      expect.arrayContaining(["3 min launch", "12 min model"])
+    )
+    expect(result.structure.scopedTemplateShells?.centers?.timingShell).toEqual(
+      expect.arrayContaining(["4 min rotation launch", "12 min center work"])
+    )
+    expect(result.structure.scopedTemplateShells?.lesson_slides?.slideShell).not.toEqual(
+      result.structure.scopedTemplateShells?.centers?.slideShell
+    )
+    expect(result.structure.templateShell.slideShell).toEqual(
+      expect.arrayContaining(["Opening", "Teach", "Guided Practice", "Closure"])
     )
   })
 })

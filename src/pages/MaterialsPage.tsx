@@ -42,6 +42,7 @@ import {
 import {
   EXEMPLAR_ASPECT_OPTIONS,
   EXEMPLAR_INFLUENCE_MODE_OPTIONS,
+  EXEMPLAR_TARGET_OPTIONS,
   getDefaultExemplarStyleSettings,
 } from "./materialsPageExemplarHelpers"
 
@@ -480,6 +481,41 @@ export default function MaterialsPage() {
                     <div style={exemplarControlCardStyle}>
                       <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 13 }}>
                         Exemplar Influence
+                      </div>
+
+                      <div style={{ display: "grid", gap: 8 }}>
+                        <div style={exemplarSubtleTextStyle}>
+                          Choose where this exemplar should apply. You can keep one exemplar for slides, another for the lesson plan, and another for centers or teacher-led support.
+                        </div>
+                        <div style={exemplarCheckboxGridStyle}>
+                          {EXEMPLAR_TARGET_OPTIONS.map((targetOption) => {
+                            const settings = getDefaultExemplarStyleSettings(material.styleSettings)
+                            const checked = settings.targets.includes(targetOption.value)
+
+                            return (
+                              <label key={targetOption.value} style={exemplarLabelStyle}>
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const nextTargets = checked
+                                      ? settings.targets.filter((value) => value !== targetOption.value)
+                                      : [...settings.targets, targetOption.value]
+
+                                    setMaterialStyleSettings(material.id, {
+                                      ...settings,
+                                      targets: nextTargets.length > 0 ? nextTargets : ["shared"],
+                                    })
+                                  }}
+                                />
+                                <span>
+                                  <strong>{targetOption.label}</strong>
+                                  <div style={exemplarSubtleTextStyle}>{targetOption.help}</div>
+                                </span>
+                              </label>
+                            )
+                          })}
+                        </div>
                       </div>
 
                       <div style={exemplarOptionListStyle}>

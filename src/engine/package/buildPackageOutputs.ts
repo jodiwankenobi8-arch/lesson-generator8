@@ -218,6 +218,7 @@ function buildLessonPlan(
   } = lessonPlanOutputs
 
   const resolvedTemplateShell = resolveTemplateShell(blueprint, {
+    scope: "lesson_plan",
     lessonSegmentsCount: 5,
     slideShellCount: 5,
     timingCount: 5,
@@ -239,28 +240,28 @@ function buildLessonPlan(
 
   const objectiveBlock = isLessonPlanPartSelected(outputContents, "objective")
     ? buildSectionNarrativeBlock("Objective", [
-        buildObjectiveSummary(inputs, blueprint),
+        `Teacher-Facing Objective: ${buildObjectiveSummary(inputs, blueprint)}`,
       ], [])
     : ""
 
   const openingBlock = isLessonPlanPartSelected(outputContents, "opening")
     ? buildSectionNarrativeBlock("Opening", [
-        `Launch Move: ${joinOrFallback(
-          resolvedTemplateShell.lessonSegments.slice(0, 2),
-          "Opening, Teach"
-        )}`,
+        `Launch Move: ${buildOpeningSequenceLabel(resolvedTemplateShell.lessonSegments)}`,
         `Prompt Style: ${joinOrFallback(
           resolvedTemplateShell.promptStyle.slice(0, 2),
           "teacher prompt"
         )}`,
+        "Opening Purpose: Start the lesson, activate prior knowledge, and orient students to the work. The objective can be shared here if helpful, but it is not the same thing as the opening.",
       ], [
-        `Introduce the focus using ${selectModelResources(blueprint)}.`,
+        `Use ${selectOpeningResources(blueprint)} to connect students to the lesson context or materials.`,
         `Set the purpose for the lesson in a ${joinOrFallback(
           resolvedTemplateShell.tone.slice(0, 2),
           "clear, supportive"
-        )} tone.`,
+        )} tone, then move into ${buildFirstTeachingMoveLabel(resolvedTemplateShell.lessonSegments)}.`,
       ])
     : ""
+
+  const lessonPortionsBlock = buildLessonPortionsBlock(blueprint)
 
   const directInstructionBlock = isLessonPlanPartSelected(
     outputContents,
@@ -369,6 +370,7 @@ function buildLessonPlan(
     standardsBlock,
     objectiveBlock,
     openingBlock,
+    lessonPortionsBlock,
     directInstructionBlock,
     guidedBlock,
     independentBlock,
@@ -423,6 +425,190 @@ function buildObjectiveSummary(
   }
 
   return `Students will work on ${skill} using the selected lesson materials.`
+}
+
+function buildLessonPortionsBlock(blueprint: LessonBlueprint): string {
+  const areaKeys = getOrderedPackageAreaKeys(blueprint)
+
+  if (areaKeys.length <= 1) {
+    return ""
+  }
+
+  return buildSectionNarrativeBlock(
+    "Lesson Portions",
+    [
+      `Portion Order: ${areaKeys.map(formatPackageAreaLabel).join(" -> ")}`,
+      "Keep each resolved area in its own practical lesson portion instead of one vague mixed block.",
+    ],
+    areaKeys.map((areaKey, index) => buildLessonPortionLine(blueprint, areaKey, index))
+  )
+}
+
+function buildLessonPortionLine(
+  blueprint: LessonBlueprint,
+  areaKey: string,
+  index: number
+): string {
+  const label = formatPackageAreaLabel(areaKey)
+
+  if (areaKey === "foundational") {
+    return `Lesson Portion ${index + 1} (${label}): Opening - warm up with ${joinOrFallback(blueprint.content.wordLists.slice(0, 3), "target examples")}. Teach - model the skill clearly. Guided Practice - support students with ${joinOrFallback(blueprint.content.practiceIdeas.slice(0, 2), "guided skill practice")}. Independent Practice - give students their own transfer task with the same pattern. Closure / Check - quickly revisit the strongest examples.`
+  }
+
+  if (areaKey === "comprehension") {
+    return `Lesson Portion ${index + 1} (${label}): Opening - connect students to ${joinOrFallback(blueprint.content.texts.slice(0, 1), "the lesson text")}. Teach - model the key thinking. Guided Practice - support discussion and evidence work. Independent Practice - move students into an individual response tied to ${joinOrFallback(blueprint.content.practiceIdeas.slice(0, 2), "the text task")}. Closure / Check - reconnect the text takeaway.`
+  }
+
+  if (areaKey === "vocabulary_oral_language") {
+    return `Lesson Portion ${index + 1} (${label}): Opening - surface the target words or language. Teach - model meaning and oral use. Guided Practice - rehearse the language together. Independent Practice - have students use the language on their own. Closure / Check - listen for accurate language use.`
+  }
+
+  if (areaKey === "fluency") {
+    return `Lesson Portion ${index + 1} (${label}): Opening - set the fluency focus with ${joinOrFallback(blueprint.content.texts.slice(0, 1), "the lesson text")}. Teach - model phrasing, accuracy, and pace. Guided Practice - use echo, choral, or partner reading. Independent Practice - students reread independently. Closure / Check - finish with a brief fluency check.`
+  }
+
+  if (areaKey === "writing") {
+    return `Lesson Portion ${index + 1} (${label}): Opening - frame the writing task or prompt. Teach - model the writing move. Guided Practice - support planning or shared writing. Independent Practice - students write on their own. Closure / Check - share, revise, or reflect on the writing.`
+  }
+
+  if (areaKey === "grammar_language_conventions") {
+    return `Lesson Portion ${index + 1} (${label}): Opening - introduce the sentence or language example. Teach - model the convention. Guided Practice - work through supported sentence practice. Independent Practice - students apply the convention independently. Closure / Check - review whether the convention transferred.`
+  }
+
+  return `Lesson Portion ${index + 1} (${label}): Opening - orient students to the focus. Teach - model the key move. Guided Practice - support the work together. Independent Practice - give students their own application task. Closure / Check - end with a quick review.`
+}
+
+function getOrderedPackageAreaKeys(blueprint: LessonBlueprint): string[] {
+  const profileKeys = (
+    blueprint as LessonBlueprint & {
+      content?: { profile?: { dominantAreaKeys?: string[] | null } | null }
+    }
+  ).content?.profile?.dominantAreaKeys ?? []
+
+  const raw = profileKeys.length > 0
+    ? profileKeys.flatMap((key) => normalizePackageAreaAlias(key))
+    : [
+        ...normalizePackageAreaAlias(blueprint.content.target.primary),
+        ...normalizePackageAreaAlias(blueprint.content.target.secondary ?? undefined),
+      ]
+
+  return Array.from(new Set(raw.filter((key) => key !== "general"))).sort(
+    (a, b) => getPackageAreaRank(a) - getPackageAreaRank(b)
+  )
+}
+
+function normalizePackageAreaAlias(value?: string | null): string[] {
+  const normalized = (value ?? "").trim().toLowerCase()
+
+  switch (normalized) {
+    case "":
+    case "mixed":
+    case "general":
+      return []
+    case "phonological_awareness":
+    case "phonemic_awareness":
+    case "phonics":
+    case "decoding":
+    case "encoding":
+    case "spelling":
+    case "spelling_encoding":
+    case "word_recognition":
+    case "high_frequency_words":
+    case "letter_identification":
+    case "word_building":
+    case "decodable_reading":
+    case "foundational_skills":
+    case "foundational":
+      return ["foundational"]
+    case "language_comprehension":
+    case "comprehension":
+    case "reading_response":
+      return ["comprehension"]
+    case "vocabulary":
+    case "vocabulary_oral_language":
+    case "oral_language":
+    case "speaking_listening":
+      return ["vocabulary_oral_language"]
+    case "fluency":
+      return ["fluency"]
+    case "writing_about_reading":
+    case "writing_sentence_work":
+    case "writing":
+      return ["writing"]
+    case "grammar_language_conventions":
+    case "grammar":
+      return ["grammar_language_conventions"]
+    case "knowledge_building":
+      return ["knowledge_building"]
+    default:
+      return [normalized]
+  }
+}
+
+function getPackageAreaRank(areaKey: string): number {
+  switch (areaKey) {
+    case "foundational":
+      return 0
+    case "vocabulary_oral_language":
+      return 1
+    case "fluency":
+      return 2
+    case "comprehension":
+      return 3
+    case "grammar_language_conventions":
+      return 4
+    case "writing":
+      return 5
+    case "knowledge_building":
+      return 6
+    default:
+      return 7
+  }
+}
+
+function formatPackageAreaLabel(areaKey: string): string {
+  switch (areaKey) {
+    case "foundational":
+      return "foundational skill"
+    case "vocabulary_oral_language":
+      return "vocabulary / oral language"
+    case "grammar_language_conventions":
+      return "grammar / language conventions"
+    default:
+      return areaKey.replace(/_/g, " ")
+  }
+}
+
+function buildOpeningSequenceLabel(lessonSegments: string[]): string {
+  const openingSegments = lessonSegments.filter((segment) => {
+    const lower = segment.toLowerCase()
+    return lower.includes("opening") || lower.includes("launch") || lower.includes("warm")
+  })
+
+  if (openingSegments.length > 0) {
+    return openingSegments.slice(0, 2).join(", ")
+  }
+
+  return "Opening, transition into teach"
+}
+
+function buildFirstTeachingMoveLabel(lessonSegments: string[]): string {
+  const teachingSegment = lessonSegments.find((segment) => {
+    const lower = segment.toLowerCase()
+    return lower.includes("teach") || lower.includes("model") || lower.includes("mini")
+  })
+
+  return teachingSegment ?? "the first teaching move"
+}
+
+function selectOpeningResources(blueprint: LessonBlueprint): string {
+  const contentResources = [
+    ...blueprint.content.wordLists.slice(0, 2),
+    ...blueprint.content.texts.slice(0, 1),
+    ...blueprint.content.vocabulary.slice(0, 2),
+  ]
+
+  return joinOrFallback(contentResources, "the selected lesson materials")
 }
 
 function buildDifferentiationSteps(
@@ -850,12 +1036,19 @@ function buildSupportBlock(
     sections.push(
       "Teacher-Led Support",
       `- Requested tiers: ${buildSelectedSmallGroupTierSummary(outputContents)}`,
+      `- Structure cue: ${buildScopedFlowCue(blueprint, "small_group")}`,
+      `- Prompt cue: ${buildScopedPromptCue(blueprint, "small_group")}`,
       ...smallGroup
     )
   }
 
   if (interventions.length > 0) {
-    sections.push("Intervention Support", ...interventions)
+    sections.push(
+      "Intervention Support",
+      `- Structure cue: ${buildScopedFlowCue(blueprint, "intervention")}`,
+      `- Prompt cue: ${buildScopedPromptCue(blueprint, "intervention")}`,
+      ...interventions
+    )
   }
 
   return sections.length > 0 ? sections.join("\n") : ""
@@ -929,6 +1122,7 @@ function buildRotationPlan(
   const rotationLines = centers.map(
     (center, index) => `Rotation ${index + 1}: ${center}`
   )
+  const centerCue = `Rotation Structure Cue: ${buildScopedFlowCue(blueprint, "centers")}`
 
   if (!options.includeTeacherLedSupport) {
     return rotationLines.join("\n")
@@ -1034,6 +1228,31 @@ function buildGroundedCenterDefaults(
       "key vocabulary"
     )} while revisiting ${selectTextFocus(blueprint, "teacher-provided text")}.`,
   ]
+}
+
+
+function buildScopedFlowCue(blueprint: LessonBlueprint, scope: "centers" | "small_group" | "intervention"): string {
+  const shell = resolveTemplateShell(blueprint, {
+    scope,
+    lessonSegmentsCount: 4,
+    promptStyleCount: 2,
+    teacherMovesCount: 2,
+    toneCount: 1,
+  })
+
+  return joinOrFallback(shell.lessonSegments.slice(0, 3), "Default support flow")
+}
+
+function buildScopedPromptCue(blueprint: LessonBlueprint, scope: "small_group" | "intervention"): string {
+  const shell = resolveTemplateShell(blueprint, {
+    scope,
+    lessonSegmentsCount: 4,
+    promptStyleCount: 2,
+    teacherMovesCount: 2,
+    toneCount: 1,
+  })
+
+  return joinOrFallback(shell.promptStyle.slice(0, 2), "Teacher prompt")
 }
 
 function buildAddFallbackInterventions(blueprint: LessonBlueprint): string[] {

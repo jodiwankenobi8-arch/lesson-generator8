@@ -7,20 +7,9 @@ import {
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 
-type LessonSpecSectionKey =
-  | "teach"
-  | "guidedPractice"
-  | "independentPractice"
-  | "centers"
-  | "closure"
-
 type LessonSpecContext = {
-  target: LessonBlueprint["content"]["target"]
   areaKeys: string[]
   primaryArea: string
-  hasFoundationalArea: boolean
-  hasMeaningArea: boolean
-  hasMultipleAreas: boolean
   vocabulary: string[]
   wordList: string[]
   texts: string[]
@@ -48,86 +37,43 @@ type LessonSpecContext = {
   formativePlanLines: string[]
 }
 
+type LessonPortion = {
+  areaKey: string
+  label: string
+  teach: string
+  guided: string
+  independent: string
+  closure: string
+  center: string
+}
+
 export function buildLessonSpec(
   blueprint: LessonBlueprint,
   planningIdeas?: LessonPlanningIdeas
 ): LessonSpec {
   const context = buildLessonSpecContext(blueprint, planningIdeas)
-  const { primaryArea, hasMultipleAreas } = context
 
-  if (hasMultipleAreas) {
-    return {
-      teach: createSection("Teach", buildMixedTeachSteps(context)),
-      guidedPractice: createSection(
-        "Guided Practice",
-        buildMixedGuidedPracticeSteps(context)
-      ),
-      independentPractice: createSection(
-        "Independent Practice",
-        buildMixedIndependentPracticeSteps(context)
-      ),
-      centers: createSection("Centers", buildMixedCentersSteps(context)),
-      closure: createSection("Closure", buildMixedClosureSteps(context)),
-    }
+  if (getOrderedAreaKeys(context.areaKeys).length > 1) {
+    return buildMultiAreaSpec(context)
   }
 
-  if (primaryArea === "foundational") {
-    return {
-      teach: createSection("Teach", buildPhonicsTeachSteps(context)),
-      guidedPractice: createSection(
-        "Guided Practice",
-        buildPhonicsGuidedPracticeSteps(context)
-      ),
-      independentPractice: createSection(
-        "Independent Practice",
-        buildPhonicsIndependentPracticeSteps(context)
-      ),
-      centers: createSection("Centers", buildPhonicsCentersSteps(context)),
-      closure: createSection("Closure", buildPhonicsClosureSteps(context)),
-    }
+  if (context.primaryArea === "foundational") {
+    return buildFoundationalSpec(context)
   }
 
-  if (primaryArea === "comprehension") {
-    return {
-      teach: createSection("Teach", buildComprehensionTeachSteps(context)),
-      guidedPractice: createSection(
-        "Guided Practice",
-        buildComprehensionGuidedPracticeSteps(context)
-      ),
-      independentPractice: createSection(
-        "Independent Practice",
-        buildComprehensionIndependentPracticeSteps(context)
-      ),
-      centers: createSection("Centers", buildComprehensionCentersSteps(context)),
-      closure: createSection("Closure", buildComprehensionClosureSteps(context)),
-    }
+  if (context.primaryArea === "comprehension") {
+    return buildComprehensionSpec(context)
   }
 
-  return {
-    teach: createSection("Teach", buildGenericTeachSteps(context)),
-    guidedPractice: createSection(
-      "Guided Practice",
-      buildGenericGuidedPracticeSteps(context)
-    ),
-    independentPractice: createSection(
-      "Independent Practice",
-      buildGenericIndependentPracticeSteps(context)
-    ),
-    centers: createSection("Centers", buildGenericCentersSteps(context)),
-    closure: createSection("Closure", buildGenericClosureSteps(context)),
-  }
+  return buildGenericSpec(context)
 }
 
 function buildLessonSpecContext(
   blueprint: LessonBlueprint,
   planningIdeas?: LessonPlanningIdeas
 ): LessonSpecContext {
-  const target = blueprint.content.target
   const areaKeys = resolveSpecAreaKeys(blueprint)
-  const hasFoundationalArea = specHasFoundationalArea(areaKeys)
-  const hasMeaningArea = specHasMeaningArea(areaKeys)
-  const hasMultipleAreas = specHasMultipleMeaningfulAreas(areaKeys)
-  const primaryArea = selectPrimarySpecArea(areaKeys)
+  const primaryArea = getOrderedAreaKeys(areaKeys)[0] ?? "general"
 
   const vocabulary = take(blueprint.content.vocabulary, 4, ["key vocabulary"])
   const wordList = take(blueprint.content.wordLists, 5, ["teacher-selected examples"])
@@ -136,53 +82,34 @@ function buildLessonSpecContext(
   const standards = take(blueprint.content.standards, 2, ["teacher-selected standard"])
 
   const shell = resolveTemplateShell(blueprint, {
+    scope: "lesson_plan",
     lessonSegmentsCount: 6,
+    slideShellCount: 6,
     teacherMovesCount: 4,
     promptStyleCount: 4,
     toneCount: 2,
   })
 
-  const openingLine = buildOpeningLine(areaKeys, standards, shell.tone)
-  const modeledResources = buildModeledResources(primaryArea, wordList, texts)
-  const guidedTaskLine = buildGuidedTaskLine(primaryArea, practiceIdeas, standards)
-  const independentTaskLine = buildIndependentTaskLine(
-    primaryArea,
-    practiceIdeas,
-    wordList,
-    texts
-  )
-  const closureLine = buildClosureLine(primaryArea, vocabulary, wordList)
-  const flowLine = `Follow the exemplar lesson flow: ${shell.lessonSegments.join(" -> ")}.`
-  const slideShellLine = `Preserve the exemplar slide shell: ${shell.slideShell.join(" -> ")}.`
-  const timingLine = `Keep pacing aligned to: ${shell.timing.join(" | ")}.`
-  const teacherMoveLine = `Use exemplar-style teacher moves such as: ${shell.teacherMoves.join(", ")}.`
-  const promptLine = `Use prompts and response frames such as: ${shell.promptStyle.join(", ")}.`
-  const toneLine = `Keep the delivery tone aligned to: ${shell.tone.join(", ")}.`
-
   return {
-    target,
     areaKeys,
     primaryArea,
-    hasFoundationalArea,
-    hasMeaningArea,
-    hasMultipleAreas,
     vocabulary,
     wordList,
     texts,
     practiceIdeas,
     standards,
     shell,
-    openingLine,
-    modeledResources,
-    guidedTaskLine,
-    independentTaskLine,
-    closureLine,
-    flowLine,
-    slideShellLine,
-    timingLine,
-    teacherMoveLine,
-    promptLine,
-    toneLine,
+    openingLine: buildOpeningLine(areaKeys, standards, shell.tone),
+    modeledResources: buildModeledResources(primaryArea, wordList, texts),
+    guidedTaskLine: buildGuidedTaskLine(primaryArea, practiceIdeas, standards),
+    independentTaskLine: buildIndependentTaskLine(primaryArea, practiceIdeas, wordList, texts),
+    closureLine: buildClosureLine(primaryArea, vocabulary, wordList),
+    flowLine: `Follow the exemplar lesson flow: ${shell.lessonSegments.join(" -> ")}.`,
+    slideShellLine: `Preserve the exemplar slide shell: ${shell.slideShell.join(" -> ")}.`,
+    timingLine: `Keep pacing aligned to: ${shell.timing.join(" | ")}.`,
+    teacherMoveLine: `Use exemplar-style teacher moves such as: ${shell.teacherMoves.join(", ")}.`,
+    promptLine: `Use prompts and response frames such as: ${shell.promptStyle.join(", ")}.`,
+    toneLine: `Keep the delivery tone aligned to: ${shell.tone.join(", ")}.`,
     teachPlanLines: planningLines(planningIdeas, "teach"),
     guidedPlanLines: planningLines(planningIdeas, "guided_practice"),
     independentPlanLines: planningLines(planningIdeas, "independent_practice"),
@@ -194,6 +121,296 @@ function buildLessonSpecContext(
   }
 }
 
+function buildMultiAreaSpec(context: LessonSpecContext): LessonSpec {
+  const portions = buildLessonPortions(context)
+
+  return {
+    teach: createSection("Teach", [
+      context.openingLine,
+      ...portions.map(
+        (portion, index) =>
+          `Lesson Portion ${index + 1} (${portion.label}) - Teach: ${portion.teach}`
+      ),
+      ...context.teachPlanLines,
+      context.teacherMoveLine,
+      context.flowLine,
+      context.slideShellLine,
+    ]),
+    guidedPractice: createSection("Guided Practice", [
+      "Keep each resolved lesson area in its own guided-practice portion before moving on.",
+      ...portions.map(
+        (portion, index) =>
+          `Lesson Portion ${index + 1} (${portion.label}) - Guided Practice: ${portion.guided}`
+      ),
+      `Keep support anchored to the standards: ${context.standards.join(", ")}.`,
+      ...context.guidedPlanLines,
+      ...takeLines(context.formativePlanLines, 1),
+      context.promptLine,
+      context.timingLine,
+    ]),
+    independentPractice: createSection("Independent Practice", [
+      "Each resolved lesson area keeps its own independent-practice moment instead of one vague mixed task.",
+      ...portions.map(
+        (portion, index) =>
+          `Lesson Portion ${index + 1} (${portion.label}) - Independent Practice: ${portion.independent}`
+      ),
+      ...context.independentPlanLines,
+      ...takeLines(context.formativePlanLines, 1, 1),
+      context.toneLine,
+    ]),
+    centers: createSection("Centers", [
+      ...context.centerPlanLines,
+      ...takeLines(context.smallGroupPlanLines, 1),
+      ...takeLines(context.interventionPlanLines, 1),
+      ...portions.map(
+        (portion, index) =>
+          `Center / support for Lesson Portion ${index + 1} (${portion.label}): ${portion.center}`
+      ),
+      "Teacher-led support / reteach center",
+    ]),
+    closure: createSection("Closure", [
+      "Close the lesson by reconnecting what students learned across the resolved lesson portions.",
+      ...portions.map(
+        (portion, index) =>
+          `Lesson Portion ${index + 1} (${portion.label}) - Closure / Check: ${portion.closure}`
+      ),
+      ...context.closurePlanLines,
+      ...takeLines(context.formativePlanLines, 1),
+      context.flowLine,
+      context.timingLine,
+      context.toneLine,
+    ]),
+  }
+}
+
+function buildFoundationalSpec(context: LessonSpecContext): LessonSpec {
+  return {
+    teach: createSection("Teach", [
+      context.openingLine,
+      `Model the foundational-skill focus with these curriculum examples: ${context.wordList.join(", ")}.`,
+      `Teach and reinforce the key skill language students will use: ${context.vocabulary.join(", ")}.`,
+      "Think aloud while reading, sorting, encoding, or applying the target examples.",
+      ...context.teachPlanLines,
+      context.teacherMoveLine,
+      context.flowLine,
+      context.slideShellLine,
+    ]),
+    guidedPractice: createSection("Guided Practice", [
+      context.guidedTaskLine,
+      `Use the lesson examples during support: ${context.wordList.join(", ")}.`,
+      "Require students to explain or show the target skill with teacher guidance.",
+      ...context.guidedPlanLines,
+      ...takeLines(context.formativePlanLines, 1),
+      context.promptLine,
+      context.timingLine,
+    ]),
+    independentPractice: createSection("Independent Practice", [
+      context.independentTaskLine,
+      `Use these examples during practice: ${context.wordList.join(", ")}.`,
+      ...context.independentPlanLines,
+      ...takeLines(context.formativePlanLines, 1, 1),
+      "Check for accurate reading, sorting, encoding, and skill application.",
+      context.toneLine,
+    ]),
+    centers: createSection("Centers", [
+      ...context.centerPlanLines,
+      ...takeLines(context.smallGroupPlanLines, 1),
+      ...takeLines(context.interventionPlanLines, 1),
+      "Word work / foundational-skill center",
+      "Partner reading or skill practice center",
+      "Teacher table for intervention or extension",
+    ]),
+    closure: createSection("Closure", [
+      "Review the target foundational skill or pattern.",
+      context.closureLine,
+      ...context.closurePlanLines,
+      context.promptLine,
+      "End with a quick oral read, sort, or exit check.",
+    ]),
+  }
+}
+
+function buildComprehensionSpec(context: LessonSpecContext): LessonSpec {
+  return {
+    teach: createSection("Teach", [
+      context.openingLine,
+      `Model meaning-making with these lesson texts: ${context.texts.join(", ")}.`,
+      `Preteach or revisit the lesson vocabulary: ${context.vocabulary.join(", ")}.`,
+      "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
+      ...context.teachPlanLines,
+      context.teacherMoveLine,
+      context.flowLine,
+      context.slideShellLine,
+    ]),
+    guidedPractice: createSection("Guided Practice", [
+      context.guidedTaskLine,
+      `Use the lesson text and prompts during support: ${context.texts.join(", ")}.`,
+      `Anchor the work to the lesson standard: ${context.standards.join(", ")}.`,
+      ...context.guidedPlanLines,
+      ...takeLines(context.formativePlanLines, 1),
+      context.promptLine,
+      context.timingLine,
+    ]),
+    independentPractice: createSection("Independent Practice", [
+      context.independentTaskLine,
+      `Use these texts or prompts during student work: ${context.texts.join(", ")}.`,
+      ...context.independentPlanLines,
+      ...takeLines(context.formativePlanLines, 1, 1),
+      "Check for understanding, accuracy, and evidence of reasoning.",
+      context.toneLine,
+    ]),
+    centers: createSection("Centers", [
+      ...context.centerPlanLines,
+      ...takeLines(context.smallGroupPlanLines, 1),
+      ...takeLines(context.interventionPlanLines, 1),
+      "Reading response center",
+      "Partner discussion / retell center",
+      "Teacher table for guided meaning-making support",
+    ]),
+    closure: createSection("Closure", [
+      "Review the meaning-making focus and key takeaway from the text.",
+      context.closureLine,
+      ...context.closurePlanLines,
+      context.promptLine,
+      "Close with a brief discussion, written response, or oral recap.",
+    ]),
+  }
+}
+
+function buildGenericSpec(context: LessonSpecContext): LessonSpec {
+  return {
+    teach: createSection("Teach", [
+      context.openingLine,
+      `Model the lesson content using: ${context.modeledResources}.`,
+      `Teach the lesson vocabulary and focus language: ${context.vocabulary.join(", ")}.`,
+      ...context.teachPlanLines,
+      context.teacherMoveLine,
+      context.flowLine,
+      context.slideShellLine,
+    ]),
+    guidedPractice: createSection("Guided Practice", [
+      context.guidedTaskLine,
+      `Reference standards during support: ${context.standards.join(", ")}.`,
+      ...context.guidedPlanLines,
+      ...takeLines(context.formativePlanLines, 1),
+      context.promptLine,
+      context.timingLine,
+    ]),
+    independentPractice: createSection("Independent Practice", [
+      context.independentTaskLine,
+      `Use these lesson resources: ${context.wordList.join(", ")} / ${context.texts.join(", ")}.`,
+      ...context.independentPlanLines,
+      ...takeLines(context.formativePlanLines, 1, 1),
+      context.toneLine,
+    ]),
+    centers: createSection("Centers", [
+      ...context.centerPlanLines,
+      ...takeLines(context.smallGroupPlanLines, 1),
+      ...takeLines(context.interventionPlanLines, 1),
+      "Independent practice center",
+      "Partner application center",
+      "Teacher support center",
+    ]),
+    closure: createSection("Closure", [
+      "Review the lesson focus and what students learned.",
+      `Revisit the lesson flow: ${context.shell.lessonSegments.join(" -> ")}.`,
+      context.closureLine,
+      ...context.closurePlanLines,
+      context.promptLine,
+    ]),
+  }
+}
+
+function buildLessonPortions(context: LessonSpecContext): LessonPortion[] {
+  return getOrderedAreaKeys(context.areaKeys).map((areaKey) => buildLessonPortion(areaKey, context))
+}
+
+function buildLessonPortion(areaKey: string, context: LessonSpecContext): LessonPortion {
+  const label = formatAreaKey(areaKey)
+
+  if (areaKey === "foundational") {
+    return {
+      areaKey,
+      label,
+      teach: `Model the foundational skill with curriculum examples such as ${context.wordList.join(", ")}.`,
+      guided: `Guide students through supported skill practice using ${context.practiceIdeas.slice(0, 2).join(", ")} and keep the word work visible.`,
+      independent: `Students apply the skill independently with ${context.practiceIdeas.slice(0, 2).join(", ")} and ${context.wordList.slice(0, 4).join(", ")}.`,
+      closure: `Check the foundational skill quickly with ${context.wordList.slice(0, 3).join(", ")}.`,
+      center: `Word work and transfer practice using ${context.wordList.slice(0, 4).join(", ")}.`,
+    }
+  }
+
+  if (areaKey === "comprehension") {
+    return {
+      areaKey,
+      label,
+      teach: `Model the comprehension thinking with ${context.texts.join(", ")} and make the text purpose explicit.`,
+      guided: `Guide students through discussion and support tied to ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+      independent: `Students complete an independent response tied to ${context.texts.slice(0, 1).join(", ")} and ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+      closure: `Revisit the text takeaway and key evidence using ${context.vocabulary.slice(0, 3).join(", ")}.`,
+      center: `Reading response or evidence task using ${context.texts.slice(0, 1).join(", ")}.`,
+    }
+  }
+
+  if (areaKey === "vocabulary_oral_language") {
+    return {
+      areaKey,
+      label,
+      teach: `Teach the target language and oral rehearsal moves using ${context.vocabulary.join(", ")}.`,
+      guided: `Guide students through speaking, rehearsal, or vocabulary practice tied to ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+      independent: "Students use the target language independently in speaking, sorting, or short written responses.",
+      closure: `Listen for accurate use of the target language and revisit ${context.vocabulary.slice(0, 3).join(", ")}.`,
+      center: `Vocabulary / oral language practice using ${context.vocabulary.slice(0, 4).join(", ")}.`,
+    }
+  }
+
+  if (areaKey === "fluency") {
+    return {
+      areaKey,
+      label,
+      teach: `Model fluent reading, phrasing, and accuracy with ${context.texts.slice(0, 1).join(", ")}.`,
+      guided: `Guide echo, choral, or partner reading tied to ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+      independent: "Students reread or perform the text independently and monitor smoothness, pace, and accuracy.",
+      closure: "End with a brief fluency check and reflection on the fluency focus.",
+      center: `Fluency reread or partner performance using ${context.texts.slice(0, 1).join(", ")}.`,
+    }
+  }
+
+  if (areaKey === "writing") {
+    return {
+      areaKey,
+      label,
+      teach: `Model planning and writing moves using ${context.texts.slice(0, 1).join(", ")} and ${context.vocabulary.slice(0, 3).join(", ")}.`,
+      guided: `Guide students through shared or supported writing tied to ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+      independent: "Students complete an independent writing task using the lesson language and source materials.",
+      closure: "Close by sharing or revising writing connected to the lesson focus.",
+      center: `Writing practice tied to ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+    }
+  }
+
+  if (areaKey === "grammar_language_conventions") {
+    return {
+      areaKey,
+      label,
+      teach: `Model the target convention with sentence examples from ${context.texts.slice(0, 1).join(", ") || context.wordList.join(", ")}.`,
+      guided: `Guide sentence-level practice tied to ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+      independent: "Students apply the convention independently in speaking or writing.",
+      closure: "Review the target convention and check whether students can apply it accurately.",
+      center: `Sentence-level convention practice tied to ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+    }
+  }
+
+  return {
+    areaKey,
+    label,
+    teach: `Model the ${label} portion using ${context.modeledResources}.`,
+    guided: `Guide students through ${label} practice with ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
+    independent: `Students complete independent ${label} work using the selected lesson materials.`,
+    closure: `Revisit the key ${label} takeaway before moving on.`,
+    center: `${label} follow-through tied to the selected lesson materials.`,
+  }
+}
+
 function resolveSpecAreaKeys(blueprint: LessonBlueprint): string[] {
   const profileKeys = (
     blueprint as LessonBlueprint & {
@@ -201,28 +418,28 @@ function resolveSpecAreaKeys(blueprint: LessonBlueprint): string[] {
     }
   ).content?.profile?.dominantAreaKeys ?? []
 
-  if (profileKeys.length > 0) {
-    return uniqueStrings(profileKeys.flatMap((key) => normalizeSpecAreaAliases(key)))
+  const rawKeys =
+    profileKeys.length > 0
+      ? profileKeys.flatMap((key) => normalizeAreaAliases(key))
+      : [
+          ...normalizeAreaAliases(blueprint.content.target.primary),
+          ...normalizeAreaAliases(blueprint.content.target.secondary ?? undefined),
+        ]
+
+  const deduped = uniqueStrings(rawKeys)
+
+  if (deduped.length > 0) {
+    return deduped
   }
 
-  const target = blueprint.content.target
-  const targetKeys = uniqueStrings([
-    ...normalizeSpecAreaAliases(target.primary),
-    ...normalizeSpecAreaAliases(target.secondary ?? undefined),
-  ])
-
-  if (targetKeys.length > 0) {
-    return targetKeys
-  }
-
-  if (target.isMixedTarget) {
+  if (blueprint.content.target.isMixedTarget) {
     return ["foundational", "comprehension"]
   }
 
   return ["general"]
 }
 
-function normalizeSpecAreaAliases(value?: string | null): string[] {
+function normalizeAreaAliases(value?: string | null): string[] {
   const normalized = (value ?? "").trim().toLowerCase()
 
   switch (normalized) {
@@ -236,62 +453,96 @@ function normalizeSpecAreaAliases(value?: string | null): string[] {
     case "decoding":
     case "encoding":
     case "spelling":
+    case "spelling_encoding":
     case "word_recognition":
     case "high_frequency_words":
+    case "letter_identification":
+    case "word_building":
+    case "decodable_reading":
     case "foundational_skills":
     case "foundational":
       return ["foundational"]
     case "language_comprehension":
     case "comprehension":
-    case "vocabulary":
-    case "oral_language":
-    case "knowledge_building":
-    case "writing_about_reading":
+    case "reading_response":
       return ["comprehension"]
+    case "vocabulary":
+    case "vocabulary_oral_language":
+    case "oral_language":
+    case "speaking_listening":
+      return ["vocabulary_oral_language"]
+    case "fluency":
+      return ["fluency"]
+    case "writing_about_reading":
+    case "writing_sentence_work":
+    case "writing":
+      return ["writing"]
+    case "grammar_language_conventions":
+    case "grammar":
+      return ["grammar_language_conventions"]
+    case "knowledge_building":
+      return ["knowledge_building"]
     default:
       return [normalized]
   }
 }
 
-function specHasArea(areaKeys: string[], candidates: string[]): boolean {
-  return areaKeys.some((key) => candidates.includes(key))
+function getOrderedAreaKeys(areaKeys: string[]): string[] {
+  return uniqueStrings(areaKeys.filter((key) => key !== "general")).sort(
+    (a, b) => getAreaRank(a) - getAreaRank(b)
+  )
 }
 
-function specHasFoundationalArea(areaKeys: string[]): boolean {
-  return specHasArea(areaKeys, ["foundational"])
-}
-
-function specHasMeaningArea(areaKeys: string[]): boolean {
-  return specHasArea(areaKeys, ["comprehension", "fluency", "writing"])
-}
-
-function specHasMultipleMeaningfulAreas(areaKeys: string[]): boolean {
-  return uniqueStrings(areaKeys.filter((key) => key !== "general")).length > 1
-}
-
-function selectPrimarySpecArea(areaKeys: string[]): string {
-  const meaningful = uniqueStrings(areaKeys.filter((key) => key !== "general"))
-
-  if (specHasFoundationalArea(meaningful) && !specHasMeaningArea(meaningful)) {
-    return "foundational"
+function getAreaRank(areaKey: string): number {
+  switch (areaKey) {
+    case "foundational":
+      return 0
+    case "vocabulary_oral_language":
+      return 1
+    case "fluency":
+      return 2
+    case "comprehension":
+      return 3
+    case "grammar_language_conventions":
+      return 4
+    case "writing":
+      return 5
+    case "knowledge_building":
+      return 6
+    default:
+      return 7
   }
-
-  if (specHasMeaningArea(meaningful) && !specHasFoundationalArea(meaningful)) {
-    return "comprehension"
-  }
-
-  return meaningful[0] ?? "general"
 }
 
-function formatSpecAreaKey(areaKey: string): string {
+function formatAreaKey(areaKey: string): string {
   switch (areaKey) {
     case "foundational":
       return "foundational skill"
-    case "comprehension":
-      return "meaning-making"
+    case "vocabulary_oral_language":
+      return "vocabulary / oral language"
+    case "grammar_language_conventions":
+      return "grammar / language conventions"
+    case "knowledge_building":
+      return "knowledge building"
     default:
       return areaKey.replace(/_/g, " ")
   }
+}
+
+function planningLines(
+  planningIdeas: LessonPlanningIdeas | undefined,
+  section: "teach" | "guided_practice" | "independent_practice" | "closure"
+): string[] {
+  const match = planningIdeas?.lessonPlanSections.find((item) => item.section === section)
+  return match ? match.ideas.map((idea) => formatPlanningIdea(idea)) : []
+}
+
+function ideaLines(ideas: LessonPlanIdea[] | undefined): string[] {
+  return ideas?.map((idea) => formatPlanningIdea(idea)) ?? []
+}
+
+function formatPlanningIdea(idea: LessonPlanIdea): string {
+  return `${idea.title}: ${idea.description}`
 }
 
 function createSection(title: string, steps: string[]): LessonSpecSection {
@@ -301,267 +552,21 @@ function createSection(title: string, steps: string[]): LessonSpecSection {
   }
 }
 
-function buildMixedTeachSteps(context: LessonSpecContext): string[] {
-  return [
-    context.openingLine,
-    `Model the foundational skill first using: ${context.wordList.join(", ")}.`,
-    `Then connect students to meaning and text work using: ${context.texts.join(", ")}.`,
-    `Preteach and revisit vocabulary across both parts: ${context.vocabulary.join(", ")}.`,
-    ...context.teachPlanLines,
-    context.teacherMoveLine,
-    context.promptLine,
-    context.flowLine,
-    context.slideShellLine,
-  ]
-}
-
-function buildMixedGuidedPracticeSteps(context: LessonSpecContext): string[] {
-  return [
-    `Guide students through two curriculum-aligned practice blocks: ${context.practiceIdeas.join(", ")}.`,
-    `Use modeled examples and text support during teacher guidance: ${context.wordList.join(", ")}; ${context.texts.join(", ")}.`,
-    `Keep support anchored to the standards: ${context.standards.join(", ")}.`,
-    ...context.guidedPlanLines,
-    ...takeLines(context.formativePlanLines, 1),
-    context.promptLine,
-    context.timingLine,
-  ]
-}
-
-function buildMixedIndependentPracticeSteps(context: LessonSpecContext): string[] {
-  return [
-    `Students complete two aligned independent tasks using: ${context.practiceIdeas.slice(0, 2).join(", ")}.`,
-    `Require students to apply both lesson resources and text support: ${context.wordList.join(", ")} / ${context.texts.join(", ")}.`,
-    ...context.independentPlanLines,
-    "Check for transfer from teacher-supported work to student-owned work in both lesson parts.",
-    ...takeLines(context.formativePlanLines, 1, 1),
-    context.toneLine,
-  ]
-}
-
-function buildMixedCentersSteps(context: LessonSpecContext): string[] {
-  return [
-    ...context.centerPlanLines,
-    ...takeLines(context.smallGroupPlanLines, 1),
-    ...takeLines(context.interventionPlanLines, 1),
-    "Phonics / word work center",
-    "Reading or response center",
-    "Teacher-led support / reteach center",
-  ]
-}
-
-function buildMixedClosureSteps(context: LessonSpecContext): string[] {
-  return [
-    "Review what students learned in both parts of the lesson.",
-    ...context.closurePlanLines,
-    ...takeLines(context.formativePlanLines, 1),
-    context.flowLine,
-    context.timingLine,
-    context.toneLine,
-    "End with a quick check for understanding and identify students needing reteach.",
-  ]
-}
-
-function buildPhonicsTeachSteps(context: LessonSpecContext): string[] {
-  return [
-    context.openingLine,
-    `Model the foundational-skill focus with these curriculum examples: ${context.wordList.join(", ")}.`,
-    `Teach and reinforce the key skill language students will use: ${context.vocabulary.join(", ")}.`,
-    "Think aloud while reading, sorting, encoding, or applying the target examples.",
-    ...context.teachPlanLines,
-    context.teacherMoveLine,
-    context.flowLine,
-    context.slideShellLine,
-  ]
-}
-
-function buildPhonicsGuidedPracticeSteps(context: LessonSpecContext): string[] {
-  return [
-    context.guidedTaskLine,
-    `Use the lesson examples during support: ${context.wordList.join(", ")}.`,
-    "Require students to explain or show the target skill with teacher guidance.",
-    ...context.guidedPlanLines,
-    ...takeLines(context.formativePlanLines, 1),
-    context.promptLine,
-    context.timingLine,
-  ]
-}
-
-function buildPhonicsIndependentPracticeSteps(context: LessonSpecContext): string[] {
-  return [
-    context.independentTaskLine,
-    `Use these examples during practice: ${context.wordList.join(", ")}.`,
-    ...context.independentPlanLines,
-    ...takeLines(context.formativePlanLines, 1, 1),
-    "Check for accurate reading, sorting, encoding, and skill application.",
-    context.toneLine,
-  ]
-}
-
-function buildPhonicsCentersSteps(context: LessonSpecContext): string[] {
-  return [
-    ...context.centerPlanLines,
-    ...takeLines(context.smallGroupPlanLines, 1),
-    ...takeLines(context.interventionPlanLines, 1),
-    "Word work / foundational-skill center",
-    "Partner reading or skill practice center",
-    "Teacher table for intervention or extension",
-  ]
-}
-
-function buildPhonicsClosureSteps(context: LessonSpecContext): string[] {
-  return [
-    "Review the target foundational skill or pattern.",
-    context.closureLine,
-    ...context.closurePlanLines,
-    context.promptLine,
-    "End with a quick oral read, sort, or exit check.",
-  ]
-}
-
-function buildComprehensionTeachSteps(context: LessonSpecContext): string[] {
-  return [
-    context.openingLine,
-    `Model meaning-making with these lesson texts: ${context.texts.join(", ")}.`,
-    `Preteach or revisit the lesson vocabulary: ${context.vocabulary.join(", ")}.`,
-    "Demonstrate how students should discuss, answer, explain, or cite their thinking from the text.",
-    ...context.teachPlanLines,
-    context.teacherMoveLine,
-    context.flowLine,
-    context.slideShellLine,
-  ]
-}
-
-function buildComprehensionGuidedPracticeSteps(context: LessonSpecContext): string[] {
-  return [
-    context.guidedTaskLine,
-    `Use the lesson text and prompts during support: ${context.texts.join(", ")}.`,
-    `Anchor the work to the lesson standard: ${context.standards.join(", ")}.`,
-    ...context.guidedPlanLines,
-    ...takeLines(context.formativePlanLines, 1),
-    context.promptLine,
-    context.timingLine,
-  ]
-}
-
-function buildComprehensionIndependentPracticeSteps(
-  context: LessonSpecContext
-): string[] {
-  return [
-    context.independentTaskLine,
-    `Use these texts or prompts during student work: ${context.texts.join(", ")}.`,
-    ...context.independentPlanLines,
-    ...takeLines(context.formativePlanLines, 1, 1),
-    "Check for understanding, accuracy, and evidence of reasoning.",
-    context.toneLine,
-  ]
-}
-
-function buildComprehensionCentersSteps(context: LessonSpecContext): string[] {
-  return [
-    ...context.centerPlanLines,
-    ...takeLines(context.smallGroupPlanLines, 1),
-    ...takeLines(context.interventionPlanLines, 1),
-    "Reading response center",
-    "Partner discussion / retell center",
-    "Teacher table for guided meaning-making support",
-  ]
-}
-
-function buildComprehensionClosureSteps(context: LessonSpecContext): string[] {
-  return [
-    "Review the meaning-making objective and key takeaway from the text.",
-    context.closureLine,
-    ...context.closurePlanLines,
-    context.promptLine,
-    "Close with a brief discussion, written response, or oral recap.",
-  ]
-}
-
-function buildGenericTeachSteps(context: LessonSpecContext): string[] {
-  return [
-    context.openingLine,
-    `Model the lesson content using: ${context.modeledResources}.`,
-    `Teach the lesson vocabulary and focus language: ${context.vocabulary.join(", ")}.`,
-    ...context.teachPlanLines,
-    context.teacherMoveLine,
-    context.flowLine,
-    context.slideShellLine,
-  ]
-}
-
-function buildGenericGuidedPracticeSteps(context: LessonSpecContext): string[] {
-  return [
-    context.guidedTaskLine,
-    `Reference standards during support: ${context.standards.join(", ")}.`,
-    ...context.guidedPlanLines,
-    ...takeLines(context.formativePlanLines, 1),
-    context.promptLine,
-    context.timingLine,
-  ]
-}
-
-function buildGenericIndependentPracticeSteps(context: LessonSpecContext): string[] {
-  return [
-    context.independentTaskLine,
-    `Use these lesson resources: ${context.wordList.join(", ")} / ${context.texts.join(", ")}.`,
-    ...context.independentPlanLines,
-    ...takeLines(context.formativePlanLines, 1, 1),
-    context.toneLine,
-  ]
-}
-
-function buildGenericCentersSteps(context: LessonSpecContext): string[] {
-  return [
-    ...context.centerPlanLines,
-    ...takeLines(context.smallGroupPlanLines, 1),
-    ...takeLines(context.interventionPlanLines, 1),
-    "Independent practice center",
-    "Partner application center",
-    "Teacher support center",
-  ]
-}
-
-function buildGenericClosureSteps(context: LessonSpecContext): string[] {
-  return [
-    "Review the lesson objective.",
-    `Revisit the lesson flow: ${context.shell.lessonSegments.join(" -> ")}.`,
-    context.closureLine,
-    ...context.closurePlanLines,
-    context.promptLine,
-  ]
-}
-
-function planningLines(
-  planningIdeas: LessonPlanningIdeas | undefined,
-  section: "teach" | "guided_practice" | "independent_practice" | "closure"
-): string[] {
-  const match = planningIdeas?.lessonPlanSections.find((item) => item.section === section)
-
-  if (!match) {
-    return []
-  }
-
-  return match.ideas.map((idea) => formatPlanningIdea(idea))
-}
-
-function ideaLines(ideas: LessonPlanIdea[] | undefined): string[] {
-  if (!ideas?.length) {
-    return []
-  }
-
-  return ideas.map((idea) => formatPlanningIdea(idea))
-}
-
 function takeLines(lines: string[], count: number, start = 0): string[] {
   return lines.slice(start, start + count)
 }
 
-function formatPlanningIdea(idea: LessonPlanIdea): string {
-  return `${idea.title}: ${idea.description}`
+function take(items: string[], count: number, fallback: string[]): string[] {
+  const cleaned = uniqueStrings(items.map((item) => item.trim()).filter(Boolean)).slice(0, count)
+  return cleaned.length > 0 ? cleaned : fallback
 }
 
 function compactSteps(steps: string[]): string[] {
-  return Array.from(new Set(steps.map((step) => step.trim()).filter((step) => step.length > 0)))
+  return uniqueStrings(steps.map((step) => step.trim()).filter(Boolean))
+}
+
+function uniqueStrings(items: string[]): string[] {
+  return Array.from(new Set(items))
 }
 
 function buildOpeningLine(
@@ -570,7 +575,7 @@ function buildOpeningLine(
   tone: string[]
 ): string {
   const targetLabel = formatTargetLabel(areaKeys)
-  return `Introduce the lesson target: ${targetLabel}. Connect the work to: ${standards.join(", ")}. Set the tone with: ${tone.join(", ")}.`
+  return `Launch the lesson with a brief opening for ${targetLabel}. Connect students to ${standards.join(", ")} and set a ${tone.join(", ")} tone. Share the objective here if helpful, but treat the opening as the lesson start rather than the objective itself.`
 }
 
 function buildModeledResources(primaryArea: string, wordList: string[], texts: string[]): string {
@@ -620,40 +625,22 @@ function buildIndependentTaskLine(
 
 function buildClosureLine(primaryArea: string, vocabulary: string[], wordList: string[]): string {
   if (primaryArea === "foundational") {
-    return `Revisit the strongest lesson examples: ${wordList.slice(0, 3).join(", ")}.`
+    return `Review the strongest examples again: ${wordList.slice(0, 3).join(", ")}.`
   }
 
-  return `Reinforce key lesson vocabulary: ${vocabulary.slice(0, 3).join(", ")}.`
+  return `Reconnect students to the key takeaway using ${vocabulary.slice(0, 3).join(", ")}.`
 }
 
 function formatTargetLabel(areaKeys: string[]): string {
-  const meaningful = uniqueStrings(areaKeys.filter((key) => key !== "general"))
+  const meaningful = getOrderedAreaKeys(areaKeys)
 
   if (meaningful.length === 0) {
-    return "lesson focus"
+    return "the lesson focus"
   }
 
   if (meaningful.length === 1) {
-    return `${formatSpecAreaKey(meaningful[0])} focus`
+    return formatAreaKey(meaningful[0])
   }
 
-  if (meaningful.length === 2) {
-    return `${formatSpecAreaKey(meaningful[0])} + ${formatSpecAreaKey(meaningful[1])}`
-  }
-
-  return meaningful.map((key) => formatSpecAreaKey(key)).join(" + ")
-}
-
-function take(items: string[], count: number, fallback: string[]): string[] {
-  const cleaned = Array.from(
-    new Set(items.map((item) => item.trim()).filter((item) => item.length > 0))
-  ).slice(0, count)
-
-  return cleaned.length ? cleaned : fallback
-}
-
-function uniqueStrings(values: string[]): string[] {
-  return Array.from(
-    new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))
-  )
+  return meaningful.map((key) => formatAreaKey(key)).join(" + ")
 }

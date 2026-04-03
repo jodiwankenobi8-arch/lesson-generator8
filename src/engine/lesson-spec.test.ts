@@ -269,19 +269,27 @@ describe("buildLessonSpec", () => {
     )
 
     expect(spec.teach.steps.join(" ")).toContain(
-      "Model the foundational skill first"
+      "Lesson Portion 1 (foundational skill) - Teach"
     )
     expect(spec.teach.steps.join(" ")).toContain(
-      "Then connect students to meaning and text work"
+      "Lesson Portion 2 (comprehension) - Teach"
     )
     expect(spec.guidedPractice.steps.join(" ")).toContain(
-      "Guide students through two curriculum-aligned practice blocks"
+      "Lesson Portion 1 (foundational skill) - Guided Practice"
     )
     expect(spec.independentPractice.steps.join(" ")).toContain(
-      "Students complete two aligned independent tasks"
+      "Lesson Portion 2 (comprehension) - Independent Practice"
     )
     expect(spec.closure.steps.join(" ")).toContain(
-      "Review what students learned in both parts of the lesson."
+      "Close the lesson by reconnecting what students learned across the resolved lesson portions."
+    )
+  })
+
+  it("keeps the opening distinct from the objective framing", () => {
+    const spec = buildLessonSpec(makeBlueprint(), makePlanningIdeas())
+
+    expect(spec.teach.steps.join(" ")).toContain(
+      "Share the objective here if helpful, but treat the opening as the lesson start rather than the objective itself."
     )
   })
 

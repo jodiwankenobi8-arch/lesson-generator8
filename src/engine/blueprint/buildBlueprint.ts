@@ -39,7 +39,13 @@ export function buildBlueprint(
     .map((material) => material.analysis?.curriculum)
     .filter((analysis): analysis is CurriculumAnalysis => Boolean(analysis))
 
-  const exemplarAnalyses = exemplarMaterials
+  const sharedExemplarMaterials = selectScopedExemplarMaterials(
+    exemplarMaterials,
+    "shared",
+    { fallbackToAll: true }
+  )
+
+  const exemplarAnalyses = sharedExemplarMaterials
     .slice(0, 2)
     .map((material) =>
       material.analysis?.exemplar
@@ -71,10 +77,16 @@ export function buildBlueprint(
     target,
   })
 
-  const structure = resolveBlueprintStructure({
+  const baseStructure = resolveBlueprintStructure({
     exemplarAnalyses,
     target,
   })
+
+  const scopedTemplateShells = buildScopedTemplateShells(exemplarMaterials, target)
+  const structure = {
+    ...baseStructure,
+    scopedTemplateShells,
+  }
 
   const sourceReadiness = buildBlueprintSourceReadiness({
     curriculumMaterials,
@@ -212,3 +224,83 @@ function buildResolvedTarget(
   }
 }
 
+
+
+function buildScopedTemplateShells(
+  exemplarMaterials: MaterialFile[],
+  target: LessonBlueprint["content"]["target"]
+) {
+  const scopeKeys = [
+    "lesson_slides",
+    "lesson_plan",
+    "centers",
+    "small_group",
+    "intervention",
+    "printables",
+  ] as const
+
+  const sharedFallback = selectScopedExemplarMaterials(exemplarMaterials, "shared", {
+    fallbackToAll: true,
+  })
+
+  const entries = scopeKeys.flatMap((scope) => {
+    const scopedMaterials = selectScopedExemplarMaterials(exemplarMaterials, scope, {
+      fallbackMaterials: sharedFallback,
+    })
+
+    const scopedAnalyses = scopedMaterials
+      .slice(0, 2)
+      .map((material) =>
+        material.analysis?.exemplar
+          ? applyExemplarStyleSettings(material.analysis.exemplar, material.styleSettings)
+          : null
+      )
+      .filter((analysis): analysis is ExemplarAnalysis => Boolean(analysis))
+
+    if (scopedAnalyses.length === 0) {
+      return []
+    }
+
+    const scopedStructure = resolveBlueprintStructure({
+      exemplarAnalyses: scopedAnalyses,
+      target,
+    })
+
+    return [[scope, scopedStructure.templateShell] as const]
+  })
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined
+}
+
+function selectScopedExemplarMaterials(
+  materials: MaterialFile[],
+  scope: string,
+  options: {
+    fallbackToAll?: boolean
+    fallbackMaterials?: MaterialFile[]
+  } = {}
+): MaterialFile[] {
+  const scoped = materials.filter((material) => exemplarTargetsInclude(material.styleSettings, scope))
+
+  if (scoped.length > 0) {
+    return scoped
+  }
+
+  if (options.fallbackMaterials && options.fallbackMaterials.length > 0) {
+    return options.fallbackMaterials
+  }
+
+  if (options.fallbackToAll) {
+    return materials
+  }
+
+  return []
+}
+
+function exemplarTargetsInclude(
+  styleSettings: ExemplarStyleSettings | null | undefined,
+  scope: string
+): boolean {
+  const targets = styleSettings?.targets?.length ? styleSettings.targets : ["shared"]
+  return targets.includes(scope as (typeof targets)[number])
+}

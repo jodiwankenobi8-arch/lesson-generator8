@@ -643,6 +643,24 @@ export type ExemplarStyleAspect =
 
 
 
+export type ExemplarInfluenceTarget =
+
+  | "shared"
+
+  | "lesson_plan"
+
+  | "lesson_slides"
+
+  | "centers"
+
+  | "small_group"
+
+  | "intervention"
+
+  | "printables"
+
+
+
 export type ExemplarStyleSettings = {
 
   mode: ExemplarStyleMode
@@ -650,6 +668,8 @@ export type ExemplarStyleSettings = {
   aspects: ExemplarStyleAspect[]
 
   customInstructions: string
+
+  targets: ExemplarInfluenceTarget[]
 
 }
 
@@ -1129,6 +1149,14 @@ export type BlueprintTemplateShell = {
 
 
 
+export type BlueprintScopedTemplateShells = Partial<
+
+  Record<ExemplarInfluenceTarget, BlueprintTemplateShell>
+
+>
+
+
+
 export type BlueprintStructure = {
 
   timing: string[]
@@ -1142,6 +1170,8 @@ export type BlueprintStructure = {
   tone: string[]
 
   templateShell: BlueprintTemplateShell
+
+  scopedTemplateShells?: BlueprintScopedTemplateShells
 
 }
 

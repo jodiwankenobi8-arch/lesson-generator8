@@ -99,3 +99,44 @@ function formatExemplarAspectLabel(value: string): string {
       return value.replace(/_/g, " ")
   }
 }
+
+
+export function summarizeSelectedExemplarTargets(
+  materials: Array<{
+    id: string
+    name: string
+    role: string
+    styleSettings?: {
+      targets?: string[] | null
+    } | null
+  }>,
+  selectedIds: string[]
+): string[] {
+  return materials
+    .filter((material) => material.role === "exemplar" && selectedIds.includes(material.id))
+    .map((material) => {
+      const targets = material.styleSettings?.targets ?? ["shared"]
+      return `${material.name}: ${targets.map(formatExemplarTargetLabel).join(", ")}`
+    })
+}
+
+function formatExemplarTargetLabel(value: string): string {
+  switch (value) {
+    case "shared":
+      return "whole package structure"
+    case "lesson_plan":
+      return "lesson plan"
+    case "lesson_slides":
+      return "slides"
+    case "centers":
+      return "centers / rotation"
+    case "small_group":
+      return "teacher-led support"
+    case "intervention":
+      return "intervention"
+    case "printables":
+      return "printables / student pages"
+    default:
+      return value.replace(/_/g, " ")
+  }
+}

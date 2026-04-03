@@ -6,7 +6,7 @@ import {
   inferMimeTypeFromName,
   isSupportedUploadFile,
 } from "./MaterialsPage"
-import { EXEMPLAR_INFLUENCE_MODE_OPTIONS } from "./materialsPageExemplarHelpers"
+import { EXEMPLAR_INFLUENCE_MODE_OPTIONS, EXEMPLAR_TARGET_OPTIONS } from "./materialsPageExemplarHelpers"
 
 describe("buildUploadSourceMetadata", () => {
   it("classifies image uploads as bounded OCR recovery sources with traceable metadata", () => {
@@ -181,7 +181,7 @@ describe("getTeacherVisibleMaterialNote progress wording", () => {
   })
 })
 
-describe("exemplar restyle note copy", () => {
+describe("exemplar restyle and routing copy", () => {
   it("keeps the custom exemplar option focused on preserving structure while restyling details", () => {
     const customOption = EXEMPLAR_INFLUENCE_MODE_OPTIONS.find((option) => option.value === "custom")
 
@@ -189,6 +189,20 @@ describe("exemplar restyle note copy", () => {
     expect(customOption?.label).toBe("Keep structure, restyle details")
     expect(customOption?.help).toContain("layout, structure, and pacing")
     expect(customOption?.help).toContain("colors, theme, or wording")
+  })
+
+  it("offers routing targets so different exemplars can drive different outputs", () => {
+    expect(EXEMPLAR_TARGET_OPTIONS.map((option) => option.value)).toEqual(
+      expect.arrayContaining([
+        "shared",
+        "lesson_slides",
+        "lesson_plan",
+        "centers",
+        "small_group",
+        "intervention",
+        "printables",
+      ])
+    )
   })
 })
 
@@ -203,6 +217,9 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain("You can generate now. At least one material is ready to use.")
     expect(source).toContain(
       "Each file shows whether it is being prepared, ready to use, or needs attention."
+    )
+    expect(source).toContain(
+      "Choose where this exemplar should apply. You can keep one exemplar for slides, another for the lesson plan, and another for centers or teacher-led support."
     )
 
     expect(source).not.toContain(

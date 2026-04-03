@@ -53,6 +53,7 @@ import {
 import {
   summarizeContentGrounding,
   summarizeSelectedExemplarInfluence,
+  summarizeSelectedExemplarTargets,
   summarizeStructureImpact,
 } from "./resultsPageTraceabilityHelpers"
 
@@ -342,6 +343,7 @@ export default function ResultsPage() {
           blueprint={blueprint}
           lessonPackage={lessonPackage}
           selectedLessonMode={selectedLessonMode}
+          materials={materials}
         />
 
         <PackageOutputsSection lessonPackage={lessonPackage} />
@@ -367,16 +369,37 @@ export default function ResultsPage() {
   )
 }
 
-function PackageSummarySection({
+export function PackageSummarySection({
   blueprint,
   lessonPackage,
   selectedLessonMode,
+  materials,
 }: {
   blueprint: LessonBlueprint
   lessonPackage: LessonPackage
   selectedLessonMode: string
+  materials: MaterialFile[]
 }) {
   const teacherLedSupportCount = countTeacherLedSupportLines(lessonPackage.rotationPlan).toString()
+  const selectedContentSourceNames = getSelectedMaterialNames(
+    materials,
+    blueprint.sourceReadiness.selectedCurriculumMaterialIds
+  )
+  const selectedStructureSourceNames = getSelectedMaterialNames(
+    materials,
+    blueprint.sourceReadiness.selectedExemplarMaterialIds
+  )
+  const selectedExemplarInfluenceSummary = summarizeSelectedExemplarInfluence(
+    materials,
+    blueprint.sourceReadiness.selectedExemplarMaterialIds
+  )
+  const selectedExemplarTargetSummary = summarizeSelectedExemplarTargets(
+    materials,
+    blueprint.sourceReadiness.selectedExemplarMaterialIds
+  )
+  const contentGroundingSummary = summarizeContentGrounding(blueprint)
+  const structureImpactSummary = summarizeStructureImpact(blueprint)
+  const fallbackUsageLabel = getFallbackUsageLabel(blueprint, lessonPackage)
 
   return (
     <div style={sectionStyle}>
@@ -394,6 +417,19 @@ function PackageSummarySection({
         <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
         <div style={binderSmallNoteStyle}>Standards snapshot: use this to confirm the primary detected alignment before exporting.</div>
+      </div>
+
+      <div style={{ ...subCardStyle, marginTop: 14 }}>
+        <div style={subHeadingStyle}>Grounding Snapshot</div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <div><strong>Content authority:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+          <div><strong>Presentation authority:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+          <div><strong>Exemplar influence:</strong> {selectedExemplarInfluenceSummary}</div>
+          <div><strong>Exemplar routing:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
+          <div><strong>Content grounded by:</strong> {contentGroundingSummary}</div>
+          <div><strong>Structure shaped by:</strong> {structureImpactSummary}</div>
+          <div><strong>Fallback usage:</strong> {fallbackUsageLabel}</div>
+        </div>
       </div>
     </div>
   )
@@ -484,6 +520,10 @@ export function TraceabilitySection({
     materials,
     blueprint.sourceReadiness.selectedExemplarMaterialIds
   )
+  const selectedExemplarTargetSummary = summarizeSelectedExemplarTargets(
+    materials,
+    blueprint.sourceReadiness.selectedExemplarMaterialIds
+  )
   const contentGroundingSummary = summarizeContentGrounding(blueprint)
   const structureImpactSummary = summarizeStructureImpact(blueprint)
   const contentMaterials = buildReliabilityDecisions(
@@ -544,6 +584,7 @@ export function TraceabilitySection({
             <div><strong>Exemplar Support:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
             <div><strong>Selected Exemplar Source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
               <div><strong>Selected Influence:</strong> {selectedExemplarInfluenceSummary}</div>
+              <div><strong>Exemplar Routing:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
               <div><strong>Lesson Flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
             <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
             <div><strong>Teacher Moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
