@@ -36,6 +36,7 @@ export function summarizeStructureImpact(blueprint: LessonBlueprint): string {
 export function summarizeSelectedExemplarInfluence(
   materials: Array<{
     id: string
+    name: string
     role: string
     styleSettings?: {
       mode?: string | null
@@ -55,27 +56,27 @@ export function summarizeSelectedExemplarInfluence(
 
   const summaries = selected.map((material) => {
     const settings = material.styleSettings
-    if (!settings || !settings.mode || settings.mode === "inspiration") {
-      return "Use as inspiration"
-    }
+    const exemplarLabel = material.name.trim() || "Selected exemplar"
 
-    if (settings.mode === "copy_closely") {
-      return "Copy closely"
+    if (!settings || !settings.mode || settings.mode === "inspiration") {
+      return `${exemplarLabel}: Use as inspiration`
     }
 
     if (settings.mode === "selected_aspects") {
       const aspects = (settings.aspects ?? []).map(formatExemplarAspectLabel)
       return aspects.length > 0
-        ? `Choose specific aspects: ${aspects.join(", ")}`
-        : "Choose specific aspects"
+        ? `${exemplarLabel}: Choose specific aspects: ${aspects.join(", ")}`
+        : `${exemplarLabel}: Choose specific aspects`
     }
 
     if (settings.mode === "custom") {
       const custom = settings.customInstructions?.trim()
-      return custom ? `Keep structure with style notes: ${custom}` : "Keep structure with style notes"
+      return custom
+        ? `${exemplarLabel}: Keep structure with style notes: ${custom}`
+        : `${exemplarLabel}: Keep structure with style notes`
     }
 
-    return "Default exemplar influence"
+    return `${exemplarLabel}: Default exemplar influence`
   })
 
   return summaries.join(" | ")

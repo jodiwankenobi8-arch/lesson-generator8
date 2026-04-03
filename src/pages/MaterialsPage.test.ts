@@ -203,6 +203,11 @@ describe("exemplar restyle and routing copy", () => {
         "printables",
       ])
     )
+
+    const printablesTarget = EXEMPLAR_TARGET_OPTIONS.find((option) => option.value === "printables")
+    expect(printablesTarget).toBeDefined()
+    expect(printablesTarget?.label).toBe("Printables / student pages")
+    expect(printablesTarget?.help).toContain("different structure or feel")
   })
 })
 
@@ -219,7 +224,7 @@ describe("Materials page teacher-facing copy", () => {
       "Each file shows whether it is being prepared, ready to use, or needs attention."
     )
     expect(source).toContain(
-      "Choose where this exemplar should apply. You can keep one exemplar for slides, another for the lesson plan, and another for centers or teacher-led support."
+      "Choose where this exemplar should apply. You can keep one exemplar for slides, another for the lesson plan, another for centers or teacher-led support, and another for printables."
     )
 
     expect(source).not.toContain(
