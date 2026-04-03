@@ -438,7 +438,7 @@ function buildLessonPortionsBlock(blueprint: LessonBlueprint): string {
     "Lesson Portions",
     [
       `Portion Order: ${areaKeys.map(formatPackageAreaLabel).join(" -> ")}`,
-      "Keep each resolved area in its own practical lesson portion instead of one vague mixed block.",
+      "Keep each resolved area in its own practical lesson portion instead of one vague combined catch-all block.",
     ],
     areaKeys.map((areaKey, index) => buildLessonPortionLine(blueprint, areaKey, index))
   )
@@ -800,9 +800,9 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
 
   return [
     "Lesson Grounding",
-    `- Primary Target: ${blueprint.content.target.primary}`,
-    `- Secondary Target: ${blueprint.content.target.secondary ?? "None"}`,
-    `- Mixed Target: ${blueprint.content.target.isMixedTarget ? "Yes" : "No"}`,
+    `- Primary Lesson Area: ${blueprint.content.target.primary}`,
+    `- Additional Lesson Area: ${blueprint.content.target.secondary ?? "None"}`,
+    `- Multiple Lesson Areas: ${blueprint.content.target.isMixedTarget ? "Yes" : "No"}`,
     `- Source Balance: ${blueprint.sourceReadiness.overall}`,
     `- Standards: ${joinOrFallback(
       blueprint.content.standards.slice(0, 3),

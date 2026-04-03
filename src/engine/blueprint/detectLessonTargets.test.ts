@@ -19,7 +19,7 @@ function makeInputs(overrides: Partial<LessonInputs>): LessonInputs {
 }
 
 describe("resolveLessonProfile", () => {
-  it("keeps writing plus sight-word work out of the old phonics/comprehension-only buckets", () => {
+  it("keeps writing plus sight-word work out of the old narrow lesson buckets", () => {
     const inputs = makeInputs({
       skill: "Write a sentence with sight words",
       topic: "sentence writing with high frequency words",
@@ -103,7 +103,7 @@ describe("resolveLessonProfile", () => {
   })
 })
 
-  it("keeps brief comprehension support inside a phonics-led lesson out of mixed mode", () => {
+  it("keeps brief text-understanding support inside a foundational lesson out of multi-area mode", () => {
     const inputs = makeInputs({
       skill: "Long A phonics",
       topic: "Focus: long a spelled a_e",

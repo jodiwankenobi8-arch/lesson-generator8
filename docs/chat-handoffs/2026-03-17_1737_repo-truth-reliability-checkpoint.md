@@ -1,3 +1,5 @@
+> Historical note: this document uses older narrow lesson-bucket framing. Do not use it as current product truth. Current truth is curriculum-content extraction plus multi-area lesson resolution across many ELA area types.
+
 ﻿# lesson-generator8 chat handoff — repo truth, reliability checkpoint, and corrected execution path
 - Date: 2026-03-17
 - Repo: jodiwankenobi8-arch/lesson-generator8

@@ -117,7 +117,7 @@ describe("runLessonPipeline", () => {
     expect(result.lessonSpec).toBeTruthy()
   })
 
-  it("keeps a clear phonics lesson single-target instead of overfiring mixed mode", () => {
+  it("keeps a clear single-area foundational lesson from overfiring multi-area mode", () => {
     const inputs = makeInputs({
       skill: "Long A phonics",
       topic: "Long A vowel patterns",
@@ -139,7 +139,7 @@ describe("runLessonPipeline", () => {
     expect(result.lessonPackage.readiness.lessonShape).toBe("single-focus")
   })
 
-  it("marks a clearly mixed lesson as mixed when both targets are present", () => {
+  it("marks a clearly multi-area lesson as multi-area when both areas are present", () => {
     const inputs = makeInputs({
       standard: "RF.1.3 + RL.1.2",
       skill: "Phonics and comprehension",

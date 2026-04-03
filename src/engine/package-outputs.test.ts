@@ -764,7 +764,7 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).not.toContain("Opening - Introduce the lesson target and objective")
   })
 
-  it("surfaces multi-area lesson portions instead of one vague mixed block", () => {
+  it("surfaces multi-area lesson portions instead of one vague combined block", () => {
     const mixedBlueprint: LessonBlueprint = {
       ...blueprint,
       content: {

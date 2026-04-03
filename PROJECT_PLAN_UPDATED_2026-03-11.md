@@ -1,3 +1,5 @@
+> Historical note: this document uses older narrow lesson-bucket framing. Do not use it as current product truth. Current truth is curriculum-content extraction plus multi-area lesson resolution across many ELA area types.
+
 ﻿# LESSON GENERATOR 8
 ## UPDATED PROJECT PLAN
 ## Date: 2026-03-11

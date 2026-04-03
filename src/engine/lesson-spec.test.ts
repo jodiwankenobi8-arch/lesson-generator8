@@ -222,7 +222,7 @@ describe("buildLessonSpec", () => {
     )
   })
 
-  it("builds a mixed full lesson spec with explicit two-part language", () => {
+  it("builds a multi-area full lesson spec with explicit lesson-portion language", () => {
     const spec = buildLessonSpec(
       makeBlueprint({
         content: {

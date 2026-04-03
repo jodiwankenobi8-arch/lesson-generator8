@@ -1,3 +1,5 @@
+> Historical note: this document uses older narrow lesson-bucket framing. Do not use it as current product truth. Current truth is curriculum-content extraction plus multi-area lesson resolution across many ELA area types.
+
 # Lesson Generator 8 - Continuation Update
 
 ## Current continuation point
