@@ -485,7 +485,7 @@ export default function MaterialsPage() {
 
                       <div style={{ display: "grid", gap: 8 }}>
                         <div style={exemplarSubtleTextStyle}>
-                          Choose where this exemplar should apply. You can keep one exemplar for slides, another for the lesson plan, and another for centers or teacher-led support.
+                          Choose where this exemplar should apply. You can keep one exemplar for slides, another for the lesson plan, another for centers or teacher-led support, and another for printables.
                         </div>
                         <div style={exemplarCheckboxGridStyle}>
                           {EXEMPLAR_TARGET_OPTIONS.map((targetOption) => {
