@@ -2,51 +2,43 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: c02fbe1
-- Last auto-sync UTC: 2026-04-03T15:43:46Z
+- Published main checkpoint: use `git log -1 --oneline` on `main`
+- Last auto-sync UTC: automation-managed
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
 ## Current repo truth
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
-- Live published/main checkpoint confirmed locally: `3269121 Remove export artifact status leftover and refresh truth docs`
-- The auto-sync block above is stale until automation or a manual sync refresh catches up
-- Last completed seam: export-status contract cleanup plus doc-truth refresh
-- Use `git log -1 --oneline` on `main` for the exact latest local continuation commit
-- Last meaningful code checkpoint is the export-contract cleanup in `src/engine/types.ts`
-- Current active seam: choose the next narrow seam from live repo truth
-
-## Product truths to preserve
-- curriculum = content authority
-- exemplar = presentation / structure authority
-- generation depends on usable materials
-- active product flow remains Inputs -> Materials -> Results
-- useLessonStore remains the orchestration seam
-- do not reopen closed seams without live regression evidence
+- Live repo code/tests beat stale docs or older handoffs when they conflict.
+- Canonical runtime path:
+  1. `src/state/useLessonStore.ts`
+  2. `src/state/workflows/processMaterialForStore.ts`
+  3. `src/engine/materials/extractTextFromFile.ts`
+  4. `src/engine/analysis/runMaterialAnalysis.ts` -> `src/engine/materials/analyzeMaterial.ts`
+  5. `src/engine/blueprint/buildBlueprint.ts`
+  6. `src/engine/planning/buildLessonPlanningIdeas.ts`
+  7. `src/engine/spec/buildLessonSpec.ts`
+  8. `src/engine/package/buildLessonPackage.ts`
+  9. `src/pages/ResultsPage.tsx`
+  10. export helpers and local workspace persistence
+- Curriculum remains the content authority.
+- Exemplar remains the presentation / structure authority.
+- Multiple exemplars are supported. Different exemplars may target shared structure, slides, lesson plan, centers / rotation, teacher-led support, intervention, or printables.
+- Exemplar custom notes are for restyling or teacher preference overrides while preserving desired exemplar structure.
+- Objective and opening are separate lesson parts. The opening can include the objective, but it is not the same thing as the objective.
+- Multi-area lessons should surface ordered lesson portions so each resolved area can keep its own teach / guided / independent / closure flow.
+- Inputs -> Materials -> Results remains the active teacher-facing product flow.
+- Local workspace persistence remains active in `useLessonStore`.
+- Do not reintroduce stale finish-pass framing that treats narrow lesson-type buckets as the completion metric.
 
 ## Latest validation snapshot
-- removed dead `ExportArtifactStatus`
-- removed optional `status?: ExportArtifactStatus` from `ExportArtifact`
-- the same edit also removed a UTF-8 BOM at the top of `src/engine/types.ts`
-- validation for the seam remained green:
-  - full test PASS (31 files / 175 tests)
-  - typecheck PASS
-  - build PASS
-- the seam was successfully fetched, rebased, and pushed
-- local `HEAD` matched `origin/main` at `3269121` after publication
-
-## Non-blocking warnings
-- useLayoutEffect SSR warnings in integration output
-- Vite/react-babel/esbuild/oxc warning noise
-- build chunk-size warnings
+- `npm run typecheck` PASS
+- `npm test` PASS (31 files / 185 tests)
+- `npm run build` PASS
+- Non-blocking warning noise remains around Vite react-babel esbuild/oxc deprecations.
 
 ## Exact next move
-- inspect live repo truth on `main`
-- choose the next narrow seam
-- keep the active continuation set small and obvious
-- do not widen into broader refactors without fresh evidence
-
-## Retrieval fallback rule
-- if continuation notes conflict, prefer live repo code/tests, live repo state on `main`, and the newest handoff
-- treat auto-sync files as synchronization helpers, not replacements for human seam handoffs
+- Treat the runtime as finished enough for code-closeout unless fresh live regression evidence appears.
+- Use the included now-to-wow evaluator scripts for repo status summaries and future handoffs.
+- Reserve future work for browser/manual export verification or clearly evidenced product refinements.
