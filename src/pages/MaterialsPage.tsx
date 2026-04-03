@@ -543,7 +543,7 @@ export default function MaterialsPage() {
                       {(material.styleSettings?.mode ?? "inspiration") === "custom" ? (
                         <div style={{ display: "grid", gap: 8 }}>
                           <div style={exemplarSubtleTextStyle}>
-                            Describe how this exemplar should influence the lesson package.
+                            Describe the style changes you want while keeping the exemplar structure that is already working.
                           </div>
                           <textarea
                             value={material.styleSettings?.customInstructions ?? ""}
@@ -555,7 +555,7 @@ export default function MaterialsPage() {
                                 customInstructions: event.target.value,
                               })
                             }}
-                            placeholder="Example: Keep the I do / We do / You do flow and concise slide titles, but do not copy wording."
+                            placeholder="Example: Keep the layout, lesson flow, and timing, but change the colors/theme and use plainer wording."
                             style={exemplarTextareaStyle}
                           />
                         </div>

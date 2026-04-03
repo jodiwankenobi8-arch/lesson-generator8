@@ -72,7 +72,7 @@ export function summarizeSelectedExemplarInfluence(
 
     if (settings.mode === "custom") {
       const custom = settings.customInstructions?.trim()
-      return custom ? `Custom instructions: ${custom}` : "Custom instructions"
+      return custom ? `Keep structure with style notes: ${custom}` : "Keep structure with style notes"
     }
 
     return "Default exemplar influence"
