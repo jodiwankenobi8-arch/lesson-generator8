@@ -31,8 +31,8 @@ export const EXEMPLAR_INFLUENCE_MODE_OPTIONS: Array<{
   },
   {
     value: "custom",
-    label: "Custom instructions",
-    help: "Write a teacher-facing note about how this exemplar should influence the lesson.",
+    label: "Keep structure, restyle details",
+    help: "Preserve the exemplar's layout, structure, and pacing, but add notes for style changes such as colors, theme, or wording.",
   },
 ]
 
