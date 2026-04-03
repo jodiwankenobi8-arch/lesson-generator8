@@ -6,6 +6,7 @@ import {
   inferMimeTypeFromName,
   isSupportedUploadFile,
 } from "./MaterialsPage"
+import { EXEMPLAR_INFLUENCE_MODE_OPTIONS } from "./materialsPageExemplarHelpers"
 
 describe("buildUploadSourceMetadata", () => {
   it("classifies image uploads as bounded OCR recovery sources with traceable metadata", () => {
@@ -179,6 +180,18 @@ describe("getTeacherVisibleMaterialNote progress wording", () => {
     ).toBe("Checking what this material can support.")
   })
 })
+
+describe("exemplar restyle note copy", () => {
+  it("keeps the custom exemplar option focused on preserving structure while restyling details", () => {
+    const customOption = EXEMPLAR_INFLUENCE_MODE_OPTIONS.find((option) => option.value === "custom")
+
+    expect(customOption).toBeDefined()
+    expect(customOption?.label).toBe("Keep structure, restyle details")
+    expect(customOption?.help).toContain("layout, structure, and pacing")
+    expect(customOption?.help).toContain("colors, theme, or wording")
+  })
+})
+
 
 describe("Materials page teacher-facing copy", () => {
   it("keeps the visible workbench language simple and classroom-facing", () => {
