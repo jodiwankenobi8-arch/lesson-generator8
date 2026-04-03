@@ -196,14 +196,14 @@ describe("Results explainability rendering contracts", () => {
       />
     )
     expect(traceabilityMarkup).toContain("Authority at a Glance")
-    expect(traceabilityMarkup).toContain("Content authority:")
-    expect(traceabilityMarkup).toContain("Presentation authority:")
+    expect(traceabilityMarkup).toContain("Content source:")
+    expect(traceabilityMarkup).toContain("Structure source:")
     expect(traceabilityMarkup).toContain("exemplar.txt: Choose specific aspects: slide flow, pacing")
-    expect(traceabilityMarkup).toContain("Exemplar Routing:")
+    expect(traceabilityMarkup).toContain("Where exemplars apply:")
     expect(traceabilityMarkup).toContain("lesson plan")
     expect(traceabilityMarkup).toContain("slides")
-    expect(traceabilityMarkup).toContain("Used with caution or blocked:")
-    expect(traceabilityMarkup).toContain("Fallback usage:")
+    expect(traceabilityMarkup).toContain("Materials used carefully or not used:")
+    expect(traceabilityMarkup).toContain("Fallback use:")
 
     const traceMarkup = renderToStaticMarkup(<PipelineTraceSection trace={lessonTrace} />)
 
@@ -256,6 +256,14 @@ describe("Results explainability rendering contracts", () => {
 
     expect(source).toContain("Teacher-facing lesson package first.")
     expect(source).toContain("Teacher Binder Snapshot")
+    expect(source).toContain("Primary focus:")
+    expect(source).toContain("Additional focus:")
+    expect(source).toContain("Multi-area lesson:")
+    expect(source).toContain("Lesson coverage:")
+    expect(source).toContain("Content source:")
+    expect(source).toContain("Structure source:")
+    expect(source).toContain("Where exemplars apply:")
+    expect(source).toContain("Materials used carefully or not used:")
     expect(source).toContain("Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.")
     expect(source).toContain("Download Package ZIP")
     expect(source).not.toContain("Download Full Package ZIP")
@@ -317,14 +325,14 @@ describe("Results explainability rendering contracts", () => {
       />
     )
     expect(traceabilityMarkup).toContain("Authority at a Glance")
-    expect(traceabilityMarkup).toContain("Content authority:")
-    expect(traceabilityMarkup).toContain("Presentation authority:")
+    expect(traceabilityMarkup).toContain("Content source:")
+    expect(traceabilityMarkup).toContain("Structure source:")
     expect(traceabilityMarkup).toContain("exemplar.txt: Choose specific aspects: slide flow, pacing")
-    expect(traceabilityMarkup).toContain("Exemplar Routing:")
+    expect(traceabilityMarkup).toContain("Where exemplars apply:")
     expect(traceabilityMarkup).toContain("lesson plan")
     expect(traceabilityMarkup).toContain("slides")
-    expect(traceabilityMarkup).toContain("Used with caution or blocked:")
-    expect(traceabilityMarkup).toContain("Fallback usage:")
+    expect(traceabilityMarkup).toContain("Materials used carefully or not used:")
+    expect(traceabilityMarkup).toContain("Fallback use:")
 
     const traceMarkup = renderToStaticMarkup(<PipelineTraceSection trace={lessonTrace} />)
 
@@ -807,9 +815,9 @@ describe("Results export format labels", () => {
   it("keeps explicit source grounding labels in results traceability", () => {
     const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
 
-    expect(source).toContain("Selected Influence:")
-    expect(source).toContain("Content Grounded By:")
-    expect(source).toContain("Structure Shaped By:")
+    expect(source).toContain("Exemplar style choice:")
+    expect(source).toContain("Content came from:")
+    expect(source).toContain("Structure came from:")
   })
 })
 
