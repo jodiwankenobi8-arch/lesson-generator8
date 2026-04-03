@@ -2,8 +2,8 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: use `git log -1 --oneline` on `main`
-- Last auto-sync UTC: automation-managed
+- Published main checkpoint: a454f5c
+- Last auto-sync UTC: 2026-04-03T17:13:34Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
