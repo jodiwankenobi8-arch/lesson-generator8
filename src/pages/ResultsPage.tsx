@@ -411,10 +411,10 @@ export function PackageSummarySection({
       </div>
 
       <div style={binderMetaListStyle}>
-        <div><strong>Primary Target:</strong> {blueprint.content.target.primary}</div>
-        <div><strong>Secondary Target:</strong> {blueprint.content.target.secondary || "None"}</div>
-        <div><strong>Mixed Target:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
-        <div><strong>Selected Mode:</strong> {selectedLessonMode}</div>
+        <div><strong>Primary Lesson Area:</strong> {blueprint.content.target.primary}</div>
+        <div><strong>Additional Lesson Area:</strong> {blueprint.content.target.secondary || "None"}</div>
+        <div><strong>Multiple Lesson Areas:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
+        <div><strong>Lesson Area Mode:</strong> {selectedLessonMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
         <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
         <div style={binderSmallNoteStyle}>Standards snapshot: use this to confirm the primary detected alignment before exporting.</div>
       </div>
@@ -601,7 +601,7 @@ export function TraceabilitySection({
             <div><strong>Source Balance:</strong> {blueprint.sourceReadiness.overall}</div>
             <div><strong>Coverage Support:</strong> {blueprint.sourceReadiness.coverageSupport}</div>
             <div><strong>Content Fit:</strong> {lessonPackage.readiness.contentFit}</div>
-            <div><strong>Lesson Shape:</strong> {lessonPackage.readiness.lessonShape}</div>
+            <div><strong>Lesson Area Shape:</strong> {lessonPackage.readiness.lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area"}</div>
             <div><strong>Package Density:</strong> {lessonPackage.readiness.density}</div>
             <div><strong>Fallback Usage:</strong> {fallbackUsageLabel}</div>
           </div>
@@ -846,7 +846,7 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Mode and Material Counts</div>
           <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Selected Mode:</strong> {trace.selectedMode}</div>
+            <div><strong>Lesson Area Mode:</strong> {trace.selectedMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
             <div><strong>Total Materials:</strong> {trace.materialCounts.total}</div>
             <div><strong>Curriculum Materials:</strong> {trace.materialCounts.curriculum}</div>
             <div><strong>Exemplar Materials:</strong> {trace.materialCounts.exemplar}</div>
@@ -870,10 +870,10 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Target Resolution</div>
           <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Primary Target:</strong> {trace.target.primary}</div>
-            <div><strong>Secondary Target:</strong> {trace.target.secondary ?? "None"}</div>
-            <div><strong>Mixed Target:</strong> {trace.target.isMixedTarget ? "Yes" : "No"}</div>
-            <div><strong>Recommended Mode:</strong> {trace.target.recommendedMode}</div>
+            <div><strong>Primary Lesson Area:</strong> {trace.target.primary}</div>
+            <div><strong>Additional Lesson Area:</strong> {trace.target.secondary ?? "None"}</div>
+            <div><strong>Multiple Lesson Areas:</strong> {trace.target.isMixedTarget ? "Yes" : "No"}</div>
+            <div><strong>Recommended Area Mode:</strong> {trace.target.recommendedMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
           </div>
         </div>
 
@@ -881,7 +881,7 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
           <div style={subHeadingStyle}>Package Summary</div>
           <div style={{ display: "grid", gap: 6 }}>
             <div><strong>Density:</strong> {trace.package.density}</div>
-            <div><strong>Lesson Shape:</strong> {trace.package.lessonShape}</div>
+            <div><strong>Lesson Area Shape:</strong> {trace.package.lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area"}</div>
             <div><strong>Content Fit:</strong> {trace.package.contentFit}</div>
             <div><strong>Package Warning Count:</strong> {trace.package.warningCount}</div>
           </div>

@@ -15,7 +15,7 @@ function makeInputs(overrides: Partial<LessonInputs> = {}): LessonInputs {
 }
 
 describe("detectLessonTargets", () => {
-  it("keeps a simple long a phonics lesson phonics-only", () => {
+  it("keeps a simple long a foundational lesson in one main lesson area", () => {
     const detected = detectLessonTargets(
       makeInputs({
         standard: "RF.1.3",
@@ -31,7 +31,7 @@ describe("detectLessonTargets", () => {
     expect(detected.recommendedMode).toBe("phonics_only")
   })
 
-  it("keeps a comprehension lesson comprehension-only", () => {
+  it("keeps a text-understanding lesson in one main lesson area", () => {
     const detected = detectLessonTargets(
       makeInputs({
         standard: "RL.1.2",
@@ -47,7 +47,7 @@ describe("detectLessonTargets", () => {
     expect(detected.recommendedMode).toBe("comprehension_only")
   })
 
-  it("detects true phonics plus comprehension inputs as mixed", () => {
+  it("detects clearly distinct lesson areas when both are present", () => {
     const detected = detectLessonTargets(
       makeInputs({
         standard: "RF.1.3 and RL.1.2",
@@ -63,7 +63,7 @@ describe("detectLessonTargets", () => {
     expect(detected.recommendedMode).toBe("full")
   })
 
-  it("respects explicit phonics-only override", () => {
+  it("respects an explicit foundational-area override", () => {
     const detected = detectLessonTargets(
       makeInputs({
         standard: "RF.1.3 and RL.1.2",
@@ -79,7 +79,7 @@ describe("detectLessonTargets", () => {
     expect(detected.recommendedMode).toBe("phonics_only")
   })
 
-  it("respects explicit comprehension-only override", () => {
+  it("respects an explicit text-understanding-area override", () => {
     const detected = detectLessonTargets(
       makeInputs({
         standard: "RF.1.3 and RL.1.2",

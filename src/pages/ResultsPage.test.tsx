@@ -689,7 +689,7 @@ describe("Results package output section parity", () => {
     expect(markup).not.toContain("Intervention Support")
   })
 
-  it("keeps mixed packages explicit about the ZIP bundle and the current generated artifacts inside it", () => {
+  it("keeps multi-area packages explicit about the ZIP bundle and the current generated artifacts inside it", () => {
     const markup = renderToStaticMarkup(
       <PackageOutputsSection
         lessonPackage={makeLessonPackage({

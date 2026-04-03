@@ -38,7 +38,7 @@ export function buildLessonPackageReadiness(args: {
   }
 
   if (lessonShape === "mixed") {
-    warnings.push("This package includes more than one instructional target.")
+    warnings.push("This package includes more than one lesson area.")
   }
 
   return {
@@ -57,12 +57,12 @@ export function buildLessonPackageReadiness(args: {
         tone: density === "balanced" ? "good" : "warn",
       },
       {
-        label: "Lesson Shape",
-        value: lessonShape === "mixed" ? "Mixed" : "Single-focus",
+        label: "Lesson Area Shape",
+        value: lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area",
         note:
           lessonShape === "mixed"
-            ? "The package is serving more than one instructional target."
-            : "The package is centered on one main instructional target.",
+            ? "The package is serving more than one lesson area."
+            : "The package is centered on one main lesson area.",
         tone: "neutral",
       },
       {
