@@ -2,57 +2,34 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: c02fbe1
-- Last auto-sync UTC: 2026-04-03T15:43:46Z
+- Published main checkpoint: use `git log -1 --oneline` on `main`
+- Last auto-sync UTC: automation-managed
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
+## Current state
 - Active branch: main
-- Use `git log -1 --oneline` on `main` for the exact latest local continuation commit
-- Last completed seam: export-status contract cleanup plus doc-truth refresh
-- Live published/main checkpoint confirmed locally: `3269121 Remove export artifact status leftover and refresh truth docs`
-
-## Current milestone
-The export-status contract cleanup is already published on main. The active continuation docs now need to stop describing the seam as merely ready to push and instead reflect the published state plus next-seam selection posture.
-
-## Validated state
-- the seam changed exactly one live code file:
-  - `src/engine/types.ts`
-- the export contract cleanup removed:
-  - `ExportArtifactStatus`
-  - `status?: ExportArtifactStatus` from `ExportArtifact`
-- the same edit also removed a UTF-8 BOM at the top of `src/engine/types.ts`
-- validation for the seam remained green:
-  - full test PASS (31 files / 175 tests)
-  - typecheck PASS
-  - build PASS
-- the seam was successfully fetched, rebased, and pushed
-- local `HEAD` matched `origin/main` at `3269121`
-- warning noise remains non-blocking and unchanged
-
-## Product truths to preserve
-- curriculum = content authority
-- exemplar = presentation / structure authority
-- generation depends on usable materials
-- active product flow remains Inputs -> Materials -> Results
-- useLessonStore remains the orchestration seam
-- do not reopen engine repair or broader refactors without fresh regression evidence
+- Current repo is in finish / closeout mode, not rediscovery mode.
+- The core runtime is green locally: typecheck, full tests, and build pass.
+- The project already includes the intended finish-path upgrades:
+  - scoped multi-exemplar routing
+  - exemplar restyle notes
+  - objective/opening separation
+  - multi-area lesson portions
+  - Results grounding and routing visibility
+  - refresh-safe lightweight persistence
+- The canonical runtime path is upload intake -> extraction -> analysis -> blueprint -> planning/spec -> package -> Results/exports -> persistence.
+- Curriculum is the content authority.
+- Exemplar is the presentation / structure authority.
+- Internal target buckets may still support heuristics, but they are not the product definition or completion metric.
 
 ## Current risks
-- active truth docs can drift if small validated seams are not closed out immediately after publication
-- the auto-sync block currently lags the live published checkpoint
-- `types.ts` still contains broader contract duplication beyond this narrow export seam
-- warning noise remains distracting but non-blocking
+- Active truth docs can drift if they are not refreshed after meaningful closeout changes.
+- Manual browser/export verification still needs to be recorded separately from automated checks.
+- Non-blocking Vite warning noise remains distracting.
 
-## Top next steps
-1. Keep the active continuation docs aligned with the published state on `main`
-2. Use live repo truth to choose the next narrow seam
-3. Keep the active continuation set small and obvious
-4. Do not reopen broader engine or Results refactors without fresh evidence
-
-## Local doc policy
-- Keep continuation docs authoritative and small
-- Preserve automation-compatible anchors and auto-sync blocks
-- Prefer durable truth over transitional pre-push snapshots
-- Prefer live repo code/tests and current `main` state when automation lags
-- Do not reopen broader engine or Results refactors without fresh regression evidence
+## Current next steps
+1. Keep docs aligned to the real current runtime.
+2. Use automated verification plus targeted manual browser/export checks before claiming new regressions.
+3. Do not reopen broad architecture changes without fresh evidence.
+4. Prefer narrow product refinements over new systems.

@@ -30,11 +30,14 @@ Current focus:
 - **Curriculum = content authority**
 - **Exemplar = presentation / structure authority**
 - Teachers may upload **multiple materials in each lane**, not just one curriculum file and one exemplar file
+- Different exemplars may target specific outputs such as slides, lesson plan, centers, teacher-led support, intervention, printables, or the shared package structure
 - Detect what uploaded materials already cover
 - Avoid duplicating strong source coverage
 - Ask before adding meaningful missing areas unless the teacher explicitly requests them
 - AI must not replace deterministic extraction, blueprint orchestration, or trust surfaces
 - Optional lesson parts and outputs should appear only when requested or strongly source-grounded
+- Opening and objective are treated as separate lesson parts
+- Multi-area lessons should surface ordered lesson portions instead of one vague mixed block
 - Centers = student-independent work
 - Small group / intervention = teacher-led support
 - Centers and teacher-led support may coexist during the same lesson block, but they are not the same lane
