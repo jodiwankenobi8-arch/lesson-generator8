@@ -79,11 +79,17 @@ export function buildPackageOutputs(args: {
   const includeInterventionOutput = isGroupOutputSelected(outputContents, "intervention")
 
   const slides = includeLessonSlidesOutput
-    ? buildSlides(blueprint, spec, {
-        includeCentersOutput,
-        includeSmallGroupOutput,
-        includeInterventionOutput,
-      })
+    ? buildSlides(
+        blueprint,
+        spec,
+        planningIdeas,
+        missingAreaDecisions,
+        {
+          includeCentersOutput,
+          includeSmallGroupOutput,
+          includeInterventionOutput,
+        }
+      )
     : []
   const lessonPlan = includeLessonPlanOutput
     ? buildLessonPlan(
@@ -159,13 +165,24 @@ export function buildPackageOutputs(args: {
 function buildSlides(
   blueprint: LessonBlueprint,
   spec: LessonSpec,
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {},
   options: {
     includeCentersOutput: boolean
     includeSmallGroupOutput: boolean
     includeInterventionOutput: boolean
+  } = {
+    includeCentersOutput: true,
+    includeSmallGroupOutput: true,
+    includeInterventionOutput: true,
   }
 ): string[] {
-  const assembled = filterSlidesForSelectedOutputs(assembleSlideDeck(blueprint, spec), options)
+  const assembled = filterSlidesForSelectedOutputs(
+    assembleSlideDeck(blueprint, spec),
+    options,
+    planningIdeas,
+    missingAreaDecisions
+  )
 
   if (assembled.length > 0) {
     return assembled
@@ -185,13 +202,33 @@ function buildSlides(
   return shell.map((label, index) => `Slide ${index + 1}: ${label}`)
 }
 
+function hasMissingAreaPrompt(
+  planningIdeas: LessonPlanningIdeas | undefined,
+  component: PlanningComponentKey
+): boolean {
+  return (
+    planningIdeas?.missingAreaPrompts?.some((prompt) => prompt.component === component) ?? false
+  )
+}
+
+function shouldHoldPromptedComponent(
+  component: PlanningComponentKey,
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
+): boolean {
+  return hasMissingAreaPrompt(planningIdeas, component) &&
+    !shouldAdd(component, missingAreaDecisions)
+}
+
 function filterSlidesForSelectedOutputs(
   slides: string[],
   options: {
     includeCentersOutput: boolean
     includeSmallGroupOutput: boolean
     includeInterventionOutput: boolean
-  }
+  },
+  planningIdeas?: LessonPlanningIdeas,
+  missingAreaDecisions: MissingAreaDecisionMap = {}
 ): string[] {
   return slides.filter((slide) => {
     const normalized = slide.toLowerCase()
@@ -200,9 +237,31 @@ function filterSlidesForSelectedOutputs(
       return false
     }
 
+    if (
+      shouldHoldPromptedComponent("guided_practice", planningIdeas, missingAreaDecisions) &&
+      normalized.includes("| kind: guided_practice |")
+    ) {
+      return false
+    }
+
+    if (
+      shouldHoldPromptedComponent("independent_practice", planningIdeas, missingAreaDecisions) &&
+      normalized.includes("| kind: independent_practice |")
+    ) {
+      return false
+    }
+
+    if (
+      shouldHoldPromptedComponent("closure", planningIdeas, missingAreaDecisions) &&
+      normalized.includes("| kind: closure |")
+    ) {
+      return false
+    }
+
     return true
   })
 }
+
 function buildLessonPlan(
   inputs: LessonInputs,
   blueprint: LessonBlueprint,
@@ -286,42 +345,48 @@ function buildLessonPlan(
       ], spec.teach.steps)
     : ""
 
-  const guidedBlock = isLessonPlanPartSelected(outputContents, "guided_practice")
-    ? buildSectionNarrativeBlock("Guided Practice", [
-        `Practice Anchor: ${joinOrFallback(
-          blueprint.content.practiceIdeas.slice(0, 3),
-          "curriculum-aligned guided practice"
-        )}`,
-        `Prompt Style: ${joinOrFallback(
-          resolvedTemplateShell.promptStyle.slice(0, 3),
-          "teacher prompt"
-        )}`,
-        `Timing Cue: ${joinOrFallback(
-          resolvedTemplateShell.timing.slice(0, 3),
-          "Opening, Mini-lesson, Guided Practice"
-        )}`,
-      ], spec.guidedPractice.steps)
-    : ""
+  const guidedBlock =
+    isLessonPlanPartSelected(outputContents, "guided_practice") &&
+    !shouldHoldPromptedComponent("guided_practice", planningIdeas, missingAreaDecisions)
+      ? buildSectionNarrativeBlock("Guided Practice", [
+          `Practice Anchor: ${joinOrFallback(
+            blueprint.content.practiceIdeas.slice(0, 3),
+            "curriculum-aligned guided practice"
+          )}`,
+          `Prompt Style: ${joinOrFallback(
+            resolvedTemplateShell.promptStyle.slice(0, 3),
+            "teacher prompt"
+          )}`,
+          `Timing Cue: ${joinOrFallback(
+            resolvedTemplateShell.timing.slice(0, 3),
+            "Opening, Mini-lesson, Guided Practice"
+          )}`,
+        ], spec.guidedPractice.steps)
+      : ""
 
-  const independentBlock = isLessonPlanPartSelected(outputContents, "independent_practice")
-    ? buildSectionNarrativeBlock("Independent Practice", [
-        `Transfer Task: ${selectIndependentResources(blueprint)}`,
-        `Student Practice: ${joinOrFallback(
-          blueprint.content.practiceIdeas.slice(0, 2),
-          "independent application"
-        )}`,
-      ], spec.independentPractice.steps)
-    : ""
+  const independentBlock =
+    isLessonPlanPartSelected(outputContents, "independent_practice") &&
+    !shouldHoldPromptedComponent("independent_practice", planningIdeas, missingAreaDecisions)
+      ? buildSectionNarrativeBlock("Independent Practice", [
+          `Transfer Task: ${selectIndependentResources(blueprint)}`,
+          `Student Practice: ${joinOrFallback(
+            blueprint.content.practiceIdeas.slice(0, 2),
+            "independent application"
+          )}`,
+        ], spec.independentPractice.steps)
+      : ""
 
-  const closureBlock = isLessonPlanPartSelected(outputContents, "closure")
-    ? buildSectionNarrativeBlock("Closure", [
-        `Review Focus: ${selectClosureResources(blueprint)}`,
-        `Delivery Tone: ${joinOrFallback(
-          resolvedTemplateShell.tone.slice(0, 2),
-          "clear instructional tone"
-        )}`,
-      ], spec.closure.steps)
-    : ""
+  const closureBlock =
+    isLessonPlanPartSelected(outputContents, "closure") &&
+    !shouldHoldPromptedComponent("closure", planningIdeas, missingAreaDecisions)
+      ? buildSectionNarrativeBlock("Closure", [
+          `Review Focus: ${selectClosureResources(blueprint)}`,
+          `Delivery Tone: ${joinOrFallback(
+            resolvedTemplateShell.tone.slice(0, 2),
+            "clear instructional tone"
+          )}`,
+        ], spec.closure.steps)
+      : ""
 
   const differentiationBlock = isLessonPlanPartSelected(outputContents, "differentiation")
     ? buildSectionNarrativeBlock("Differentiation", [
