@@ -1,8 +1,23 @@
-import { defineConfig } from "vite"
+﻿import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 
 export default defineConfig({
   plugins: [react()],
+  test: {
+    include: [
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "src/**/*.spec.ts",
+      "src/**/*.spec.tsx",
+    ],
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/_pro_handoff_*/**",
+      "**/_review_stage/**",
+      "**/_old/**",
+    ],
+  },
   build: {
     rollupOptions: {
       output: {
