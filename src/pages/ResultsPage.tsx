@@ -845,7 +845,7 @@ export function CoverageDecisionsSection({
 
                 {generatedStatus !== "missing" ? (
                   <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-                    <strong>Package support available:</strong> {generatedStatus}
+                    <strong>Package can generate if added:</strong> {generatedStatus}
                   </div>
                 ) : null}
 
@@ -1506,3 +1506,4 @@ const subHeadingStyle: React.CSSProperties = {
   marginBottom: 6,
   color: "var(--orchard-green)",
 }
+
