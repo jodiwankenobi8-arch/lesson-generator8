@@ -1,21 +1,13 @@
 import type { LessonBlueprint } from "../engine/types"
+import { getBlueprintContentGroundingItems } from "../engine/shared/teacherFacingContent"
 
 function joinOrFallback(items: string[], fallback: string): string {
   return items.length > 0 ? items.join(", ") : fallback
 }
 
 export function summarizeContentGrounding(blueprint: LessonBlueprint): string {
-  const coverage = blueprint.content.coverage
-
   return joinOrFallback(
-    [
-      ...(coverage?.instructionalTargets ?? []),
-      ...(coverage?.standards ?? blueprint.content.standards),
-      ...(coverage?.vocabulary ?? blueprint.content.vocabulary),
-      ...(coverage?.wordLists ?? blueprint.content.wordLists),
-      ...(coverage?.texts ?? blueprint.content.texts),
-      ...(coverage?.practiceIdeas ?? blueprint.content.practiceIdeas),
-    ],
+    getBlueprintContentGroundingItems(blueprint),
     "Standards, vocabulary, examples, texts, and practice are using default lesson grounding."
   )
 }
