@@ -58,8 +58,8 @@ export async function downloadExportArtifact(artifact: ExportArtifact, artifacts
     const { exportFullPackageZip } = await import("../engine/exports/exportFullPackageZip")
     blob = await exportFullPackageZip(artifact.label, artifacts.length ? artifacts : [artifact])
   } else if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) {
-    const { exportSlidesPptx } = await import("../engine/exports/exportSlidesPptx")
-    const slides = artifact.content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean)
+    const { exportSlidesPptx, parseSlidesExportContent } = await import("../engine/exports/exportSlidesPptx")
+    const slides = parseSlidesExportContent(artifact.content)
     blob = await exportSlidesPptx(artifact.label, slides)
   } else if (artifact.format === "pdf" || artifact.mimeType === PDF_MIME) {
     const { exportPrintablesPdf } = await import("../engine/exports/exportPrintablesPdf")

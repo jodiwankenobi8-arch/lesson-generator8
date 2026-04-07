@@ -9,7 +9,11 @@ function normalizeTextContent(content: string | undefined): string {
   return (content ?? "").trim()
 }
 
-async function buildArtifactBlob(artifact: ExportArtifact): Promise<Blob> {
+async function blobToZipData(blob: Blob): Promise<Uint8Array> {
+  return new Uint8Array(await blob.arrayBuffer())
+}
+
+async function buildArtifactData(artifact: ExportArtifact): Promise<Uint8Array | string> {
   const content = normalizeTextContent(artifact.content)
   if (!content) {
     throw new Error(`Cannot export empty artifact: ${artifact.label}`)
@@ -17,21 +21,21 @@ async function buildArtifactBlob(artifact: ExportArtifact): Promise<Blob> {
 
   if (artifact.mimeType === DOCX_MIME || artifact.format === "docx") {
     const { exportLessonPlanDocx } = await import("./exportLessonPlanDocx")
-    return exportLessonPlanDocx(artifact.label, content)
+    return blobToZipData(await exportLessonPlanDocx(artifact.label, content))
   }
 
   if (artifact.mimeType === PDF_MIME || artifact.format === "pdf") {
     const { exportPrintablesPdf } = await import("./exportPrintablesPdf")
-    return exportPrintablesPdf(artifact.label, content)
+    return blobToZipData(await exportPrintablesPdf(artifact.label, content))
   }
 
   if (artifact.mimeType === PPTX_MIME || artifact.format === "pptx") {
-    const { exportSlidesPptx } = await import("./exportSlidesPptx")
-    const slides = content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean)
-    return exportSlidesPptx(artifact.label, slides)
+    const { exportSlidesPptx, parseSlidesExportContent } = await import("./exportSlidesPptx")
+    const slides = parseSlidesExportContent(content)
+    return blobToZipData(await exportSlidesPptx(artifact.label, slides))
   }
 
-  return new Blob([content], { type: artifact.mimeType ?? "text/plain;charset=utf-8" })
+  return content
 }
 
 export async function exportFullPackageZip(title: string, artifacts: ExportArtifact[]): Promise<Blob> {
@@ -41,8 +45,8 @@ export async function exportFullPackageZip(title: string, artifacts: ExportArtif
   )
 
   for (const artifact of exportable) {
-    const blob = await buildArtifactBlob(artifact)
-    zip.file(artifact.fileName, blob)
+    const data = await buildArtifactData(artifact)
+    zip.file(artifact.fileName, data)
   }
 
   const manifest = [

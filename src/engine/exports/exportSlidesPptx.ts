@@ -1,6 +1,7 @@
 import PptxGenJS from "pptxgenjs"
 
 const PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+const SLIDE_MARKER_PATTERN = /slide\s+\d+\s*:/gi
 
 function toBlobPart(value: unknown): BlobPart {
   if (value instanceof Blob) return value
@@ -13,6 +14,38 @@ function toBlobPart(value: unknown): BlobPart {
   }
 
   return String(value ?? "")
+}
+
+function normalizeSlidesExportContent(content: string): string {
+  return content
+    .replace(/\r\n?/g, "\n")
+    .replace(/^\s*slides export\b\s*/i, "")
+    .trim()
+}
+
+export function parseSlidesExportContent(content: string): string[] {
+  const normalized = normalizeSlidesExportContent(content)
+
+  if (!normalized) {
+    return []
+  }
+
+  const matches = Array.from(normalized.matchAll(SLIDE_MARKER_PATTERN))
+
+  if (matches.length > 0) {
+    return matches
+      .map((match, index) => {
+        const start = match.index ?? 0
+        const end = matches[index + 1]?.index ?? normalized.length
+        return normalized.slice(start, end).trim()
+      })
+      .filter(Boolean)
+  }
+
+  return normalized
+    .split(/\n{2,}/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
 }
 
 export async function exportSlidesPptx(title: string, slides: string[]): Promise<Blob> {
