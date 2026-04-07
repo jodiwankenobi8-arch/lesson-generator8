@@ -160,6 +160,18 @@ function defaultMaterialName(role: MaterialRole, timestamp: string): string {
     : `exemplar-${timestamp}`
 }
 
+let materialIdCounter = 0
+
+function createMaterialId(role: MaterialRole): string {
+  materialIdCounter += 1
+
+  const timestamp = Date.now().toString(36)
+  const counter = materialIdCounter.toString(36)
+  const random = Math.random().toString(36).slice(2, 8)
+
+  return `${role}-${timestamp}-${counter}-${random}`
+}
+
 function defaultExemplarStyleSettings(): ExemplarStyleSettings {
   return {
     mode: "inspiration",
@@ -498,7 +510,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   addMaterial: (role, name, options) => {
     const timestamp = Date.now().toString()
-    const id = `${role}-${timestamp}`
+    const id = createMaterialId(role)
 
     set((state) => ({
       materials: [
