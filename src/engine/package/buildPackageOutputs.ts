@@ -812,9 +812,15 @@ function buildCoverageDecisionBlock(
     planningIdeas.componentCoverage?.flatMap((entry) => {
       const evidence =
         entry.evidence.length > 0 ? ` Evidence: ${entry.evidence.join(", ")}.` : ""
+      const sourceStatus = entry.sourceCoverage?.status ?? entry.status
+      const generatedStatus = entry.generatedCoverage?.status ?? "missing"
+      const teacherFacingStatus =
+        sourceStatus === entry.status
+          ? `${entry.status}.`
+          : `source coverage ${sourceStatus}; package support ${generatedStatus}.`
 
       return [
-        `- ${formatCoverageLabel(entry.component)}: ${entry.status}. ${entry.rationale}${evidence}`,
+        `- ${formatCoverageLabel(entry.component)}: ${teacherFacingStatus} ${entry.rationale}${evidence}`,
       ]
     }) ?? []
 
