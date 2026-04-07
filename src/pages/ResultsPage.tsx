@@ -57,6 +57,9 @@ import {
   summarizeStructureImpact,
 } from "./resultsPageTraceabilityHelpers"
 
+
+import { getNormalizedBlueprintValues } from "../engine/shared/teacherFacingContent"
+
 export {
   downloadExportArtifact,
   getArtifactButtonLabel,
@@ -415,7 +418,7 @@ export function PackageSummarySection({
         <div><strong>Additional focus:</strong> {blueprint.content.target.secondary || "None"}</div>
         <div><strong>Multi-area lesson:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
         <div><strong>Lesson coverage:</strong> {selectedLessonMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
-        <div><strong>Standards:</strong> {blueprint.content.standards.join(", ")}</div>
+        <div><strong>Standards:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "Teacher-selected standard")}</div>
         <div style={binderSmallNoteStyle}>Use this snapshot to confirm the lesson focus and standards before exporting.</div>
       </div>
 

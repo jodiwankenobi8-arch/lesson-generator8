@@ -1,9 +1,10 @@
-﻿import {
+import {
   BlueprintContentCoverage,
   CurriculumAnalysis,
   LessonBlueprint,
   MaterialFile,
 } from "../types"
+import { normalizeTeacherFacingValues } from "../shared/teacherFacingContent"
 
 export function resolveBlueprintContent(args: {
   curriculumMaterials: MaterialFile[]
@@ -493,12 +494,18 @@ function resolvePracticeIdeas(
     return extractedPracticeIdeas.slice(0, 8)
   }
 
-  const analyzedTargets = cleanUnique(
-    curriculumAnalyses.flatMap((analysis) => {
-      const coverage = getCoverage(analysis)
-      return [...coverage.instructionalTargets, ...analysis.instructionalTargets]
-    })
-  ).filter((value) => !isWeakFallbackValue(value))
+  const analyzedTargets = normalizeTeacherFacingValues(
+    cleanUnique(
+      curriculumAnalyses.flatMap((analysis) => {
+        const coverage = getCoverage(analysis)
+        return [...coverage.instructionalTargets, ...analysis.instructionalTargets]
+      })
+    ),
+    {
+      kind: "practice",
+      primaryTarget,
+    }
+  )
 
   if (analyzedTargets.length > 0) {
     return analyzedTargets.slice(0, 6)
@@ -554,7 +561,7 @@ function sanitizeTeacherFacingItems(
 
 function normalizeTeacherFacingValue(value: string): string {
   return value
-    .replace(/^[\s*â€¢\-â€“â€”]+/, "")
+    .replace(/^[\s*•\-–—]+/, "")
     .replace(/^\[/, "")
     .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
     .replace(/^[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:\s*/, "")

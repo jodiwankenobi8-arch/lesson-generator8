@@ -1,4 +1,5 @@
 import type { LessonBlueprint, LessonSpec } from "../types"
+import { getNormalizedBlueprintValues } from "../shared/teacherFacingContent"
 
 export function resolveCenterLabels(spec: LessonSpec, fallbackLabels: string[]): string[] {
   const rawLabels = takeClean(spec.centers.steps, 6)
@@ -46,19 +47,19 @@ function isStudentIndependentCenterLine(line: string): boolean {
 }
 
 export function selectWordListFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(blueprint.content.wordLists, 2, fallback)
+  return focusList(getNormalizedBlueprintValues(blueprint, "wordList"), 2, fallback)
 }
 
 export function selectTextFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(blueprint.content.texts, 1, fallback)
+  return focusList(getNormalizedBlueprintValues(blueprint, "text"), 1, fallback)
 }
 
 export function selectPracticeFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(blueprint.content.practiceIdeas, 1, fallback)
+  return focusList(getNormalizedBlueprintValues(blueprint, "practice"), 1, fallback)
 }
 
 export function selectVocabularyFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(blueprint.content.vocabulary, 3, fallback)
+  return focusList(getNormalizedBlueprintValues(blueprint, "vocabulary"), 3, fallback)
 }
 
 function focusList(items: string[], count: number, fallback: string): string {
