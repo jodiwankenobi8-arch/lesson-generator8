@@ -7,6 +7,7 @@ import {
   LessonOutputContents,
   LessonPlanningIdeas,
   LessonSpec,
+  PlanningComponentCoverage,
 } from "./types"
 
 const blueprint: LessonBlueprint = {
@@ -130,6 +131,7 @@ function makePlanningIdeas(options: {
   centers?: boolean
   smallGroup?: boolean
   intervention?: boolean
+  componentCoverage?: PlanningComponentCoverage[]
   missingAreaPrompts?: LessonPlanningIdeas["missingAreaPrompts"]
 } = {}): LessonPlanningIdeas {
   return {
@@ -190,6 +192,7 @@ function makePlanningIdeas(options: {
           },
         ]
       : [],
+    componentCoverage: options.componentCoverage ?? [],
     missingAreaPrompts: options.missingAreaPrompts ?? [],
   }
 }
@@ -518,6 +521,59 @@ describe("buildPackageOutputs", () => {
     expect(teacherFacingContent).not.toContain("High-priority decision:")
     expect(teacherFacingContent).not.toContain("Decision: Add a short recap or exit check?")
     expect(teacherFacingContent).not.toContain("Decision: Add a clear intervention or reteach plan?")
+  })
+
+  it("keeps source-vs-generated coverage language aligned with missing-area prompts", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas: makePlanningIdeas({
+        componentCoverage: [
+          {
+            component: "guided_practice",
+            status: "covered",
+            evidence: ["Guided skill practice", "Supported foundational-skill task"],
+            rationale: "Guided practice is a major instructional component and should be checked before adding more support.",
+            sourceCoverage: {
+              status: "missing",
+              evidence: [],
+              rationale: "Guided practice is a major instructional component and should be checked before adding more support.",
+              source: "source_signals",
+            },
+            generatedCoverage: {
+              status: "covered",
+              evidence: ["Guided skill practice", "Supported foundational-skill task"],
+              rationale: "Guided practice is a major instructional component and should be checked before adding more support.",
+              source: "generated_support",
+            },
+          },
+        ],
+        missingAreaPrompts: [
+          {
+            component: "guided_practice",
+            importance: "high",
+            prompt: "Add a scaffolded guided-practice block?",
+            rationale: "Guided practice is a core lesson component and should usually be explicit before independent work.",
+          },
+        ],
+      }),
+      outputContents: makeOutputContents(),
+    })
+
+    expect(result.lessonPlan).toContain(
+      "- guided practice: source coverage missing; package support covered. Guided practice is a major instructional component and should be checked before adding more support. Evidence: Guided skill practice, Supported foundational-skill task."
+    )
+    expect(result.lessonPlan).not.toContain(
+      "- guided practice: covered. Guided practice is a major instructional component and should be checked before adding more support. Evidence: Guided skill practice, Supported foundational-skill task."
+    )
   })
 
   it("keeps canonical exports free of banned hub language", () => {
