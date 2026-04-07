@@ -258,6 +258,18 @@ export default function MaterialsPage() {
   async function handleFilesAdded(role: MaterialRole, files: File[]) {
     setGenerationError(null)
 
+    const existingNames = new Set(
+      useLessonStore
+        .getState()
+        .materials.filter((material) => material.role === role)
+        .map((material) => material.name.trim().toLowerCase())
+    )
+    const acceptedUploads: Array<{
+      file: File
+      id: string
+      sourceMetadata: ReturnType<typeof buildUploadSourceMetadata>
+    }> = []
+
     for (const file of files) {
       if (!isSupportedUploadFile(file)) {
         setGenerationError(
@@ -267,36 +279,44 @@ export default function MaterialsPage() {
       }
 
       const normalizedName = file.name.trim().toLowerCase()
-      const duplicateExists = materials.some(
-        (material) =>
-          material.role === role && material.name.trim().toLowerCase() === normalizedName
-      )
 
-      if (duplicateExists) {
+      if (existingNames.has(normalizedName)) {
         setGenerationError(`\"${file.name}\" is already added in ${role} materials.`)
         continue
       }
 
+      existingNames.add(normalizedName)
+
       const sourceMetadata = buildUploadSourceMetadata(file)
       const id = addMaterial(role, file.name, sourceMetadata)
 
-      try {
-        const fileBuffer = await file.arrayBuffer()
-        const fileContent = shouldCapturePlainText(file.name) ? await file.text() : null
-
-        setMaterialSource(id, {
-          fileBuffer,
-          fileContent,
-          ...sourceMetadata,
-        })
-
-        void processMaterial(id)
-      } catch (error) {
-        const store = useLessonStore.getState()
-        const message = error instanceof Error ? error.message : "Unable to read uploaded file"
-        store.setMaterialError(id, message)
-      }
+      acceptedUploads.push({
+        file,
+        id,
+        sourceMetadata,
+      })
     }
+
+    await Promise.all(
+      acceptedUploads.map(async ({ file, id, sourceMetadata }) => {
+        try {
+          const fileBuffer = await file.arrayBuffer()
+          const fileContent = shouldCapturePlainText(file.name) ? await file.text() : null
+
+          setMaterialSource(id, {
+            fileBuffer,
+            fileContent,
+            ...sourceMetadata,
+          })
+
+          void processMaterial(id)
+        } catch (error) {
+          const store = useLessonStore.getState()
+          const message = error instanceof Error ? error.message : "Unable to read uploaded file"
+          store.setMaterialError(id, message)
+        }
+      })
+    )
   }
 
   function handleFilesSelected(role: MaterialRole, event: React.ChangeEvent<HTMLInputElement>) {

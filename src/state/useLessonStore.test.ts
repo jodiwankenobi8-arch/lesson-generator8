@@ -157,6 +157,22 @@ describe("useLessonStore regeneration", () => {
     expect(after.lessonTrace).toBe(before.lessonTrace)
   })
 
+  it("addMaterial keeps burst-upload ids distinct even in the same clock tick", () => {
+    vi.spyOn(Date, "now").mockReturnValue(1710000000000)
+    vi.spyOn(Math, "random").mockReturnValue(0.123456789)
+
+    try {
+      const store = useLessonStore.getState()
+      const firstId = store.addMaterial("curriculum", "first-source.txt")
+      const secondId = store.addMaterial("curriculum", "second-source.txt")
+      const thirdId = store.addMaterial("exemplar", "third-source.txt")
+
+      expect(new Set([firstId, secondId, thirdId]).size).toBe(3)
+    } finally {
+      vi.restoreAllMocks()
+    }
+  })
+
   it("processMaterial marks material as error when no usable source content is available", async () => {
     const store = useLessonStore.getState()
     const materialId = store.addMaterial("curriculum", "empty-curriculum.txt")
