@@ -13,6 +13,7 @@ vi.mock("../engine/exports/exportPrintablesPdf", () => ({
 
 vi.mock("../engine/exports/exportSlidesPptx", () => ({
   exportSlidesPptx: vi.fn(),
+  parseSlidesExportContent: vi.fn(),
 }))
 
 vi.mock("../engine/exports/exportFullPackageZip", () => ({
@@ -21,7 +22,7 @@ vi.mock("../engine/exports/exportFullPackageZip", () => ({
 
 import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
-import { exportSlidesPptx } from "../engine/exports/exportSlidesPptx"
+import { exportSlidesPptx, parseSlidesExportContent } from "../engine/exports/exportSlidesPptx"
 import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
 import { CoverageDecisionsSection, PackageOutputsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription, getBundledArtifactLabels, getVisiblePackageSectionLabels } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
@@ -518,6 +519,11 @@ describe("Results export download contract", () => {
 
   it("routes PPTX exports through exportSlidesPptx before download", async () => {
     vi.mocked(exportLessonPlanDocx).mockReset()
+    vi.mocked(parseSlidesExportContent).mockReturnValue([
+      "Slide 1: Objective | Kind: objective",
+      "Slide 2: Guided Practice | Kind: guided_practice",
+      "Slide 3: Closure | Kind: closure",
+    ])
     vi.mocked(exportSlidesPptx).mockResolvedValue(
       new Blob(["pptx-binary"], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" })
     )
@@ -531,13 +537,24 @@ describe("Results export download contract", () => {
         label: "Slides Export",
         fileName: "ELA-slides-export.pptx",
         mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        content: "Slides Export`n1. Opening",
+        content: [
+          "Slides Export",
+          "",
+          "Slide 1: Objective | Kind: objective",
+          "Slide 2: Guided Practice | Kind: guided_practice Slide 3: Closure | Kind: closure",
+        ].join("\n"),
       })
 
       await downloadExportArtifact(artifact)
 
       expect(exportLessonPlanDocx).not.toHaveBeenCalled()
+      expect(parseSlidesExportContent).toHaveBeenCalledWith(artifact.content)
       expect(exportSlidesPptx).toHaveBeenCalledTimes(1)
+      expect(exportSlidesPptx).toHaveBeenCalledWith(artifact.label, [
+        "Slide 1: Objective | Kind: objective",
+        "Slide 2: Guided Practice | Kind: guided_practice",
+        "Slide 3: Closure | Kind: closure",
+      ])
       expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
 
       const appendedLink = harness.createdLinks[0]!
@@ -796,7 +813,12 @@ describe("Results export format labels", () => {
       label: "Slides Export",
       fileName: "ELA-slides-export.pptx",
       mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-      content: "Slides Export`n1. Opening",
+      content: [
+          "Slides Export",
+          "",
+          "Slide 1: Objective | Kind: objective",
+          "Slide 2: Guided Practice | Kind: guided_practice Slide 3: Closure | Kind: closure",
+        ].join("\n"),
     })
 
     expect(getArtifactButtonLabel(zipArtifact)).toBe("Download ZIP")
