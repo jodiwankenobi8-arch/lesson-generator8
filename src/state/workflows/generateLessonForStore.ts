@@ -1,4 +1,4 @@
-﻿import { runLessonPipeline } from "../../engine/pipeline/runLessonPipeline"
+import { runLessonPipeline } from "../../engine/pipeline/runLessonPipeline"
 import {
   LessonBlueprint,
   LessonInputs,
@@ -106,11 +106,21 @@ export async function generateLessonForStore(
     refreshed.missingAreaDecisions
   )
 
+  const { enhanceLessonGenerationWithAI } = await import("../../engine/ai/lessonConstructionAi")
+  const enhanced = await enhanceLessonGenerationWithAI({
+    inputs: refreshed.inputs,
+    materials: readyMaterials,
+    outputContents: refreshed.outputContents,
+    missingAreaDecisions: refreshed.missingAreaDecisions,
+    baseResult: result,
+  })
+  const finalResult = enhanced ?? result
+
   return {
-    blueprint: result.blueprint,
-    planningIdeas: result.planningIdeas,
-    lessonSpec: result.lessonSpec,
-    lessonPackage: result.lessonPackage,
-    lessonTrace: result.trace,
+    blueprint: finalResult.blueprint,
+    planningIdeas: finalResult.planningIdeas,
+    lessonSpec: finalResult.lessonSpec,
+    lessonPackage: finalResult.lessonPackage,
+    lessonTrace: finalResult.trace,
   }
 }
