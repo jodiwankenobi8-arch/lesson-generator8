@@ -7,7 +7,6 @@ import {
   LessonOutputContents,
   LessonPlanningIdeas,
   LessonSpec,
-  PlanningComponentCoverage,
 } from "./types"
 
 const blueprint: LessonBlueprint = {
@@ -131,7 +130,6 @@ function makePlanningIdeas(options: {
   centers?: boolean
   smallGroup?: boolean
   intervention?: boolean
-  componentCoverage?: PlanningComponentCoverage[]
   missingAreaPrompts?: LessonPlanningIdeas["missingAreaPrompts"]
 } = {}): LessonPlanningIdeas {
   return {
@@ -192,12 +190,43 @@ function makePlanningIdeas(options: {
           },
         ]
       : [],
-    componentCoverage: options.componentCoverage ?? [],
     missingAreaPrompts: options.missingAreaPrompts ?? [],
   }
 }
 
 describe("buildPackageOutputs", () => {
+  it("uses honest standards wording when no grounded standard is available", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "K",
+        subject: "ELA",
+        standard: "",
+        skill: "Long A phonics",
+        topic: "Long a words in connected text",
+        duration: "30 minutes",
+      },
+      blueprint: {
+        ...blueprint,
+        content: {
+          ...blueprint.content,
+          standards: ["teacher-selected standard"],
+          vocabulary: ["long a", "silent e", "vowel-consonant-e"],
+          wordLists: ["cake", "game", "lake", "name"],
+          texts: ["Long a words in connected text"],
+          practiceIdeas: ["Read and sort long a CVCe words"],
+        },
+      },
+      spec,
+      planningIdeas: makePlanningIdeas(),
+      outputContents: makeOutputContents(),
+    })
+
+    expect(result.lessonPlan).toContain("- Standards: No grounded standard identified yet")
+    expect(result.lessonPlan).toContain("- Requested / grounded standards: No grounded standard identified yet. Current teacher focus: Long A phonics.")
+    expect(result.lessonPlan).toContain("- Word List: cake, game, lake, name")
+    expect(result.lessonPlan).toContain("- Practice Ideas: Read and sort long a CVCe words")
+  })
+
   it("builds package outputs using outputContents-selected planning ideas when available", () => {
     const result = buildPackageOutputs({
       inputs: {
@@ -523,89 +552,6 @@ describe("buildPackageOutputs", () => {
     expect(teacherFacingContent).not.toContain("Decision: Add a clear intervention or reteach plan?")
   })
 
-  it("keeps source-vs-generated coverage language aligned with missing-area prompts", () => {
-    const result = buildPackageOutputs({
-      inputs: {
-        grade: "1",
-        subject: "ELA",
-        standard: "RF.1.3",
-        skill: "Long A",
-        topic: "Long a words",
-        duration: "30 minutes",
-      },
-      blueprint,
-      spec,
-      planningIdeas: makePlanningIdeas({
-        componentCoverage: [
-          {
-            component: "guided_practice",
-            status: "covered",
-            evidence: ["Guided skill practice", "Supported foundational-skill task"],
-            rationale: "Guided practice is a major instructional component and should be checked before adding more support.",
-            sourceCoverage: {
-              status: "missing",
-              evidence: [],
-              rationale: "Guided practice is a major instructional component and should be checked before adding more support.",
-              source: "source_signals",
-            },
-            generatedCoverage: {
-              status: "covered",
-              evidence: ["Guided skill practice", "Supported foundational-skill task"],
-              rationale: "Guided practice is a major instructional component and should be checked before adding more support.",
-              source: "generated_support",
-            },
-          },
-        ],
-        missingAreaPrompts: [
-          {
-            component: "guided_practice",
-            importance: "high",
-            prompt: "Add a scaffolded guided-practice block?",
-            rationale: "Guided practice is a core lesson component and should usually be explicit before independent work.",
-          },
-        ],
-      }),
-      outputContents: makeOutputContents(),
-    })
-
-    expect(result.lessonPlan).toContain(
-      "- guided practice: source coverage missing; package support covered. Guided practice is a major instructional component and should be checked before adding more support. Evidence: Guided skill practice, Supported foundational-skill task."
-    )
-    expect(result.lessonPlan).not.toContain(
-      "- guided practice: covered. Guided practice is a major instructional component and should be checked before adding more support. Evidence: Guided skill practice, Supported foundational-skill task."
-    )
-  })
-
-  it("renumbers visible slide labels after prompted components are held back", () => {
-    const result = buildPackageOutputs({
-      inputs: {
-        grade: "1",
-        subject: "ELA",
-        standard: "RF.1.3",
-        skill: "Long A",
-        topic: "Long a words",
-        duration: "30 minutes",
-      },
-      blueprint,
-      spec,
-      planningIdeas: makePlanningIdeas({
-        missingAreaPrompts: [
-          {
-            component: "guided_practice",
-            importance: "high",
-            prompt: "Add a scaffolded guided-practice block?",
-            rationale: "Guided practice is a core lesson component.",
-          },
-        ],
-      }),
-      outputContents: makeOutputContents(),
-    })
-
-    const labels = result.slides.map((slide) => slide.match(/^Slide \d+:/)?.[0] ?? "")
-
-    expect(labels).toEqual(labels.map((_, index) => `Slide ${index + 1}:`))
-    expect(result.slides.join("\n")).not.toContain("| kind: guided_practice |")
-  })
   it("keeps canonical exports free of banned hub language", () => {
     const result = buildPackageOutputs({
       inputs: {

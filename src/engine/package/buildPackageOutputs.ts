@@ -177,13 +177,11 @@ function buildSlides(
     includeInterventionOutput: true,
   }
 ): string[] {
-  const assembled = renumberVisibleSlides(
-    filterSlidesForSelectedOutputs(
-      assembleSlideDeck(blueprint, spec),
-      options,
-      planningIdeas,
-      missingAreaDecisions
-    )
+  const assembled = filterSlidesForSelectedOutputs(
+    assembleSlideDeck(blueprint, spec),
+    options,
+    planningIdeas,
+    missingAreaDecisions
   )
 
   if (assembled.length > 0) {
@@ -201,13 +199,7 @@ function buildSlides(
     ]
   }
 
-  return renumberVisibleSlides(shell.map((label, index) => `Slide ${index + 1}: ${label}`))
-}
-
-function renumberVisibleSlides(slides: string[]): string[] {
-  return slides.map((slide, index) =>
-    slide.replace(/^Slide\s+\d+:/i, `Slide ${index + 1}:`)
-  )
+  return shell.map((label, index) => `Slide ${index + 1}: ${label}`)
 }
 
 function hasMissingAreaPrompt(
@@ -692,10 +684,7 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
     `- Additional Lesson Area: ${blueprint.content.target.secondary ?? "None"}`,
     `- Multiple Lesson Areas: ${blueprint.content.target.isMixedTarget ? "Yes" : "No"}`,
     `- Source Balance: ${blueprint.sourceReadiness.overall}`,
-    `- Standards: ${joinOrFallback(
-      blueprint.content.standards.slice(0, 3),
-      "teacher-selected standard"
-    )}`,
+    `- Standards: ${formatGroundingStandards(blueprint)}`,
     `- Vocabulary: ${joinOrFallback(
       blueprint.content.vocabulary.slice(0, 4),
       "key vocabulary"
@@ -727,6 +716,19 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
       "clear instructional tone"
     )}`,
   ].join("\n")
+}
+
+function formatGroundingStandards(blueprint: LessonBlueprint): string {
+  const standards = Array.from(
+    new Set(
+      blueprint.content.standards
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .filter((item) => item.toLowerCase() !== "teacher-selected standard")
+    )
+  )
+
+  return standards.length > 0 ? standards.slice(0, 3).join(", ") : "No grounded standard identified yet"
 }
 
 function buildSectionNarrativeBlock(
@@ -820,15 +822,9 @@ function buildCoverageDecisionBlock(
     planningIdeas.componentCoverage?.flatMap((entry) => {
       const evidence =
         entry.evidence.length > 0 ? ` Evidence: ${entry.evidence.join(", ")}.` : ""
-      const sourceStatus = entry.sourceCoverage?.status ?? entry.status
-      const generatedStatus = entry.generatedCoverage?.status ?? "missing"
-      const teacherFacingStatus =
-        sourceStatus === entry.status
-          ? `${entry.status}.`
-          : `source coverage ${sourceStatus}; package support ${generatedStatus}.`
 
       return [
-        `- ${formatCoverageLabel(entry.component)}: ${teacherFacingStatus} ${entry.rationale}${evidence}`,
+        `- ${formatCoverageLabel(entry.component)}: ${entry.status}. ${entry.rationale}${evidence}`,
       ]
     }) ?? []
 

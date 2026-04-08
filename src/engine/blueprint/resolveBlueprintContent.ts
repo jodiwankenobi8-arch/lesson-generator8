@@ -21,10 +21,10 @@ export function resolveBlueprintContent(args: {
   const { curriculumMaterials, curriculumAnalyses, inputs, target } = args
 
   const standards = resolveStandards(curriculumMaterials, curriculumAnalyses, inputs)
-  const vocabulary = resolveVocabulary(curriculumMaterials, curriculumAnalyses, target.primary)
-  const wordLists = resolveWordLists(curriculumMaterials, curriculumAnalyses, target.primary)
-  const texts = resolveTexts(curriculumMaterials, curriculumAnalyses, inputs.topic)
-  const practiceIdeas = resolvePracticeIdeas(curriculumMaterials, curriculumAnalyses, target.primary)
+  const vocabulary = resolveVocabulary(curriculumMaterials, curriculumAnalyses, target.primary, inputs)
+  const wordLists = resolveWordLists(curriculumMaterials, curriculumAnalyses, target.primary, inputs)
+  const texts = resolveTexts(curriculumMaterials, curriculumAnalyses, inputs.topic, target.primary, inputs)
+  const practiceIdeas = resolvePracticeIdeas(curriculumMaterials, curriculumAnalyses, target.primary, inputs)
   const coverage = resolveBlueprintContentCoverage(curriculumAnalyses)
 
   return {
@@ -109,7 +109,8 @@ type StandardResolutionInputs = {
 function resolveStandards(
   curriculumMaterials: MaterialFile[],
   curriculumAnalyses: CurriculumAnalysis[],
-  inputs: StandardResolutionInputs
+  inputs: StandardResolutionInputs,
+  primaryTarget: string
 ): string[] {
   const explicitStandard = inputs.standard.trim()
   if (explicitStandard.length > 0) {
@@ -138,7 +139,7 @@ function resolveStandards(
     analyzedStandards.length > 0 ? analyzedStandards : extractedStandards
 
   if (candidateStandards.length === 0) {
-    return ["teacher-selected standard"]
+    return inferTeacherFacingStandards(inputs, primaryTarget)
   }
 
   const hintTerms = buildStandardHintTerms(inputs)
@@ -243,6 +244,189 @@ function scoreStandardHintAlignment(evidence: string, hintTerms: string[]): numb
   }, 0)
 }
 
+type TeacherFallbackInputs = Pick<StandardResolutionInputs, "grade" | "subject" | "skill" | "topic">
+
+const PHONICS_PATTERN_TERMS = [
+  "long a",
+  "short a",
+  "long e",
+  "short e",
+  "long i",
+  "short i",
+  "long o",
+  "short o",
+  "long u",
+  "short u",
+  "silent e",
+  "vowel team",
+  "digraph",
+  "blend",
+  "segment",
+  "decode",
+  "encoding",
+  "cvc",
+  "cvce",
+] as const
+
+function isElaSubject(subject: string): boolean {
+  return /(ela|reading|language arts|literacy)/i.test(subject)
+}
+
+function buildTeacherFocusLabel(inputs: TeacherFallbackInputs): string {
+  const skill = inputs.skill.trim()
+  if (skill.length > 0) {
+    return skill
+  }
+
+  const topic = inputs.topic.trim()
+  if (topic.length > 0) {
+    return topic
+  }
+
+  const subject = inputs.subject.trim() || "lesson"
+  return `${subject} focus`
+}
+
+function buildTeacherFocusSeed(inputs: TeacherFallbackInputs): string {
+  return buildTeacherFocusLabel(inputs)
+    .replace(/(phonics|skill|focus|lesson|unit)/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function getNamedPhonicsPatterns(inputs: TeacherFallbackInputs): string[] {
+  const combined = `${inputs.skill} ${inputs.topic}`.toLowerCase()
+  return cleanUnique(
+    PHONICS_PATTERN_TERMS.filter((term) => combined.includes(term))
+  ).slice(0, 3)
+}
+
+function inferTeacherFacingStandards(
+  inputs: StandardResolutionInputs,
+  primaryTarget: string
+): string[] {
+  const focus = buildTeacherFocusLabel(inputs)
+  const subject = inputs.subject.trim() || "lesson"
+  const grade = inputs.grade.trim() ? `Grade ${inputs.grade.trim()} ` : ""
+
+  if (primaryTarget === "phonics" && isElaSubject(subject)) {
+    return [`${grade}ELA inferred foundational reading / phonics focus: ${focus}`]
+  }
+
+  if (primaryTarget === "comprehension" && isElaSubject(subject)) {
+    return [`${grade}ELA inferred reading comprehension focus: ${focus}`]
+  }
+
+  return [`${grade}${subject} inferred standard focus: ${focus}`]
+}
+
+function inferTeacherFacingVocabulary(
+  inputs: TeacherFallbackInputs,
+  primaryTarget: string
+): string[] {
+  const patterns = getNamedPhonicsPatterns(inputs)
+  const combined = `${inputs.skill} ${inputs.topic}`.toLowerCase()
+  const vocabulary: string[] = []
+
+  vocabulary.push(...patterns)
+
+  if (combined.includes("vowel")) vocabulary.push("vowel pattern")
+  if (combined.includes("syllable")) vocabulary.push("syllable")
+  if (combined.includes("blend")) vocabulary.push("blend")
+  if (combined.includes("segment")) vocabulary.push("segment")
+  if (combined.includes("decode")) vocabulary.push("decode")
+  if (combined.includes("comprehension")) vocabulary.push("comprehension")
+  if (combined.includes("main idea")) vocabulary.push("main idea")
+  if (combined.includes("key detail")) vocabulary.push("key details")
+
+  const focusSeed = buildTeacherFocusSeed(inputs)
+  if (vocabulary.length === 0 && focusSeed.length > 0) {
+    vocabulary.push(focusSeed)
+  }
+
+  if (vocabulary.length === 0) {
+    vocabulary.push(primaryTarget === "phonics" ? "target phonics language" : "target lesson vocabulary")
+  }
+
+  return cleanUnique(vocabulary).slice(0, 4)
+}
+
+function inferTeacherFacingWordLists(
+  inputs: TeacherFallbackInputs,
+  primaryTarget: string
+): string[] {
+  const patterns = getNamedPhonicsPatterns(inputs)
+  const focusSeed = buildTeacherFocusSeed(inputs) || buildTeacherFocusLabel(inputs)
+
+  if (primaryTarget === "phonics") {
+    if (patterns.length > 0) {
+      return cleanUnique([
+        `${patterns[0]} words`,
+        `${patterns[0]} examples`,
+      ])
+    }
+
+    return cleanUnique([
+      `${focusSeed} words`,
+      `${focusSeed} examples`,
+    ])
+  }
+
+  const topic = inputs.topic.trim()
+  if (topic.length > 0) {
+    return [`examples connected to ${topic}`]
+  }
+
+  return [`examples connected to ${focusSeed}`]
+}
+
+function inferTeacherFacingTexts(
+  inputs: TeacherFallbackInputs,
+  primaryTarget: string
+): string[] {
+  const topic = inputs.topic.trim()
+  if (topic.length > 0) {
+    return [topic]
+  }
+
+  const focus = buildTeacherFocusSeed(inputs) || buildTeacherFocusLabel(inputs)
+  if (primaryTarget === "phonics") {
+    return [`short decodable text using ${focus}`]
+  }
+
+  return [`teacher-created text for ${focus}`]
+}
+
+function inferTeacherFacingPracticeIdeas(
+  inputs: TeacherFallbackInputs,
+  primaryTarget: string
+): string[] {
+  const patterns = getNamedPhonicsPatterns(inputs)
+  const focus = patterns[0] ?? buildTeacherFocusSeed(inputs) ?? buildTeacherFocusLabel(inputs)
+
+  if (primaryTarget === "phonics") {
+    return cleanUnique([
+      `Read and decode ${focus} words`,
+      `Sort and discuss ${focus} examples`,
+      `Partner practice with ${focus} words`,
+    ])
+  }
+
+  if (primaryTarget === "comprehension") {
+    return cleanUnique([
+      `Discuss and respond to ${focus}`,
+      `Practice evidence-based thinking with ${focus}`,
+      `Partner talk using ${focus}`,
+    ])
+  }
+
+  return cleanUnique([
+    `Guided practice with ${focus}`,
+    `Partner practice using ${focus}`,
+    `Independent application of ${focus}`,
+  ])
+}
+
 const STANDARD_HINT_STOPWORDS = new Set([
   "the",
   "and",
@@ -271,7 +455,8 @@ const STANDARD_HINT_STOPWORDS = new Set([
 function resolveVocabulary(
   curriculumMaterials: MaterialFile[],
   curriculumAnalyses: CurriculumAnalysis[],
-  primaryTarget: string
+  primaryTarget: string,
+  inputs: StandardResolutionInputs
 ): string[] {
   const analyzedVocabulary = sanitizeTeacherFacingItems(
     cleanUnique(
@@ -321,15 +506,19 @@ function resolveVocabulary(
     return extractedVocabulary.slice(0, 8)
   }
 
-  return primaryTarget === "phonics"
-    ? ["phonics pattern", "target words"]
-    : ["key vocabulary", "comprehension language"]
+  const inferredVocabulary = inferTeacherInputVocabulary(primaryTarget, inputs)
+  if (inferredVocabulary.length > 0) {
+    return inferredVocabulary
+  }
+
+  return inferTeacherFacingVocabulary(inputs, primaryTarget)
 }
 
 function resolveWordLists(
   curriculumMaterials: MaterialFile[],
   curriculumAnalyses: CurriculumAnalysis[],
-  primaryTarget: string
+  primaryTarget: string,
+  inputs: StandardResolutionInputs
 ): string[] {
   const analyzedWordLists = sanitizeTeacherFacingItems(
     cleanUnique(
@@ -388,13 +577,20 @@ function resolveWordLists(
     return extractedWordLists.slice(0, 8)
   }
 
-  return ["Teacher-provided practice items"]
+  const inferredWordLists = inferTeacherInputWordLists(primaryTarget, inputs)
+  if (inferredWordLists.length > 0) {
+    return inferredWordLists
+  }
+
+  return inferTeacherFacingWordLists(inputs, primaryTarget)
 }
 
 function resolveTexts(
   curriculumMaterials: MaterialFile[],
   curriculumAnalyses: CurriculumAnalysis[],
-  topic: string
+  topic: string,
+  primaryTarget: string,
+  inputs: StandardResolutionInputs
 ): string[] {
   const analyzedTexts = sanitizeTeacherFacingItems(
     cleanUnique(
@@ -432,18 +628,24 @@ function resolveTexts(
     return extractedTexts.slice(0, 6)
   }
 
-  const trimmedTopic = topic.trim()
+  const trimmedTopic = inputs.topic.trim()
   if (trimmedTopic.length > 0) {
     return [trimmedTopic]
   }
 
-  return ["Teacher-provided lesson text"]
+  const inferredTexts = inferTeacherInputTexts(primaryTarget, inputs)
+  if (inferredTexts.length > 0) {
+    return inferredTexts
+  }
+
+  return inferTeacherFacingTexts(inputs, primaryTarget)
 }
 
 function resolvePracticeIdeas(
   curriculumMaterials: MaterialFile[],
   curriculumAnalyses: CurriculumAnalysis[],
-  primaryTarget: string
+  primaryTarget: string,
+  inputs: StandardResolutionInputs
 ): string[] {
   const analyzedPracticeTasks = sanitizeTeacherFacingItems(
     cleanUnique(
@@ -511,9 +713,12 @@ function resolvePracticeIdeas(
     return analyzedTargets.slice(0, 6)
   }
 
-  return primaryTarget === "phonics"
-    ? ["Word reading", "Sound sort", "Partner decoding"]
-    : ["Guided reading", "Partner discussion", "Question practice"]
+  const inferredPracticeIdeas = inferTeacherInputPracticeIdeas(primaryTarget, inputs)
+  if (inferredPracticeIdeas.length > 0) {
+    return inferredPracticeIdeas
+  }
+
+  return inferTeacherFacingPracticeIdeas(inputs, primaryTarget)
 }
 
 function getCoverage(analysis: CurriculumAnalysis) {
@@ -764,6 +969,187 @@ function looksLikeExtractedStandard(
 function containsAny(text: string, terms: string[]): boolean {
   const lower = text.toLowerCase()
   return terms.some((term) => lower.includes(term))
+}
+
+function inferTeacherInputVocabulary(
+  primaryTarget: string,
+  inputs: StandardResolutionInputs
+): string[] {
+  if (primaryTarget !== "phonics") {
+    return []
+  }
+
+  const cues = detectTeacherPhonicsCues(inputs)
+  const vocabulary = cleanUnique([
+    ...cues.vocabulary,
+    inputs.skill.trim(),
+  ]).filter((value) => !isWeakFallbackValue(value))
+
+  return vocabulary.slice(0, 8)
+}
+
+function inferTeacherInputWordLists(
+  primaryTarget: string,
+  inputs: StandardResolutionInputs
+): string[] {
+  if (primaryTarget !== "phonics") {
+    return []
+  }
+
+  return detectTeacherPhonicsCues(inputs).examples.slice(0, 8)
+}
+
+function inferTeacherInputTexts(
+  primaryTarget: string,
+  inputs: StandardResolutionInputs
+): string[] {
+  if (primaryTarget !== "phonics") {
+    return []
+  }
+
+  const cues = detectTeacherPhonicsCues(inputs)
+  if (cues.focusLabel.length === 0) {
+    return []
+  }
+
+  return [`Short decodable lines featuring ${cues.focusLabel}`]
+}
+
+function inferTeacherInputPracticeIdeas(
+  primaryTarget: string,
+  inputs: StandardResolutionInputs
+): string[] {
+  if (primaryTarget !== "phonics") {
+    return []
+  }
+
+  const cues = detectTeacherPhonicsCues(inputs)
+  if (cues.practiceIdeas.length > 0) {
+    return cues.practiceIdeas.slice(0, 8)
+  }
+
+  return []
+}
+
+type TeacherPhonicsCueSet = {
+  focusLabel: string
+  vocabulary: string[]
+  examples: string[]
+  practiceIdeas: string[]
+}
+
+function detectTeacherPhonicsCues(inputs: StandardResolutionInputs): TeacherPhonicsCueSet {
+  const source = `${inputs.skill} ${inputs.topic}`.toLowerCase()
+
+  const definitions: Array<{
+    terms: string[]
+    result: TeacherPhonicsCueSet
+  }> = [
+    {
+      terms: ["long a", "silent e", "magic e", "cvce"],
+      result: {
+        focusLabel: "long a CVCe words",
+        vocabulary: ["long a", "silent e", "vowel-consonant-e"],
+        examples: ["cake", "game", "lake", "name", "same", "gate"],
+        practiceIdeas: [
+          "Read and sort long a CVCe words",
+          "Build and write long a words",
+          "Partner read a short long a decodable",
+        ],
+      },
+    },
+    {
+      terms: ["short a"],
+      result: {
+        focusLabel: "short a CVC words",
+        vocabulary: ["short a", "middle vowel", "CVC words"],
+        examples: ["cat", "map", "cap", "jam", "man", "sat"],
+        practiceIdeas: [
+          "Blend and read short a CVC words",
+          "Sort short a words by onset and rime",
+          "Write short a words with sound boxes",
+        ],
+      },
+    },
+    {
+      terms: ["long i"],
+      result: {
+        focusLabel: "long i words",
+        vocabulary: ["long i", "silent e", "vowel-consonant-e"],
+        examples: ["bike", "time", "kite", "line", "five", "slide"],
+        practiceIdeas: [
+          "Read and sort long i words",
+          "Build long i words with letter tiles",
+          "Partner read a short long i decodable",
+        ],
+      },
+    },
+    {
+      terms: ["long o"],
+      result: {
+        focusLabel: "long o words",
+        vocabulary: ["long o", "silent e", "vowel-consonant-e"],
+        examples: ["home", "rope", "bone", "nose", "stone", "joke"],
+        practiceIdeas: [
+          "Read and sort long o words",
+          "Build long o words with letter tiles",
+          "Partner read a short long o decodable",
+        ],
+      },
+    },
+    {
+      terms: ["long e"],
+      result: {
+        focusLabel: "long e words",
+        vocabulary: ["long e", "vowel team", "ee/ea patterns"],
+        examples: ["seed", "team", "bead", "keep", "read", "clean"],
+        practiceIdeas: [
+          "Read and sort long e words",
+          "Highlight ee and ea spellings",
+          "Partner read a short long e decodable",
+        ],
+      },
+    },
+    {
+      terms: ["digraph", "sh", "ch", "th", "wh"],
+      result: {
+        focusLabel: "consonant digraph words",
+        vocabulary: ["digraph", "two letters one sound", "decode"],
+        examples: ["ship", "chin", "thin", "whip", "shop", "chat"],
+        practiceIdeas: [
+          "Read and sort digraph words",
+          "Highlight the digraph in each word",
+          "Build digraph words with picture supports",
+        ],
+      },
+    },
+    {
+      terms: ["blend", "blends"],
+      result: {
+        focusLabel: "consonant blend words",
+        vocabulary: ["blend", "beginning blend", "final blend"],
+        examples: ["stop", "flag", "trip", "mask", "frog", "plan"],
+        practiceIdeas: [
+          "Read and sort blend words",
+          "Tap and blend each sound in blend words",
+          "Write blend words with sound boxes",
+        ],
+      },
+    },
+  ]
+
+  for (const definition of definitions) {
+    if (definition.terms.some((term) => source.includes(term))) {
+      return definition.result
+    }
+  }
+
+  return {
+    focusLabel: "",
+    vocabulary: [],
+    examples: [],
+    practiceIdeas: [],
+  }
 }
 
 

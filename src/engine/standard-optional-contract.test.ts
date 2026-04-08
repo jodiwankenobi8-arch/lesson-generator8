@@ -49,6 +49,31 @@ describe("standard optional contract", () => {
     }
   })
 
+
+  it("derives specific phonics content from teacher-entered skill and topic when curriculum content is missing", () => {
+    const result = resolveBlueprintContent({
+      curriculumMaterials: [],
+      curriculumAnalyses: [],
+      inputs: {
+        standard: "",
+        grade: "K",
+        subject: "ELA",
+        skill: "Long A phonics",
+        topic: "Long a words in connected text",
+      },
+      target: { primary: "phonics" } as any,
+    })
+
+    expect(result.vocabulary).toEqual(["long a", "silent e", "vowel-consonant-e", "Long A phonics"])
+    expect(result.wordLists).toEqual(["cake", "game", "lake", "name", "same", "gate"])
+    expect(result.texts).toEqual(["Long a words in connected text"])
+    expect(result.practiceIdeas).toEqual([
+      "Read and sort long a CVCe words",
+      "Build and write long a words",
+      "Partner read a short long a decodable",
+    ])
+  })
+
   it("ranks curriculum-derived standards using teacher-entered skill and topic when standard is blank", () => {
     const result = resolveBlueprintContent({
       curriculumMaterials: [],
