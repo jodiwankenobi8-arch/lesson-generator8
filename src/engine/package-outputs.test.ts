@@ -576,6 +576,36 @@ describe("buildPackageOutputs", () => {
     )
   })
 
+  it("renumbers visible slide labels after prompted components are held back", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint,
+      spec,
+      planningIdeas: makePlanningIdeas({
+        missingAreaPrompts: [
+          {
+            component: "guided_practice",
+            importance: "high",
+            prompt: "Add a scaffolded guided-practice block?",
+            rationale: "Guided practice is a core lesson component.",
+          },
+        ],
+      }),
+      outputContents: makeOutputContents(),
+    })
+
+    const labels = result.slides.map((slide) => slide.match(/^Slide \d+:/)?.[0] ?? "")
+
+    expect(labels).toEqual(labels.map((_, index) => `Slide ${index + 1}:`))
+    expect(result.slides.join("\n")).not.toContain("| kind: guided_practice |")
+  })
   it("keeps canonical exports free of banned hub language", () => {
     const result = buildPackageOutputs({
       inputs: {
