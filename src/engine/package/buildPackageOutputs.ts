@@ -177,13 +177,11 @@ function buildSlides(
     includeInterventionOutput: true,
   }
 ): string[] {
-  const assembled = renumberVisibleSlides(
-    filterSlidesForSelectedOutputs(
-      assembleSlideDeck(blueprint, spec),
-      options,
-      planningIdeas,
-      missingAreaDecisions
-    )
+  const assembled = filterSlidesForSelectedOutputs(
+    assembleSlideDeck(blueprint, spec),
+    options,
+    planningIdeas,
+    missingAreaDecisions
   )
 
   if (assembled.length > 0) {
@@ -201,13 +199,7 @@ function buildSlides(
     ]
   }
 
-  return renumberVisibleSlides(shell.map((label, index) => `Slide ${index + 1}: ${label}`))
-}
-
-function renumberVisibleSlides(slides: string[]): string[] {
-  return slides.map((slide, index) =>
-    slide.replace(/^Slide\s+\d+:/i, `Slide ${index + 1}:`)
-  )
+  return shell.map((label, index) => `Slide ${index + 1}: ${label}`)
 }
 
 function hasMissingAreaPrompt(
