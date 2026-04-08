@@ -22,8 +22,16 @@ export function buildStandardsSummary(
   const standards = [inputs.standard, ...blueprint.content.standards]
     .map((item) => item.trim())
     .filter(Boolean)
+    .filter((item) => item.toLowerCase() !== "teacher-selected standard")
 
-  return joinOrFallback(Array.from(new Set(standards)).slice(0, 4), "No standards surfaced yet.")
+  if (standards.length > 0) {
+    return joinOrFallback(Array.from(new Set(standards)).slice(0, 4), "No standards surfaced yet.")
+  }
+
+  const skill = inputs.skill.trim()
+  return skill.length > 0
+    ? `No grounded standard identified yet. Current teacher focus: ${skill}.`
+    : "No grounded standard identified yet."
 }
 
 
