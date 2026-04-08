@@ -20,7 +20,7 @@ export function resolveBlueprintContent(args: {
 }): Omit<LessonBlueprint["content"], "target"> {
   const { curriculumMaterials, curriculumAnalyses, inputs, target } = args
 
-  const standards = resolveStandards(curriculumMaterials, curriculumAnalyses, inputs)
+  const standards = resolveStandards(curriculumMaterials, curriculumAnalyses, inputs, target.primary)
   const vocabulary = resolveVocabulary(curriculumMaterials, curriculumAnalyses, target.primary, inputs)
   const wordLists = resolveWordLists(curriculumMaterials, curriculumAnalyses, target.primary, inputs)
   const texts = resolveTexts(curriculumMaterials, curriculumAnalyses, inputs.topic, target.primary, inputs)

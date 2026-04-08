@@ -143,12 +143,27 @@ export async function enhanceLessonGenerationWithAI(
 function prependAiGroundedWarning(warnings?: string[]): string[] {
   const aiWarning = "AI grounded content expanded weak fallback outputs."
   const safeWarnings = Array.isArray(warnings) ? warnings.filter(Boolean) : []
+  const nonAiWarnings = safeWarnings.filter((warning) => !warning.includes("AI grounded content"))
 
-  if (safeWarnings.some((warning) => warning.includes("AI grounded content"))) {
-    return safeWarnings
+  return [aiWarning, ...nonAiWarnings]
+}
+
+function buildAiCoverage(
+  baseCoverage: LessonGenerationResult["blueprint"]["content"]["coverage"],
+  baseContent: LessonGenerationResult["blueprint"]["content"],
+  ai: AiLessonConstructionResponse
+) {
+  return {
+    standards: chooseValues(ai.derivedStandards, baseCoverage?.standards ?? baseContent.standards),
+    vocabulary: chooseValues(ai.vocabulary, baseCoverage?.vocabulary ?? baseContent.vocabulary),
+    wordLists: chooseValues(ai.wordLists, baseCoverage?.wordLists ?? baseContent.wordLists),
+    texts: chooseValues(ai.texts, baseCoverage?.texts ?? baseContent.texts),
+    practiceIdeas: chooseValues(ai.practiceIdeas, baseCoverage?.practiceIdeas ?? baseContent.practiceIdeas),
+    instructionalTargets: baseCoverage?.instructionalTargets ?? [],
+    sightWords: baseCoverage?.sightWords ?? [],
+    foundationalSkills: baseCoverage?.foundationalSkills ?? [],
+    lessonSegments: baseCoverage?.lessonSegments ?? [],
   }
-
-  return [aiWarning, ...safeWarnings]
 }
 export function mergeAiLessonConstruction(
   input: Pick<LessonConstructionInput, "inputs" | "outputContents" | "baseResult">,
@@ -164,29 +179,7 @@ export function mergeAiLessonConstruction(
       wordLists: chooseValues(ai.wordLists, base.blueprint.content.wordLists),
       texts: chooseValues(ai.texts, base.blueprint.content.texts),
       practiceIdeas: chooseValues(ai.practiceIdeas, base.blueprint.content.practiceIdeas),
-      coverage: {
-        ...base.blueprint.content.coverage,
-        standards: chooseValues(
-          ai.derivedStandards,
-          base.blueprint.content.coverage?.standards ?? base.blueprint.content.standards
-        ),
-        vocabulary: chooseValues(
-          ai.vocabulary,
-          base.blueprint.content.coverage?.vocabulary ?? base.blueprint.content.vocabulary
-        ),
-        wordLists: chooseValues(
-          ai.wordLists,
-          base.blueprint.content.coverage?.wordLists ?? base.blueprint.content.wordLists
-        ),
-        texts: chooseValues(
-          ai.texts,
-          base.blueprint.content.coverage?.texts ?? base.blueprint.content.texts
-        ),
-        practiceIdeas: chooseValues(
-          ai.practiceIdeas,
-          base.blueprint.content.coverage?.practiceIdeas ?? base.blueprint.content.practiceIdeas
-        ),
-      },
+      coverage: buildAiCoverage(base.blueprint.content.coverage, base.blueprint.content, ai),
     },
     sourceReadiness: {
       ...base.blueprint.sourceReadiness,
@@ -237,7 +230,7 @@ export function mergeAiLessonConstruction(
     exports: nextExports,
     readiness: {
       ...nextReadinessBase,
-      warnings: unique([...nextReadinessBase.warnings, ...limit(ai.warnings, 4)]),
+      warnings: prependAiGroundedWarning(unique([...nextReadinessBase.warnings, ...limit(ai.warnings, 4)])),
     },
   }
 
@@ -341,7 +334,7 @@ function buildPayload(input: LessonConstructionInput): LessonConstructionPayload
           tone: limit(material.analysis?.exemplar?.tone ?? [], 8),
           reusableStructure: limit(material.analysis?.exemplar?.reusableStructure ?? [], 8),
           detectedFeatures: limit(
-            material.analysis?.exemplar?.detectedFeatures?.items.map((item) => `${item.category}:${item.label}=${item.value}`) ?? [],
+            material.analysis?.exemplar?.detectedFeatures?.items.map((item) => `${item.category}:${item.label}=${item.key}`) ?? [],
             12
           ),
         },
