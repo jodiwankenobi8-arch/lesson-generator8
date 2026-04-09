@@ -1,6 +1,13 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
-import { buildReliabilityDecisions, formatReliabilityDecision, formatReliabilityOutcome, getSelectedMaterialNames, type ReliabilityOutcome, type ReliabilityUiItem } from "./resultsPageReliabilityHelpers"
+import {
+  buildReliabilityDecisions,
+  formatReliabilityDecision,
+  formatReliabilityOutcome,
+  getSelectedMaterialNames,
+  type ReliabilityOutcome,
+  type ReliabilityUiItem,
+} from "./resultsPageReliabilityHelpers"
 import {
   ExportArtifact,
   LessonBlueprint,
@@ -56,8 +63,6 @@ import {
   summarizeSelectedExemplarTargets,
   summarizeStructureImpact,
 } from "./resultsPageTraceabilityHelpers"
-
-
 import { getNormalizedBlueprintValues } from "../engine/shared/teacherFacingContent"
 
 export {
@@ -75,23 +80,8 @@ export {
 
 const pageStyle: React.CSSProperties = {
   ...orchardPageShellStyle,
-  maxWidth: 980,
+  maxWidth: 1180,
   margin: "0 auto",
-}
-
-const sectionStyle: React.CSSProperties = {
-  ...orchardCardStyle,
-}
-
-const subCardStyle: React.CSSProperties = {
-  ...orchardSoftCardStyle,
-  padding: 12,
-}
-
-const heroGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-  gap: "var(--space-sm)",
 }
 
 const introStyle: React.CSSProperties = {
@@ -101,39 +91,148 @@ const introStyle: React.CSSProperties = {
   margin: 0,
 }
 
-const binderFeedbackStackStyle: React.CSSProperties = {
+const feedbackStackStyle: React.CSSProperties = {
   marginBottom: "var(--space-md)",
   display: "grid",
   gap: 8,
 }
 
-const binderSuccessNoticeStyle: React.CSSProperties = {
+const successNoticeStyle: React.CSSProperties = {
   ...orchardNoticeStyle,
   background: "rgba(110, 139, 107, 0.14)",
   border: "1px solid var(--border-moss)",
   color: "var(--deep-orchard)",
 }
 
-const binderSectionStackStyle: React.CSSProperties = {
+const warningStyle: React.CSSProperties = {
+  ...orchardNoticeStyle,
+  border: "1px solid var(--border-cranberry)",
+  background: "rgba(184, 84, 90, 0.12)",
+  color: "var(--cranberry)",
+  fontSize: 14,
+}
+
+const noticeStyle: React.CSSProperties = {
+  ...orchardNoticeStyle,
+}
+
+const sectionStyle: React.CSSProperties = {
+  ...orchardCardStyle,
+}
+
+const subCardStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: 14,
+}
+
+const primaryLayoutStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1.55fr) minmax(300px, 0.95fr)",
+  gap: "var(--space-md)",
+  alignItems: "start",
+}
+
+const mainColumnStyle: React.CSSProperties = {
   display: "grid",
   gap: "var(--space-md)",
+  minWidth: 0,
 }
 
-const binderMetaListStyle: React.CSSProperties = {
-  marginTop: "var(--space-md)",
+const sideColumnStyle: React.CSSProperties = {
+  display: "grid",
+  gap: "var(--space-md)",
+  minWidth: 0,
+  alignSelf: "start",
+  position: "sticky",
+  top: 16,
+}
+
+const sidebarCardStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: 14,
+  display: "grid",
+  gap: 10,
+}
+
+const heroGridStyle: React.CSSProperties = {
+  ...orchardStatGridStyle,
+  marginBottom: 12,
+}
+
+const heroCardStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: 14,
   display: "grid",
   gap: 8,
+}
+
+const heroLabelStyle: React.CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.3,
+  textTransform: "uppercase",
   color: "var(--text-secondary)",
 }
 
-const binderSmallNoteStyle: React.CSSProperties = {
+const heroValueStyle: React.CSSProperties = {
+  fontSize: 30,
+  fontWeight: 700,
+  color: "var(--orchard-green)",
+  lineHeight: 1,
+}
+
+const heroNoteStyle: React.CSSProperties = {
   fontSize: 13,
+  lineHeight: 1.5,
   color: "var(--text-secondary)",
+}
+
+const sectionHeadingStyle: React.CSSProperties = {
+  marginTop: 0,
+  marginBottom: 0,
+  color: "var(--orchard-green)",
+  fontFamily: "var(--font-heading)",
+}
+
+const subHeadingStyle: React.CSSProperties = {
+  fontWeight: 700,
+  color: "var(--text-primary)",
 }
 
 const sectionLeadStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
-  margin: "0 0 var(--space-sm) 0",
+  margin: "8px 0 0 0",
+  lineHeight: 1.55,
+}
+
+const denseKeyValueStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 8,
+  color: "var(--text-secondary)",
+  lineHeight: 1.5,
+}
+
+const tagRowStyle: React.CSSProperties = {
+  ...orchardMetaRowStyle,
+  marginTop: 6,
+}
+
+const reviewStripStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: 14,
+  display: "grid",
+  gap: 8,
+  border: "1px solid var(--border-moss)",
+  background: "rgba(110, 139, 107, 0.08)",
+}
+
+const reviewSequenceListStyle: React.CSSProperties = {
+  margin: 0,
+  paddingLeft: 18,
+  color: "var(--text-secondary)",
+  display: "grid",
+  gap: 6,
+  lineHeight: 1.5,
 }
 
 const exportBundleCardStyle: React.CSSProperties = {
@@ -149,12 +248,6 @@ const exportBundleNoteStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
   fontSize: 14,
   lineHeight: 1.5,
-}
-
-const detailsSectionGridStyle: React.CSSProperties = {
-  marginTop: 12,
-  display: "grid",
-  gap: 12,
 }
 
 const exportArtifactGridStyle: React.CSSProperties = {
@@ -173,8 +266,9 @@ const exportArtifactCardStyle: React.CSSProperties = {
 const exportMetaListStyle: React.CSSProperties = {
   display: "grid",
   gap: 6,
-  fontSize: 13,
   color: "var(--text-secondary)",
+  fontSize: 13,
+  lineHeight: 1.5,
 }
 
 const exportButtonRowStyle: React.CSSProperties = {
@@ -210,9 +304,64 @@ const binderSnapshotStatValueStyle: React.CSSProperties = {
   color: "var(--orchard-green)",
 }
 
-const binderTagRowStyle: React.CSSProperties = {
-  ...orchardMetaRowStyle,
-  marginTop: 4,
+const detailsSectionGridStyle: React.CSSProperties = {
+  marginTop: 12,
+  display: "grid",
+  gap: 12,
+}
+
+const previewHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 12,
+  flexWrap: "wrap",
+}
+
+const preStyle: React.CSSProperties = {
+  margin: 0,
+  whiteSpace: "pre-wrap",
+  fontFamily: "inherit",
+  color: "var(--text-secondary)",
+  lineHeight: 1.6,
+}
+
+const previewListStyle: React.CSSProperties = {
+  margin: 0,
+  paddingLeft: 18,
+  color: "var(--text-secondary)",
+  display: "grid",
+  gap: 8,
+  lineHeight: 1.55,
+}
+
+const summaryStyle: React.CSSProperties = {
+  cursor: "pointer",
+  fontWeight: 700,
+  color: "var(--orchard-green)",
+}
+
+const smallNoteStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: "var(--text-secondary)",
+  lineHeight: 1.5,
+}
+
+const signalCardBaseStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: 12,
+}
+
+const actionsStyle: React.CSSProperties = {
+  marginTop: "var(--space-md)",
+  display: "flex",
+  gap: 12,
+}
+
+const linkStyle: React.CSSProperties = {
+  ...orchardButtonStyle({ subtle: true }),
+  display: "inline-flex",
+  textDecoration: "none",
 }
 
 export default function ResultsPage() {
@@ -312,61 +461,77 @@ export default function ResultsPage() {
         <p style={introStyle}>
           Teacher-facing lesson package first. Review the generated package, confirm the lesson details, and download only the files you want to use.
         </p>
-        <p style={introStyle}>
-          {getResultsHeaderStatusText()}
-        </p>
+        <p style={introStyle}>{getResultsHeaderStatusText()}</p>
       </OrchardPageHeader>
 
-      {(isRegenerating || regenerationError || lastDecisionSummary) && (
-        <div style={binderFeedbackStackStyle}>
-          {isRegenerating && (
+      {(isRegenerating || regenerationError || lastDecisionSummary) ? (
+        <div style={feedbackStackStyle}>
+          {isRegenerating ? (
             <div style={noticeStyle}>
               {lastDecisionSummary
                 ? `${lastDecisionSummary} Regenerating the lesson package now.`
                 : "Updating the lesson package to reflect the latest teacher decision."}
             </div>
-          )}
-
-          {!isRegenerating && !regenerationError && lastDecisionSummary && (
-            <div style={binderSuccessNoticeStyle}>
+          ) : null}
+          {!isRegenerating && !regenerationError && lastDecisionSummary ? (
+            <div style={successNoticeStyle}>
               {lastDecisionSummary} The package has been refreshed with your latest teacher decision.
             </div>
-          )}
-
-          {regenerationError && (
-            <div style={warningStyle}>
-              {regenerationError}
-            </div>
-          )}
+          ) : null}
+          {regenerationError ? <div style={warningStyle}>{regenerationError}</div> : null}
         </div>
-      )}
+      ) : null}
 
-      <div style={binderSectionStackStyle}>
-        <PackageSummarySection
-          blueprint={blueprint}
-          lessonPackage={lessonPackage}
-          selectedLessonMode={selectedLessonMode}
-          materials={materials}
-        />
-
-        <PackageOutputsSection lessonPackage={lessonPackage} />
-
-        <CoverageDecisionsSection
-          planningIdeas={planningIdeas}
-          decisions={missingAreaDecisions}
-          onSetDecision={handleMissingAreaDecision}
-          isRegenerating={isRegenerating}
-        />
-
-        {shouldShowSecondaryEvidencePanel() ? (
-          <SecondaryEvidenceSection
+      <div style={primaryLayoutStyle}>
+        <div style={mainColumnStyle}>
+          <PackageSummarySection
             blueprint={blueprint}
             lessonPackage={lessonPackage}
+            selectedLessonMode={selectedLessonMode}
             materials={materials}
-            planningIdeas={planningIdeas}
-            lessonTrace={lessonTrace}
           />
-        ) : null}
+          <PackageOutputsSection lessonPackage={lessonPackage} />
+        </div>
+
+        <div style={sideColumnStyle}>
+          <ReviewFlowCard lessonPackage={lessonPackage} />
+          <CoverageDecisionsSection
+            planningIdeas={planningIdeas}
+            decisions={missingAreaDecisions}
+            onSetDecision={handleMissingAreaDecision}
+            isRegenerating={isRegenerating}
+          />
+        </div>
+      </div>
+
+      {shouldShowSecondaryEvidencePanel() ? (
+        <SecondaryEvidenceSection
+          blueprint={blueprint}
+          lessonPackage={lessonPackage}
+          materials={materials}
+          planningIdeas={planningIdeas}
+          lessonTrace={lessonTrace}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+function ReviewFlowCard({ lessonPackage }: { lessonPackage: LessonPackage }) {
+  const visibleSections = buildVisiblePackageSectionItems(lessonPackage)
+  const exports = lessonPackage.exports ?? []
+
+  return (
+    <div style={sidebarCardStyle}>
+      <div style={subHeadingStyle}>Use this order</div>
+      <ul style={reviewSequenceListStyle}>
+        <li>Scan the package overview and grounding snapshot.</li>
+        <li>Review the teacher package before downloading anything.</li>
+        <li>Handle only the teacher decisions still missing from the source materials.</li>
+        <li>Use exports after the package reads coherently.</li>
+      </ul>
+      <div style={smallNoteStyle}>
+        Current package surface: {visibleSections.length} teacher-facing section{visibleSections.length === 1 ? "" : "s"}. Exports ready: {exports.length}.
       </div>
     </div>
   )
@@ -383,7 +548,7 @@ export function PackageSummarySection({
   selectedLessonMode: string
   materials: MaterialFile[]
 }) {
-  const teacherLedSupportCount = countTeacherLedSupportLines(lessonPackage.rotationPlan).toString()
+  const teacherLedSupportCount = countTeacherLedSupportLines(lessonPackage.rotationPlan)
   const selectedContentSourceNames = getSelectedMaterialNames(
     materials,
     blueprint.sourceReadiness.selectedCurriculumMaterialIds
@@ -406,34 +571,422 @@ export function PackageSummarySection({
 
   return (
     <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
+      <div style={orchardSectionHeaderRowStyle}>
+        <div>
+          <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
+          <p style={sectionLeadStyle}>
+            Confirm the lesson focus, package shape, and source authority in one scan before you move into the full package review.
+          </p>
+        </div>
+        <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
+          {getBinderReadinessLabel(lessonPackage)}
+        </span>
+      </div>
+
       <div style={heroGridStyle}>
-        <SummaryCard label="Slides" value={lessonPackage.slides.length.toString()} />
-        <SummaryCard label="Teacher-Led Support" value={teacherLedSupportCount} />
-        <SummaryCard label="Centers / Independent Work" value={lessonPackage.centers.length.toString()} />
+        <SummaryCard
+          label="Slides"
+          value={lessonPackage.slides.length.toString()}
+          note="Student-facing slides currently included in the package."
+        />
+        <SummaryCard
+          label="Teacher-Led Support"
+          value={teacherLedSupportCount.toString()}
+          note="Teacher-led support stays separate from centers and independent work."
+        />
+        <SummaryCard
+          label="Centers / Independent Work"
+          value={lessonPackage.centers.length.toString()}
+          note="Student-independent work only."
+        />
       </div>
 
-      <div style={binderMetaListStyle}>
-        <div><strong>Primary focus:</strong> {blueprint.content.target.primary}</div>
-        <div><strong>Additional focus:</strong> {blueprint.content.target.secondary || "None"}</div>
-        <div><strong>Multi-area lesson:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
-        <div><strong>Lesson coverage:</strong> {selectedLessonMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
-        <div><strong>Standards:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "Teacher-selected standard")}</div>
-        <div style={binderSmallNoteStyle}>Use this snapshot to confirm the lesson focus and standards before exporting.</div>
-      </div>
+      <div style={detailsSectionGridStyle}>
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Lesson snapshot</div>
+          <div style={denseKeyValueStyle}>
+            <div><strong>Primary focus:</strong> {blueprint.content.target.primary}</div>
+            <div><strong>Additional focus:</strong> {blueprint.content.target.secondary || "None"}</div>
+            <div><strong>Multi-area lesson:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
+            <div><strong>Lesson coverage:</strong> {selectedLessonMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
+            <div><strong>Standards:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "Teacher-selected standard")}</div>
+          </div>
+          <div style={smallNoteStyle}>Use this snapshot to confirm the lesson focus and standards before exporting.</div>
+        </div>
 
-      <div style={{ ...subCardStyle, marginTop: 14 }}>
-        <div style={subHeadingStyle}>Grounding Snapshot</div>
-        <div style={{ display: "grid", gap: 6 }}>
-          <div><strong>Content source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
-          <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
-          <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
-          <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
-          <div><strong>Content came from:</strong> {contentGroundingSummary}</div>
-          <div><strong>Structure came from:</strong> {structureImpactSummary}</div>
-          <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Grounding Snapshot</div>
+          <div style={denseKeyValueStyle}>
+            <div><strong>Content source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+            <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
+            <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
+            <div><strong>Content came from:</strong> {contentGroundingSummary}</div>
+            <div><strong>Structure came from:</strong> {structureImpactSummary}</div>
+            <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
+          </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function SummaryCard({
+  label,
+  value,
+  note,
+}: {
+  label: string
+  value: string
+  note: string
+}) {
+  return (
+    <div style={heroCardStyle}>
+      <div style={heroLabelStyle}>{label}</div>
+      <div style={heroValueStyle}>{value}</div>
+      <div style={heroNoteStyle}>{note}</div>
+    </div>
+  )
+}
+
+function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
+  const visiblePackageSections = buildVisiblePackageSectionItems(lessonPackage)
+  const exports = lessonPackage.exports ?? []
+  const bundledArtifactLabels = getBundledArtifactLabels(exports)
+  const hasFullPackageZip = exports.some((artifact) => artifact.kind === "full_package")
+  const warningCount = lessonPackage.readiness.warnings.length
+
+  return (
+    <div style={sectionStyle}>
+      <div style={orchardSectionHeaderRowStyle}>
+        <div style={{ display: "grid", gap: 8 }}>
+          <h3 style={sectionHeadingStyle}>Teacher Binder Snapshot</h3>
+          <p style={sectionLeadStyle}>{getTeacherBinderLeadText()}</p>
+        </div>
+        <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
+          {getBinderReadinessLabel(lessonPackage)}
+        </span>
+      </div>
+
+      <div style={binderSnapshotGridStyle}>
+        <div style={binderSnapshotCardStyle}>
+          <div style={binderSnapshotStatLabelStyle}>Package sections</div>
+          <div style={binderSnapshotStatValueStyle}>{visiblePackageSections.length}</div>
+          <div style={smallNoteStyle}>Teacher-facing sections currently included in this package.</div>
+        </div>
+
+        <div style={binderSnapshotCardStyle}>
+          <div style={binderSnapshotStatLabelStyle}>Exports ready</div>
+          <div style={binderSnapshotStatValueStyle}>{exports.length}</div>
+          <div style={smallNoteStyle}>Package ZIP plus individual downloads when available.</div>
+        </div>
+
+        <div style={binderSnapshotCardStyle}>
+          <div style={binderSnapshotStatLabelStyle}>Needs review</div>
+          <div style={binderSnapshotStatValueStyle}>{warningCount}</div>
+          <div style={smallNoteStyle}>{getPackageWarningsMessage(warningCount)}</div>
+        </div>
+      </div>
+
+      <div style={binderSnapshotCardStyle}>
+        <div style={subHeadingStyle}>Included in this teacher package</div>
+        {visiblePackageSections.length > 0 ? (
+          <div style={tagRowStyle}>
+            {visiblePackageSections.map((item) => (
+              <span key={item.label} style={orchardTagStyle(item.tone)}>
+                {item.label}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div style={smallNoteStyle}>No teacher-facing sections are currently included in this package.</div>
+        )}
+      </div>
+
+      <div style={{ ...binderSnapshotCardStyle, marginTop: 12 }}>
+        <div style={subHeadingStyle}>Available exports</div>
+        <div style={smallNoteStyle}>
+          {hasFullPackageZip
+            ? "Use the package ZIP when you want the whole generated binder together, or use the individual downloads when you only need one file."
+            : "Only individual downloads are available in this package right now."}
+        </div>
+        {(hasFullPackageZip || bundledArtifactLabels.length > 0) ? (
+          <div style={tagRowStyle}>
+            {hasFullPackageZip ? <span style={orchardTagStyle("moss")}>Package ZIP</span> : null}
+            {bundledArtifactLabels.map((label) => (
+              <span key={label} style={orchardTagStyle("neutral")}>{label}</span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+export function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
+  const lessonPlan = lessonPackage.lessonPlan.trim()
+  const slides = sanitizeListItems(lessonPackage.slides)
+  const interventions = sanitizeListItems(lessonPackage.interventions)
+  const centers = sanitizeListItems(lessonPackage.centers)
+  const rotationPlan = lessonPackage.rotationPlan.trim()
+  const teacherLedSupportLines = extractTeacherLedSupportLines(rotationPlan)
+  const rotationOnly = extractRotationOnlyText(rotationPlan)
+  const exports = lessonPackage.exports ?? []
+
+  const hasVisibleOutputs =
+    lessonPlan.length > 0 ||
+    slides.length > 0 ||
+    teacherLedSupportLines.length > 0 ||
+    interventions.length > 0 ||
+    centers.length > 0 ||
+    rotationOnly.length > 0 ||
+    exports.length > 0
+
+  return (
+    <>
+      {hasVisibleOutputs ? <TeacherBinderSnapshotSection lessonPackage={lessonPackage} /> : null}
+
+      {hasVisibleOutputs ? (
+        <div style={reviewStripStyle}>
+          <div style={subHeadingStyle}>Review the package</div>
+          <div style={smallNoteStyle}>
+            Read the package in teacher order. Lesson plan and slides stay first, then teacher-led support, intervention, student-independent work, rotation, and exports.
+          </div>
+        </div>
+      ) : null}
+
+      {lessonPlan.length > 0 ? <PreSection title="Lesson Plan" content={lessonPlan} /> : null}
+      {slides.length > 0 ? <SimpleListSection title="Slides" items={slides} /> : null}
+      {teacherLedSupportLines.length > 0 ? <SimpleListSection title="Teacher-Led Support" items={teacherLedSupportLines} /> : null}
+      {interventions.length > 0 ? <SimpleListSection title="Intervention Support" items={interventions} /> : null}
+      {centers.length > 0 ? <SimpleListSection title="Centers / Independent Work" items={centers} /> : null}
+      {rotationOnly.length > 0 ? <PreSection title="Centers / Independent Work Rotation" content={rotationOnly} /> : null}
+      {exports.length > 0 ? <ExportArtifactsSection exports={exports} /> : null}
+
+      {!hasVisibleOutputs ? (
+        <div style={sectionStyle}>
+          <h3 style={sectionHeadingStyle}>Package Outputs</h3>
+          <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+            No teacher-facing outputs are included in the current package yet. Request the outputs you want or add stronger source support, then regenerate if you need more materials.
+          </p>
+        </div>
+      ) : null}
+    </>
+  )
+}
+
+function buildPreviewText(content: string, lineLimit: number): { preview: string; hidden: boolean } {
+  const lines = content.split(/\r?\n/)
+  if (lines.length <= lineLimit) {
+    return { preview: content, hidden: false }
+  }
+  return {
+    preview: lines.slice(0, lineLimit).join("\n"),
+    hidden: true,
+  }
+}
+
+function PreSection({ title, content }: { title: string; content: string }) {
+  const preview = buildPreviewText(content, title === "Lesson Plan" ? 16 : 6)
+  const openByDefault = title === "Lesson Plan"
+
+  return (
+    <div style={sectionStyle}>
+      <details open={openByDefault}>
+        <summary style={summaryStyle}>{title}</summary>
+        <div style={detailsSectionGridStyle}>
+          <div style={previewHeaderStyle}>
+            <div style={subHeadingStyle}>{title}</div>
+            <span style={orchardTagStyle("neutral")}>
+              {countNonEmptyLines(content)} line{countNonEmptyLines(content) === 1 ? "" : "s"}
+            </span>
+          </div>
+          <pre style={preStyle}>{preview.preview}</pre>
+          {preview.hidden ? <div style={smallNoteStyle}>Open this section to review the full content.</div> : null}
+          {preview.hidden ? <pre style={preStyle}>{content}</pre> : null}
+        </div>
+      </details>
+    </div>
+  )
+}
+
+function SimpleListSection({ title, items }: { title: string; items: string[] }) {
+  const visible = items.slice(0, 4)
+  const hidden = items.slice(4)
+  const openByDefault = title === "Slides" || title === "Teacher-Led Support"
+
+  return (
+    <div style={sectionStyle}>
+      <details open={openByDefault}>
+        <summary style={summaryStyle}>{title}</summary>
+        <div style={detailsSectionGridStyle}>
+          <div style={previewHeaderStyle}>
+            <div style={subHeadingStyle}>{title}</div>
+            <span style={orchardTagStyle("neutral")}>{items.length}</span>
+          </div>
+          <ul style={previewListStyle}>
+            {visible.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+          {hidden.length > 0 ? <div style={smallNoteStyle}>Open this section to review {hidden.length} more item{hidden.length === 1 ? "" : "s"}.</div> : null}
+          {hidden.length > 0 ? (
+            <ul style={previewListStyle}>
+              {hidden.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      </details>
+    </div>
+  )
+}
+
+export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
+  const fullPackageArtifact = exports.find((artifact) => artifact.kind === "full_package")
+  const sectionArtifacts = exports.filter((artifact) => artifact.kind !== "full_package")
+  const bundledArtifactLabels = getBundledArtifactLabels(exports)
+  const bundleSummary = bundledArtifactLabels.length > 0
+    ? `Current package ZIP includes: ${bundledArtifactLabels.join(", ")}.`
+    : "Current package ZIP includes the current generated files."
+
+  return (
+    <div style={sectionStyle}>
+      <h3 style={sectionHeadingStyle}>Exports</h3>
+      <p style={sectionLeadStyle}>
+        Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.
+      </p>
+
+      {fullPackageArtifact ? (
+        <div style={exportBundleCardStyle}>
+          <div style={orchardSectionHeaderRowStyle}>
+            <div style={{ fontWeight: 700, color: "var(--deep-orchard)" }}>Full Lesson Package ZIP</div>
+            {bundledArtifactLabels.length > 0 ? (
+              <span style={orchardTagStyle("moss")}>
+                {bundledArtifactLabels.length} bundled download{bundledArtifactLabels.length === 1 ? "" : "s"}
+              </span>
+            ) : null}
+          </div>
+          <div style={exportBundleNoteStyle}>{bundleSummary}</div>
+          {bundledArtifactLabels.length > 0 ? (
+            <div style={tagRowStyle}>
+              {bundledArtifactLabels.map((label) => (
+                <span key={label} style={orchardTagStyle("neutral")}>{label}</span>
+              ))}
+            </div>
+          ) : null}
+          <div style={exportButtonRowStyle}>
+            <button
+              type="button"
+              onClick={() => void downloadExportArtifact(fullPackageArtifact, exports)}
+              style={{ ...orchardButtonStyle(), cursor: "pointer", fontWeight: 700 }}
+            >
+              Download Package ZIP
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <div style={exportArtifactGridStyle}>
+        {sectionArtifacts.map((artifact) => (
+          <div key={`${artifact.kind}-${artifact.fileName}`} style={exportArtifactCardStyle}>
+            <div style={orchardMetaRowStyle}>
+              <span style={orchardTagStyle("neutral")}>{getArtifactFormatLabel(artifact)}</span>
+              <span style={orchardTagStyle("honey")}>{getArtifactKindLabel(artifact)}</span>
+            </div>
+            <div style={{ fontWeight: 700 }}>{artifact.label}</div>
+            <div style={exportMetaListStyle}>
+              <div><strong>Filename:</strong> {artifact.fileName}</div>
+              <div>{getArtifactDescription(artifact)}</div>
+            </div>
+            {artifact.content ? (
+              <div style={exportButtonRowStyle}>
+                <button
+                  type="button"
+                  onClick={() => void downloadExportArtifact(artifact, exports)}
+                  style={{ ...orchardButtonStyle({ subtle: true }), cursor: "pointer", fontWeight: 600 }}
+                >
+                  {getArtifactButtonLabel(artifact)}
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function CoverageDecisionsSection({
+  planningIdeas,
+  decisions,
+  onSetDecision,
+  isRegenerating,
+}: {
+  planningIdeas: LessonPlanningIdeas
+  decisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
+  onSetDecision: (component: PlanningComponentKey, choice: MissingAreaDecisionChoice) => Promise<void>
+  isRegenerating: boolean
+}) {
+  const missingAreaPrompts = planningIdeas.missingAreaPrompts ?? []
+  const componentCoverage = planningIdeas.componentCoverage ?? []
+
+  return (
+    <div style={sectionStyle}>
+      <h3 style={sectionHeadingStyle}>Teacher Decisions</h3>
+      <p style={sectionLeadStyle}>Only the lesson parts that still need a teacher choice are shown here.</p>
+
+      {missingAreaPrompts.length > 0 ? (
+        <div style={{ display: "grid", gap: 12 }}>
+          {missingAreaPrompts.map((prompt, index) => {
+            const currentChoice = decisions[prompt.component] ?? "undecided"
+            const coverage = componentCoverage.find((entry) => entry.component === prompt.component)
+            const sourceStatus = coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
+            const generatedStatus = coverage?.generatedCoverage?.status ?? "missing"
+
+            return (
+              <div key={`${prompt.component}-${index}`} style={signalCardStyle(prompt.importance === "high" ? "warn" : "neutral")}>
+                <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
+                  {prompt.component.replace(/_/g, " ")}
+                </div>
+                <div style={{ marginTop: 4 }}>{prompt.prompt}</div>
+                <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+                  <strong>Current source coverage:</strong> {sourceStatus}
+                </div>
+                {generatedStatus !== "missing" ? (
+                  <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                    <strong>Package can generate if added:</strong> {generatedStatus}
+                  </div>
+                ) : null}
+                <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>{prompt.rationale}</div>
+                <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <DecisionButton
+                    label="Add it"
+                    active={currentChoice === "add"}
+                    disabled={isRegenerating}
+                    onClick={() => onSetDecision(prompt.component, "add")}
+                  />
+                  <DecisionButton
+                    label="Leave it out"
+                    active={currentChoice === "leave_out"}
+                    disabled={isRegenerating}
+                    onClick={() => onSetDecision(prompt.component, "leave_out")}
+                  />
+                  <DecisionButton
+                    label="Decide later"
+                    active={currentChoice === "undecided"}
+                    disabled={isRegenerating}
+                    onClick={() => onSetDecision(prompt.component, "undecided")}
+                  />
+                </div>
+                <div style={{ marginTop: 8, fontSize: 13 }}><strong>Current decision:</strong> {formatDecisionChoice(currentChoice)}</div>
+                <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
+                  This teacher decision stays in the package until you change it.
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <div style={{ color: "var(--text-secondary)" }}>No extra teacher decisions are needed for this lesson.</div>
+      )}
     </div>
   )
 }
@@ -452,7 +1005,7 @@ function SecondaryEvidenceSection({
   lessonTrace: LessonPipelineTrace | null
 }) {
   return (
-    <details style={sectionStyle}>
+    <details style={{ ...sectionStyle, marginTop: "var(--space-md)" }}>
       <summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>
       <div style={detailsSectionGridStyle}>
         <SignalSection
@@ -460,22 +1013,17 @@ function SecondaryEvidenceSection({
           signals={blueprint.sourceReadiness.signals}
           warnings={blueprint.sourceReadiness.warnings}
         />
-
         <SignalSection
           title="Package Quality Signals"
           signals={lessonPackage.readiness.signals}
           warnings={lessonPackage.readiness.warnings}
         />
-
         <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />
-
         <PlanningDetailsSection
           slidePlans={planningIdeas.slidePlans}
           lessonPlanSections={planningIdeas.lessonPlanSections}
         />
-
         <BlueprintDetailsSection blueprint={blueprint} />
-
         {lessonTrace && <PipelineTraceSection trace={lessonTrace} />}
       </div>
     </details>
@@ -518,7 +1066,6 @@ export function TraceabilitySection({
     materials,
     blueprint.sourceReadiness.selectedExemplarMaterialIds
   )
-
   const selectedExemplarInfluenceSummary = summarizeSelectedExemplarInfluence(
     materials,
     blueprint.sourceReadiness.selectedExemplarMaterialIds
@@ -555,7 +1102,7 @@ export function TraceabilitySection({
       <div style={detailsSectionGridStyle}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Authority at a Glance</div>
-          <div style={{ display: "grid", gap: 6 }}>
+          <div style={denseKeyValueStyle}>
             <div><strong>Content source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
             <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
             <div><strong>Lesson grounding:</strong> {packageConfidenceLabel}</div>
@@ -570,7 +1117,7 @@ export function TraceabilitySection({
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Content Authority</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{contentSourceLabel}</div>
-          <div style={{ display: "grid", gap: 6 }}>
+          <div style={denseKeyValueStyle}>
             <div><strong>Curriculum support strength:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
             <div><strong>Curriculum sources used:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
             <div><strong>Standards used:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
@@ -583,7 +1130,7 @@ export function TraceabilitySection({
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Presentation Authority</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{structureSourceLabel}</div>
-          <div style={{ display: "grid", gap: 6 }}>
+          <div style={denseKeyValueStyle}>
             <div><strong>Exemplar support strength:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
             <div><strong>Exemplar sources used:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
             <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
@@ -600,7 +1147,7 @@ export function TraceabilitySection({
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Package Confidence</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{packageConfidenceLabel}</div>
-          <div style={{ display: "grid", gap: 6 }}>
+          <div style={denseKeyValueStyle}>
             <div><strong>Source balance:</strong> {blueprint.sourceReadiness.overall}</div>
             <div><strong>Coverage support:</strong> {blueprint.sourceReadiness.coverageSupport}</div>
             <div><strong>Content fit:</strong> {lessonPackage.readiness.contentFit}</div>
@@ -615,15 +1162,12 @@ export function TraceabilitySection({
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>
             These notes show which analyzed materials were used, down-ranked, blocked, or ignored for each authority axis.
           </div>
-
           <AuthorityDecisionList
             title="Content materials"
             items={contentMaterials}
             emptyText="No analyzed curriculum materials were available to explain."
           />
-
           <div style={{ height: 12 }} />
-
           <AuthorityDecisionList
             title="Presentation materials"
             items={structureMaterials}
@@ -635,11 +1179,7 @@ export function TraceabilitySection({
           <div style={subHeadingStyle}>Warnings and Fallback Notes</div>
           {combinedWarnings.length > 0 ? (
             <div style={{ display: "grid", gap: 8 }}>
-              {combinedWarnings.map((warning) => (
-                <div key={warning} style={warningStyle}>
-                  {warning}
-                </div>
-              ))}
+              {combinedWarnings.map((warning) => <div key={warning} style={warningStyle}>{warning}</div>)}
             </div>
           ) : (
             <div style={{ color: "var(--text-secondary)" }}>
@@ -650,13 +1190,6 @@ export function TraceabilitySection({
       </div>
     </details>
   )
-}
-
-function formatPlanningComponentLabel(component: PlanningComponentKey): string {
-  return component
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ")
 }
 
 function AuthorityDecisionList({
@@ -671,7 +1204,6 @@ function AuthorityDecisionList({
   return (
     <div style={{ display: "grid", gap: 8 }}>
       <div style={{ fontWeight: 700 }}>{title}</div>
-
       {items.length > 0 ? (
         <div style={{ display: "grid", gap: 8 }}>
           {items.map((item) => (
@@ -693,16 +1225,10 @@ function AuthorityDecisionList({
                   {formatReliabilityDecision(item.decision)} - score {item.score}
                 </span>
               </div>
-
               <div style={{ color: "var(--text-secondary)" }}>{item.note}</div>
-
               {item.reasons.length > 0 ? (
                 <div style={{ display: "grid", gap: 4 }}>
-                  {item.reasons.slice(0, 3).map((reason) => (
-                    <div key={reason} style={warningStyle}>
-                      {reason}
-                    </div>
-                  ))}
+                  {item.reasons.slice(0, 3).map((reason) => <div key={reason} style={warningStyle}>{reason}</div>)}
                 </div>
               ) : null}
             </div>
@@ -720,187 +1246,6 @@ function decisionBadgeStyle(outcome: ReliabilityOutcome): React.CSSProperties {
   if (outcome === "down-ranked") return orchardStatusBadgeStyle("honey")
   if (outcome === "blocked") return orchardStatusBadgeStyle("cranberry")
   return orchardStatusBadgeStyle("neutral")
-}
-
-export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
-  return (
-    <details style={sectionStyle}>
-      <summary style={summaryStyle}>Pipeline Trace</summary>
-      <div style={detailsSectionGridStyle}>
-        <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Mode and Material Counts</div>
-          <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Lesson Area Mode:</strong> {trace.selectedMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
-            <div><strong>Total Materials:</strong> {trace.materialCounts.total}</div>
-            <div><strong>Curriculum Materials:</strong> {trace.materialCounts.curriculum}</div>
-            <div><strong>Exemplar Materials:</strong> {trace.materialCounts.exemplar}</div>
-          </div>
-        </div>
-
-        <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Selected Source IDs</div>
-          <div style={{ display: "grid", gap: 6 }}>
-            <div>
-              <strong>Curriculum:</strong>{" "}
-              {joinOrFallback(trace.selectedSources.curriculumMaterialIds, "None selected")}
-            </div>
-            <div>
-              <strong>Exemplar:</strong>{" "}
-              {joinOrFallback(trace.selectedSources.exemplarMaterialIds, "None selected")}
-            </div>
-          </div>
-        </div>
-
-        <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Target Resolution</div>
-          <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Primary Lesson Area:</strong> {trace.target.primary}</div>
-            <div><strong>Additional Lesson Area:</strong> {trace.target.secondary ?? "None"}</div>
-            <div><strong>Multiple Lesson Areas:</strong> {trace.target.isMixedTarget ? "Yes" : "No"}</div>
-            <div><strong>Recommended Area Mode:</strong> {trace.target.recommendedMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
-          </div>
-        </div>
-
-        <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Package Summary</div>
-          <div style={{ display: "grid", gap: 6 }}>
-            <div><strong>Density:</strong> {trace.package.density}</div>
-            <div><strong>Lesson Area Shape:</strong> {trace.package.lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area"}</div>
-            <div><strong>Content Fit:</strong> {trace.package.contentFit}</div>
-            <div><strong>Package Warning Count:</strong> {trace.package.warningCount}</div>
-          </div>
-        </div>
-
-        <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Warnings and Missing-Area Prompts</div>
-          <div style={{ display: "grid", gap: 6, marginBottom: 8 }}>
-            <div>
-              <strong>Missing-Area Prompt Components:</strong>{" "}
-              {joinOrFallback(trace.missingAreaPromptComponents, "None")}
-            </div>
-          </div>
-
-          {trace.blueprintWarnings.length > 0 ? (
-            <div style={{ display: "grid", gap: 8 }}>
-              {trace.blueprintWarnings.map((warning) => (
-                <div key={warning} style={warningStyle}>
-                  {warning}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ color: "var(--text-secondary)" }}>
-              No blueprint warnings were recorded in the pipeline trace.
-            </div>
-          )}
-        </div>
-      </div>
-    </details>
-  )
-}
-
-export function CoverageDecisionsSection({
-  planningIdeas,
-  decisions,
-  onSetDecision,
-  isRegenerating,
-}: {
-  planningIdeas: LessonPlanningIdeas
-  decisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
-  onSetDecision: (component: PlanningComponentKey, choice: MissingAreaDecisionChoice) => Promise<void>
-  isRegenerating: boolean
-}) {
-  const missingAreaPrompts = planningIdeas.missingAreaPrompts ?? []
-  const componentCoverage = planningIdeas.componentCoverage ?? []
-  const coverageByComponent = new Map(
-    componentCoverage.map((entry) => [entry.component, entry] as const)
-  )
-
-  return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Teacher Decisions</h3>
-      <p style={sectionLeadStyle}>
-        Only the lesson parts that still need a teacher choice are shown here.
-      </p>
-
-      {missingAreaPrompts.length > 0 ? (
-        <div style={{ display: "grid", gap: 12 }}>
-          {missingAreaPrompts.map((prompt, index) => {
-            const currentChoice = decisions[prompt.component] ?? "undecided"
-            const coverage = coverageByComponent.get(prompt.component)
-            const sourceStatus = coverage?.sourceCoverage?.status ?? coverage?.status ?? "missing"
-            const generatedStatus = coverage?.generatedCoverage?.status ?? "missing"
-
-            return (
-              <div
-                key={`${prompt.component}-${index}`}
-                style={signalCardStyle(prompt.importance === "high" ? "warn" : "neutral")}
-              >
-                <div style={{ fontWeight: 700, textTransform: "capitalize" }}>
-                  {prompt.component.replace(/_/g, " ")}
-                </div>
-
-                <div style={{ marginTop: 4 }}>{prompt.prompt}</div>
-
-                <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-secondary)" }}>
-                  <strong>Current source coverage:</strong> {sourceStatus}
-                </div>
-
-                {generatedStatus !== "missing" ? (
-                  <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-                    <strong>Package can generate if added:</strong> {generatedStatus}
-                  </div>
-                ) : null}
-
-                <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-                  {prompt.rationale}
-                </div>
-
-                <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <DecisionButton
-                    label="Add it"
-                    active={currentChoice === "add"}
-                    disabled={isRegenerating}
-                    onClick={() => onSetDecision(prompt.component, "add")}
-                  />
-                  <DecisionButton
-                    label="Leave it out"
-                    active={currentChoice === "leave_out"}
-                    disabled={isRegenerating}
-                    onClick={() => onSetDecision(prompt.component, "leave_out")}
-                  />
-                  <DecisionButton
-                    label="Decide later"
-                    active={currentChoice === "undecided"}
-                    disabled={isRegenerating}
-                    onClick={() => onSetDecision(prompt.component, "undecided")}
-                  />
-                </div>
-
-                <div style={{ marginTop: 8, fontSize: 13 }}>
-                  <strong>Current decision:</strong> {formatDecisionChoice(currentChoice)}
-                </div>
-
-                <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-                  This teacher decision stays in the package until you change it.
-                </div>
-
-                {isRegenerating ? (
-                  <div style={{ marginTop: 4, fontSize: 13, color: "var(--text-secondary)" }}>
-                    Refreshing the lesson package with the latest decision...
-                  </div>
-                ) : null}
-              </div>
-            )
-          })}
-        </div>
-      ) : (
-        <div style={{ color: "var(--text-secondary)" }}>
-          No extra teacher decisions are needed for this lesson.
-        </div>
-      )}
-    </div>
-  )
 }
 
 function SignalSection({
@@ -924,190 +1269,12 @@ function SignalSection({
           </div>
         ))}
       </div>
-
-      {warnings.length > 0 && (
+      {warnings.length > 0 ? (
         <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-          {warnings.map((warning) => (
-            <div key={warning} style={warningStyle}>
-              {warning}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
-  const visiblePackageSections = buildVisiblePackageSectionItems(lessonPackage)
-  const exports = lessonPackage.exports ?? []
-  const bundledArtifactLabels = getBundledArtifactLabels(exports)
-  const hasFullPackageZip = exports.some((artifact) => artifact.kind === "full_package")
-  const warningCount = lessonPackage.readiness.warnings.length
-
-  return (
-    <div style={sectionStyle}>
-      <div style={orchardSectionHeaderRowStyle}>
-        <div style={{ display: "grid", gap: 8 }}>
-          <h3 style={sectionHeadingStyle}>Teacher Binder Snapshot</h3>
-          <p style={sectionLeadStyle}>
-            {getTeacherBinderLeadText()}
-          </p>
-        </div>
-        <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
-          {getBinderReadinessLabel(lessonPackage)}
-        </span>
-      </div>
-
-      <div style={binderSnapshotGridStyle}>
-        <div style={binderSnapshotCardStyle}>
-          <div style={binderSnapshotStatLabelStyle}>Package sections</div>
-          <div style={binderSnapshotStatValueStyle}>{visiblePackageSections.length}</div>
-          <div style={binderSmallNoteStyle}>Teacher-facing sections currently included in this package.</div>
-        </div>
-
-        <div style={binderSnapshotCardStyle}>
-          <div style={binderSnapshotStatLabelStyle}>Exports ready</div>
-          <div style={binderSnapshotStatValueStyle}>{exports.length}</div>
-          <div style={binderSmallNoteStyle}>
-            Package ZIP plus individual downloads when available.
-          </div>
-        </div>
-
-        <div style={binderSnapshotCardStyle}>
-          <div style={binderSnapshotStatLabelStyle}>Needs review</div>
-          <div style={binderSnapshotStatValueStyle}>{warningCount}</div>
-          <div style={binderSmallNoteStyle}>
-            {warningCount > 0
-              ? getPackageWarningsMessage(warningCount)
-              : getPackageWarningsMessage(warningCount)}
-          </div>
-        </div>
-      </div>
-
-      <div style={binderSnapshotCardStyle}>
-        <div style={subHeadingStyle}>Included in this teacher package</div>
-        {visiblePackageSections.length > 0 ? (
-          <div style={binderTagRowStyle}>
-            {visiblePackageSections.map((item) => (
-              <span key={item.label} style={orchardTagStyle(item.tone)}>
-                {item.label}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <div style={binderSmallNoteStyle}>
-            No teacher-facing sections are currently included in this package.
-          </div>
-        )}
-      </div>
-
-      <div style={{ ...binderSnapshotCardStyle, marginTop: 12 }}>
-        <div style={subHeadingStyle}>Available exports</div>
-        <div style={binderSmallNoteStyle}>
-          {hasFullPackageZip
-            ? "Use the package ZIP when you want the whole generated binder together, or use the individual downloads when you only need one file."
-            : "Only individual downloads are available in this package right now."}
-        </div>
-        {hasFullPackageZip || bundledArtifactLabels.length > 0 ? (
-          <div style={binderTagRowStyle}>
-            {hasFullPackageZip ? (
-              <span style={orchardTagStyle("moss")}>Package ZIP</span>
-            ) : null}
-            {bundledArtifactLabels.map((label) => (
-              <span key={label} style={orchardTagStyle("neutral")}>
-                {label}
-              </span>
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  )
-}
-
-export function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
-  const lessonPlan = lessonPackage.lessonPlan.trim()
-  const slides = sanitizeListItems(lessonPackage.slides)
-  const interventions = sanitizeListItems(lessonPackage.interventions)
-  const centers = sanitizeListItems(lessonPackage.centers)
-  const rotationPlan = lessonPackage.rotationPlan.trim()
-  const teacherLedSupportLines = extractTeacherLedSupportLines(rotationPlan)
-  const rotationOnly = extractRotationOnlyText(rotationPlan)
-  const exports = lessonPackage.exports ?? []
-
-  const hasVisibleOutputs =
-    lessonPlan.length > 0 ||
-    slides.length > 0 ||
-    teacherLedSupportLines.length > 0 ||
-    interventions.length > 0 ||
-    centers.length > 0 ||
-    rotationOnly.length > 0 ||
-    exports.length > 0
-
-  return (
-    <>
-      {hasVisibleOutputs ? <TeacherBinderSnapshotSection lessonPackage={lessonPackage} /> : null}
-      {lessonPlan.length > 0 ? <PreSection title="Lesson Plan" content={lessonPlan} /> : null}
-      {slides.length > 0 ? <SimpleListSection title="Slides" items={slides} /> : null}
-      {teacherLedSupportLines.length > 0 ? <SimpleListSection title="Teacher-Led Support" items={teacherLedSupportLines} /> : null}
-      {interventions.length > 0 ? <SimpleListSection title="Intervention Support" items={interventions} /> : null}
-      {centers.length > 0 ? <SimpleListSection title="Centers / Independent Work" items={centers} /> : null}
-      {rotationOnly.length > 0 ? <PreSection title="Centers / Independent Work Rotation" content={rotationOnly} /> : null}
-      {exports.length > 0 ? <ExportArtifactsSection exports={exports} /> : null}
-
-      {!hasVisibleOutputs ? (
-        <div style={sectionStyle}>
-          <h3 style={sectionHeadingStyle}>Package Outputs</h3>
-          <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-            No teacher-facing outputs are included in the current package yet. Request the outputs you want or add
-            stronger source support, then regenerate if you need more materials.
-          </p>
+          {warnings.map((warning) => <div key={warning} style={warningStyle}>{warning}</div>)}
         </div>
       ) : null}
-    </>
-  )
-}
-
-function BlueprintDetailsSection({ blueprint }: { blueprint: LessonBlueprint }) {
-  return (
-    <>
-      <details style={sectionStyle}>
-        <summary style={summaryStyle}>Blueprint Content</summary>
-        <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Vocabulary:</strong> {blueprint.content.vocabulary.join(", ")}
-          </p>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Texts:</strong> {blueprint.content.texts.join(", ")}
-          </p>
-          <p style={{ margin: 0 }}>
-            <strong>Practice Ideas:</strong> {blueprint.content.practiceIdeas.join(", ")}
-          </p>
-        </div>
-      </details>
-
-      <details style={sectionStyle}>
-        <summary style={summaryStyle}>Blueprint Structure</summary>
-        <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Timing:</strong> {blueprint.structure.timing.join(" | ")}
-          </p>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Segments:</strong> {blueprint.structure.lessonSegments.join(" -> ")}
-          </p>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Teacher Moves:</strong> {blueprint.structure.teacherMoves.join(", ")}
-          </p>
-          <p style={{ marginBottom: 8 }}>
-            <strong>Prompt Style:</strong> {blueprint.structure.promptStyle.join(", ")}
-          </p>
-          <p style={{ margin: 0 }}>
-            <strong>Tone:</strong> {blueprint.structure.tone.join(", ")}
-          </p>
-        </div>
-      </details>
-    </>
+    </div>
   )
 }
 
@@ -1142,134 +1309,29 @@ function PlanningDetailsSection({
   )
 }
 
-function SimpleListSection({
-  title,
-  items,
-}: {
-  title: string
-  items: string[]
-}) {
+function BlueprintDetailsSection({ blueprint }: { blueprint: LessonBlueprint }) {
   return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>{title}</h3>
-      <ul style={listStyle}>
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
-  const fullPackageArtifact = exports.find((artifact) => artifact.kind === "full_package")
-  const sectionArtifacts = exports.filter((artifact) => artifact.kind !== "full_package")
-  const bundledArtifactLabels = getBundledArtifactLabels(exports)
-  const bundleSummary = bundledArtifactLabels.length > 0
-    ? `Current package ZIP includes: ${bundledArtifactLabels.join(", ")}.`
-    : "Current package ZIP includes the current generated files."
-
-  return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Exports</h3>
-      <p style={sectionLeadStyle}>
-        Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.
-      </p>
-
-      {fullPackageArtifact ? (
-        <div style={exportBundleCardStyle}>
-          <div style={orchardSectionHeaderRowStyle}>
-            <div style={{ fontWeight: 700, color: "var(--deep-orchard)" }}>Full Lesson Package ZIP</div>
-            {bundledArtifactLabels.length > 0 ? (
-              <span style={orchardTagStyle("moss")}>
-                {bundledArtifactLabels.length} bundled download{bundledArtifactLabels.length === 1 ? "" : "s"}
-              </span>
-            ) : null}
-          </div>
-          <div style={exportBundleNoteStyle}>{bundleSummary}</div>
-          {bundledArtifactLabels.length > 0 ? (
-            <div style={binderTagRowStyle}>
-              {bundledArtifactLabels.map((label) => (
-                <span key={label} style={orchardTagStyle("neutral")}>
-                  {label}
-                </span>
-              ))}
-            </div>
-          ) : null}
-          <div style={exportButtonRowStyle}>
-            <button
-              type="button"
-              onClick={() => void downloadExportArtifact(fullPackageArtifact, exports)}
-              style={{
-                ...orchardButtonStyle(),
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
-            >
-              Download Package ZIP
-            </button>
-          </div>
+    <>
+      <details style={sectionStyle}>
+        <summary style={summaryStyle}>Blueprint Content</summary>
+        <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
+          <p style={{ marginBottom: 8 }}><strong>Vocabulary:</strong> {blueprint.content.vocabulary.join(", ")}</p>
+          <p style={{ marginBottom: 8 }}><strong>Texts:</strong> {blueprint.content.texts.join(", ")}</p>
+          <p style={{ margin: 0 }}><strong>Practice Ideas:</strong> {blueprint.content.practiceIdeas.join(", ")}</p>
         </div>
-      ) : null}
+      </details>
 
-      <div style={exportArtifactGridStyle}>
-        {sectionArtifacts.map((artifact) => (
-          <div
-            key={`${artifact.kind}-${artifact.fileName}`}
-            style={exportArtifactCardStyle}
-          >
-            <div style={orchardMetaRowStyle}>
-              <span style={orchardTagStyle("neutral")}>{getArtifactFormatLabel(artifact)}</span>
-              <span style={orchardTagStyle("honey")}>{getArtifactKindLabel(artifact)}</span>
-            </div>
-            <div style={{ fontWeight: 700 }}>{artifact.label}</div>
-            <div style={exportMetaListStyle}>
-              <div><strong>Filename:</strong> {artifact.fileName}</div>
-              <div>{getArtifactDescription(artifact)}</div>
-            </div>
-
-            {artifact.content ? (
-              <div style={exportButtonRowStyle}>
-                <button
-                  type="button"
-                  onClick={() => void downloadExportArtifact(artifact, exports)}
-                  style={{
-                    ...orchardButtonStyle({ subtle: true }),
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
-                >
-                  {getArtifactButtonLabel(artifact)}
-                </button>
-              </div>
-            ) : null}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function PreSection({ title, content }: { title: string; content: string }) {
-  return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>{title}</h3>
-      <pre style={preStyle}>{content}</pre>
-    </div>
-  )
-}
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      style={{
-        ...orchardSoftCardStyle,
-        padding: 12,
-      }}
-    >
-      <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: "var(--orchard-green)" }}>{value}</div>
-    </div>
+      <details style={sectionStyle}>
+        <summary style={summaryStyle}>Blueprint Structure</summary>
+        <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
+          <p style={{ marginBottom: 8 }}><strong>Timing:</strong> {blueprint.structure.timing.join(" | ")}</p>
+          <p style={{ marginBottom: 8 }}><strong>Segments:</strong> {blueprint.structure.lessonSegments.join(" -> ")}</p>
+          <p style={{ marginBottom: 8 }}><strong>Teacher Moves:</strong> {blueprint.structure.teacherMoves.join(", ")}</p>
+          <p style={{ marginBottom: 8 }}><strong>Prompt Style:</strong> {blueprint.structure.promptStyle.join(", ")}</p>
+          <p style={{ margin: 0 }}><strong>Tone:</strong> {blueprint.structure.tone.join(", ")}</p>
+        </div>
+      </details>
+    </>
   )
 }
 
@@ -1278,18 +1340,10 @@ function SlidePlanList({ slides }: { slides: SlidePlan[] }) {
     <div style={{ display: "grid", gap: 12 }}>
       {slides.map((slide, index) => (
         <div key={`${slide.shellLabel}-${index}`} style={subCardStyle}>
-          <p style={{ margin: "0 0 6px 0" }}>
-            <strong>{slide.shellLabel}</strong>
-          </p>
-          <p style={{ margin: "0 0 6px 0" }}>
-            <strong>Action:</strong> {slide.action}
-          </p>
-          <p style={{ margin: "0 0 6px 0" }}>
-            <strong>Purpose:</strong> {slide.purpose}
-          </p>
-          <p style={{ margin: 0 }}>
-            <strong>Notes:</strong> {slide.notes}
-          </p>
+          <p style={{ margin: "0 0 6px 0" }}><strong>{slide.shellLabel}</strong></p>
+          <p style={{ margin: "0 0 6px 0" }}><strong>Action:</strong> {slide.action}</p>
+          <p style={{ margin: "0 0 6px 0" }}><strong>Purpose:</strong> {slide.purpose}</p>
+          <p style={{ margin: 0 }}><strong>Notes:</strong> {slide.notes}</p>
         </div>
       ))}
     </div>
@@ -1301,16 +1355,73 @@ function IdeaList({ ideas }: { ideas: LessonPlanIdea[] }) {
     <div style={{ display: "grid", gap: 12 }}>
       {ideas.map((idea, index) => (
         <div key={`${idea.title}-${index}`} style={subCardStyle}>
-          <p style={{ margin: "0 0 6px 0" }}>
-            <strong>{idea.title}</strong>
-          </p>
+          <p style={{ margin: "0 0 6px 0" }}><strong>{idea.title}</strong></p>
           <p style={{ margin: "0 0 6px 0" }}>{idea.description}</p>
-          <p style={{ margin: 0, color: "var(--text-secondary)" }}>
-            <strong>Why:</strong> {idea.rationale}
-          </p>
+          <p style={{ margin: 0, color: "var(--text-secondary)" }}><strong>Why:</strong> {idea.rationale}</p>
         </div>
       ))}
     </div>
+  )
+}
+
+export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
+  return (
+    <details style={sectionStyle}>
+      <summary style={summaryStyle}>Pipeline Trace</summary>
+      <div style={detailsSectionGridStyle}>
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Mode and Material Counts</div>
+          <div style={denseKeyValueStyle}>
+            <div><strong>Lesson Area Mode:</strong> {trace.selectedMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
+            <div><strong>Total Materials:</strong> {trace.materialCounts.total}</div>
+            <div><strong>Curriculum Materials:</strong> {trace.materialCounts.curriculum}</div>
+            <div><strong>Exemplar Materials:</strong> {trace.materialCounts.exemplar}</div>
+          </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Selected Source IDs</div>
+          <div style={denseKeyValueStyle}>
+            <div><strong>Curriculum:</strong> {joinOrFallback(trace.selectedSources.curriculumMaterialIds, "None selected")}</div>
+            <div><strong>Exemplar:</strong> {joinOrFallback(trace.selectedSources.exemplarMaterialIds, "None selected")}</div>
+          </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Target Resolution</div>
+          <div style={denseKeyValueStyle}>
+            <div><strong>Primary Lesson Area:</strong> {trace.target.primary}</div>
+            <div><strong>Additional Lesson Area:</strong> {trace.target.secondary ?? "None"}</div>
+            <div><strong>Multiple Lesson Areas:</strong> {trace.target.isMixedTarget ? "Yes" : "No"}</div>
+            <div><strong>Recommended Area Mode:</strong> {trace.target.recommendedMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
+          </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Package Summary</div>
+          <div style={denseKeyValueStyle}>
+            <div><strong>Density:</strong> {trace.package.density}</div>
+            <div><strong>Lesson Area Shape:</strong> {trace.package.lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area"}</div>
+            <div><strong>Content Fit:</strong> {trace.package.contentFit}</div>
+            <div><strong>Package Warning Count:</strong> {trace.package.warningCount}</div>
+          </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Warnings and Missing-Area Prompts</div>
+          <div style={{ display: "grid", gap: 6, marginBottom: 8 }}>
+            <div><strong>Missing-Area Prompt Components:</strong> {joinOrFallback(trace.missingAreaPromptComponents, "None")}</div>
+          </div>
+          {trace.blueprintWarnings.length > 0 ? (
+            <div style={{ display: "grid", gap: 8 }}>
+              {trace.blueprintWarnings.map((warning) => <div key={warning} style={warningStyle}>{warning}</div>)}
+            </div>
+          ) : (
+            <div style={{ color: "var(--text-secondary)" }}>No blueprint warnings were recorded in the pipeline trace.</div>
+          )}
+        </div>
+      </div>
+    </details>
   )
 }
 
@@ -1336,7 +1447,6 @@ function DecisionButton({
         opacity: disabled ? 0.6 : 1,
         fontSize: 12,
         fontWeight: 700,
-        boxShadow: disabled ? "none" : active ? "var(--shadow-soft)" : "var(--shadow-soft)",
       }}
     >
       {label}
@@ -1364,22 +1474,51 @@ function BlockedResultsState({
         <div style={{ ...noticeStyle, marginTop: "var(--space-sm)" }}>{details}</div>
       </OrchardPageHeader>
       <div style={actionsStyle}>
-        <Link to={linkTo} style={linkStyle}>
-          {linkLabel}
-        </Link>
+        <Link to={linkTo} style={linkStyle}>{linkLabel}</Link>
       </div>
     </div>
   )
 }
 
-function joinOrFallback(items: string[], fallback: string): string {
-  return items.length > 0 ? items.join(", ") : fallback
+function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties {
+  if (tone === "good") {
+    return {
+      ...signalCardBaseStyle,
+      background: "rgba(110, 139, 107, 0.14)",
+      border: "1px solid var(--border-moss)",
+      color: "var(--deep-orchard)",
+    }
+  }
+
+  if (tone === "warn") {
+    return {
+      ...signalCardBaseStyle,
+      background: "rgba(242, 192, 120, 0.20)",
+      border: "1px solid var(--border-honey)",
+      color: "var(--warm-brown)",
+    }
+  }
+
+  return {
+    ...signalCardBaseStyle,
+    color: "var(--text-secondary)",
+  }
 }
 
-function getFallbackUsageLabel(
-  blueprint: LessonBlueprint,
-  lessonPackage: LessonPackage,
-): string {
+function formatPlanningComponentLabel(component: PlanningComponentKey): string {
+  return component
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
+function formatDecisionChoice(choice: MissingAreaDecisionChoice): string {
+  if (choice === "add") return "Add it"
+  if (choice === "leave_out") return "Leave it out"
+  return "Decide later"
+}
+
+function getFallbackUsageLabel(blueprint: LessonBlueprint, lessonPackage: LessonPackage): string {
   const hasLimitedCurriculum = blueprint.sourceReadiness.curriculumSupport === "limited"
   const hasLimitedExemplar = blueprint.sourceReadiness.exemplarSupport === "limited"
   const hasLimitedContentFit = lessonPackage.readiness.contentFit === "limited"
@@ -1395,118 +1534,13 @@ function getFallbackUsageLabel(
   return "Minimal fallback usage likely."
 }
 
-function formatDecisionChoice(choice: MissingAreaDecisionChoice): string {
-  if (choice === "add") {
-    return "Add it"
-  }
-
-  if (choice === "leave_out") {
-    return "Leave it out"
-  }
-
-  return "Decide later"
+function joinOrFallback(items: string[], fallback: string): string {
+  return items.length > 0 ? items.join(", ") : fallback
 }
 
-function mapCoverageTone(status: "covered" | "partial" | "missing"): "good" | "warn" | "neutral" {
-  if (status === "covered") {
-    return "good"
-  }
-
-  if (status === "missing") {
-    return "warn"
-  }
-
-  return "neutral"
+function countNonEmptyLines(content: string): number {
+  return content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean).length
 }
-
-function signalCardStyle(tone: "good" | "warn" | "neutral"): React.CSSProperties {
-  if (tone === "good") {
-    return {
-      ...orchardSoftCardStyle,
-      background: "rgba(110, 139, 107, 0.14)",
-      border: "1px solid var(--border-moss)",
-      color: "var(--deep-orchard)",
-      padding: 12,
-    }
-  }
-
-  if (tone === "warn") {
-    return {
-      ...orchardSoftCardStyle,
-      background: "rgba(242, 192, 120, 0.20)",
-      border: "1px solid var(--border-honey)",
-      color: "var(--warm-brown)",
-      padding: 12,
-    }
-  }
-
-  return {
-    ...orchardSoftCardStyle,
-    color: "var(--text-secondary)",
-    padding: 12,
-  }
-}
-
-const warningStyle: React.CSSProperties = {
-  ...orchardNoticeStyle,
-  border: "1px solid var(--border-cranberry)",
-  background: "rgba(184, 84, 90, 0.12)",
-  color: "var(--cranberry)",
-  fontSize: 14,
-}
-
-const noticeStyle: React.CSSProperties = {
-  ...orchardNoticeStyle,
-}
-
-const actionsStyle: React.CSSProperties = {
-  marginTop: "var(--space-md)",
-  display: "flex",
-  gap: 12,
-}
-
-const listStyle: React.CSSProperties = {
-  margin: 0,
-  paddingLeft: 20,
-  color: "var(--text-secondary)",
-}
-
-const preStyle: React.CSSProperties = {
-  margin: 0,
-  whiteSpace: "pre-wrap",
-  fontFamily: "inherit",
-  color: "var(--text-secondary)",
-}
-
-const linkStyle: React.CSSProperties = {
-  ...orchardButtonStyle({ subtle: true }),
-  display: "inline-flex",
-  textDecoration: "none",
-}
-
-const summaryStyle: React.CSSProperties = {
-  cursor: "pointer",
-  fontWeight: 700,
-  color: "var(--orchard-green)",
-}
-
-const minorSummaryStyle: React.CSSProperties = {
-  cursor: "pointer",
-  fontWeight: 700,
-  fontSize: 13,
-  color: "var(--text-primary)",
-}
-
-const sectionHeadingStyle: React.CSSProperties = {
-  marginTop: 0,
-  marginBottom: "var(--space-md)",
-  color: "var(--orchard-green)",
-  fontFamily: "var(--font-heading)",
-}
-
-const subHeadingStyle: React.CSSProperties = {
-  fontWeight: 700,
-  marginBottom: 6,
-  color: "var(--orchard-green)",
-}
-
