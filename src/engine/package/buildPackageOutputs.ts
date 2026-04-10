@@ -325,10 +325,10 @@ function buildLessonPlan(
         "Opening Purpose: Start the lesson, activate prior knowledge, and orient students to the work. The objective can be shared here if helpful, but it is not the same thing as the opening.",
       ], [
         `Use ${selectOpeningResources(blueprint)} to connect students to the lesson context or materials.`,
-        `Set the purpose for the lesson in a ${joinOrFallback(
+        `Set the purpose for the lesson in a ${normalizeToneCue(joinOrFallback(
           resolvedTemplateShell.tone.slice(0, 2),
           "clear, supportive"
-        )} tone, then move into ${buildFirstTeachingMoveLabel(resolvedTemplateShell.lessonSegments)}.`,
+        ))}, then move into ${buildFirstTeachingMoveLabel(resolvedTemplateShell.lessonSegments)}.`,
       ])
     : ""
 
@@ -1406,6 +1406,15 @@ function formatDecisionLabel(choice: MissingAreaDecisionChoice): string {
   return "Decide later"
 }
 
+
+function normalizeToneCue(value: string): string {
+  const cleaned = value.trim()
+  if (cleaned.length === 0) {
+    return "clear, supportive tone"
+  }
+
+  return /\btone\b/i.test(cleaned) ? cleaned : `${cleaned} tone`
+}
 function joinOrFallback(items: string[], fallback: string): string {
   const cleaned = Array.from(
     new Set((items ?? []).map((item) => item.trim()).filter((item) => item.length > 0))
