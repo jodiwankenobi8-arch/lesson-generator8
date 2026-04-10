@@ -16,7 +16,22 @@ type InstructionalKind =
   | "independent_practice"
   | "centers"
   | "closure"
+  | "layout"
   | "other"
+
+type ResolvedShellRow = {
+  kind: InstructionalKind
+  segmentLabel: string
+  shellLabel: string
+}
+
+const CORE_SEQUENCE: InstructionalKind[] = [
+  "opening",
+  "teach",
+  "guided_practice",
+  "independent_practice",
+  "closure",
+]
 
 export function resolveTemplateShell(
   blueprint: LessonBlueprint,
@@ -43,7 +58,7 @@ export function resolveTemplateShell(
   const rawLessonSegments = take(
     templateShell?.segmentOrder ?? blueprint.structure.lessonSegments,
     lessonSegmentsCount,
-    ["Teach", "Guided Practice", "Independent Practice", "Closure"]
+    ["Opening", "Teach", "Guided Practice", "Independent Practice", "Closure"]
   )
 
   const rawSlideShell = take(
@@ -52,7 +67,7 @@ export function resolveTemplateShell(
     rawLessonSegments
   )
 
-  const ordered = normalizeInstructionalSequence(rawLessonSegments, rawSlideShell)
+  const resolvedRows = resolveInstructionalShellRows(rawLessonSegments, rawSlideShell)
 
   const teacherMoves = take(
     templateShell?.teacherMoveShell ?? blueprint.structure.teacherMoves,
@@ -73,93 +88,180 @@ export function resolveTemplateShell(
   )
 
   return {
-    lessonSegments: ordered.map((item) => item.segmentLabel),
-    slideShell: ordered.map((item) => item.shellLabel),
-    timing: ordered.map((item) => inferTimingLabel(item.kind)),
+    lessonSegments: resolvedRows.map((item) => item.segmentLabel).slice(0, lessonSegmentsCount),
+    slideShell: resolvedRows.map((item) => item.shellLabel).slice(0, slideShellCount),
+    timing: resolvedRows.map((item) => inferTimingLabel(item.kind)).slice(0, lessonSegmentsCount),
     teacherMoves,
     promptStyle,
     tone,
   }
 }
 
-function normalizeInstructionalSequence(
+function resolveInstructionalShellRows(
   lessonSegments: string[],
   slideShell: string[]
-): Array<{ segmentLabel: string; shellLabel: string; kind: InstructionalKind }> {
+): ResolvedShellRow[] {
+  const candidates = buildCandidateRows(lessonSegments, slideShell)
+  const representativeByKind = buildRepresentativeByKind(candidates)
+  const hasStrongCoverage = hasStrongInstructionalCoverage(representativeByKind)
+  const includeCenters = hasStrongCoverage && representativeByKind.has("centers")
+
+  const sequenceKinds = [...CORE_SEQUENCE]
+  if (includeCenters) {
+    sequenceKinds.splice(sequenceKinds.length - 1, 0, "centers")
+  }
+
+  return sequenceKinds.map((kind) => ({
+    kind,
+    segmentLabel: getDefaultSegmentLabel(kind),
+    shellLabel: getDefaultShellLabel(kind),
+  }))
+}
+
+function buildCandidateRows(
+  lessonSegments: string[],
+  slideShell: string[]
+): Array<{ kind: InstructionalKind; segmentLabel: string; shellLabel: string; index: number }> {
   const maxLength = Math.max(lessonSegments.length, slideShell.length)
 
-  const rows = Array.from({ length: maxLength }, (_, index) => {
-    const segmentLabel = lessonSegments[index] ?? slideShell[index] ?? "Guided Practice"
+  return Array.from({ length: maxLength }, (_, index) => {
+    const segmentLabel = lessonSegments[index] ?? slideShell[index] ?? ""
     const shellLabel = slideShell[index] ?? segmentLabel
-    const kind = normalizeInstructionalKind(segmentLabel)
+    const kind = normalizeInstructionalKind(`${segmentLabel} | ${shellLabel}`)
 
     return {
-      segmentLabel,
-      shellLabel,
       kind,
-      rank: getInstructionalRank(kind),
+      segmentLabel: segmentLabel.trim(),
+      shellLabel: shellLabel.trim(),
       index,
     }
-  })
+  }).filter((row) => row.segmentLabel.length > 0 || row.shellLabel.length > 0)
+}
 
-  rows.sort((a, b) => {
-    if (a.rank !== b.rank) {
-      return a.rank - b.rank
+function buildRepresentativeByKind(
+  rows: Array<{ kind: InstructionalKind; segmentLabel: string; shellLabel: string; index: number }>
+): Map<InstructionalKind, { segmentLabel: string; shellLabel: string }> {
+  const byKind = new Map<InstructionalKind, { segmentLabel: string; shellLabel: string }>()
+
+  for (const row of rows) {
+    if (row.kind === "layout" || row.kind === "other") {
+      continue
     }
 
-    return a.index - b.index
-  })
+    if (!byKind.has(row.kind)) {
+      byKind.set(row.kind, {
+        segmentLabel: row.segmentLabel,
+        shellLabel: row.shellLabel,
+      })
+    }
+  }
 
-  return rows.map(({ segmentLabel, shellLabel, kind }) => ({
-    segmentLabel,
-    shellLabel,
-    kind,
-  }))
+  return byKind
+}
+
+function hasStrongInstructionalCoverage(
+  representativeByKind: Map<InstructionalKind, { segmentLabel: string; shellLabel: string }>
+): boolean {
+  const coreSignalKinds: InstructionalKind[] = [
+    "teach",
+    "guided_practice",
+    "independent_practice",
+    "closure",
+  ]
+
+  const count = coreSignalKinds.filter((kind) => representativeByKind.has(kind)).length
+  return count >= 2
 }
 
 function normalizeInstructionalKind(value: string): InstructionalKind {
   const lower = value.trim().toLowerCase()
 
-  if (lower.includes("objective") || lower.includes("opening") || lower.includes("launch")) {
+  if (
+    lower.includes("objective") ||
+    lower.includes("opening") ||
+    lower.includes("launch") ||
+    lower.includes("warm")
+  ) {
     return "opening"
   }
 
-  if (lower.includes("teach") || lower.includes("model") || lower.includes("mini-lesson")) {
+  if (
+    lower.includes("teach") ||
+    lower.includes("model") ||
+    lower.includes("mini-lesson") ||
+    lower.includes("i do")
+  ) {
     return "teach"
   }
 
-  if (lower.includes("independent") || lower.includes("you do")) {
-    return "independent_practice"
-  }
-
   if (
+    lower.includes("guided practice") ||
     lower.includes("guided") ||
-    lower.includes("practice") ||
-    lower.includes("passage") ||
-    lower.includes("text")
+    lower.includes("we do") ||
+    lower.includes("scaffold")
   ) {
     return "guided_practice"
   }
 
-  if (lower.includes("center")) {
+  if (
+    lower.includes("independent practice") ||
+    lower.includes("independent") ||
+    lower.includes("you do")
+  ) {
+    return "independent_practice"
+  }
+
+  if (lower.includes("center") || lower.includes("rotation")) {
     return "centers"
   }
 
-  if (lower.includes("closure") || lower.includes("exit")) {
+  if (
+    lower.includes("closure") ||
+    lower.includes("exit ticket") ||
+    lower.includes("wrap up") ||
+    lower.includes("recap")
+  ) {
     return "closure"
+  }
+
+  if (
+    lower.includes("visual") ||
+    lower.includes("image") ||
+    lower.includes("picture") ||
+    lower.includes("table") ||
+    lower.includes("sort") ||
+    lower.includes("compare") ||
+    lower.includes("split view") ||
+    lower.includes("passage") ||
+    lower.includes("text") ||
+    lower.includes("word list") ||
+    lower.includes("cards") ||
+    lower.includes("practice task")
+  ) {
+    return "layout"
   }
 
   return "other"
 }
 
-function getInstructionalRank(kind: InstructionalKind): number {
-  if (kind === "opening") return 0
-  if (kind === "teach") return 1
-  if (kind === "guided_practice") return 2
-  if (kind === "independent_practice") return 3
-  if (kind === "centers") return 4
-  if (kind === "closure") return 5
-  return 6
+function getDefaultSegmentLabel(kind: InstructionalKind): string {
+  if (kind === "opening") return "Opening"
+  if (kind === "teach") return "Teach"
+  if (kind === "guided_practice") return "Guided Practice"
+  if (kind === "independent_practice") return "Independent Practice"
+  if (kind === "centers") return "Centers"
+  if (kind === "closure") return "Closure"
+  return "Guided Practice"
+}
+
+function getDefaultShellLabel(kind: InstructionalKind): string {
+  if (kind === "opening") return "Objective / Opening"
+  if (kind === "teach") return "Model / Teach"
+  if (kind === "guided_practice") return "Guided Practice"
+  if (kind === "independent_practice") return "Independent Practice"
+  if (kind === "centers") return "Centers / Rotation"
+  if (kind === "closure") return "Closure / Check"
+  return "Guided Practice"
 }
 
 function inferTimingLabel(kind: InstructionalKind): string {
