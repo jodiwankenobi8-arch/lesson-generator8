@@ -262,6 +262,12 @@ function filterSlidesForSelectedOutputs(
   })
 }
 
+
+function renumberSlides(slides: string[]): string[] {
+  return slides.map((slide, index) =>
+    slide.replace(/^Slide\s+\d+:/, `Slide ${index + 1}:`)
+  )
+}
 function buildLessonPlan(
   inputs: LessonInputs,
   blueprint: LessonBlueprint,

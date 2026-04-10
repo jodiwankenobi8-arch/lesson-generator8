@@ -7,6 +7,8 @@ import {
 import {
   ExemplarStyleAspect,
   ExemplarStyleSettings,
+  LessonInputs,
+  MaterialFile,
   MaterialRole,
   MaterialStatus,
 } from "../engine/types"
@@ -223,6 +225,42 @@ const exemplarTextareaStyle: React.CSSProperties = {
   boxSizing: "border-box",
 }
 
+
+const standardsCardStyle: React.CSSProperties = {
+  marginTop: 12,
+  padding: 14,
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--border-honey)",
+  background: "rgba(242, 192, 120, 0.16)",
+  display: "grid",
+  gap: 10,
+}
+
+const standardsTagRowStyle: React.CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 8,
+}
+
+const standardsInputStyle: React.CSSProperties = {
+  width: "100%",
+  minHeight: 82,
+  resize: "vertical",
+  borderRadius: "var(--radius-sm)",
+  border: "1px solid var(--border-paper)",
+  padding: "10px 12px",
+  font: "inherit",
+  color: "var(--text-primary)",
+  background: "rgba(255,255,255,0.96)",
+  boxSizing: "border-box",
+}
+
+const standardsLabelStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 6,
+  fontSize: 12,
+  color: "var(--text-secondary)",
+}
 export default function MaterialsPage() {
   const navigate = useNavigate()
   const [isGenerating, setIsGenerating] = useState(false)
@@ -636,6 +674,137 @@ export default function MaterialsPage() {
   )
 }
 
+
+function normalizeStandardCandidate(value: string): string {
+  return String(value ?? "")
+    .replace(/^[\s*Ã¢â‚¬Â¢\-Ã¢â‚¬â€œÃ¢â‚¬â€]+/, "")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function uniqueStandardCandidates(values: string[]): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+
+  values
+    .map(normalizeStandardCandidate)
+    .filter(Boolean)
+    .filter((value) => value.length <= 180)
+    .forEach((value) => {
+      const key = value.toLowerCase()
+      if (seen.has(key)) return
+      seen.add(key)
+      result.push(value)
+    })
+
+  return result
+}
+
+function looksLikeStandardCandidate(value: string): boolean {
+  const normalized = normalizeStandardCandidate(value)
+  const lower = normalized.toLowerCase()
+
+  return (
+    /[a-z]+\.[a-z0-9]+\.[a-z0-9]+/i.test(normalized) ||
+    lower.includes("standard") ||
+    lower.includes("decode") ||
+    lower.includes("phonics") ||
+    lower.includes("comprehension") ||
+    lower.includes("main idea") ||
+    lower.includes("key details")
+  )
+}
+
+function buildSuggestedStandards(materials: MaterialFile[], inputs: LessonInputs): string[] {
+  const curriculumMaterials = materials.filter(
+    (material) => material.role === "curriculum" && material.status === "ready" && Boolean(material.analysis)
+  )
+
+  const reviewed = curriculumMaterials.flatMap((material) => material.analysisReview?.standards ?? [])
+  const analyzed = curriculumMaterials.flatMap((material) => material.analysis?.curriculum?.standards ?? [])
+  const extracted = curriculumMaterials
+    .flatMap((material) => material.analysis?.extractedText ?? [])
+    .filter(looksLikeStandardCandidate)
+
+  const candidates = uniqueStandardCandidates([...reviewed, ...analyzed, ...extracted])
+  if (candidates.length > 0) {
+    return candidates.slice(0, 6)
+  }
+
+  const focus = [inputs.skill.trim(), inputs.topic.trim()].filter(Boolean).join(" / ")
+  if (!focus) {
+    return []
+  }
+
+  const subject = inputs.subject.trim() || "lesson"
+  const grade = inputs.grade.trim() ? `Grade ${inputs.grade.trim()} ` : ""
+
+  return [`${grade}${subject} inferred standard focus: ${focus}`]
+}
+
+function StandardsConfirmationCard({
+  suggestedStandards,
+  confirmedStandards,
+  onApplySuggestions,
+  onChange,
+}: {
+  suggestedStandards: string[]
+  confirmedStandards: string
+  onApplySuggestions: () => void
+  onChange: (value: string) => void
+}) {
+  return (
+    <div style={standardsCardStyle}>
+      <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 14 }}>
+        Standards confirmation needed
+      </div>
+      <div style={exemplarSubtleTextStyle}>
+        Standards were left blank on Inputs. Review these suggestions, then accept or edit them before generating.
+      </div>
+
+      <div style={{ display: "grid", gap: 6 }}>
+        <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>
+          Suggested standards
+        </div>
+        {suggestedStandards.length > 0 ? (
+          <div style={standardsTagRowStyle}>
+            {suggestedStandards.map((standard) => (
+              <span key={standard} style={orchardTagStyle("honey")}>
+                {standard}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div style={exemplarSubtleTextStyle}>No suggestions are available yet.</div>
+        )}
+      </div>
+
+      <label style={standardsLabelStyle}>
+        <span>Confirmed standards</span>
+        <textarea
+          value={confirmedStandards}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={suggestedStandards.join("; ")}
+          style={standardsInputStyle}
+        />
+      </label>
+
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button
+          type="button"
+          onClick={onApplySuggestions}
+          style={secondaryButtonStyle()}
+        >
+          Use suggested standards
+        </button>
+      </div>
+
+      <div style={exemplarSubtleTextStyle}>
+        Generation unlocks once this field is filled in. You can edit the suggestions directly before continuing.
+      </div>
+    </div>
+  )
+}
 function UploadLaneCard({
   role,
   title,
