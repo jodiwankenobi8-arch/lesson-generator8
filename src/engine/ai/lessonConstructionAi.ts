@@ -11,6 +11,33 @@ import {
 import { buildExports } from "../package/buildPackageExportArtifacts"
 import { buildLessonPackageReadiness } from "../package/buildLessonPackageReadiness"
 
+type AiContentOrigin = "grounded" | "inferred"
+
+type AiContentFieldKey =
+  | "standards"
+  | "vocabulary"
+  | "wordLists"
+  | "texts"
+  | "practiceIdeas"
+  | "lessonPlan"
+  | "slides"
+  | "centers"
+  | "rotationPlan"
+  | "interventions"
+
+const AI_CONTENT_FIELD_LABELS: Record<AiContentFieldKey, string> = {
+  standards: "Standards",
+  vocabulary: "Vocabulary",
+  wordLists: "Word lists",
+  texts: "Texts / topic",
+  practiceIdeas: "Practice ideas",
+  lessonPlan: "Lesson plan",
+  slides: "Lesson slides",
+  centers: "Centers / independent work",
+  rotationPlan: "Teacher-led support",
+  interventions: "Intervention support",
+}
+
 export type AiConstructedSlide = {
   title: string
   kind: string
@@ -21,6 +48,19 @@ export type AiConstructedSlide = {
   promptStyle: string
   tone: string
   body: string[]
+}
+
+type AiTeacherReviewItem = {
+  label: string
+  reason: string
+  note: string
+}
+
+type AiStandardsSuggestion = {
+  value: string
+  origin: AiContentOrigin
+  sourceTypes: string[]
+  evidence: string[]
 }
 
 export type AiLessonConstructionResponse = {
@@ -37,6 +77,17 @@ export type AiLessonConstructionResponse = {
   centers: string[]
   rotationPlanLines: string[]
   interventions: string[]
+  contentOrigins?: Partial<Record<AiContentFieldKey, AiContentOrigin>>
+  teacherReviewItems?: AiTeacherReviewItem[]
+  requestedButMissing?: string[]
+  standardsSuggestions?: AiStandardsSuggestion[]
+}
+
+type NormalizedAiLessonConstruction = Omit<AiLessonConstructionResponse, "contentOrigins" | "teacherReviewItems" | "requestedButMissing" | "standardsSuggestions"> & {
+  fieldOrigins: Record<AiContentFieldKey, AiContentOrigin>
+  teacherReviewItems: AiTeacherReviewItem[]
+  requestedButMissing: string[]
+  standardsSuggestions: AiStandardsSuggestion[]
 }
 
 type LessonConstructionInput = {
@@ -137,6 +188,10 @@ export async function enhanceLessonGenerationWithAI(
   }
 
   const ai = (await response.json()) as AiLessonConstructionResponse
+  if (ai.enabled === false) {
+    return input.baseResult
+  }
+
   return mergeAiLessonConstruction(input, ai)
 }
 
@@ -151,7 +206,7 @@ function prependAiGroundedWarning(warnings?: string[]): string[] {
 function buildAiCoverage(
   baseCoverage: LessonGenerationResult["blueprint"]["content"]["coverage"],
   baseContent: LessonGenerationResult["blueprint"]["content"],
-  ai: AiLessonConstructionResponse
+  ai: NormalizedAiLessonConstruction
 ) {
   return {
     standards: chooseValues(ai.derivedStandards, baseCoverage?.standards ?? baseContent.standards),
@@ -165,34 +220,51 @@ function buildAiCoverage(
     lessonSegments: baseCoverage?.lessonSegments ?? [],
   }
 }
+
 export function mergeAiLessonConstruction(
-  input: Pick<LessonConstructionInput, "inputs" | "outputContents" | "baseResult">,
+  input: Pick<LessonConstructionInput, "inputs" | "materials" | "outputContents" | "baseResult">,
   ai: AiLessonConstructionResponse
 ): LessonGenerationResult {
   const base = input.baseResult
+  const normalizedAi = normalizeAiLessonConstruction(
+    {
+      inputs: input.inputs,
+      materials: input.materials,
+      outputContents: input.outputContents,
+      missingAreaDecisions: {},
+      baseResult: input.baseResult,
+    },
+    ai
+  )
+
   const nextBlueprint = {
     ...base.blueprint,
     content: {
       ...base.blueprint.content,
-      standards: chooseValues(ai.derivedStandards, base.blueprint.content.standards),
-      vocabulary: chooseValues(ai.vocabulary, base.blueprint.content.vocabulary),
-      wordLists: chooseValues(ai.wordLists, base.blueprint.content.wordLists),
-      texts: chooseValues(ai.texts, base.blueprint.content.texts),
-      practiceIdeas: chooseValues(ai.practiceIdeas, base.blueprint.content.practiceIdeas),
-      coverage: buildAiCoverage(base.blueprint.content.coverage, base.blueprint.content, ai),
+      standards: chooseValues(normalizedAi.derivedStandards, base.blueprint.content.standards),
+      vocabulary: chooseValues(normalizedAi.vocabulary, base.blueprint.content.vocabulary),
+      wordLists: chooseValues(normalizedAi.wordLists, base.blueprint.content.wordLists),
+      texts: chooseValues(normalizedAi.texts, base.blueprint.content.texts),
+      practiceIdeas: chooseValues(normalizedAi.practiceIdeas, base.blueprint.content.practiceIdeas),
+      coverage: buildAiCoverage(base.blueprint.content.coverage, base.blueprint.content, normalizedAi),
     },
     sourceReadiness: {
       ...base.blueprint.sourceReadiness,
-      warnings: unique([...base.blueprint.sourceReadiness.warnings, ...limit(ai.warnings, 4)]),
+      warnings: unique([
+        ...base.blueprint.sourceReadiness.warnings,
+        ...limit(normalizedAi.warnings, 6),
+      ]),
     },
   }
 
-  const nextSlides = ai.slides.length > 0 ? ai.slides.map(formatAiSlide) : base.lessonPackage.slides
-  const nextLessonPlan = cleanText(ai.lessonPlanText) || base.lessonPackage.lessonPlan
-  const nextCenters = chooseValues(ai.centers, base.lessonPackage.centers)
-  const nextInterventions = chooseValues(ai.interventions, base.lessonPackage.interventions)
-  const nextRotationPlan = ai.rotationPlanLines.length > 0
-    ? limit(ai.rotationPlanLines, 12).map(cleanText).filter(Boolean).join("\n")
+  const nextSlides = normalizedAi.slides.length > 0
+    ? normalizedAi.slides.map(formatAiSlide)
+    : base.lessonPackage.slides
+  const nextLessonPlan = cleanText(normalizedAi.lessonPlanText) || base.lessonPackage.lessonPlan
+  const nextCenters = chooseValues(normalizedAi.centers, base.lessonPackage.centers)
+  const nextInterventions = chooseValues(normalizedAi.interventions, base.lessonPackage.interventions)
+  const nextRotationPlan = normalizedAi.rotationPlanLines.length > 0
+    ? limit(normalizedAi.rotationPlanLines, 12).map(cleanText).filter(Boolean).join("`n")
     : base.lessonPackage.rotationPlan
 
   const nextReadinessBase = buildLessonPackageReadiness({
@@ -230,7 +302,10 @@ export function mergeAiLessonConstruction(
     exports: nextExports,
     readiness: {
       ...nextReadinessBase,
-      warnings: prependAiGroundedWarning(unique([...nextReadinessBase.warnings, ...limit(ai.warnings, 4)])),
+      warnings: prependAiGroundedWarning(unique([
+        ...nextReadinessBase.warnings,
+        ...limit(normalizedAi.warnings, 6),
+      ])),
     },
   }
 
@@ -241,6 +316,16 @@ export function mergeAiLessonConstruction(
       lessonShape: nextLessonPackage.readiness.lessonShape,
       contentFit: nextLessonPackage.readiness.contentFit,
       warningCount: nextLessonPackage.readiness.warnings.length,
+    },
+    aiConstruction: {
+      applied: true,
+      confidence: normalizedAi.confidence,
+      groundedContentLabels: getOriginLabels(normalizedAi, "grounded"),
+      inferredContentLabels: getOriginLabels(normalizedAi, "inferred"),
+      teacherReviewItems: normalizedAi.teacherReviewItems,
+      requestedButMissing: normalizedAi.requestedButMissing,
+      standardsSuggestions: normalizedAi.standardsSuggestions,
+      warnings: limit(normalizedAi.warnings, 8),
     },
   }
 
@@ -380,6 +465,321 @@ function summarizeRequestedOutputs(outputContents: LessonOutputContents) {
   }
 }
 
+function normalizeAiLessonConstruction(
+  input: LessonConstructionInput,
+  ai: AiLessonConstructionResponse
+): NormalizedAiLessonConstruction {
+  const fieldOrigins = buildFieldOrigins(input, ai)
+  const derivedStandards = sanitizeValueList(ai.derivedStandards, 6)
+  const vocabulary = sanitizeValueList(ai.vocabulary, 8)
+  const wordLists = sanitizeValueList(ai.wordLists, 8)
+  const texts = sanitizeValueList(ai.texts, 6)
+  const practiceIdeas = sanitizeValueList(ai.practiceIdeas, 8)
+  const lessonPlanText = cleanLongText(ai.lessonPlanText)
+  const slides = sanitizeSlides(ai.slides)
+  const centers = sanitizeValueList(ai.centers, 10)
+  const rotationPlanLines = sanitizeValueList(ai.rotationPlanLines, 12)
+  const interventions = sanitizeValueList(ai.interventions, 8)
+
+  const missingRequestedLessonPlanParts = lessonPlanText.length > 0
+    ? findMissingRequestedLessonPlanParts(input.outputContents, lessonPlanText)
+    : []
+
+  const shouldKeepAiLessonPlan = shouldUseAiLessonPlan(
+    lessonPlanText,
+    missingRequestedLessonPlanParts,
+    input.outputContents
+  )
+
+  const requestedButMissing = unique([
+    ...sanitizeValueList(ai.requestedButMissing ?? [], 8),
+    ...missingRequestedLessonPlanParts,
+    ...collectRequestedOutputGaps(input.outputContents, {
+      lessonPlanReady: shouldKeepAiLessonPlan,
+      slidesReady: slides.length > 0,
+      centersReady: centers.length > 0,
+      rotationReady: rotationPlanLines.length > 0,
+      interventionsReady: interventions.length > 0,
+    }),
+  ])
+
+  const teacherReviewItems = normalizeTeacherReviewItems(
+    ai.teacherReviewItems,
+    input,
+    fieldOrigins,
+    requestedButMissing,
+    shouldKeepAiLessonPlan
+  )
+
+  const standardsSuggestions = buildStandardsSuggestions(input, ai, fieldOrigins, derivedStandards)
+
+  const warnings = unique([
+    ...sanitizeValueList(ai.warnings, 6),
+    !shouldKeepAiLessonPlan
+      ? "AI lesson plan text was too generic or dropped requested parts, so the deterministic lesson plan stayed in place."
+      : "",
+    requestedButMissing.length > 0
+      ? `Teacher review recommended: ${requestedButMissing.join(", ")}.`
+      : "",
+    standardsSuggestions.some((suggestion) => suggestion.origin === "inferred")
+      ? "Standards suggestions include inferred matches and should be confirmed by the teacher."
+      : "",
+    ...teacherReviewItems.map((item) => item.note),
+  ])
+
+  return {
+    enabled: ai.enabled !== false,
+    confidence: clampConfidence(ai.confidence),
+    warnings,
+    derivedStandards,
+    vocabulary,
+    wordLists,
+    texts,
+    practiceIdeas,
+    lessonPlanText: shouldKeepAiLessonPlan ? lessonPlanText : "",
+    slides,
+    centers,
+    rotationPlanLines,
+    interventions,
+    fieldOrigins,
+    teacherReviewItems,
+    requestedButMissing,
+    standardsSuggestions,
+  }
+}
+
+function buildFieldOrigins(
+  input: LessonConstructionInput,
+  ai: AiLessonConstructionResponse
+): Record<AiContentFieldKey, AiContentOrigin> {
+  const curriculumGrounded = input.baseResult.blueprint.sourceReadiness.curriculumSupport === "strong"
+  const structureGrounded = input.baseResult.blueprint.sourceReadiness.exemplarSupport === "strong"
+
+  return {
+    standards: ai.contentOrigins?.standards ?? (curriculumGrounded ? "grounded" : "inferred"),
+    vocabulary: ai.contentOrigins?.vocabulary ?? (curriculumGrounded ? "grounded" : "inferred"),
+    wordLists: ai.contentOrigins?.wordLists ?? (curriculumGrounded ? "grounded" : "inferred"),
+    texts: ai.contentOrigins?.texts ?? (curriculumGrounded ? "grounded" : "inferred"),
+    practiceIdeas: ai.contentOrigins?.practiceIdeas ?? (curriculumGrounded ? "grounded" : "inferred"),
+    lessonPlan: ai.contentOrigins?.lessonPlan ?? (curriculumGrounded ? "grounded" : "inferred"),
+    slides: ai.contentOrigins?.slides ?? (structureGrounded ? "grounded" : "inferred"),
+    centers: ai.contentOrigins?.centers ?? (curriculumGrounded ? "grounded" : "inferred"),
+    rotationPlan: ai.contentOrigins?.rotationPlan ?? (curriculumGrounded ? "grounded" : "inferred"),
+    interventions: ai.contentOrigins?.interventions ?? (curriculumGrounded ? "grounded" : "inferred"),
+  }
+}
+
+function collectRequestedOutputGaps(
+  outputContents: LessonOutputContents,
+  readiness: {
+    lessonPlanReady: boolean
+    slidesReady: boolean
+    centersReady: boolean
+    rotationReady: boolean
+    interventionsReady: boolean
+  }
+): string[] {
+  const missing: string[] = []
+
+  if (outputContents.lessonPlan.selected && !readiness.lessonPlanReady) {
+    missing.push("Lesson plan")
+  }
+
+  if (outputContents.lessonSlides.selected && !readiness.slidesReady) {
+    missing.push("Lesson slides")
+  }
+
+  if (isGroupOutputSelected(outputContents, "centers") && !readiness.centersReady) {
+    missing.push("Centers / independent work")
+  }
+
+  if (isGroupOutputSelected(outputContents, "small_group") && !readiness.rotationReady) {
+    missing.push("Teacher-led support")
+  }
+
+  if (isGroupOutputSelected(outputContents, "intervention") && !readiness.interventionsReady) {
+    missing.push("Intervention support")
+  }
+
+  return missing
+}
+
+function findMissingRequestedLessonPlanParts(
+  outputContents: LessonOutputContents,
+  lessonPlanText: string
+): string[] {
+  if (!outputContents.lessonPlan.selected) {
+    return []
+  }
+
+  const normalized = lessonPlanText.toLowerCase()
+  const checks: Array<{ key: keyof LessonOutputContents["lessonPlan"]["parts"]; label: string; keywords: string[] }> = [
+    { key: "standards", label: "Standards", keywords: ["standard", "benchmark"] },
+    { key: "objective", label: "Objective", keywords: ["objective", "goal", "students will"] },
+    { key: "opening", label: "Opening", keywords: ["opening", "warm", "hook", "launch"] },
+    { key: "direct_instruction_modeling", label: "Direct instruction / modeling", keywords: ["model", "direct instruction", "i do", "teach"] },
+    { key: "guided_practice", label: "Guided practice", keywords: ["guided practice", "we do", "guided"] },
+    { key: "independent_practice", label: "Independent practice", keywords: ["independent practice", "you do", "independent"] },
+    { key: "closure", label: "Closure", keywords: ["closure", "wrap", "reflect", "exit"] },
+    { key: "differentiation", label: "Differentiation", keywords: ["different", "reteach", "extension", "support"] },
+    { key: "vocabulary", label: "Vocabulary", keywords: ["vocabulary", "word work", "academic language"] },
+    { key: "materials_prep_list", label: "Materials / prep list", keywords: ["materials", "prep", "supplies"] },
+    { key: "assessment_connection", label: "Assessment connection", keywords: ["assessment", "check for understanding", "exit ticket"] },
+  ]
+
+  return checks
+    .filter((check) => outputContents.lessonPlan.parts[check.key])
+    .filter((check) => !check.keywords.some((keyword) => normalized.includes(keyword)))
+    .map((check) => check.label)
+}
+
+function shouldUseAiLessonPlan(
+  lessonPlanText: string,
+  missingRequestedLessonPlanParts: string[],
+  outputContents: LessonOutputContents
+): boolean {
+  if (!lessonPlanText) {
+    return false
+  }
+
+  if (isWeakLongText(lessonPlanText, 220)) {
+    return false
+  }
+
+  const requestedPartCount = Object.values(outputContents.lessonPlan.parts).filter(Boolean).length
+  if (requestedPartCount === 0) {
+    return true
+  }
+
+  return missingRequestedLessonPlanParts.length <= Math.max(1, Math.floor(requestedPartCount / 3))
+}
+
+function sanitizeSlides(slides: AiConstructedSlide[]): AiConstructedSlide[] {
+  return slides
+    .map((slide) => ({
+      title: cleanText(slide.title),
+      kind: cleanText(slide.kind),
+      action: cleanText(slide.action),
+      purpose: cleanText(slide.purpose),
+      timing: cleanText(slide.timing),
+      teacherMove: cleanText(slide.teacherMove),
+      promptStyle: cleanText(slide.promptStyle),
+      tone: cleanText(slide.tone),
+      body: sanitizeValueList(slide.body, 8),
+    }))
+    .filter((slide) => {
+      const compact = [slide.title, slide.purpose, slide.teacherMove, ...slide.body].join(" ")
+      return !isWeakLongText(compact, 80)
+    })
+    .slice(0, 12)
+}
+
+function normalizeTeacherReviewItems(
+  rawItems: AiTeacherReviewItem[] | undefined,
+  input: LessonConstructionInput,
+  fieldOrigins: Record<AiContentFieldKey, AiContentOrigin>,
+  requestedButMissing: string[],
+  keptAiLessonPlan: boolean
+): AiTeacherReviewItem[] {
+  const items = Array.isArray(rawItems) ? rawItems : []
+  const normalized = items
+    .map((item) => ({
+      label: cleanText(item.label),
+      reason: cleanText(item.reason),
+      note: cleanText(item.note),
+    }))
+    .filter((item) => item.label && item.note)
+
+  const inferredFields = Object.entries(fieldOrigins)
+    .filter(([, origin]) => origin === "inferred")
+    .map(([field]) => AI_CONTENT_FIELD_LABELS[field as AiContentFieldKey])
+
+  const autoItems: AiTeacherReviewItem[] = []
+
+  if (!keptAiLessonPlan && input.outputContents.lessonPlan.selected) {
+    autoItems.push({
+      label: "Lesson plan",
+      reason: "generic_ai_output",
+      note: "The AI lesson plan draft was too generic, so the deterministic lesson plan stayed in place.",
+    })
+  }
+
+  if (requestedButMissing.length > 0) {
+    autoItems.push({
+      label: "Requested outputs",
+      reason: "requested_but_missing",
+      note: `Some requested outputs still need teacher review: ${requestedButMissing.join(", ")}.`,
+    })
+  }
+
+  inferredFields.forEach((label) => {
+    autoItems.push({
+      label,
+      reason: "inferred_content",
+      note: `${label} includes inferred content and should be reviewed before classroom use.`,
+    })
+  })
+
+  return uniqueReviewItems([...normalized, ...autoItems])
+}
+
+function buildStandardsSuggestions(
+  input: LessonConstructionInput,
+  ai: AiLessonConstructionResponse,
+  fieldOrigins: Record<AiContentFieldKey, AiContentOrigin>,
+  derivedStandards: string[]
+): AiStandardsSuggestion[] {
+  const rawSuggestions = Array.isArray(ai.standardsSuggestions) ? ai.standardsSuggestions : []
+  const explicit = rawSuggestions
+    .map((suggestion) => ({
+      value: cleanText(suggestion.value),
+      origin: suggestion.origin ?? fieldOrigins.standards,
+      sourceTypes: sanitizeValueList(suggestion.sourceTypes, 4),
+      evidence: sanitizeValueList(suggestion.evidence, 4),
+    }))
+    .filter((suggestion) => suggestion.value)
+
+  if (explicit.length > 0) {
+    return uniqueStandardsSuggestions(explicit).slice(0, 6)
+  }
+
+  const teacherStandards = input.inputs.standard
+    .split(/[;,\n]/)
+    .map(cleanText)
+    .filter(Boolean)
+
+  const curriculumEvidence = input.materials
+    .filter((material) => material.role === "curriculum")
+    .flatMap((material) => material.analysis?.curriculum?.standards ?? [])
+    .map(cleanText)
+    .filter(Boolean)
+
+  return uniqueStandardsSuggestions(
+    derivedStandards.map((value) => ({
+      value,
+      origin: fieldOrigins.standards,
+      sourceTypes: unique([
+        teacherStandards.some((standard) => standard === value) ? "teacher_input" : "",
+        curriculumEvidence.some((standard) => standard === value) ? "curriculum" : "",
+        fieldOrigins.standards === "inferred" ? "inference" : "deterministic_draft",
+      ]),
+      evidence: unique([
+        ...teacherStandards.filter((standard) => standard === value),
+        ...curriculumEvidence.filter((standard) => standard === value),
+      ]),
+    }))
+  ).slice(0, 6)
+}
+
+function getOriginLabels(
+  ai: NormalizedAiLessonConstruction,
+  origin: AiContentOrigin
+): string[] {
+  return (Object.keys(ai.fieldOrigins) as AiContentFieldKey[])
+    .filter((field) => ai.fieldOrigins[field] === origin)
+    .map((field) => AI_CONTENT_FIELD_LABELS[field])
+}
+
 function formatAiSlide(slide: AiConstructedSlide, index: number): string {
   return [
     `Slide ${index + 1}: ${cleanText(slide.title) || `Slide ${index + 1}`}`,
@@ -401,6 +801,97 @@ function chooseValues(preferred: string[], fallback: string[]): string[] {
   }
 
   return unique(limit(fallback, 12).map(cleanText).filter(Boolean))
+}
+
+function sanitizeValueList(values: string[], max: number): string[] {
+  return unique(
+    limit(values, max)
+      .map(cleanText)
+      .filter(Boolean)
+      .filter((value) => !isWeakShortValue(value))
+  )
+}
+
+function cleanLongText(value: string): string {
+  return String(value ?? "")
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+}
+
+function isWeakShortValue(value: string): boolean {
+  const normalized = cleanText(value).toLowerCase()
+  if (!normalized) return true
+  if (normalized.length < 4) return true
+
+  return [
+    "support student learning",
+    "engage students",
+    "as needed",
+    "appropriate activity",
+    "appropriate activities",
+    "teacher guidance",
+    "student discussion",
+    "flexible timing",
+    "clear instructional tone",
+    "teacher prompt",
+    "practice activity",
+  ].some((fragment) => normalized === fragment || normalized.includes(`${fragment}.`))
+}
+
+function isWeakLongText(value: string, minimumLength: number): boolean {
+  const normalized = cleanLongText(value).toLowerCase()
+  if (!normalized) return true
+  if (normalized.length < minimumLength) return true
+
+  const weakFragments = [
+    "support student learning",
+    "engage students",
+    "as needed",
+    "appropriate activities",
+    "teacher guidance",
+    "students practice",
+    "use the lesson materials",
+    "ask students to share",
+    "review the concept",
+  ]
+
+  const weakHitCount = weakFragments.filter((fragment) => normalized.includes(fragment)).length
+  return weakHitCount >= 3
+}
+
+function clampConfidence(value: number): number {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(1, value))
+}
+
+function uniqueReviewItems(items: AiTeacherReviewItem[]): AiTeacherReviewItem[] {
+  const seen = new Set<string>()
+  const result: AiTeacherReviewItem[] = []
+
+  for (const item of items) {
+    const key = `${item.label.toLowerCase()}::${item.reason.toLowerCase()}::${item.note.toLowerCase()}`
+    if (!item.label || !item.note || seen.has(key)) continue
+    seen.add(key)
+    result.push(item)
+  }
+
+  return result
+}
+
+function uniqueStandardsSuggestions(items: AiStandardsSuggestion[]): AiStandardsSuggestion[] {
+  const seen = new Set<string>()
+  const result: AiStandardsSuggestion[] = []
+
+  for (const item of items) {
+    const key = item.value.toLowerCase()
+    if (!item.value || seen.has(key)) continue
+    seen.add(key)
+    result.push(item)
+  }
+
+  return result
 }
 
 function cleanText(value: string): string {

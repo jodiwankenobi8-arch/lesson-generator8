@@ -15,6 +15,7 @@ import {
   LessonPipelineTrace,
   LessonSpec,
   MaterialAnalysis,
+  MaterialAnalysisReview,
   MaterialFile,
   MaterialRole,
   MaterialSourceKind,
@@ -82,6 +83,7 @@ type LessonStore = {
   ) => void
   updateMaterialStatus: (id: string, status: MaterialStatus) => void
   setMaterialAnalysis: (id: string, analysis: MaterialAnalysis) => void
+  setMaterialAnalysisReview: (id: string, review: MaterialAnalysisReview | null) => void
   setMaterialError: (id: string, message: string) => void
   setMaterialStyleSettings: (id: string, settings: ExemplarStyleSettings) => void
   removeMaterial: (id: string) => void
@@ -194,6 +196,72 @@ function normalizeExemplarStyleSettings(
   }
 }
 
+
+function normalizeMaterialAnalysisReview(
+  review?: MaterialAnalysisReview | null
+): MaterialAnalysisReview | null {
+  if (!review) {
+    return null
+  }
+
+  const normalizeList = (values?: string[]) =>
+    [...(values ?? [])]
+      .map((value) => value.trim())
+      .filter(Boolean)
+
+  return {
+    standards: normalizeList(review.standards),
+    vocabulary: normalizeList(review.vocabulary),
+    instructionalTargets: normalizeList(review.instructionalTargets),
+    texts: normalizeList(review.texts),
+    practiceIdeas: normalizeList(review.practiceIdeas),
+    exemplarStructure: normalizeList(review.exemplarStructure),
+    teacherSummary: review.teacherSummary?.trim() ?? "",
+  }
+}
+
+function mergeMaterialWithReview(material: MaterialFile): MaterialFile {
+  const review = normalizeMaterialAnalysisReview(material.analysisReview)
+
+  if (!material.analysis || !review) {
+    return material
+  }
+
+  const curriculum = material.analysis.curriculum
+  const exemplar = material.analysis.exemplar
+
+  return {
+    ...material,
+    analysis: {
+      ...material.analysis,
+      summary: review.teacherSummary || material.analysis.summary,
+      curriculum: curriculum
+        ? {
+            ...curriculum,
+            standards: review.standards.length > 0 ? review.standards : curriculum.standards,
+            vocabulary: review.vocabulary.length > 0 ? review.vocabulary : curriculum.vocabulary,
+            instructionalTargets:
+              review.instructionalTargets.length > 0
+                ? review.instructionalTargets
+                : curriculum.instructionalTargets,
+            texts: review.texts.length > 0 ? review.texts : curriculum.texts,
+            practiceTasks:
+              review.practiceIdeas.length > 0 ? review.practiceIdeas : curriculum.practiceTasks,
+          }
+        : curriculum,
+      exemplar: exemplar
+        ? {
+            ...exemplar,
+            reusableStructure:
+              review.exemplarStructure.length > 0
+                ? review.exemplarStructure
+                : exemplar.reusableStructure,
+          }
+        : exemplar,
+    },
+    analysisReview: review,
+  }
+}
 function defaultOutputContents(): LessonOutputContents {
   return createDefaultOutputContents()
 }
@@ -580,6 +648,18 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
       ...clearedGeneratedState(),
     })),
 
+  setMaterialAnalysisReview: (id, review) =>
+    set((state) => ({
+      materials: state.materials.map((material) =>
+        material.id === id
+          ? {
+              ...material,
+              analysisReview: normalizeMaterialAnalysisReview(review),
+            }
+          : material
+      ),
+      ...clearedGeneratedState(),
+    })),
   setMaterialError: (id, message) =>
     set((state) => ({
       materials: state.materials.map((material) =>
@@ -670,7 +750,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
           return {
             inputs: current.inputs,
-            materials: current.materials,
+            materials: current.materials.map(mergeMaterialWithReview),
             selectedLessonMode: current.selectedLessonMode,
             outputContents: current.outputContents,
             missingAreaDecisions: current.missingAreaDecisions,

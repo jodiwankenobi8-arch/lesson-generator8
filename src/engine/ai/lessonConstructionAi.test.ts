@@ -119,6 +119,7 @@ describe("mergeAiLessonConstruction", () => {
           topic: "Long a words",
           duration: "30 minutes",
         },
+        materials: [],
         outputContents: createDefaultOutputContents(),
         baseResult: makeBaseResult(),
       },
