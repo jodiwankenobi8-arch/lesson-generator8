@@ -58,7 +58,9 @@ import {
   shouldShowSecondaryEvidencePanel,
 } from "./resultsPagePackageHelpers"
 import {
+  summarizeContentAuthorityLead,
   summarizeContentGrounding,
+  summarizeResolvedContentSource,
   summarizeSelectedExemplarInfluence,
   summarizeSelectedExemplarTargets,
   summarizeStructureImpact,
@@ -553,6 +555,10 @@ export function PackageSummarySection({
     materials,
     blueprint.sourceReadiness.selectedCurriculumMaterialIds
   )
+  const resolvedContentSourceSummary = summarizeResolvedContentSource(
+    selectedContentSourceNames,
+    blueprint
+  )
   const selectedStructureSourceNames = getSelectedMaterialNames(
     materials,
     blueprint.sourceReadiness.selectedExemplarMaterialIds
@@ -617,11 +623,11 @@ export function PackageSummarySection({
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Grounding Snapshot</div>
           <div style={denseKeyValueStyle}>
-            <div><strong>Content source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Content source:</strong> {resolvedContentSourceSummary}</div>
             <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
             <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
             <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
-            <div><strong>Content came from:</strong> {contentGroundingSummary}</div>
+            <div><strong>Current lesson content uses:</strong> {contentGroundingSummary}</div>
             <div><strong>Structure came from:</strong> {structureImpactSummary}</div>
             <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
           </div>
