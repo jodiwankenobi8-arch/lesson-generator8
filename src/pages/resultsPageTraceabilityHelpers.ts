@@ -5,6 +5,32 @@ function joinOrFallback(items: string[], fallback: string): string {
   return items.length > 0 ? items.join(", ") : fallback
 }
 
+export function summarizeResolvedContentSource(
+  selectedSourceNames: string[],
+  blueprint: LessonBlueprint
+): string {
+  if (selectedSourceNames.length > 0) {
+    return selectedSourceNames.join(", ")
+  }
+
+  return blueprint.sourceReadiness.curriculumSupport === "limited"
+    ? "Teacher inputs and fallback lesson grounding"
+    : "No selected curriculum source"
+}
+
+export function summarizeContentAuthorityLead(
+  selectedSourceNames: string[],
+  blueprint: LessonBlueprint
+): string {
+  if (selectedSourceNames.length > 0) {
+    return blueprint.sourceReadiness.curriculumSupport === "strong"
+      ? "Selected curriculum materials directly shaped the lesson content."
+      : "Selected curriculum materials shaped the lesson content, but source coverage still looks limited."
+  }
+
+  return "No curriculum source is currently selected, so the lesson content is being assembled from teacher inputs and fallback lesson grounding."
+}
+
 export function summarizeContentGrounding(blueprint: LessonBlueprint): string {
   return joinOrFallback(
     getBlueprintContentGroundingItems(blueprint),
