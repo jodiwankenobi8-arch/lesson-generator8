@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+﻿import { describe, expect, it } from "vitest"
 import { buildPackageOutputs } from "./package/buildPackageOutputs"
 import {
   createDefaultOutputContents,
@@ -768,7 +768,7 @@ describe("buildPackageOutputs", () => {
     )
 
     expect(teacherFacingContent).toContain("Launch Move: Opening")
-    expect(teacherFacingContent).toContain("Slide Shell Cue: Opening, Teach, Practice")
+    expect(teacherFacingContent).toContain("Slide Shell Cue: Objective / Opening, Model / Teach, Guided Practice")
     expect(teacherFacingContent).toContain(
       "Timing Cue: Opening, Mini-lesson, Guided Practice"
     )
@@ -833,4 +833,5 @@ describe("buildPackageOutputs", () => {
     expect(result.lessonPlan).toContain("Lesson Portion 2 (writing):")
     expect(result.lessonPlan).toContain("Independent Practice")
   })
+
 

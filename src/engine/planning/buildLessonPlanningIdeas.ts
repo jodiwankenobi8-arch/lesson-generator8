@@ -1116,32 +1116,10 @@ function buildMissingAreaPromptCandidates(
   const target = blueprint.content.target
   const isMixedFull = target.isMixedTarget && target.recommendedMode === "full"
   const prompts: MissingAreaPromptCandidate[] = []
-
   const byComponent = new Map(
     componentCoverage.map((entry) => [entry.component, entry] as const)
   )
-
-  addPromptIfSourceCoverageMissing(prompts, byComponent, outputContents, "guided_practice", {
-    importance: "high",
-    prompt: "The source materials did not clearly show guided practice. Include a scaffolded guided-practice block in the package?",
-    rationale: "Guided practice is a core lesson component and should usually be explicit before independent work.",
-  })
-
-  addPromptIfSourceCoverageMissing(prompts, byComponent, outputContents, "independent_practice", {
-    importance: "high",
-    prompt: "The source materials did not clearly show independent practice. Include an independent application task in the package?",
-    rationale: "Independent practice is important for transfer and should not be silently skipped in most lessons.",
-  })
-
-  addPromptIfSourceCoverageMissing(prompts, byComponent, outputContents, "closure", {
-    importance: "medium",
-    prompt: "The source materials did not clearly show closure. Include a short recap or exit check in the package?",
-    rationale: "Closure is instructionally meaningful and worth asking about when it seems absent.",
-  })
-
-
-
-  return prompts
+return prompts
 }
 
 function addPromptIfSourceCoverageMissing(
