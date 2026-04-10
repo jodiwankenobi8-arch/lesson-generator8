@@ -476,28 +476,6 @@ export default function MaterialsPage() {
               : "Add materials until at least one curriculum or exemplar file is ready to use."}
         </div>
 
-        <div style={{ marginTop: "var(--space-md)", display: "grid", gap: 10 }}>
-          <button
-            type="button"
-            onClick={handleGenerateLesson}
-            disabled={!canGenerate || isGenerating}
-            style={primaryButtonStyle(!canGenerate || isGenerating)}
-          >
-            {isGenerating ? "Generating Lesson..." : "Generate Lesson"}
-          </button>
-
-          <div style={helperTextStyle}>
-            {!hasRequiredInputs
-              ? "Complete the required lesson inputs before generating."
-              : hasProcessingMaterials
-                ? "Wait until the current uploads finish."
-                : !hasUsableMaterialsForGeneration
-                  ? "At least one curriculum or exemplar material needs to finish ready to use."
-                  : "Inputs are complete and you can generate now."}
-          </div>
-
-          {generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
-        </div>
       </div>
 
       <div style={{ ...cardStyle, marginTop: "var(--space-md)" }}>
@@ -670,6 +648,38 @@ export default function MaterialsPage() {
           </div>
         )}
       </div>
+
+      <div style={{ ...cardStyle, marginTop: "var(--space-md)" }}>
+        <h3 style={{ marginTop: 0, marginBottom: "var(--space-sm)", color: "var(--orchard-green)" }}>
+          Create Lesson
+        </h3>
+        <p style={{ ...helperTextStyle, marginTop: 0, marginBottom: "var(--space-md)" }}>
+          Review the materials above, then generate once everything looks ready.
+        </p>
+
+        <div style={{ display: "grid", gap: 10 }}>
+          <button
+            type="button"
+            onClick={handleGenerateLesson}
+            disabled={!canGenerate || isGenerating}
+            style={primaryButtonStyle(!canGenerate || isGenerating)}
+          >
+            {isGenerating ? "Generating Lesson..." : "Generate Lesson"}
+          </button>
+
+          <div style={helperTextStyle}>
+            {!hasRequiredInputs
+              ? "Complete the required lesson inputs before generating."
+              : hasProcessingMaterials
+                ? "Wait until the current uploads finish."
+                : !hasUsableMaterialsForGeneration
+                  ? "At least one curriculum or exemplar material needs to finish ready to use."
+                  : "Inputs are complete and you can generate now."}
+          </div>
+
+          {generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
+        </div>
+      </div>
     </div>
   )
 }
@@ -677,7 +687,7 @@ export default function MaterialsPage() {
 
 function normalizeStandardCandidate(value: string): string {
   return String(value ?? "")
-    .replace(/^[\s*Ã¢â‚¬Â¢\-Ã¢â‚¬â€œÃ¢â‚¬â€]+/, "")
+    .replace(/^[\s*ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢\-ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â]+/, "")
     .replace(/\s+/g, " ")
     .trim()
 }
