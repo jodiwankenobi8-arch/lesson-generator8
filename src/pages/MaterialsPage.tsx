@@ -267,6 +267,8 @@ export default function MaterialsPage() {
   const [generationError, setGenerationError] = useState<string | null>(null)
   const [draggingRole, setDraggingRole] = useState<MaterialRole | null>(null)
 
+  const inputs = useLessonStore((state) => state.inputs)
+  const setInputs = useLessonStore((state) => state.setInputs)
   const materials = useLessonStore((state) => state.materials)
   const addMaterial = useLessonStore((state) => state.addMaterial)
   const setMaterialSource = useLessonStore((state) => state.setMaterialSource)
@@ -281,6 +283,12 @@ export default function MaterialsPage() {
   )()
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const canGenerate = useLessonStore((state) => state.canGenerate)()
+  const suggestedStandards = useMemo(
+    () => buildSuggestedStandards(materials, inputs),
+    [materials, inputs]
+  )
+  const needsStandardsConfirmation = inputs.standard.trim().length === 0
+  const generateBlocked = !canGenerate || isGenerating || needsStandardsConfirmation
 
   const curriculumInputRef = useRef<HTMLInputElement | null>(null)
   const exemplarInputRef = useRef<HTMLInputElement | null>(null)
@@ -372,7 +380,16 @@ export default function MaterialsPage() {
   }
 
   async function handleGenerateLesson() {
-    if (!canGenerate || isGenerating) {
+    if (isGenerating) {
+      return
+    }
+
+    if (needsStandardsConfirmation) {
+      setGenerationError("Confirm at least one standard before generating.")
+      return
+    }
+
+    if (!canGenerate) {
       return
     }
 
@@ -658,11 +675,20 @@ export default function MaterialsPage() {
         </p>
 
         <div style={{ display: "grid", gap: 10 }}>
+          {needsStandardsConfirmation ? (
+            <StandardsConfirmationCard
+              suggestedStandards={suggestedStandards}
+              confirmedStandards={inputs.standard}
+              onApplySuggestions={() => setInputs({ standard: suggestedStandards.join("; ") })}
+              onChange={(value) => setInputs({ standard: value })}
+            />
+          ) : null}
+
           <button
             type="button"
             onClick={handleGenerateLesson}
-            disabled={!canGenerate || isGenerating}
-            style={primaryButtonStyle(!canGenerate || isGenerating)}
+            disabled={generateBlocked}
+            style={primaryButtonStyle(generateBlocked)}
           >
             {isGenerating ? "Generating Lesson..." : "Generate Lesson"}
           </button>
@@ -670,11 +696,13 @@ export default function MaterialsPage() {
           <div style={helperTextStyle}>
             {!hasRequiredInputs
               ? "Complete the required lesson inputs before generating."
-              : hasProcessingMaterials
-                ? "Wait until the current uploads finish."
-                : !hasUsableMaterialsForGeneration
-                  ? "At least one curriculum or exemplar material needs to finish ready to use."
-                  : "Inputs are complete and you can generate now."}
+              : needsStandardsConfirmation
+                ? "Confirm at least one standard before generating."
+                : hasProcessingMaterials
+                  ? "Wait until the current uploads finish."
+                  : !hasUsableMaterialsForGeneration
+                    ? "At least one curriculum or exemplar material needs to finish ready to use."
+                    : "Inputs, standards, and materials are ready. You can generate now."}
           </div>
 
           {generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
@@ -725,6 +753,59 @@ function looksLikeStandardCandidate(value: string): boolean {
   )
 }
 
+function isKindergartenEla(inputs: LessonInputs): boolean {
+  return inputs.grade.trim().toUpperCase() === "K" &&
+    /^(ELA|reading|language arts|literacy)$/i.test(inputs.subject.trim())
+}
+
+function inferSuggestedStandardsFromInputs(inputs: LessonInputs): string[] {
+  if (!isKindergartenEla(inputs)) {
+    return []
+  }
+
+  const combined = `${inputs.skill} ${inputs.topic} ${inputs.notes}`.toLowerCase()
+  const suggestions: string[] = []
+
+  if (/(phonics|decode|encoding|long [aeiou]|short [aeiou]|silent e|magic e|cvce|cvc|digraph|blend|segment|vowel)/i.test(combined)) {
+    suggestions.push(
+      "ELA.K.F.1.3 Use knowledge of grade-appropriate phonics and word-analysis skills to decode words accurately."
+    )
+  }
+
+  if (/(high frequency|sight words?|automaticity)/i.test(combined)) {
+    suggestions.push(
+      "ELA.K.F.1.4 Recognize and read with automaticity grade-level high frequency words."
+    )
+  }
+
+  if (/(retell|character|setting|important events|story)/i.test(combined)) {
+    suggestions.push(
+      "ELA.K.R.3.2 Retell a text orally to enhance comprehension: use main character(s), setting, and important events for a story; use topic and details for an informational text."
+    )
+  }
+
+  if (/(informational|topic|details|main idea|key details)/i.test(combined)) {
+    suggestions.push(
+      "ELA.K.R.2.2 Identify the topic of and multiple details in a text."
+    )
+  }
+
+  if (/(descriptive words|adjective|describe)/i.test(combined)) {
+    suggestions.push(
+      "ELA.K.R.3.1 Identify and explain descriptive words in text(s)."
+    )
+  }
+
+  if (/(vocabulary|categories|sort words|unfamiliar words|word meaning)/i.test(combined)) {
+    suggestions.push(
+      "ELA.K.V.1.2 Ask and answer questions about unfamiliar words in grade-level content.",
+      "ELA.K.V.1.3 Identify and sort common words into basic categories, relating vocabulary to background knowledge."
+    )
+  }
+
+  return uniqueStandardCandidates(suggestions).slice(0, 6)
+}
+
 function buildSuggestedStandards(materials: MaterialFile[], inputs: LessonInputs): string[] {
   const curriculumMaterials = materials.filter(
     (material) => material.role === "curriculum" && material.status === "ready" && Boolean(material.analysis)
@@ -741,15 +822,7 @@ function buildSuggestedStandards(materials: MaterialFile[], inputs: LessonInputs
     return candidates.slice(0, 6)
   }
 
-  const focus = [inputs.skill.trim(), inputs.topic.trim()].filter(Boolean).join(" / ")
-  if (!focus) {
-    return []
-  }
-
-  const subject = inputs.subject.trim() || "lesson"
-  const grade = inputs.grade.trim() ? `Grade ${inputs.grade.trim()} ` : ""
-
-  return [`${grade}${subject} inferred standard focus: ${focus}`]
+  return inferSuggestedStandardsFromInputs(inputs)
 }
 
 function StandardsConfirmationCard({
@@ -785,7 +858,9 @@ function StandardsConfirmationCard({
             ))}
           </div>
         ) : (
-          <div style={exemplarSubtleTextStyle}>No suggestions are available yet.</div>
+          <div style={exemplarSubtleTextStyle}>
+            No reliable suggestions are available yet. Type the standard you want to use.
+          </div>
         )}
       </div>
 
@@ -803,6 +878,7 @@ function StandardsConfirmationCard({
         <button
           type="button"
           onClick={onApplySuggestions}
+          disabled={suggestedStandards.length === 0}
           style={secondaryButtonStyle()}
         >
           Use suggested standards
@@ -810,7 +886,7 @@ function StandardsConfirmationCard({
       </div>
 
       <div style={exemplarSubtleTextStyle}>
-        Generation unlocks once this field is filled in. You can edit the suggestions directly before continuing.
+        Generation unlocks once you confirm at least one standard. Suggestions are drafts, so edit them when needed before continuing.
       </div>
     </div>
   )
