@@ -8,9 +8,11 @@
 <!-- AUTO_SYNC_END -->
 
 ## Current repo truth
+
 - Repo: jodiwankenobi8-arch/lesson-generator8
 - Branch: main
 - Live repo code/tests beat stale docs or older handoffs when they conflict.
+- Inputs -> Materials -> Results remains the active teacher-facing product flow.
 - Canonical runtime path:
   1. `src/state/useLessonStore.ts`
   2. `src/state/workflows/processMaterialForStore.ts`
@@ -22,23 +24,42 @@
   8. `src/engine/package/buildLessonPackage.ts`
   9. `src/pages/ResultsPage.tsx`
   10. export helpers and local workspace persistence
-- Curriculum remains the content authority.
-- Exemplar remains the presentation / structure authority.
+- Active product charter: Lesson Generator 8 is a template-preserving lesson transformation system, not a generic AI lesson-package generator.
+- The primary engine should support trusted output-shell transformation when exemplars are present and solid default artifact shells when exemplars are absent.
+- Curriculum remains the content authority for content-bearing outputs.
+- Exemplar remains the optional presentation / structure authority and may be scoped per artifact.
 - Multiple exemplars are supported. Different exemplars may target shared structure, slides, lesson plan, centers / rotation, teacher-led support, intervention, or printables.
+- Any requested final output may use its own exemplar.
+- Missing exemplar should not block output generation by itself.
+- When no exemplar is present for a requested output, use a trustworthy default artifact shell.
 - Exemplar custom notes are for restyling or teacher preference overrides while preserving desired exemplar structure.
-- Objective and opening are separate lesson parts. The opening can include the objective, but it is not the same thing as the objective.
+- Objective and opening are separate lesson parts.
 - Multi-area lessons should surface ordered lesson portions so each resolved area can keep its own teach / guided / independent / closure flow.
-- Inputs -> Materials -> Results remains the active teacher-facing product flow.
 - Local workspace persistence remains active in `useLessonStore`.
-- Do not reintroduce stale finish-pass framing that treats narrow lesson-type buckets as the completion metric.
 
-## Latest validation snapshot
-- `npm run typecheck` PASS
-- `npm test` PASS (31 files / 185 tests)
-- `npm run build` PASS
-- Non-blocking warning noise remains around Vite react-babel esbuild/oxc deprecations.
+## Default continuation mode
+
+Use take-over mode by default:
+- inspect the live seam first
+- choose the highest-leverage seam from current evidence
+- complete the biggest safe coherent pass independently
+- prefer full coherent fixes over drip-patch handoffs
+- keep one PowerShell paste at a time
+- verify immediately after meaningful edits
+
+## Current status
+
+- The repo remains in finish / hardening / targeted-refinement mode, not rescue mode.
+- Manual browser/export verification still matters and must be recorded separately from automated validation.
+- Current work should strengthen teacher-facing trust, exemplar payoff, artifact-scoped exemplar behavior, parsing quality, and output coherence without reopening broad architecture changes.
 
 ## Exact next move
-- Treat the runtime as finished enough for code-closeout unless fresh live regression evidence appears.
-- Use the included now-to-wow evaluator scripts for repo status summaries and future handoffs.
-- Reserve future work for browser/manual export verification or clearly evidenced product refinements.
+
+- Keep docs aligned to the clarified product charter and live runtime.
+- Use live browser/code evidence to choose the next seam rather than relying on stale “final pass” notes.
+- Prioritize work that improves:
+  1. exemplar payoff and artifact-scoped exemplar behavior
+  2. default-shell behavior when no exemplar is requested
+  3. grounded output quality and parsing quality
+  4. teacher-facing coherence and trust
+- Do not reintroduce stale completion framing that treats narrow lesson-type buckets or one export proof as the only current metric.
