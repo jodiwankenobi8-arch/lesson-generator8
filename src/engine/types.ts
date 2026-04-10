@@ -1005,6 +1005,16 @@ export type MaterialAnalysis = {
 
 
 
+export type MaterialAnalysisReview = {
+  standards: string[]
+  vocabulary: string[]
+  instructionalTargets: string[]
+  texts: string[]
+  practiceIdeas: string[]
+  exemplarStructure: string[]
+  teacherSummary: string
+}
+
 export type MaterialFile = {
 
   id: string
@@ -1016,6 +1026,8 @@ export type MaterialFile = {
   status: MaterialStatus
 
   analysis: MaterialAnalysis | null
+
+  analysisReview?: MaterialAnalysisReview | null
 
   errorMessage: string | null
 
@@ -1662,6 +1674,30 @@ export type LessonPackage = {
 
 
 
+
+export type AiConstructionTeacherReviewItem = {
+  label: string
+  reason: string
+  note: string
+}
+
+export type AiConstructionStandardsSuggestion = {
+  value: string
+  origin: "grounded" | "inferred"
+  sourceTypes: string[]
+  evidence: string[]
+}
+
+export type AiConstructionTrace = {
+  applied: boolean
+  confidence: number
+  groundedContentLabels: string[]
+  inferredContentLabels: string[]
+  teacherReviewItems: AiConstructionTeacherReviewItem[]
+  requestedButMissing: string[]
+  standardsSuggestions: AiConstructionStandardsSuggestion[]
+  warnings: string[]
+}
 export type LessonPipelineTrace = {
 
   selectedMode: LessonMode
@@ -1711,6 +1747,8 @@ export type LessonPipelineTrace = {
     warningCount: number
 
   }
+
+  aiConstruction?: AiConstructionTrace
 
 }
 export type LessonGenerationResult = {

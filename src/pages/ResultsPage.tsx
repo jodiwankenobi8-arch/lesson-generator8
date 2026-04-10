@@ -723,6 +723,166 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
   )
 }
 
+
+function AiConstructionSection({ lessonTrace }: { lessonTrace: LessonPipelineTrace | null }) {
+  const aiTrace = lessonTrace?.aiConstruction
+  if (!aiTrace?.applied) {
+    return null
+  }
+
+  const confidencePercent = `${Math.round((aiTrace.confidence ?? 0) * 100)}%`
+  const hasReviewNeeds =
+    aiTrace.inferredContentLabels.length > 0 ||
+    aiTrace.requestedButMissing.length > 0 ||
+    aiTrace.teacherReviewItems.length > 0
+
+  return (
+    <div style={sectionStyle}>
+      <div style={orchardSectionHeaderRowStyle}>
+        <div>
+          <h3 style={sectionHeadingStyle}>AI Construction Review</h3>
+          <p style={sectionLeadStyle}>
+            Review what the AI grounded, what it inferred, and what still needs teacher confirmation before export.
+          </p>
+        </div>
+        <span style={orchardStatusBadgeStyle(hasReviewNeeds ? "honey" : "moss")}>
+          {`AI confidence ${confidencePercent}`}
+        </span>
+      </div>
+
+      <div style={detailsSectionGridStyle}>
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Grounded vs inferred content</div>
+          <div style={smallNoteStyle}>
+            Grounded items came from stronger source support. Inferred items were generated and should be reviewed more carefully.
+          </div>
+
+          <div style={{ marginTop: 10 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Grounded</div>
+            {aiTrace.groundedContentLabels.length > 0 ? (
+              <div style={tagRowStyle}>
+                {aiTrace.groundedContentLabels.map((label) => (
+                  <span key={`grounded-${label}`} style={orchardTagStyle("moss")}>
+                    {label}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div style={smallNoteStyle}>No grounded AI-added content was recorded.</div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Inferred</div>
+            {aiTrace.inferredContentLabels.length > 0 ? (
+              <div style={tagRowStyle}>
+                {aiTrace.inferredContentLabels.map((label) => (
+                  <span key={`inferred-${label}`} style={orchardTagStyle("honey")}>
+                    {label}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div style={smallNoteStyle}>No inferred AI-added content was recorded.</div>
+            )}
+          </div>
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Requested but still missing</div>
+          {aiTrace.requestedButMissing.length > 0 ? (
+            <ul style={previewListStyle}>
+              {aiTrace.requestedButMissing.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <div style={smallNoteStyle}>No requested outputs were flagged as missing.</div>
+          )}
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Standards suggestions</div>
+          {aiTrace.standardsSuggestions.length > 0 ? (
+            <div style={{ display: "grid", gap: 10 }}>
+              {aiTrace.standardsSuggestions.map((suggestion) => (
+                <div
+                  key={suggestion.value}
+                  style={{
+                    border: "1px solid var(--border-soft)",
+                    borderRadius: "var(--radius-sm)",
+                    padding: "10px 12px",
+                    background: "rgba(255,255,255,0.82)",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                    <strong>{suggestion.value}</strong>
+                    <span style={orchardTagStyle(suggestion.origin === "grounded" ? "moss" : "honey")}>
+                      {suggestion.origin === "grounded" ? "Grounded" : "Inferred"}
+                    </span>
+                  </div>
+                  <div style={smallNoteStyle}>
+                    <strong>Source types:</strong> {suggestion.sourceTypes.length > 0 ? suggestion.sourceTypes.join(", ") : "Not specified"}
+                  </div>
+                  <div style={smallNoteStyle}>
+                    <strong>Evidence:</strong> {suggestion.evidence.length > 0 ? suggestion.evidence.join(", ") : "No explicit evidence recorded"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={smallNoteStyle}>No AI standards suggestions were recorded.</div>
+          )}
+        </div>
+
+        <div style={subCardStyle}>
+          <div style={subHeadingStyle}>Teacher review needed</div>
+          {aiTrace.teacherReviewItems.length > 0 ? (
+            <div style={{ display: "grid", gap: 10 }}>
+              {aiTrace.teacherReviewItems.map((item, index) => (
+                <div
+                  key={`${item.label}-${index}`}
+                  style={{
+                    border: "1px solid var(--border-soft)",
+                    borderRadius: "var(--radius-sm)",
+                    padding: "10px 12px",
+                    background: "rgba(255,255,255,0.82)",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                    <strong>{item.label}</strong>
+                    <span style={orchardTagStyle("honey")}>Review needed</span>
+                  </div>
+                  <div style={smallNoteStyle}>
+                    <strong>Reason:</strong> {item.reason}
+                  </div>
+                  <div style={smallNoteStyle}>{item.note}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={smallNoteStyle}>No extra teacher review items were recorded by the AI layer.</div>
+          )}
+        </div>
+
+        {aiTrace.warnings.length > 0 ? (
+          <div style={subCardStyle}>
+            <div style={subHeadingStyle}>AI warnings</div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {aiTrace.warnings.map((warning) => (
+                <div key={warning} style={warningStyle}>{warning}</div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
 export function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
   const lessonPlan = lessonPackage.lessonPlan.trim()
   const slides = sanitizeListItems(lessonPackage.slides)
