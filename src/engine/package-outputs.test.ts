@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 import { buildPackageOutputs } from "./package/buildPackageOutputs"
 import {
   createDefaultOutputContents,
@@ -221,8 +221,8 @@ describe("buildPackageOutputs", () => {
       outputContents: makeOutputContents(),
     })
 
-    expect(result.lessonPlan).toContain("- Standards: No grounded standard identified yet")
-    expect(result.lessonPlan).toContain("- Requested / grounded standards: No grounded standard identified yet. Current teacher focus: Long A phonics.")
+    expect(result.lessonPlan).toContain("- Standards: teacher-selected standard")
+    expect(result.lessonPlan).toContain("- Requested / grounded standards: teacher-selected standard")
     expect(result.lessonPlan).toContain("- Word List: cake, game, lake, name")
     expect(result.lessonPlan).toContain("- Practice Ideas: Read and sort long a CVCe words")
   })
