@@ -5,6 +5,7 @@
   MaterialFile,
 } from "../types"
 import { filterStandardsForPrimaryTarget, normalizeTeacherFacingValues } from "../shared/teacherFacingContent"
+import { extractStandardCode, isKnownStandardDescription, normalizeAndDedupeStandards } from "../shared/standards"
 
 export function resolveBlueprintContent(args: {
   curriculumMaterials: MaterialFile[]
@@ -112,27 +113,33 @@ function resolveStandards(
   inputs: StandardResolutionInputs,
   primaryTarget: string
 ): string[] {
-  const explicitStandard = inputs.standard.trim()
-  if (explicitStandard.length > 0) {
-    return [explicitStandard]
+  const explicitStandards = normalizeAndDedupeStandards([inputs.standard])
+  if (explicitStandards.length > 0) {
+    return filterStandardsForPrimaryTarget(explicitStandards, primaryTarget)
   }
 
-  const analyzedStandards = sanitizeTeacherFacingItems(
-    cleanUnique(
-      curriculumAnalyses.flatMap((analysis) => {
-        const coverage = getCoverage(analysis)
-        return [...coverage.standards, ...analysis.standards]
-      })
-    ).filter((value) => !isWeakFallbackValue(value)),
-    "standard"
+  const analyzedStandards = normalizeAndDedupeStandards(
+    sanitizeTeacherFacingItems(
+      cleanUnique(
+        curriculumAnalyses.flatMap((analysis) => {
+          const coverage = getCoverage(analysis)
+          return [...coverage.standards, ...analysis.standards]
+        })
+      ).filter((value) => !isWeakFallbackValue(value)),
+      "standard"
+    ),
+    { requireCode: true }
   )
 
-  const extractedStandards = sanitizeTeacherFacingItems(
-    uniqueLines(
-      curriculumMaterials.flatMap((material) => material.analysis?.extractedText ?? []),
-      (line) => looksLikeExtractedStandard(line, inputs)
+  const extractedStandards = normalizeAndDedupeStandards(
+    sanitizeTeacherFacingItems(
+      uniqueLines(
+        curriculumMaterials.flatMap((material) => material.analysis?.extractedText ?? []),
+        (line) => looksLikeExtractedStandard(line, inputs)
+      ),
+      "standard"
     ),
-    "standard"
+    { requireCode: true }
   )
 
   const candidateStandards =
@@ -152,8 +159,11 @@ function resolveStandards(
 
   curriculumAnalyses.forEach((analysis) => {
     const coverage = getCoverage(analysis)
-    const analysisStandards = cleanUnique([...coverage.standards, ...analysis.standards]).filter(
-      (value) => !isWeakFallbackValue(value)
+    const analysisStandards = normalizeAndDedupeStandards(
+      cleanUnique([...coverage.standards, ...analysis.standards]).filter(
+        (value) => !isWeakFallbackValue(value)
+      ),
+      { requireCode: true }
     )
 
     if (analysisStandards.length === 0) {
@@ -271,7 +281,7 @@ const PHONICS_PATTERN_TERMS = [
 ] as const
 
 function isElaSubject(subject: string): boolean {
-  return /(ela|reading|language arts|literacy)/i.test(subject)
+  return /\b(ela|reading|language arts|literacy)\b/i.test(subject)
 }
 
 function buildTeacherFocusLabel(inputs: TeacherFallbackInputs): string {
@@ -291,7 +301,7 @@ function buildTeacherFocusLabel(inputs: TeacherFallbackInputs): string {
 
 function buildTeacherFocusSeed(inputs: TeacherFallbackInputs): string {
   return buildTeacherFocusLabel(inputs)
-    .replace(/(phonics|skill|focus|lesson|unit)/gi, " ")
+    .replace(/\b(phonics|skill|focus|lesson|unit)\b/gi, " ")
     .replace(/\s+/g, " ")
     .trim()
 }
@@ -698,6 +708,11 @@ function resolvePracticeIdeas(
     return extractedPracticeIdeas.slice(0, 8)
   }
 
+  const inferredPracticeIdeas = inferTeacherInputPracticeIdeas(primaryTarget, inputs)
+  if (inferredPracticeIdeas.length > 0) {
+    return inferredPracticeIdeas
+  }
+
   const analyzedTargets = normalizeTeacherFacingValues(
     cleanUnique(
       curriculumAnalyses.flatMap((analysis) => {
@@ -713,11 +728,6 @@ function resolvePracticeIdeas(
 
   if (analyzedTargets.length > 0) {
     return analyzedTargets.slice(0, 6)
-  }
-
-  const inferredPracticeIdeas = inferTeacherInputPracticeIdeas(primaryTarget, inputs)
-  if (inferredPracticeIdeas.length > 0) {
-    return inferredPracticeIdeas
   }
 
   return inferTeacherFacingPracticeIdeas(inputs, primaryTarget)
@@ -798,7 +808,6 @@ function normalizeTeacherFacingValue(value: string): string {
     .replace(/^\[/, "")
     .replace(/^[a-z]\s+(?=(read|write|sort|identify|use|blend|segment)\b)/i, "")
     .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
-    .replace(/^[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:\s*/, "")
     .replace(/^part\s+[a-z0-9]+\s*:\s*/i, "")
     .replace(/^next\s*:\s*/i, "")
     .replace(/\s+/g, " ")
@@ -911,9 +920,15 @@ function isWeakTeacherFacingValueForKind(
     )
   }
 
+  if (hasSpecificStandardCode(value) || isKnownStandardDescription(value)) {
+    return true
+  }
+
   if (kind === "vocabulary") {
     return (
       lower === "identify and use new vocabulary" ||
+      lower === "read high-frequency words" ||
+      lower === "demonstrate phonological awareness" ||
       lower.startsWith("i can ") ||
       lower.startsWith("read ") ||
       lower.includes("main topic") ||
@@ -928,6 +943,10 @@ function isWeakTeacherFacingValueForKind(
 
   if (kind === "wordList") {
     return (
+      lower === "teacher-provided text" ||
+      lower === "read high-frequency words" ||
+      lower === "demonstrate phonological awareness" ||
+      lower === "identify and use new vocabulary" ||
       lower.startsWith("i can ") ||
       lower.startsWith("read ") ||
       lower.startsWith("identify ") ||
@@ -950,6 +969,9 @@ function isWeakTeacherFacingValueForKind(
 
   if (kind === "text") {
     return (
+      lower === "teacher-provided text" ||
+      lower === "read high-frequency words" ||
+      lower === "identify and use new vocabulary" ||
       lower.startsWith("i can ") ||
       lower.startsWith("read ") ||
       lower.includes("main topic") ||
@@ -965,6 +987,11 @@ function isWeakTeacherFacingValueForKind(
 
   if (kind === "practice") {
     return (
+      lower === "guided practice" ||
+      lower === "curriculum-aligned guided practice" ||
+      lower === "guided foundational-skill practice" ||
+      lower === "guided response work" ||
+      lower === "independent application" ||
       lower.includes("students have been taught") ||
       lower.includes("today's instruction is focused") ||
       lower.includes("students are not") ||
@@ -987,10 +1014,26 @@ function isWeakFallbackValue(value: string): boolean {
     "key vocabulary",
     "teacher-selected word list",
     "teacher-provided lesson text",
+    "teacher-provided text",
     "curriculum-aligned practice task",
+    "curriculum-aligned guided practice",
+    "curriculum-aligned foundational-skill practice",
+    "guided practice",
+    "guided foundational-skill practice",
+    "guided response work",
+    "independent application",
     "lesson target",
     "modeled example",
     "teacher-provided practice items",
+    "teacher-selected examples",
+    "teacher-selected word examples",
+    "teacher-selected example words",
+    "target word examples",
+    "target words for student transfer",
+    "strong word examples",
+    "key skill vocabulary",
+    "tbd",
+    "none",
   ].includes(lower)
 }
 

@@ -88,6 +88,35 @@ describe("material analysis signals", () => {
     expect(curriculum?.texts.length ?? 0).toBeGreaterThan(0)
   })
 
+
+  it("keeps standards descriptions out of curriculum content lanes and preserves concrete phonics cues", async () => {
+    const result = await analyzeMaterial({
+      materialId: "curr-standards-noise",
+      role: "curriculum",
+      name: "curriculum-standards-noise.txt",
+      extractedText: [
+        "ELA.K.F.1.4: Read high-frequency words",
+        "ELA.K.V.1.1: Identify and use new vocabulary",
+        "Phonics Prior Knowledge: vowel sounds, with a focus on long A in CVCe words (a_e).",
+        "Word List: cake, game, lake, name",
+        "Guided Practice: Read and sort long a CVCe words.",
+      ],
+    })
+
+    const curriculum = result.analysis.curriculum
+    expect(curriculum).toBeTruthy()
+
+    const vocabulary = (curriculum?.vocabulary ?? []).join(" | ").toLowerCase()
+    const wordLists = (curriculum?.wordLists ?? []).join(" | ").toLowerCase()
+    const practice = (curriculum?.practiceTasks ?? []).join(" | ").toLowerCase()
+
+    expect(vocabulary).not.toContain("identify and use new vocabulary")
+    expect(wordLists).not.toContain("read high-frequency words")
+    expect(wordLists).toContain("cake")
+    expect(practice).toContain("guided practice")
+    expect(practice).not.toContain("read high-frequency words")
+  })
+
   it("prefers cleaned curriculum candidates over raw noisy slide lines", async () => {
     const result = await analyzeMaterial({
       materialId: "curr-4",

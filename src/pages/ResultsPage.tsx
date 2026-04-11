@@ -615,7 +615,7 @@ export function PackageSummarySection({
             <div><strong>Additional focus:</strong> {blueprint.content.target.secondary || "None"}</div>
             <div><strong>Multi-area lesson:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
             <div><strong>Lesson coverage:</strong> {selectedLessonMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
-            <div><strong>Standards:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "Teacher-selected standard")}</div>
+            <div><strong>Standards:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "No grounded standard identified yet")}</div>
           </div>
           <div style={smallNoteStyle}>Use this snapshot to confirm the lesson focus and standards before exporting.</div>
         </div>
@@ -1287,9 +1287,9 @@ export function TraceabilitySection({
             <div><strong>Curriculum support strength:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
             <div><strong>Curriculum sources used:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
             <div><strong>Standards used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "No grounded standard identified yet")}</div>
-            <div><strong>Vocabulary used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "vocabulary"), "Key vocabulary")}</div>
-            <div><strong>Text or topic used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "text"), "Teacher-provided lesson text")}</div>
-            <div><strong>Practice used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "practice"), "Curriculum-aligned practice task")}</div>
+            <div><strong>Vocabulary used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "vocabulary"), "No grounded vocabulary surfaced yet")}</div>
+            <div><strong>Text or topic used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "text"), "No grounded text or topic surfaced yet")}</div>
+            <div><strong>Practice used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "practice"), "No grounded practice task surfaced yet")}</div>
           </div>
         </div>
 

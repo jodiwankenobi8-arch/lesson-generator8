@@ -43,6 +43,13 @@ import {
   uploadCardStyle,
 } from "./materialsPageUiHelpers"
 import { getDefaultExemplarStyleSettings } from "./materialsPageExemplarHelpers"
+import {
+  normalizeAndDedupeStandards,
+  normalizeStandardValue,
+  serializeStandardsText,
+  standardTextIncludes,
+  toggleStandardInText,
+} from "../engine/shared/standards"
 
 export {
   buildUploadSourceMetadata,
@@ -530,7 +537,7 @@ export function buildMaterialAnalysisReviewDraft(
   const curriculum = material.analysis.curriculum
   const exemplar = material.analysis.exemplar
 
-  return {
+  const draft = {
     standards: sanitizeAutoDraftValues(curriculum?.standards ?? []),
     vocabulary: sanitizeAutoDraftValues(curriculum?.vocabulary ?? []),
     instructionalTargets: sanitizeAutoDraftValues(curriculum?.instructionalTargets ?? []),
@@ -539,6 +546,8 @@ export function buildMaterialAnalysisReviewDraft(
     exemplarStructure: sanitizeAutoDraftValues(exemplar?.reusableStructure ?? []),
     teacherSummary: "",
   }
+
+  return draft
 }
 
 export default function MaterialsPage() {
@@ -570,7 +579,8 @@ export default function MaterialsPage() {
     () => buildSuggestedStandards(materials, inputs),
     [materials, inputs]
   )
-  const needsStandardsConfirmation = inputs.standard.trim().length === 0
+  const confirmedStandards = useMemo(() => normalizeAndDedupeStandards([inputs.standard]), [inputs.standard])
+  const needsStandardsConfirmation = confirmedStandards.length === 0
   const generateBlocked = !canGenerate || isGenerating || needsStandardsConfirmation
 
   const curriculumInputRef = useRef<HTMLInputElement | null>(null)
@@ -882,8 +892,11 @@ export default function MaterialsPage() {
             <StandardsConfirmationCard
               suggestedStandards={suggestedStandards}
               confirmedStandards={inputs.standard}
-              onApplySuggestions={() => setInputs({ standard: suggestedStandards.join("; ") })}
+              onApplySuggestions={() => setInputs({ standard: serializeStandardsText(suggestedStandards) })}
               onChange={(value) => setInputs({ standard: value })}
+              onToggleStandard={(value) =>
+                setInputs({ standard: toggleStandardInText(inputs.standard, value) })
+              }
             />
           ) : null}
 
@@ -936,45 +949,7 @@ export default function MaterialsPage() {
   )
 }
 
-function normalizeStandardCandidate(value: string): string {
-  return String(value ?? "")
-    .replace(/^[\s*ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢\-ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â]+/, "")
-    .replace(/\s+/g, " ")
-    .trim()
-}
-
-function uniqueStandardCandidates(values: string[]): string[] {
-  const seen = new Set<string>()
-  const result: string[] = []
-
-  values
-    .map(normalizeStandardCandidate)
-    .filter(Boolean)
-    .filter((value) => value.length <= 180)
-    .forEach((value) => {
-      const key = value.toLowerCase()
-      if (seen.has(key)) return
-      seen.add(key)
-      result.push(value)
-    })
-
-  return result
-}
-
-function looksLikeStandardCandidate(value: string): boolean {
-  const normalized = normalizeStandardCandidate(value)
-  const lower = normalized.toLowerCase()
-
-  return (
-    /[a-z]+\.[a-z0-9]+\.[a-z0-9]+/i.test(normalized) ||
-    lower.includes("standard") ||
-    lower.includes("decode") ||
-    lower.includes("phonics") ||
-    lower.includes("comprehension") ||
-    lower.includes("main idea") ||
-    lower.includes("key details")
-  )
-}
+export { normalizeAndDedupeStandards, normalizeStandardValue, serializeStandardsText, standardTextIncludes, toggleStandardInText }
 
 function isKindergartenEla(inputs: LessonInputs): boolean {
   return inputs.grade.trim().toUpperCase() === "K" &&
@@ -991,45 +966,46 @@ function inferSuggestedStandardsFromInputs(inputs: LessonInputs): string[] {
 
   if (/(phonics|decode|encoding|long [aeiou]|short [aeiou]|silent e|magic e|cvce|cvc|digraph|blend|segment|vowel)/i.test(combined)) {
     suggestions.push(
-      "ELA.K.F.1.3 Use knowledge of grade-appropriate phonics and word-analysis skills to decode words accurately."
+      "ELA.K.F.1.3: Demonstrate phonological awareness",
+      "ELA.K.F.1.4: Read high-frequency words"
     )
   }
 
   if (/(high frequency|sight words?|automaticity)/i.test(combined)) {
     suggestions.push(
-      "ELA.K.F.1.4 Recognize and read with automaticity grade-level high frequency words."
+      "ELA.K.F.1.4: Read high-frequency words"
     )
   }
 
   if (/(retell|character|setting|important events|story)/i.test(combined)) {
     suggestions.push(
-      "ELA.K.R.3.2 Retell a text orally to enhance comprehension: use main character(s), setting, and important events for a story; use topic and details for an informational text."
+      "ELA.K.R.3.2: Retell a text orally"
     )
   }
 
   if (/(informational|topic|details|main idea|key details)/i.test(combined)) {
     suggestions.push(
-      "ELA.K.R.2.2 Identify the topic of and multiple details in a text."
+      "ELA.K.R.2.2: Identify the topic and details in a text"
     )
   }
 
   if (/(descriptive words|adjective|describe)/i.test(combined)) {
     suggestions.push(
-      "ELA.K.R.3.1 Identify and explain descriptive words in text(s)."
+      "ELA.K.R.3.1: Identify and explain descriptive words in text"
     )
   }
 
   if (/(vocabulary|categories|sort words|unfamiliar words|word meaning)/i.test(combined)) {
     suggestions.push(
-      "ELA.K.V.1.2 Ask and answer questions about unfamiliar words in grade-level content.",
-      "ELA.K.V.1.3 Identify and sort common words into basic categories, relating vocabulary to background knowledge."
+      "ELA.K.V.1.2: Ask and answer questions about unfamiliar words",
+      "ELA.K.V.1.3: Sort common words into categories"
     )
   }
 
-  return uniqueStandardCandidates(suggestions).slice(0, 6)
+  return normalizeAndDedupeStandards(suggestions, { requireCode: true }).slice(0, 6)
 }
 
-function buildSuggestedStandards(materials: MaterialFile[], inputs: LessonInputs): string[] {
+export function buildSuggestedStandards(materials: MaterialFile[], inputs: LessonInputs): string[] {
   const curriculumMaterials = materials.filter(
     (material) => material.role === "curriculum" && material.status === "ready" && Boolean(material.analysis)
   )
@@ -1042,12 +1018,13 @@ function buildSuggestedStandards(materials: MaterialFile[], inputs: LessonInputs
   )
   const extracted = sanitizeAutoDraftValues(
     curriculumMaterials.flatMap((material) => material.analysis?.extractedText ?? [])
-  ).filter(looksLikeStandardCandidate)
+  )
 
-  const candidates = uniqueStandardCandidates(
+  const candidates = normalizeAndDedupeStandards(
     [...reviewed, ...analyzed, ...extracted].filter(
       (value) => !shouldIgnoreAutoDraftValue(value)
-    )
+    ),
+    { requireCode: true }
   )
 
   if (candidates.length > 0) {
@@ -1062,12 +1039,16 @@ function StandardsConfirmationCard({
   confirmedStandards,
   onApplySuggestions,
   onChange,
+  onToggleStandard,
 }: {
   suggestedStandards: string[]
   confirmedStandards: string
   onApplySuggestions: () => void
   onChange: (value: string) => void
+  onToggleStandard: (value: string) => void
 }) {
+  const confirmedList = normalizeAndDedupeStandards([confirmedStandards])
+
   return (
     <div style={standardsCardStyle}>
       <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 14 }}>
@@ -1083,11 +1064,25 @@ function StandardsConfirmationCard({
         </div>
         {suggestedStandards.length > 0 ? (
           <div style={standardsTagRowStyle}>
-            {suggestedStandards.map((standard) => (
-              <span key={standard} style={orchardTagStyle("honey")}>
-                {standard}
-              </span>
-            ))}
+            {suggestedStandards.map((standard) => {
+              const selected = standardTextIncludes(confirmedStandards, standard)
+              return (
+                <button
+                  key={standard}
+                  type="button"
+                  onClick={() => onToggleStandard(standard)}
+                  style={{
+                    ...orchardTagStyle(selected ? "moss" : "honey"),
+                    border: "none",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                  }}
+                  aria-pressed={selected}
+                >
+                  {standard}
+                </button>
+              )
+            })}
           </div>
         ) : (
           <div style={exemplarSubtleTextStyle}>
@@ -1101,12 +1096,12 @@ function StandardsConfirmationCard({
         <textarea
           value={confirmedStandards}
           onChange={(event) => onChange(event.target.value)}
-          placeholder={suggestedStandards.join("; ")}
+          placeholder={serializeStandardsText(suggestedStandards)}
           style={standardsInputStyle}
         />
       </label>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <button
           type="button"
           onClick={onApplySuggestions}
@@ -1115,10 +1110,19 @@ function StandardsConfirmationCard({
         >
           Use suggested standards
         </button>
+        {confirmedList.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            style={secondaryButtonStyle()}
+          >
+            Clear confirmed standards
+          </button>
+        ) : null}
       </div>
 
       <div style={exemplarSubtleTextStyle}>
-        Generation unlocks once you confirm at least one standard. Suggestions are drafts, so edit them when needed before continuing.
+        Click a standard chip to add or remove it. Generation unlocks once you confirm at least one standard.
       </div>
     </div>
   )
@@ -1329,27 +1333,27 @@ function inferExemplarTarget(material: MaterialFile): ExemplarInfluenceTarget {
   const source = `${material.name} ${material.sourceLabel ?? ""} ${material.analysis?.summary ?? ""}`.toLowerCase()
   const mime = `${material.sourceMimeType ?? ""}`.toLowerCase()
 
-  if (mime.includes("presentation") || /(ppt|pptx|slides|slide deck|deck)/.test(source)) {
+  if (mime.includes("presentation") || /\b(ppt|pptx|slides|slide deck|deck)\b/.test(source)) {
     return "lesson_slides"
   }
 
-  if (/(lesson plan|plan|scope|sequence)/.test(source)) {
+  if (/\b(lesson plan|plan|scope|sequence)\b/.test(source)) {
     return "lesson_plan"
   }
 
-  if (/(printable|worksheet|handout|practice page|cut and paste)/.test(source)) {
+  if (/\b(printable|worksheet|handout|practice page|cut and paste)\b/.test(source)) {
     return "printables"
   }
 
-  if (/(center|centers)/.test(source)) {
+  if (/\b(center|centers)\b/.test(source)) {
     return "centers"
   }
 
-  if (/(small group|teacher-led|reteach group|support)/.test(source)) {
+  if (/\b(small group|teacher-led|reteach group|support)\b/.test(source)) {
     return "small_group"
   }
 
-  if (/(intervention|intervene)/.test(source)) {
+  if (/\b(intervention|intervene)\b/.test(source)) {
     return "intervention"
   }
 

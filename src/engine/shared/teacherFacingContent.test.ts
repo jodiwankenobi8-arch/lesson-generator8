@@ -57,9 +57,11 @@ describe("teacherFacingContent", () => {
     expect(getNormalizedBlueprintValues(blueprint, "practice").join(" ")).not.toContain("Materials, Educational Technology, and Sources")
   })
 
-  it("keeps grounding items free of generic standards headings and OCR junk", () => {
+  it("keeps grounding items focused on actual lesson content before standards and free of OCR junk", () => {
     const joined = getBlueprintContentGroundingItems(blueprint).join(" | ")
-    expect(joined).toContain("ELA.K.F.1.1")
+    expect(joined).toContain("long a")
+    expect(joined).toContain("Word List: made, same, late, cake")
+    expect(joined).toContain("Decodable passage: Jake made a cake at the lake.")
     expect(joined).not.toContain("HB Florida B.E.S.T. Standards")
     expect(joined).not.toContain("Ses tpe metic")
   })
@@ -98,4 +100,55 @@ describe("teacherFacingContent", () => {
       "ELA.K.F.1.4: Read high-frequency words",
     ])
   })
+
+  it("drops standards-style placeholders from non-standard teacher-facing content", () => {
+    const placeholderBlueprint = {
+      ...blueprint,
+      content: {
+        ...blueprint.content,
+        standards: [
+          "ELA.K.F.1.3: Demonstrate phonological awareness",
+          "ELA.K.F.1.4: Read high-frequency words",
+        ],
+        vocabulary: [
+          "ELA.K.V.1.1: Identify and use new vocabulary",
+          "long a",
+          "silent e",
+        ],
+        wordLists: [
+          "ELA.K.F.1.4: Read high-frequency words",
+          "teacher-selected examples",
+          "cake",
+          "game",
+          "lake",
+        ],
+        texts: [
+          "teacher-provided text",
+          "Short decodable text featuring long a CVCe words",
+        ],
+        practiceIdeas: [
+          "guided practice",
+          "curriculum-aligned guided practice",
+          "Read and sort long a CVCe words",
+        ],
+      },
+    } as any
+
+    expect(getNormalizedBlueprintValues(placeholderBlueprint, "vocabulary")).toEqual([
+      "long a",
+      "silent e",
+    ])
+    const wordLists = getNormalizedBlueprintValues(placeholderBlueprint, "wordList")
+    expect(wordLists.join(" | ")).toContain("cake")
+    expect(wordLists.join(" | ")).toContain("game")
+    expect(wordLists.join(" | ")).toContain("lake")
+    expect(wordLists.join(" | ")).not.toContain("ELA.K.F.1.4: Read high-frequency words")
+    const texts = getNormalizedBlueprintValues(placeholderBlueprint, "text")
+    expect(texts.join(" | ")).toContain("Short decodable text featuring long a CVCe words")
+    expect(texts.join(" | ")).not.toContain("teacher-provided text")
+    const practice = getNormalizedBlueprintValues(placeholderBlueprint, "practice")
+    expect(practice.join(" | ")).toContain("Read and sort long a")
+    expect(practice.join(" | ")).not.toContain("guided practice")
+  })
+
 })

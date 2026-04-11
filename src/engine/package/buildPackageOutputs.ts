@@ -305,7 +305,7 @@ function buildLessonPlan(
       ? buildSectionNarrativeBlock("Guided Practice", [
           `Practice Anchor: ${joinOrFallback(
             getPackageDisplayValues(blueprint, "practice", 3),
-            "curriculum-aligned guided practice"
+            "a grounded guided-practice task from the selected lesson materials"
           )}`,
           `Prompt Style: ${joinOrFallback(
             resolvedTemplateShell.promptStyle.slice(0, 3),
@@ -556,7 +556,7 @@ function buildCenterFocusLine(
     case "vocabulary_oral_language":
       return `Vocabulary & oral language center: Revisit ${selectVocabularyFocus(
         blueprint,
-        "key lesson vocabulary"
+        "grounded lesson vocabulary"
       )} through student-friendly oral language practice.`
     case "handwriting_fine_motor":
       return `Handwriting / fine motor center: Trace, build, or write ${selectWordListFocus(
@@ -566,22 +566,22 @@ function buildCenterFocusLine(
     case "decodable_reading":
       return `Decodable reading center: Revisit ${selectTextFocus(
         blueprint,
-        "a decodable or teacher-provided text"
+        "a grounded decodable or lesson text"
       )} for independent reading practice.`
     case "fluency":
       return `Fluency center: Practice accurate, repeated reading with ${selectTextFocus(
         blueprint,
-        "teacher-provided text"
+        "grounded text or topic from the selected lesson materials"
       )}.`
     case "reading_response":
       return `Reading response center: Respond to ${selectTextFocus(
         blueprint,
-        "teacher-provided text"
+        "grounded text or topic from the selected lesson materials"
       )} through drawing, discussion, or simple written reflection.`
     case "comprehension":
       return `Comprehension center: Revisit ${selectTextFocus(
         blueprint,
-        "teacher-provided text"
+        "grounded text or topic from the selected lesson materials"
       )} and use ${selectPracticeFocus(
         blueprint,
         "a simple understanding check"
@@ -589,10 +589,10 @@ function buildCenterFocusLine(
     case "writing_sentence_work":
       return `Writing / sentence work center: Use ${selectVocabularyFocus(
         blueprint,
-        "key vocabulary"
+        "grounded lesson vocabulary"
       )} and ${selectWordListFocus(
         blueprint,
-        "teacher-selected words"
+        "grounded lesson words"
       )} in sentence-level writing.`
   }
 }
@@ -639,19 +639,19 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
     `- Standards: ${formatGroundingStandards(blueprint)}`,
     `- Vocabulary: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "vocabulary", 4),
-      "key vocabulary"
+      "No grounded vocabulary surfaced yet"
     )}`,
     `- Word List: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "wordList", 5),
-      "teacher-selected examples"
+      "No grounded word examples surfaced yet"
     )}`,
     `- Texts: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "text", 2),
-      "teacher-provided text"
+      "No grounded text or topic surfaced yet"
     )}`,
     `- Practice Ideas: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "practice", 4),
-      "guided practice"
+      "No grounded practice task surfaced yet"
     )}`,
     `- Exemplar Segment Order: ${hasReusableFlow ? "Reusable lesson flow available" : "Default lesson flow"}`,
     `- Exemplar Slide Shell: ${hasReusableSlideStructure ? "Reusable slide structure available" : "Default slide structure"}`,
@@ -692,14 +692,14 @@ function selectModelResources(blueprint: LessonBlueprint): string {
   if (primary === "phonics") {
     return joinOrFallback(
       getPackageDisplayValues(blueprint, "wordList", 4),
-      "teacher-selected word examples"
+      "grounded word examples from the selected lesson materials"
     )
   }
 
   if (primary === "comprehension") {
     return joinOrFallback(
       getPackageDisplayValues(blueprint, "text", 2),
-      "teacher-selected text"
+      "grounded text from the selected lesson materials"
     )
   }
 
@@ -708,7 +708,7 @@ function selectModelResources(blueprint: LessonBlueprint): string {
       ...getPackageDisplayValues(blueprint, "wordList", 2),
       ...getPackageDisplayValues(blueprint, "text", 1),
     ],
-    "teacher-selected lesson resources"
+    "grounded examples from the selected lesson materials"
   )
 }
 
@@ -718,7 +718,7 @@ function selectIndependentResources(blueprint: LessonBlueprint): string {
   if (primary === "phonics") {
     return joinOrFallback(
       getPackageDisplayValues(blueprint, "wordList", 3),
-      "target words for student transfer"
+      "grounded examples for student transfer"
     )
   }
 
@@ -744,13 +744,13 @@ function selectClosureResources(blueprint: LessonBlueprint): string {
   if (primary === "phonics") {
     return joinOrFallback(
       getPackageDisplayValues(blueprint, "wordList", 3),
-      "strong word examples"
+      "grounded review examples"
     )
   }
 
   return joinOrFallback(
     getPackageDisplayValues(blueprint, "vocabulary", 3),
-    "key lesson vocabulary"
+    "grounded lesson vocabulary"
   )
 }
 
@@ -1022,11 +1022,11 @@ function buildGroundedCenterDefaults(
       )}.`,
       `${labels[1]}: Revisit ${selectTextFocus(
         blueprint,
-        "teacher-provided text"
-      )} through this task: ${selectPracticeFocus(blueprint, "guided practice")}.`,
+        "grounded text or topic from the selected lesson materials"
+      )} through this task: ${selectPracticeFocus(blueprint, "a grounded practice task from the selected lesson materials")}.`,
       `${labels[2]}: Connect word work and meaning using ${selectVocabularyFocus(
         blueprint,
-        "key vocabulary"
+        "grounded lesson vocabulary"
       )}.`,
     ]
   }
@@ -1051,7 +1051,7 @@ function buildGroundedCenterDefaults(
   return [
     `${labels[0]}: Reread ${selectTextFocus(
       blueprint,
-      "teacher-provided text"
+      "No grounded text or topic surfaced yet"
     )} and talk through the key thinking.`,
     `${labels[1]}: Use this task during partner work: ${selectPracticeFocus(
       blueprint,
@@ -1059,8 +1059,8 @@ function buildGroundedCenterDefaults(
     )}.`,
     `${labels[2]}: Reinforce ${selectVocabularyFocus(
       blueprint,
-      "key vocabulary"
-    )} while revisiting ${selectTextFocus(blueprint, "teacher-provided text")}.`,
+      "No grounded vocabulary surfaced yet"
+    )} while revisiting ${selectTextFocus(blueprint, "grounded text or topic from the selected lesson materials")}.`,
   ]
 }
 
@@ -1100,8 +1100,8 @@ function buildAddFallbackInterventions(blueprint: LessonBlueprint): string[] {
       )}.`,
       `Reconnect the text task using ${selectTextFocus(
         blueprint,
-        "teacher-provided text"
-      )} and ${selectVocabularyFocus(blueprint, "key vocabulary")}.`,
+        "grounded text or topic from the selected lesson materials"
+      )} and ${selectVocabularyFocus(blueprint, "grounded lesson vocabulary")}.`,
     ]
   }
 
@@ -1121,11 +1121,11 @@ function buildAddFallbackInterventions(blueprint: LessonBlueprint): string[] {
   return [
     `Add a targeted intervention block using ${selectTextFocus(
       blueprint,
-      "teacher-provided text"
+      "No grounded text or topic surfaced yet"
     )}.`,
     `Reinforce ${selectVocabularyFocus(
       blueprint,
-      "key vocabulary"
+      "No grounded vocabulary surfaced yet"
     )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`,
   ]
 }
@@ -1142,8 +1142,8 @@ function buildDefaultInterventions(blueprint: LessonBlueprint): string[] {
       )}.`,
       `Reconnect the text task using ${selectTextFocus(
         blueprint,
-        "teacher-provided text"
-      )} and ${selectVocabularyFocus(blueprint, "key vocabulary")}.`,
+        "grounded text or topic from the selected lesson materials"
+      )} and ${selectVocabularyFocus(blueprint, "grounded lesson vocabulary")}.`,
     ]
   }
 
@@ -1161,10 +1161,10 @@ function buildDefaultInterventions(blueprint: LessonBlueprint): string[] {
   }
 
   return [
-    `Reread ${selectTextFocus(blueprint, "teacher-provided text")} with guided prompting.`,
+    `Reread ${selectTextFocus(blueprint, "grounded text or topic from the selected lesson materials")} with guided prompting.`,
     `Reinforce ${selectVocabularyFocus(
       blueprint,
-      "key vocabulary"
+      "No grounded vocabulary surfaced yet"
     )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`,
   ]
 }
@@ -1176,11 +1176,11 @@ function buildAddSmallGroupSupportLine(blueprint: LessonBlueprint): string {
   if (isMixed) {
     return `Teacher-Led Support: Add a targeted small-group block that connects ${selectWordListFocus(
       blueprint,
-      "teacher-selected examples"
+      "No grounded word examples surfaced yet"
     )} to ${selectTextFocus(
       blueprint,
-      "teacher-provided text"
-    )} through this practice: ${selectPracticeFocus(blueprint, "guided practice")}.`
+      "No grounded text or topic surfaced yet"
+    )} through this practice: ${selectPracticeFocus(blueprint, "a grounded practice task from the selected lesson materials")}.`
   }
 
   if (primary === "phonics") {
@@ -1195,10 +1195,10 @@ function buildAddSmallGroupSupportLine(blueprint: LessonBlueprint): string {
 
   return `Teacher-Led Support: Add a guided small-group reread using ${selectTextFocus(
     blueprint,
-    "teacher-provided text"
+    "grounded text or topic from the selected lesson materials"
   )} and reinforce ${selectVocabularyFocus(
     blueprint,
-    "key vocabulary"
+    "grounded lesson vocabulary"
   )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`
 }
 
@@ -1231,11 +1231,11 @@ function buildAddTeacherTableLine(blueprint: LessonBlueprint): string {
   if (isMixed) {
     return `Teacher-Led Support Focus: Add a targeted small-group block that connects ${selectWordListFocus(
       blueprint,
-      "teacher-selected examples"
+      "No grounded word examples surfaced yet"
     )} to ${selectTextFocus(
       blueprint,
-      "teacher-provided text"
-    )} through this practice: ${selectPracticeFocus(blueprint, "guided practice")}.`
+      "No grounded text or topic surfaced yet"
+    )} through this practice: ${selectPracticeFocus(blueprint, "a grounded practice task from the selected lesson materials")}.`
   }
 
   if (primary === "phonics") {
@@ -1250,10 +1250,10 @@ function buildAddTeacherTableLine(blueprint: LessonBlueprint): string {
 
   return `Teacher-Led Support Focus: Add a guided small-group reread using ${selectTextFocus(
     blueprint,
-    "teacher-provided text"
+    "grounded text or topic from the selected lesson materials"
   )} and reinforce ${selectVocabularyFocus(
     blueprint,
-    "key vocabulary"
+    "grounded lesson vocabulary"
   )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`
 }
 
@@ -1264,11 +1264,11 @@ function buildDefaultTeacherTableLine(blueprint: LessonBlueprint): string {
   if (isMixed) {
     return `Teacher-Led Support Focus: Support both word work and meaning using ${selectWordListFocus(
       blueprint,
-      "teacher-selected examples"
+      "No grounded word examples surfaced yet"
     )} and ${selectTextFocus(
       blueprint,
-      "teacher-provided text"
-    )} through this practice: ${selectPracticeFocus(blueprint, "guided practice")}.`
+      "No grounded text or topic surfaced yet"
+    )} through this practice: ${selectPracticeFocus(blueprint, "a grounded practice task from the selected lesson materials")}.`
   }
 
   if (primary === "phonics") {
@@ -1283,10 +1283,10 @@ function buildDefaultTeacherTableLine(blueprint: LessonBlueprint): string {
 
   return `Teacher-Led Support Focus: Reread ${selectTextFocus(
     blueprint,
-    "teacher-provided text"
+    "grounded text or topic from the selected lesson materials"
   )} and reinforce ${selectVocabularyFocus(
     blueprint,
-    "key vocabulary"
+    "grounded lesson vocabulary"
   )} through this practice: ${selectPracticeFocus(blueprint, "guided response work")}.`
 }
 

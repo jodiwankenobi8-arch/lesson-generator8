@@ -10,6 +10,10 @@ import {
   parseReviewList,
   serializeReviewList,
   shouldIgnoreAutoDraftValue,
+  buildSuggestedStandards,
+  serializeStandardsText as serializeConfirmedStandardsText,
+  standardTextIncludes,
+  toggleStandardInText,
 } from "./MaterialsPage"
 import { EXEMPLAR_INFLUENCE_MODE_OPTIONS, EXEMPLAR_TARGET_OPTIONS } from "./materialsPageExemplarHelpers"
 
@@ -249,7 +253,7 @@ describe("analysis review helpers", () => {
       texts: ["A short decodable text."],
       practiceIdeas: ["Blend cat, map, sat, ram."],
       exemplarStructure: [],
-      teacherSummary: "Use this curriculum source for lesson focus, vocabulary, texts or topics, and practice tasks.",
+      teacherSummary: "",
     })
   })
 
@@ -292,7 +296,7 @@ describe("analysis review helpers", () => {
       texts: [],
       practiceIdeas: [],
       exemplarStructure: [],
-      teacherSummary: "This curriculum source did not provide enough readable lesson content yet. Review it carefully or replace it before relying on it.",
+      teacherSummary: "",
     })
   })
 
@@ -329,7 +333,7 @@ describe("analysis review helpers", () => {
       texts: [],
       practiceIdeas: [],
       exemplarStructure: ["center", "I do, we do, you do"],
-      teacherSummary: "Use this exemplar to preserve structure such as center and I do, we do, you do.",
+      teacherSummary: "",
     })
   })
 
@@ -361,11 +365,13 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain(
       "Each file shows whether it is being prepared, ready to use, or needs attention."
     )
+    expect(source).toContain("Exemplar setup")
     expect(source).toContain(
-      "Choose where this exemplar should apply. You can keep one exemplar for slides, another for the lesson plan, another for centers or teacher-led support, and another for printables."
+      "The app auto-detects what kind of exemplar each one most likely is, and you can change it only when the guess is wrong."
     )
-    expect(source).toContain("Review and adjust before generation")
-    expect(source).toContain("Use analysis as-is")
+    expect(source).toContain("Review before generation")
+    expect(source).toContain("What we found")
+    expect(source).toContain("Teacher notes and advanced edits feed standards suggestions, grounding, and generated outputs.")
     expect(source).toContain("Extraction status")
     expect(source).toContain("This shows whether readable text came from the parser, OCR, both, or only a fallback notice.")
     expect(source).toContain("OCR status")
@@ -384,3 +390,75 @@ describe("Materials page teacher-facing copy", () => {
 })
 
 
+
+
+describe("standards confirmation helpers", () => {
+  it("builds clean code-based standard suggestions and drops junk chips", () => {
+    const suggestions = buildSuggestedStandards(
+      [
+        {
+          role: "curriculum",
+          status: "ready",
+          analysis: {
+            curriculum: {
+              standards: [
+                "e ELA.K.F.1.3: Demonstrate phonological awareness",
+                "® ELA.K.F.1.4: Read high-frequency words",
+              ],
+            },
+            extractedText: [
+              "~ phonics) Edition)",
+              "ELA.K.R.2.1: Identify the main topic and key details in a text",
+            ],
+          },
+          analysisReview: {
+            standards: [],
+          },
+        },
+      ] as never,
+      {
+        grade: "K",
+        subject: "ELA",
+        standard: "",
+        skill: "Long A phonics",
+        topic: "",
+        duration: "",
+        notes: "",
+      }
+    )
+
+    expect(suggestions).toEqual([
+      "ELA.K.F.1.3: Demonstrate phonological awareness",
+      "ELA.K.F.1.4: Read high-frequency words",
+      "ELA.K.R.2.1: Identify the main topic and key details in a text",
+    ])
+    expect(suggestions.join(" | ")).not.toContain("Edition")
+  })
+
+  it("toggles clicked standards into and out of the confirmed standards box", () => {
+    const empty = ""
+    const once = toggleStandardInText(
+      empty,
+      "e ELA.K.F.1.3: Demonstrate phonological awareness"
+    )
+    expect(once).toBe("ELA.K.F.1.3: Demonstrate phonological awareness")
+    expect(standardTextIncludes(once, "ELA.K.F.1.3: Demonstrate phonological awareness")).toBe(true)
+
+    const twice = toggleStandardInText(
+      once,
+      "ELA.K.F.1.4: Read high-frequency words"
+    )
+    expect(twice).toBe(
+      serializeConfirmedStandardsText([
+        "ELA.K.F.1.3: Demonstrate phonological awareness",
+        "ELA.K.F.1.4: Read high-frequency words",
+      ])
+    )
+
+    const removed = toggleStandardInText(
+      twice,
+      "ELA.K.F.1.3: Demonstrate phonological awareness"
+    )
+    expect(removed).toBe("ELA.K.F.1.4: Read high-frequency words")
+  })
+})

@@ -1,4 +1,5 @@
 import type { LessonBlueprint } from "../types"
+import { extractStandardCode, isKnownStandardDescription, normalizeAndDedupeStandards } from "./standards"
 
 export type TeacherFacingValueKind =
   | "standard"
@@ -114,16 +115,24 @@ export function getBlueprintContentGroundingItems(
   const primaryTarget = blueprint.content.target.primary
   const coverage = blueprint.content.coverage
 
-  return uniqueCaseInsensitive([
+  const contentFirst = uniqueCaseInsensitive([
     ...normalizeTeacherFacingValues(coverage?.instructionalTargets ?? [], {
       kind: "practice",
       primaryTarget,
     }).slice(0, 2),
-    ...getNormalizedBlueprintValues(blueprint, "standard").slice(0, 2),
     ...getNormalizedBlueprintValues(blueprint, "vocabulary").slice(0, 3),
     ...getNormalizedBlueprintValues(blueprint, "wordList").slice(0, 3),
     ...getNormalizedBlueprintValues(blueprint, "text").slice(0, 2),
     ...getNormalizedBlueprintValues(blueprint, "practice").slice(0, 3),
+  ])
+
+  if (contentFirst.length >= 3) {
+    return contentFirst
+  }
+
+  return uniqueCaseInsensitive([
+    ...contentFirst,
+    ...getNormalizedBlueprintValues(blueprint, "standard").slice(0, 2),
   ])
 }
 
@@ -138,10 +147,7 @@ function splitTeacherFacingCandidates(
     return [source]
   }
 
-  return source
-    .split(/[;\n|]+/)
-    .map((part) => part.trim())
-    .filter(Boolean)
+  return normalizeAndDedupeStandards([source])
 }
 
 function normalizeTeacherFacingValue(value: string): string {
@@ -167,10 +173,26 @@ function isWeakFallbackValue(lower: string): boolean {
     "key vocabulary",
     "teacher-selected word list",
     "teacher-provided lesson text",
+    "teacher-provided text",
     "curriculum-aligned practice task",
+    "curriculum-aligned guided practice",
+    "curriculum-aligned foundational-skill practice",
+    "guided practice",
+    "guided foundational-skill practice",
+    "guided response work",
+    "independent application",
     "lesson target",
     "modeled example",
     "teacher-provided practice items",
+    "teacher-selected examples",
+    "teacher-selected word examples",
+    "teacher-selected example words",
+    "target word examples",
+    "target words for student transfer",
+    "strong word examples",
+    "key skill vocabulary",
+    "tbd",
+    "none",
   ].includes(lower)
 }
 
@@ -252,6 +274,10 @@ function isWeakTeacherFacingValue(
 
   if (kind === "vocabulary") {
     return (
+      hasSpecificStandardCode(value) ||
+      lower === "identify and use new vocabulary" ||
+      lower === "read high-frequency words" ||
+      lower === "key skill vocabulary" ||
       lower.startsWith("i can ") ||
       lower.startsWith("read ") ||
       lower.includes("main topic") ||
@@ -273,6 +299,16 @@ function isWeakTeacherFacingValue(
 
   if (kind === "wordList") {
     return (
+      hasSpecificStandardCode(value) ||
+      lower === "read high-frequency words" ||
+      lower === "demonstrate phonological awareness" ||
+      lower === "identify and use new vocabulary" ||
+      lower === "teacher-selected examples" ||
+      lower === "teacher-selected word examples" ||
+      lower === "teacher-selected example words" ||
+      lower === "target word examples" ||
+      lower === "target words for student transfer" ||
+      lower === "strong word examples" ||
       lower.startsWith("i can ") ||
       lower.startsWith("read ") ||
       lower.startsWith("identify ") ||
@@ -300,6 +336,14 @@ function isWeakTeacherFacingValue(
 
   if (kind === "text") {
     return (
+      hasSpecificStandardCode(value) ||
+      lower === "teacher-provided text" ||
+      lower === "read high-frequency words" ||
+      lower === "identify and use new vocabulary" ||
+      lower === "teacher-selected examples" ||
+      lower === "teacher-selected word examples" ||
+      lower === "target word examples" ||
+      lower === "target words for student transfer" ||
       lower.startsWith("i can ") ||
       lower.startsWith("read ") ||
       lower.includes("main topic") ||
@@ -314,6 +358,12 @@ function isWeakTeacherFacingValue(
 
   if (kind === "practice") {
     if (
+      hasSpecificStandardCode(value) ||
+      lower === "guided practice" ||
+      lower === "curriculum-aligned guided practice" ||
+      lower === "guided foundational-skill practice" ||
+      lower === "guided response work" ||
+      lower === "independent application" ||
       lower.startsWith("i can ") ||
       lower.startsWith("students ") ||
       lower.startsWith("teacher ") ||
@@ -475,6 +525,13 @@ function isRelevantStandardForTarget(value: string, normalizedTarget: string): b
   }
 
   return true
+}
+
+function hasSpecificStandardCode(value: string): boolean {
+  return (
+    /\b(?:[A-Za-z]{2,4}\.)?[A-Za-z0-9]+\.[A-Za-z0-9]+(?:\.[A-Za-z0-9]+)+\b/.test(value) ||
+    /\b(RF|RL|RI|W|L|SL)\.\d+(?:\.\d+)*\b/i.test(value)
+  )
 }
 
 function containsAnyTerm(value: string, terms: string[]): boolean {
