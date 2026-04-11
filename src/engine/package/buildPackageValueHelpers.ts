@@ -1,4 +1,4 @@
-import type { LessonBlueprint, LessonSpec } from "../types"
+﻿import type { LessonBlueprint, LessonSpec } from "../types"
 import { getNormalizedBlueprintValues } from "../shared/teacherFacingContent"
 
 export function resolveCenterLabels(spec: LessonSpec, fallbackLabels: string[]): string[] {
@@ -82,6 +82,9 @@ function sanitizePackageValue(value: string): string {
   return stripTrailingPunctuation(
     value
       .replace(/^[\s*•\-–—]+/, "")
+      .replace(/^(hb\s+)?florida\s+b\.?e\.?s\.?t\.?\s+standards?:?\s*/i, "")
+      .replace(/^standards?:?\s*/i, "")
+      .replace(/^benchmarks?:?\s*/i, "")
       .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
       .replace(/^[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:\s*/, "")
       .replace(/\s+/g, " ")
@@ -123,6 +126,14 @@ function isWeakPackageValue(value: string): boolean {
     return true
   }
 
+  if (
+    /teacher edition|student edition|copyright|all rights reserved|printed in/i.test(lower) ||
+    /phonics\)\s*edition\)/i.test(lower) ||
+    /ses tpe|metic parses|letter-sound motions\)/i.test(lower)
+  ) {
+    return true
+  }
+
   if (commaCount >= 4) {
     return true
   }
@@ -141,3 +152,4 @@ function isWeakPackageValue(value: string): boolean {
 function stripTrailingPunctuation(value: string): string {
   return value.replace(/[.!?]+$/g, "").trim()
 }
+

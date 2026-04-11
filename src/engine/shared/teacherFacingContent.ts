@@ -1,4 +1,4 @@
-import type { LessonBlueprint } from "../types"
+﻿import type { LessonBlueprint } from "../types"
 
 export type TeacherFacingValueKind =
   | "standard"
@@ -20,17 +20,19 @@ export function normalizeTeacherFacingValues(
   const results: string[] = []
 
   for (const rawValue of values ?? []) {
-    const value = normalizeTeacherFacingValue(rawValue)
-    if (!value) continue
+    for (const candidate of splitTeacherFacingCandidates(rawValue, kind)) {
+      const value = normalizeTeacherFacingValue(candidate)
+      if (!value) continue
 
-    const lower = value.toLowerCase()
-    if (seen.has(lower)) continue
-    if (isWeakFallbackValue(lower)) continue
-    if (isClearlyNoisyValue(value, lower, kind)) continue
-    if (isWeakTeacherFacingValue(value, lower, kind, primaryTarget ?? undefined)) continue
+      const lower = value.toLowerCase()
+      if (seen.has(lower)) continue
+      if (isWeakFallbackValue(lower)) continue
+      if (isClearlyNoisyValue(value, lower, kind)) continue
+      if (isWeakTeacherFacingValue(value, lower, kind, primaryTarget ?? undefined)) continue
 
-    seen.add(lower)
-    results.push(value)
+      seen.add(lower)
+      results.push(value)
+    }
   }
 
   return results
@@ -107,14 +109,31 @@ export function getBlueprintContentGroundingItems(
   ])
 }
 
+function splitTeacherFacingCandidates(
+  value: string,
+  kind: TeacherFacingValueKind
+): string[] {
+  const source = String(value ?? "").trim()
+  if (!source) return []
+
+  if (kind !== "standard") {
+    return [source]
+  }
+
+  return source
+    .split(/[;\n]+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+}
+
 function normalizeTeacherFacingValue(value: string): string {
   return value
     .replace(/^[\s*•\-–—]+/, "")
     .replace(/^\[/, "")
     .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
-    .replace(/^[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:\s*/, "")
     .replace(/^part\s+[a-z0-9]+\s*:\s*/i, "")
     .replace(/^next\s*:\s*/i, "")
+    .replace(/^["“”']+|["“”']+$/g, "")
     .replace(/\s+/g, " ")
     .replace(/[;:]+$/g, "")
     .trim()
@@ -159,7 +178,19 @@ function isClearlyNoisyValue(
     lower.includes("slideslink") ||
     lower.includes("whiteboards") ||
     lower.includes("ed tech") ||
-    lower.includes("resource")
+    lower.includes("resource") ||
+    lower.includes("learning targets") ||
+    lower.includes("ses tpe") ||
+    lower.includes("edition)") ||
+    lower.includes("letter-sound motions") ||
+    lower.includes("up/down") ||
+    lower.includes("savvas story slides") ||
+    lower.includes("materials, educational technology, and sources") ||
+    lower.includes("educational technology, and sources") ||
+    lower.includes("unit: unit") ||
+    lower.includes("programs:") ||
+    lower.includes("ufli + savvas") ||
+    (lower.includes("week ") && lower.includes("day "))
   ) {
     return true
   }
@@ -187,7 +218,12 @@ function isWeakTeacherFacingValue(
   }
 
   if (kind === "standard") {
-    return lower === "standard" || lower === "standards"
+    return (
+      lower === "standard" ||
+      lower === "standards" ||
+      lower === "hb florida b.e.s.t. standards" ||
+      (/\bstandards?\b/.test(lower) && !/[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}/.test(value))
+    )
   }
 
   if (kind === "vocabulary") {
@@ -290,3 +326,6 @@ function uniqueCaseInsensitive(values: string[]): string[] {
 
   return results
 }
+
+
+

@@ -1,4 +1,4 @@
-import {
+﻿import {
   BlueprintContentCoverage,
   LessonBlueprint,
   LessonPlanIdea,
@@ -14,6 +14,10 @@ import {
   isPlanningComponentSelected,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
+import {
+  getNormalizedBlueprintValues,
+  normalizeTeacherFacingValues,
+} from "../shared/teacherFacingContent"
 
 export function buildLessonPlanningIdeas(
   blueprint: LessonBlueprint,
@@ -33,33 +37,36 @@ export function buildLessonPlanningIdeas(
   const hasMeaningArea = planningHasMeaningArea(areaKeys)
 
   const vocabulary = withFallback(
-    sanitizePlanningValues(blueprint.content.vocabulary, "vocabulary"),
+    getNormalizedBlueprintValues(blueprint, "vocabulary"),
     hasFoundationalArea && !hasMeaningArea
       ? ["key skill vocabulary"]
       : ["key lesson vocabulary"]
   )
   const texts = withFallback(
-    sanitizePlanningValues(blueprint.content.texts, "text"),
+    getNormalizedBlueprintValues(blueprint, "text"),
     ["teacher-provided lesson text"]
   )
   const practiceIdeas = withFallback(
-    sanitizePlanningValues(blueprint.content.practiceIdeas, "practice"),
+    getNormalizedBlueprintValues(blueprint, "practice"),
     hasFoundationalArea && !hasMeaningArea
       ? ["guided foundational-skill practice"]
       : ["guided lesson task"]
   )
   const wordLists = withFallback(
-    sanitizePlanningValues(blueprint.content.wordLists, "wordList"),
+    getNormalizedBlueprintValues(blueprint, "wordList"),
     hasFoundationalArea
       ? ["target word examples"]
       : ["teacher-selected examples"]
   )
   const standards = withFallback(
-    sanitizePlanningValues(blueprint.content.standards, "standard"),
+    getNormalizedBlueprintValues(blueprint, "standard"),
     ["teacher-selected standard"]
   )
   const lessonSegments = withFallback(
-    sanitizePlanningValues(blueprint.structure.lessonSegments, "segment"),
+    normalizeTeacherFacingValues(blueprint.structure.lessonSegments, {
+      kind: "segment",
+      primaryTarget: blueprint.content.target.primary,
+    }),
     blueprint.structure.lessonSegments
   )
   const lessonPlanSections = buildLessonPlanSections(
@@ -152,6 +159,16 @@ function shouldIncludeOptionalComponent(
 }
 
 function resolvePlanningAreaKeys(blueprint: LessonBlueprint): string[] {
+  const target = blueprint.content.target
+  const explicitSingleArea =
+    !target.isMixedTarget && !target.secondary
+      ? uniqueStrings(normalizePlanningAreaAliases(target.primary))
+      : []
+
+  if (explicitSingleArea.length > 0) {
+    return explicitSingleArea
+  }
+
   const profileKeys = (
     blueprint as LessonBlueprint & {
       content?: { profile?: { dominantAreaKeys?: string[] | null } | null }
@@ -162,7 +179,6 @@ function resolvePlanningAreaKeys(blueprint: LessonBlueprint): string[] {
     return uniqueStrings(profileKeys.flatMap((key) => normalizePlanningAreaAliases(key)))
   }
 
-  const target = blueprint.content.target
   const targetKeys = uniqueStrings([
     ...normalizePlanningAreaAliases(target.primary),
     ...normalizePlanningAreaAliases(target.secondary ?? undefined),
@@ -178,6 +194,8 @@ function resolvePlanningAreaKeys(blueprint: LessonBlueprint): string[] {
 
   return ["general"]
 }
+
+
 
 function normalizePlanningAreaAliases(value?: string | null): string[] {
   const normalized = (value ?? "").trim().toLowerCase()
@@ -388,23 +406,29 @@ function selectSlideContentAnchor(
   const hasMeaningArea = planningHasMeaningArea(areaKeys)
   const lower = segmentLabel.toLowerCase()
 
+  const standards = getNormalizedBlueprintValues(blueprint, "standard")
+  const wordLists = getNormalizedBlueprintValues(blueprint, "wordList")
+  const texts = getNormalizedBlueprintValues(blueprint, "text")
+  const practiceIdeas = getNormalizedBlueprintValues(blueprint, "practice")
+  const vocabulary = getNormalizedBlueprintValues(blueprint, "vocabulary")
+
   if (lower.includes("teach")) {
     return hasFoundationalArea && !hasMeaningArea
-      ? blueprint.content.wordLists.slice(0, 3).join(", ") || "target word examples"
-      : blueprint.content.texts.slice(0, 1).join(", ") || "lesson text"
+      ? wordLists.slice(0, 3).join(", ") || "target word examples"
+      : texts.slice(0, 1).join(", ") || "lesson text"
   }
 
   if (lower.includes("guided") || lower.includes("independent") || lower.includes("center")) {
-    return blueprint.content.practiceIdeas.slice(0, 2).join(", ") || "curriculum practice task"
+    return practiceIdeas.slice(0, 2).join(", ") || "curriculum practice task"
   }
 
   if (lower.includes("closure")) {
     return hasFoundationalArea && !hasMeaningArea
-      ? blueprint.content.wordLists.slice(0, 2).join(", ") || "target words"
-      : blueprint.content.vocabulary.slice(0, 2).join(", ") || "key vocabulary"
+      ? wordLists.slice(0, 2).join(", ") || "target words"
+      : vocabulary.slice(0, 2).join(", ") || "key vocabulary"
   }
 
-  return blueprint.content.standards.slice(0, 1).join(", ") || "lesson objective"
+  return standards.slice(0, 1).join(", ") || "lesson objective"
 }
 function buildLessonPlanSections(
   blueprint: LessonBlueprint,
@@ -1097,12 +1121,21 @@ function collectCoverageSignals(args: {
   const lessonSegmentSignals =
     lessonSegmentTerms.length === 0
       ? []
-      : sanitizePlanningValues(coverage.lessonSegments, "segment").filter((segment) =>
+      : normalizeTeacherFacingValues(coverage.lessonSegments ?? [], {
+          kind: "segment",
+        }).filter((segment) =>
           lessonSegmentTerms.some((term) => segment.toLowerCase().includes(term))
         )
 
   const coverageSignals = coverageKeys.flatMap((key) =>
-    sanitizePlanningValues(coverage[key], mapCoverageKeyToPlanningKind(key)).slice(0, 2)
+    normalizeTeacherFacingValues(coverage[key] ?? [], {
+      kind: mapCoverageKeyToPlanningKind(key),
+    })
+      .filter(
+        (value) =>
+          !/^(HB Florida B\.E\.S\.T\. Standards|Standards)$/i.test(value.trim())
+      )
+      .slice(0, 2)
   )
 
   return uniqueStrings([...lessonSegmentSignals, ...coverageSignals]).slice(0, 4)
@@ -1181,8 +1214,12 @@ function sanitizePlanningValues(
 
 function normalizePlanningValue(value: string): string {
   return value
-    .replace(/^[\s*Ã¢â‚¬Â¢\-Ã¢â‚¬â€œÃ¢â‚¬â€]+/, "")
+    .replace(/^[\s*Ã¢â‚¬Â¢\-Ã¢â‚¬â€œÃ¢â‚¬â€]+/, "")
     .replace(/^\[/, "")
+    .replace(/^(hb\s+)?florida\s+b\.?e\.?s\.?t\.?\s+standards?:?\s*/i, "")
+    .replace(/^standards?:?\s*/i, "")
+    .replace(/^benchmarks?:?\s*/i, "")
+    .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
     .replace(/\s+/g, " ")
     .replace(/[;:]+$/g, "")
     .trim()
@@ -1221,7 +1258,17 @@ function isWeakPlanningValue(
     lower.includes("whiteboards") ||
     lower.includes("ed tech") ||
     lower.includes("resource") ||
-    lower.includes("slideslink")
+    lower.includes("slideslink") ||
+    lower.includes("teacher edition") ||
+    lower.includes("student edition") ||
+    lower.includes("copyright") ||
+    lower.includes("all rights reserved") ||
+    lower.includes("printed in") ||
+    lower.includes("phonics) edition)") ||
+    lower.includes("ses tpe") ||
+    lower.includes("metic parses") ||
+    lower.includes("letter-sound motions)") ||
+    lower.includes("story visuals, and")
   ) {
     return true
   }
@@ -1277,3 +1324,9 @@ function uniqueStrings(values: string[]): string[] {
     new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))
   )
 }
+
+
+
+
+
+

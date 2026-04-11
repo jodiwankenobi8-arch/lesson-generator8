@@ -26,22 +26,17 @@ export function buildStandardsSummary(
   inputs: LessonInputs,
   blueprint: LessonBlueprint
 ): string {
-  const standards = normalizeDisplayStandards([
-    ...splitStandardCandidates(inputs.standard),
+  const standards = normalizeDisplayedStandards([
+    inputs.standard,
     ...blueprint.content.standards,
   ])
 
-  return standards.length > 0 ? standards.slice(0, 4).join(", ") : "No standards surfaced yet."
+  return standards.length > 0
+    ? standards.slice(0, 4).join(", ")
+    : "No standards surfaced yet."
 }
 
-function splitStandardCandidates(value: string): string[] {
-  return String(value ?? "")
-    .split(/[\n;|]+/)
-    .map((item) => normalizeDisplayStandard(item))
-    .filter(Boolean)
-}
-
-function normalizeDisplayStandards(values: string[]): string[] {
+function normalizeDisplayedStandards(values: string[]): string[] {
   const seen = new Set<string>()
   const result: string[] = []
 
@@ -58,7 +53,14 @@ function normalizeDisplayStandards(values: string[]): string[] {
   return result
 }
 
-function normalizeDisplayStandard(value: string): string {
+function splitStandardCandidates(value: string): string[] {
+  return String(value ?? "")
+    .split(/[\n;|]+/)
+    .map((item) => normalizeDisplayedStandard(item))
+    .filter(Boolean)
+}
+
+function normalizeDisplayedStandard(value: string): string {
   let cleaned = String(value ?? "")
     .replace(/\u2013/g, "-")
     .replace(/\s+/g, " ")
@@ -67,6 +69,7 @@ function normalizeDisplayStandard(value: string): string {
   cleaned = cleaned.replace(/^(hb\s+)?florida\s+b\.?e\.?s\.?t\.?\s+standards?:?\s*/i, "")
   cleaned = cleaned.replace(/^standards?:?\s*/i, "")
   cleaned = cleaned.replace(/^benchmarks?:?\s*/i, "")
+  cleaned = cleaned.replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
   cleaned = cleaned.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, "").trim()
 
   if (!cleaned) {
@@ -153,6 +156,19 @@ function buildLessonPortionLine(
 
 
 function getOrderedPackageAreaKeys(blueprint: LessonBlueprint): string[] {
+  const target = blueprint.content.target
+  const explicitSingleArea = !target.isMixedTarget && !target.secondary
+    ? Array.from(
+        new Set(
+          normalizePackageAreaAlias(target.primary).filter((key) => key !== "general")
+        )
+      )
+    : []
+
+  if (explicitSingleArea.length > 0) {
+    return explicitSingleArea
+  }
+
   const profileKeys = (
     blueprint as LessonBlueprint & {
       content?: { profile?: { dominantAreaKeys?: string[] | null } | null }
@@ -162,15 +178,14 @@ function getOrderedPackageAreaKeys(blueprint: LessonBlueprint): string[] {
   const raw = profileKeys.length > 0
     ? profileKeys.flatMap((key) => normalizePackageAreaAlias(key))
     : [
-        ...normalizePackageAreaAlias(blueprint.content.target.primary),
-        ...normalizePackageAreaAlias(blueprint.content.target.secondary ?? undefined),
+        ...normalizePackageAreaAlias(target.primary),
+        ...normalizePackageAreaAlias(target.secondary ?? undefined),
       ]
 
   return Array.from(new Set(raw.filter((key) => key !== "general"))).sort(
     (a, b) => getPackageAreaRank(a) - getPackageAreaRank(b)
   )
 }
-
 
 function normalizePackageAreaAlias(value?: string | null): string[] {
   const normalized = (value ?? "").trim().toLowerCase()
@@ -276,6 +291,8 @@ function joinOrFallback(items: string[], fallback: string): string {
 
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
+
+
 
 
 

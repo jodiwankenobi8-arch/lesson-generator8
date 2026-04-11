@@ -1,4 +1,4 @@
-import {
+﻿import {
   BlueprintContentCoverage,
   CurriculumAnalysis,
   LessonBlueprint,
@@ -759,15 +759,42 @@ function sanitizeTeacherFacingItems(
       .map((value) => normalizeTeacherFacingValue(value))
       .filter((value) => value.length > 0)
       .filter((value) => !isWeakFallbackValue(value))
-      .filter((value) => kind === "wordList" || !isObviouslyNoisyTeacherFacingItem(value))
+      .filter((value) => !isObviouslyNoisyTeacherFacingItem(value))
       .filter((value) => !isWeakTeacherFacingValueForKind(value, kind))
   )
 }
 
+function hasSpecificStandardCode(value: string): boolean {
+  return (
+    /\b(?:[A-Za-z]{2,4}\.)?[A-Za-z0-9]+\.[A-Za-z0-9]+(?:\.[A-Za-z0-9]+)+\b/.test(value) ||
+    /\b(RF|RL|RI|W|L|SL)\.\d+(?:\.\d+)*\b/i.test(value)
+  )
+}
+
+function looksLikeSimpleWordListCandidate(value: string): boolean {
+  const parts = value
+    .split(/[,:;]/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+  if (parts.length < 3) {
+    return false
+  }
+
+  return parts.every((part) => {
+    const wordCount = part.split(/\s+/).filter(Boolean).length
+    return wordCount <= 4 && /[a-z]/i.test(part)
+  })
+}
+
 function normalizeTeacherFacingValue(value: string): string {
   return value
-    .replace(/^[\s*•\-–—]+/, "")
+    .replace(/^[\s*•\-–—¥¢®©@]+/, "")
+    .replace(/^[^A-Za-z0-9(]+(?=[A-Za-z0-9(])/, "")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
     .replace(/^\[/, "")
+    .replace(/^[a-z]\s+(?=(read|write|sort|identify|use|blend|segment)\b)/i, "")
     .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
     .replace(/^[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:\s*/, "")
     .replace(/^part\s+[a-z0-9]+\s*:\s*/i, "")
@@ -779,8 +806,10 @@ function normalizeTeacherFacingValue(value: string): string {
 
 function isObviouslyNoisyTeacherFacingItem(value: string): boolean {
   const lower = value.toLowerCase()
-  const wordCount = value.split(/\s+/).length
+  const normalized = lower.replace(/^[^a-z0-9]+/, "")
+  const wordCount = value.split(/\s+/).filter(Boolean).length
   const commaCount = (value.match(/,/g) || []).length
+  const simpleWordList = looksLikeSimpleWordListCandidate(value)
 
   if (/\.(pdf|pptx|docx|html|htm|png|jpg|jpeg|webp)\b/i.test(lower)) {
     return true
@@ -791,6 +820,18 @@ function isObviouslyNoisyTeacherFacingItem(value: string): boolean {
   }
 
   if (lower.includes("http://") || lower.includes("https://") || lower.includes("www.")) {
+    return true
+  }
+
+  if (normalized === "standards" || normalized === "hb florida b.e.s.t. standards") {
+    return true
+  }
+
+  if (/^unit:\s*unit\b/i.test(value)) {
+    return true
+  }
+
+  if (/\bprograms?\s*:/i.test(value)) {
     return true
   }
 
@@ -811,6 +852,12 @@ function isObviouslyNoisyTeacherFacingItem(value: string): boolean {
   }
 
   if (
+    lower.includes("materials, educational technology, and sources") ||
+    lower.includes("educational technology") ||
+    lower.includes("digital blending board") ||
+    lower.includes("heidisongs") ||
+    lower.includes("savvas story slides") ||
+    lower.includes("ed tech") ||
     lower.includes("smartboard") ||
     lower.includes("projector") ||
     lower.includes("desks") ||
@@ -820,7 +867,6 @@ function isObviouslyNoisyTeacherFacingItem(value: string): boolean {
     lower.includes("block 2") ||
     lower.includes("slideslink") ||
     lower.includes("whiteboards") ||
-    lower.includes("ed tech") ||
     lower.includes("resource") ||
     lower.includes("students have been taught") ||
     lower.includes("today's instruction is focused") ||
@@ -833,11 +879,15 @@ function isObviouslyNoisyTeacherFacingItem(value: string): boolean {
     return true
   }
 
-  if (commaCount >= 3) {
+  if (!simpleWordList && commaCount >= 3) {
     return true
   }
 
-  if (wordCount > 12) {
+  if (!simpleWordList && wordCount > 12) {
+    return true
+  }
+
+  if (/[@¥¢®]/.test(value) && wordCount > 5 && !hasSpecificStandardCode(value)) {
     return true
   }
 
@@ -854,7 +904,8 @@ function isWeakTeacherFacingValueForKind(
     return (
       lower === "standard" ||
       lower === "standards" ||
-      (/\bstandards?\b/.test(lower) && !/\d/.test(lower))
+      lower === "hb florida b.e.s.t. standards" ||
+      (/\bstandards?\b/.test(lower) && !hasSpecificStandardCode(value))
     )
   }
 
@@ -868,7 +919,8 @@ function isWeakTeacherFacingValueForKind(
       lower.includes("author's purpose") ||
       lower.includes("students have been taught") ||
       lower.includes("students respond") ||
-      lower.includes("blending and reading")
+      lower.includes("blending and reading") ||
+      lower.includes("materials, educational technology, and sources")
     )
   }
 
@@ -885,7 +937,12 @@ function isWeakTeacherFacingValueForKind(
       lower.includes("students have been taught") ||
       lower.includes("story/skill") ||
       lower.includes("phonological awareness") ||
-      lower.includes("sight words")
+      lower.includes("sight words") ||
+      lower.includes("educational technology") ||
+      lower.includes("programs:") ||
+      lower.includes("unit:") ||
+      lower.includes("heidisongs") ||
+      lower.includes("savvas")
     )
   }
 
@@ -898,7 +955,9 @@ function isWeakTeacherFacingValueForKind(
       lower.includes("author's purpose") ||
       lower.includes("phonological awareness") ||
       lower.includes("story/skill") ||
-      lower.includes("lesson flow")
+      lower.includes("lesson flow") ||
+      lower.includes("educational technology") ||
+      lower.includes("savvas story slides")
     )
   }
 
@@ -910,7 +969,8 @@ function isWeakTeacherFacingValueForKind(
       lower.includes("students see the letter") ||
       lower.includes("students respond") ||
       lower.includes("routine:") ||
-      lower.includes("lesson flow")
+      lower.includes("lesson flow") ||
+      lower.includes("materials, educational technology, and sources")
     )
   }
 
@@ -948,12 +1008,19 @@ function looksLikeExtractedStandard(
   inputs: StandardResolutionInputs
 ): boolean {
   const lower = line.toLowerCase()
-  const hasCodeLikeShape = /[a-z]\.[a-z0-9]+\.[a-z0-9]+/i.test(line)
+  const hasCodeLikeShape = hasSpecificStandardCode(line)
   const hintTerms = [...buildHintWindows(inputs.skill), ...buildHintWindows(inputs.topic)]
   const hasHintTerm = hintTerms.some((term) => term.length >= 3 && lower.includes(term))
 
+  if (/^(standards?|hb florida b\.e\.s\.t\. standards)$/i.test(line.trim())) {
+    return false
+  }
+
   const hasStandardLikeLanguage =
     lower.includes("standard") ||
+    lower.includes("standards") ||
+    lower.includes("b.e.s.t.") ||
+    lower.includes("benchmark") ||
     lower.includes("identify") ||
     lower.includes("determine") ||
     lower.includes("decode") ||
@@ -963,7 +1030,11 @@ function looksLikeExtractedStandard(
     lower.includes("long a") ||
     lower.includes("cvce")
 
-  return hasStandardLikeLanguage && (hasHintTerm || hasCodeLikeShape)
+  if (hasCodeLikeShape) {
+    return true
+  }
+
+  return hasStandardLikeLanguage && hasHintTerm && /\d/.test(line)
 }
 
 function containsAny(text: string, terms: string[]): boolean {
@@ -1151,6 +1222,9 @@ function detectTeacherPhonicsCues(inputs: StandardResolutionInputs): TeacherPhon
     practiceIdeas: [],
   }
 }
+
+
+
 
 
 

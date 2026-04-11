@@ -1,81 +1,102 @@
-import { describe, expect, it } from "vitest"
+﻿import { describe, expect, it } from "vitest"
 import { resolveBlueprintContent } from "./resolveBlueprintContent"
 
-function makeCurriculumAnalysis(overrides: Record<string, unknown> = {}) {
-  return {
-    standards: [],
-    vocabulary: [],
-    wordLists: [],
-    texts: [],
-    practiceTasks: [],
-    instructionalTargets: [],
-    examples: [],
-    coverage: {
-      standards: [],
-      instructionalTargets: [],
-      foundationalSkills: [],
-      sightWords: [],
-      vocabulary: [],
-      wordLists: [],
-      texts: [],
-      practiceTasks: [],
-      lessonSegments: [],
-    },
-    ...overrides,
-  } as any
-}
-
-describe("resolveBlueprintContent standards ranking", () => {
-  it("keeps an explicit teacher-entered standard as the winner", () => {
-    const result = resolveBlueprintContent({
-      curriculumMaterials: [],
-      curriculumAnalyses: [
-        makeCurriculumAnalysis({
-          standards: ["RL.1.2"],
-          instructionalTargets: ["Retell key details from a story."],
-        }),
+describe("resolveBlueprintContent", () => {
+  it("filters noisy OCR and admin curriculum lines before they shape blueprint content", () => {
+    const curriculumAnalysis = {
+      standards: [
+        "HB Florida B.E.S.T. Standards",
+        "Standards",
+        "ELA.K.F.1.1 Demonstrate knowledge of grade-level phonics and word-analysis skills.",
       ],
-      inputs: {
-        standard: "RF.1.3",
-        grade: "1",
-        subject: "ELA",
-        skill: "Long A phonics",
-        topic: "Long a words in connected text",
+      vocabulary: [
+        "e Read CVCe words with long A (a_e pattern) (e.g., made)",
+        "Ses tpe metic parses blending practice, story visuals, and, up/down, and letter-sound motions).",
+        "@® Materials, Educational Technology, and Sources",
+      ],
+      wordLists: [
+        "Unit: Unit 3, Week 4, Day 3 Programs: UFLI + Savvas",
+        "Word List: made, same, late, cake",
+      ],
+      texts: [
+        "Savvas story slides for The Best Story",
+        "Decodable passage: Jake made a cake at the lake.",
+      ],
+      practiceTasks: [
+        "Read high-frequency words",
+        "I can read words with magic e (long A).",
+        "Posted and read together at the beginning. Reviewed at the end.",
+      ],
+      instructionalTargets: [
+        "@ Learning Objective",
+        "I can read words with magic e (long A).",
+      ],
+      examples: [],
+      coverage: {
+        standards: [
+          "HB Florida B.E.S.T. Standards",
+          "ELA.K.F.1.1 Demonstrate knowledge of grade-level phonics and word-analysis skills.",
+        ],
+        instructionalTargets: [
+          "I can read words with magic e (long A).",
+        ],
+        foundationalSkills: [],
+        sightWords: [],
+        vocabulary: [
+          "e Read CVCe words with long A (a_e pattern) (e.g., made)",
+        ],
+        wordLists: [
+          "Word List: made, same, late, cake",
+        ],
+        texts: [
+          "Decodable passage: Jake made a cake at the lake.",
+        ],
+        practiceTasks: [
+          "Read high-frequency words",
+          "I can read words with magic e (long A).",
+        ],
+        lessonSegments: [],
       },
-      target: { primary: "phonics" } as any,
-    })
+    } as any
 
-    expect(result.standards).toEqual(["RF.1.3"])
-  })
-
-  it("uses teacher-entered skill/topic to rank curriculum-derived standards when standard is blank", () => {
     const result = resolveBlueprintContent({
-      curriculumMaterials: [],
-      curriculumAnalyses: [
-        makeCurriculumAnalysis({
-          standards: ["RL.1.2"],
-          instructionalTargets: ["Retell story events and answer comprehension questions."],
-          vocabulary: ["retell", "story events"],
-          practiceTasks: ["Discuss character actions with a partner."],
-        }),
-        makeCurriculumAnalysis({
-          standards: ["RF.1.3"],
-          instructionalTargets: ["Decode long a words with silent e."],
-          vocabulary: ["long a", "silent e"],
-          practiceTasks: ["Read long a words in connected text."],
-        }),
+      curriculumMaterials: [
+        {
+          analysis: {
+            extractedText: [
+              "HB Florida B.E.S.T. Standards",
+              "ELA.K.F.1.1 Demonstrate knowledge of grade-level phonics and word-analysis skills.",
+              "Word List: made, same, late, cake",
+              "Unit: Unit 3, Week 4, Day 3 Programs: UFLI + Savvas",
+              "Decodable passage: Jake made a cake at the lake.",
+            ],
+          },
+        } as any,
       ],
+      curriculumAnalyses: [curriculumAnalysis],
       inputs: {
         standard: "",
-        grade: "1",
+        grade: "K",
         subject: "ELA",
         skill: "Long A phonics",
-        topic: "Long a words in connected text",
+        topic: "Long a words",
       },
-      target: { primary: "phonics" } as any,
+      target: {
+        primary: "phonics",
+        secondary: null,
+        isMixedTarget: false,
+        recommendedMode: "full",
+      } as any,
     })
 
-    expect(result.standards[0]).toBe("RF.1.3")
-    expect(result.standards).toEqual(["RF.1.3", "RL.1.2"])
+    expect(result.standards).toEqual([
+      "ELA.K.F.1.1 Demonstrate knowledge of grade-level phonics and word-analysis skills.",
+    ])
+    expect(result.wordLists.join(" ")).toContain("Word List: made, same, late, cake")
+    expect(result.wordLists.join(" ")).not.toContain("Unit: Unit 3")
+    expect(result.texts.join(" ")).toContain("Decodable passage: Jake made a cake at the lake.")
+    expect(result.texts.join(" ")).not.toContain("Savvas story slides")
+    expect(result.vocabulary.join(" ")).not.toContain("Materials, Educational Technology, and Sources")
+    expect(result.vocabulary.join(" ")).not.toContain("Ses tpe metic parses")
   })
 })

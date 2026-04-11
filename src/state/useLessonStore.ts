@@ -220,7 +220,7 @@ function normalizeMaterialAnalysisReview(
   }
 }
 
-function mergeMaterialWithReview(material: MaterialFile): MaterialFile {
+export function mergeMaterialWithReview(material: MaterialFile): MaterialFile {
   const review = normalizeMaterialAnalysisReview(material.analysisReview)
 
   if (!material.analysis || !review) {
@@ -238,24 +238,17 @@ function mergeMaterialWithReview(material: MaterialFile): MaterialFile {
       curriculum: curriculum
         ? {
             ...curriculum,
-            standards: review.standards.length > 0 ? review.standards : curriculum.standards,
-            vocabulary: review.vocabulary.length > 0 ? review.vocabulary : curriculum.vocabulary,
-            instructionalTargets:
-              review.instructionalTargets.length > 0
-                ? review.instructionalTargets
-                : curriculum.instructionalTargets,
-            texts: review.texts.length > 0 ? review.texts : curriculum.texts,
-            practiceTasks:
-              review.practiceIdeas.length > 0 ? review.practiceIdeas : curriculum.practiceTasks,
+            standards: review.standards,
+            vocabulary: review.vocabulary,
+            instructionalTargets: review.instructionalTargets,
+            texts: review.texts,
+            practiceTasks: review.practiceIdeas,
           }
         : curriculum,
       exemplar: exemplar
         ? {
             ...exemplar,
-            reusableStructure:
-              review.exemplarStructure.length > 0
-                ? review.exemplarStructure
-                : exemplar.reusableStructure,
+            reusableStructure: review.exemplarStructure,
           }
         : exemplar,
     },

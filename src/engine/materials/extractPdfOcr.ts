@@ -1,4 +1,4 @@
-export type PdfOcrPageResult = {
+﻿export type PdfOcrPageResult = {
   pageNumber: number
   text: string
   confidence: number
@@ -47,6 +47,11 @@ type PdfJsModuleLike = {
   getDocument: (src: { data: Uint8Array }) => PdfJsLoadingTaskLike
 }
 
+type PdfRenderedPageImage = {
+  pageNumber: number
+  dataUrl: string
+}
+
 export async function extractPdfTextWithPdfJs(
   fileBuffer: ArrayBuffer,
   options?: {
@@ -82,9 +87,9 @@ export async function extractPdfTextWithOcrFallback(
     scale?: number
   }
 ): Promise<PdfOcrResult> {
-  const maxPages = options?.maxPages ?? 3
+  const maxPages = Math.max(1, Math.min(options?.maxPages ?? 6, 8))
   const language = options?.language ?? "eng"
-  const scale = options?.scale ?? 2
+  const scale = Math.max(1.5, Math.min(options?.scale ?? 2.4, 3))
 
   if (typeof window === "undefined" || typeof document === "undefined") {
     return {
@@ -114,7 +119,8 @@ export async function extractPdfTextWithOcrFallback(
 
     for (const pageImage of pageImages) {
       const result = await worker.recognize(pageImage.dataUrl)
-      const text = normalizeOcrText(result.data.text).join("\n")
+      const normalizedPageLines = normalizeOcrText(result.data.text)
+      const text = normalizedPageLines.join("\n")
       const confidence = clampConfidence((result.data.confidence ?? 0) / 100)
 
       pages.push({
@@ -143,6 +149,7 @@ export async function extractPdfTextWithOcrFallback(
       combinedLines,
       averageConfidence,
       notes: [
+        `OCR sampled pages: ${pageImages.map((page) => page.pageNumber).join(", ")}.`,
         `OCR processed ${pages.length} page(s).`,
         `Average OCR confidence: ${Math.round(averageConfidence * 100)}%.`,
       ],
@@ -156,14 +163,14 @@ async function renderPdfPagesToImages(
   fileBuffer: ArrayBuffer,
   maxPages: number,
   scale: number
-): Promise<Array<{ pageNumber: number; dataUrl: string }>> {
+): Promise<PdfRenderedPageImage[]> {
   const { pdf, loadingTask } = await loadPdfDocument(fileBuffer)
 
   try {
-    const pageCount = Math.min(pdf.numPages, Math.max(1, maxPages))
-    const renderedPages: Array<{ pageNumber: number; dataUrl: string }> = []
+    const pageNumbers = selectPdfPageNumbers(pdf.numPages, maxPages)
+    const renderedPages: PdfRenderedPageImage[] = []
 
-    for (let pageNumber = 1; pageNumber <= pageCount; pageNumber += 1) {
+    for (const pageNumber of pageNumbers) {
       const page = await pdf.getPage(pageNumber)
       const viewport = page.getViewport({ scale })
       const canvas = document.createElement("canvas")
@@ -192,6 +199,44 @@ async function renderPdfPagesToImages(
   } finally {
     await safeDestroyLoadingTask(loadingTask)
   }
+}
+
+function selectPdfPageNumbers(totalPages: number, maxPages: number): number[] {
+  const target = Math.max(1, Math.min(totalPages, maxPages))
+  const selected: number[] = []
+
+  const addPage = (pageNumber: number) => {
+    if (
+      pageNumber < 1 ||
+      pageNumber > totalPages ||
+      selected.includes(pageNumber) ||
+      selected.length >= target
+    ) {
+      return
+    }
+
+    selected.push(pageNumber)
+  }
+
+  for (let pageNumber = 1; pageNumber <= Math.min(3, totalPages); pageNumber += 1) {
+    addPage(pageNumber)
+  }
+
+  addPage(Math.ceil(totalPages / 2))
+
+  for (let pageNumber = Math.max(1, totalPages - 1); pageNumber <= totalPages; pageNumber += 1) {
+    addPage(pageNumber)
+  }
+
+  if (selected.length < target) {
+    const step = (totalPages - 1) / Math.max(1, target - 1)
+
+    for (let index = 0; index < target; index += 1) {
+      addPage(Math.round(1 + index * step))
+    }
+  }
+
+  return selected.sort((left, right) => left - right).slice(0, target)
 }
 
 async function loadPdfDocument(
@@ -284,12 +329,54 @@ function resolveTextItem(item: unknown): { text: string; x: number; y: number } 
 }
 
 function normalizeOcrText(text: string): string[] {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.replace(/\s+/g, " ").trim())
-    .filter((line) => line.length > 0)
+  const seen = new Set<string>()
+  const normalizedLines: string[] = []
 
-  return Array.from(new Set(lines)).slice(0, 400)
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.replace(/\s+/g, " ").trim()
+
+    if (!shouldKeepOcrLine(line)) {
+      continue
+    }
+
+    const key = line.toLowerCase()
+    if (seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    normalizedLines.push(line)
+
+    if (normalizedLines.length >= 400) {
+      break
+    }
+  }
+
+  return normalizedLines
+}
+
+function shouldKeepOcrLine(line: string): boolean {
+  if (!line) {
+    return false
+  }
+
+  if (/^\d+$/.test(line)) {
+    return false
+  }
+
+  if (/^(page|slide)\s*\d+\b[:.-]*$/i.test(line)) {
+    return false
+  }
+
+  if (/^(https?:\/\/|www\.)\S+$/i.test(line)) {
+    return false
+  }
+
+  if (/^[\W_]+$/.test(line)) {
+    return false
+  }
+
+  return true
 }
 
 function clampConfidence(value: number): number {

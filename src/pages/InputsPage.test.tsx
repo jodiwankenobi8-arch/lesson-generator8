@@ -1,4 +1,4 @@
-import React from "react"
+﻿import React from "react"
 import { beforeEach, describe, expect, it } from "vitest"
 import { StaticRouter } from "react-router-dom/server"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -43,7 +43,7 @@ describe("Inputs page gating smoke tests", () => {
     const markup = renderInputsPage()
 
     expect(markup).toContain("Inputs")
-    expect(markup).toContain("Complete the required lesson details")
+    expect(markup).toContain("Complete grade, subject, and skill / focus")
     expect(markup).toContain("Continue to Materials")
     expect(markup).toContain('disabled=""')
   })
@@ -62,3 +62,4 @@ describe("Inputs page gating smoke tests", () => {
     expect(markup).not.toContain('disabled=""')
   })
 })
+

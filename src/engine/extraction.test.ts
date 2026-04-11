@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+﻿import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const extractPdfTextWithPdfJsMock = vi.fn()
 const mammothExtractRawTextMock = vi.fn()
@@ -373,6 +373,40 @@ describe("extraction contract", () => {
     expect(extractPdfTextWithOcrFallbackMock).toHaveBeenCalledTimes(1)
   })
 
+
+  it("clones the pdf ArrayBuffer before parser extraction and OCR fallback", async () => {
+    const originalBuffer = new TextEncoder().encode("fake-pdf").buffer
+
+    extractPdfTextWithPdfJsMock.mockResolvedValue([
+      "Scan",
+    ])
+
+    extractPdfTextWithOcrFallbackMock.mockResolvedValue({
+      pages: [],
+      combinedLines: [],
+      averageConfidence: 0,
+      notes: ["OCR fallback mock returned no extra text."],
+    })
+
+    await extractTextFromFile({
+      fileName: "buffer-clone.pdf",
+      fileBuffer: originalBuffer,
+    })
+
+    expect(extractPdfTextWithPdfJsMock).toHaveBeenCalledTimes(1)
+    expect(extractPdfTextWithOcrFallbackMock).toHaveBeenCalledTimes(1)
+
+    const parserBuffer = extractPdfTextWithPdfJsMock.mock.calls[0][0] as ArrayBuffer
+    const ocrBuffer = extractPdfTextWithOcrFallbackMock.mock.calls[0][0] as ArrayBuffer
+
+    expect(parserBuffer).toBeInstanceOf(ArrayBuffer)
+    expect(ocrBuffer).toBeInstanceOf(ArrayBuffer)
+
+    expect(parserBuffer).not.toBe(originalBuffer)
+    expect(ocrBuffer).not.toBe(originalBuffer)
+    expect(parserBuffer.byteLength).toBe(originalBuffer.byteLength)
+    expect(ocrBuffer.byteLength).toBe(originalBuffer.byteLength)
+  })
   it("does not mark strong parsed pdf text as an OCR candidate", async () => {
     extractPdfTextWithPdfJsMock.mockResolvedValue(
       Array.from({ length: 25 }, (_, index) =>
@@ -500,3 +534,6 @@ describe("extraction contract", () => {
     )
   })
 })
+
+
+

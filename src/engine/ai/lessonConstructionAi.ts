@@ -1,4 +1,4 @@
-import {
+﻿import {
   LessonGenerationResult,
   LessonInputs,
   LessonOutputContents,
@@ -10,6 +10,7 @@ import {
 } from "../types"
 import { buildExports } from "../package/buildPackageExportArtifacts"
 import { buildLessonPackageReadiness } from "../package/buildLessonPackageReadiness"
+import { normalizeTeacherFacingValues } from "../shared/teacherFacingContent"
 
 type AiContentOrigin = "grounded" | "inferred"
 
@@ -158,6 +159,114 @@ type LessonConstructionPayload = {
   }>
 }
 
+function sanitizeTeacherFacingFieldValues(
+  values: string[],
+  kind: "standard" | "vocabulary" | "wordList" | "text" | "practice",
+  primaryTarget?: string | null,
+  max = 12
+): string[] {
+  return normalizeTeacherFacingValues(
+    limit(values, max).map(cleanText).filter(Boolean),
+    {
+      kind,
+      primaryTarget: primaryTarget ?? undefined,
+    }
+  )
+}
+
+function preferDeterministicGroundedContent(
+  base: LessonGenerationResult
+): boolean {
+  return base.blueprint.sourceReadiness.curriculumSupport === "strong"
+}
+
+function preferDeterministicGroundedStructure(
+  base: LessonGenerationResult
+): boolean {
+  return base.blueprint.sourceReadiness.exemplarSupport === "strong"
+}
+
+function buildProtectedAiCoverage(
+  base: LessonGenerationResult,
+  ai: NormalizedAiLessonConstruction
+) {
+  if (preferDeterministicGroundedContent(base)) {
+    return base.blueprint.content.coverage
+  }
+
+  return buildAiCoverage(base.blueprint.content.coverage, base.blueprint.content, ai)
+}
+
+function chooseProtectedContentValues(
+  baseValues: string[],
+  aiValues: string[],
+  base: LessonGenerationResult
+): string[] {
+  if (preferDeterministicGroundedContent(base) && baseValues.length > 0) {
+    return baseValues
+  }
+
+  return chooseValues(aiValues, baseValues)
+}
+
+function chooseProtectedLessonPlan(
+  baseLessonPlan: string,
+  aiLessonPlanText: string,
+  base: LessonGenerationResult
+): string {
+  if (preferDeterministicGroundedContent(base) && baseLessonPlan.trim().length > 0) {
+    return baseLessonPlan
+  }
+
+  return cleanText(aiLessonPlanText) || baseLessonPlan
+}
+
+function chooseProtectedSlides(
+  baseSlides: string[],
+  aiSlides: AiConstructedSlide[],
+  base: LessonGenerationResult
+): string[] {
+  if (
+    (preferDeterministicGroundedContent(base) || preferDeterministicGroundedStructure(base)) &&
+    baseSlides.length > 0
+  ) {
+    return baseSlides
+  }
+
+  return aiSlides.length > 0
+    ? aiSlides.map(formatAiSlide)
+    : baseSlides
+}
+
+function chooseProtectedPackageValues(
+  baseValues: string[],
+  aiValues: string[],
+  base: LessonGenerationResult
+): string[] {
+  if (preferDeterministicGroundedContent(base) && baseValues.length > 0) {
+    return baseValues
+  }
+
+  return chooseValues(aiValues, baseValues)
+}
+
+function chooseProtectedRotationPlan(
+  baseRotationPlan: string,
+  aiRotationPlanLines: string[],
+  base: LessonGenerationResult
+): string {
+  if (
+    (preferDeterministicGroundedContent(base) || preferDeterministicGroundedStructure(base)) &&
+    baseRotationPlan.trim().length > 0
+  ) {
+    return baseRotationPlan
+  }
+
+  return aiRotationPlanLines.length > 0
+    ? limit(aiRotationPlanLines, 12).map(cleanText).filter(Boolean).join("`n")
+    : baseRotationPlan
+}
+
 function buildEndpoint(): string {
   const baseUrl = String(import.meta.env.VITE_AI_ANALYSIS_URL ?? "").replace(/\/$/, "")
   return baseUrl ? `${baseUrl}/api/lesson-construction` : "/api/lesson-construction"
@@ -241,12 +350,34 @@ export function mergeAiLessonConstruction(
     ...base.blueprint,
     content: {
       ...base.blueprint.content,
-      standards: chooseValues(normalizedAi.derivedStandards, base.blueprint.content.standards),
-      vocabulary: chooseValues(normalizedAi.vocabulary, base.blueprint.content.vocabulary),
-      wordLists: chooseValues(normalizedAi.wordLists, base.blueprint.content.wordLists),
-      texts: chooseValues(normalizedAi.texts, base.blueprint.content.texts),
-      practiceIdeas: chooseValues(normalizedAi.practiceIdeas, base.blueprint.content.practiceIdeas),
-      coverage: buildAiCoverage(base.blueprint.content.coverage, base.blueprint.content, normalizedAi),
+      standards: chooseProtectedContentValues(
+        base.blueprint.content.standards,
+        normalizedAi.derivedStandards,
+        base
+      ),
+      vocabulary: chooseProtectedContentValues(
+        base.blueprint.content.vocabulary,
+        normalizedAi.vocabulary,
+        base
+      ),
+      wordLists: chooseProtectedContentValues(
+        base.blueprint.content.wordLists,
+        normalizedAi.wordLists,
+        base
+      ),
+      texts: chooseProtectedContentValues(
+        base.blueprint.content.texts,
+        normalizedAi.texts,
+        base
+      ),
+      practiceIdeas: chooseProtectedContentValues(
+        base.blueprint.content.practiceIdeas,
+        normalizedAi.practiceIdeas,
+        base
+      ),
+      coverage: preferDeterministicGroundedContent(base)
+        ? base.blueprint.content.coverage
+        : buildAiCoverage(base.blueprint.content.coverage, base.blueprint.content, normalizedAi),
     },
     sourceReadiness: {
       ...base.blueprint.sourceReadiness,
@@ -257,15 +388,31 @@ export function mergeAiLessonConstruction(
     },
   }
 
-  const nextSlides = normalizedAi.slides.length > 0
-    ? normalizedAi.slides.map(formatAiSlide)
-    : base.lessonPackage.slides
-  const nextLessonPlan = cleanText(normalizedAi.lessonPlanText) || base.lessonPackage.lessonPlan
-  const nextCenters = chooseValues(normalizedAi.centers, base.lessonPackage.centers)
-  const nextInterventions = chooseValues(normalizedAi.interventions, base.lessonPackage.interventions)
-  const nextRotationPlan = normalizedAi.rotationPlanLines.length > 0
-    ? limit(normalizedAi.rotationPlanLines, 12).map(cleanText).filter(Boolean).join("`n")
-    : base.lessonPackage.rotationPlan
+  const nextSlides = chooseProtectedSlides(
+    base.lessonPackage.slides,
+    normalizedAi.slides,
+    base
+  )
+  const nextLessonPlan = chooseProtectedLessonPlan(
+    base.lessonPackage.lessonPlan,
+    normalizedAi.lessonPlanText,
+    base
+  )
+  const nextCenters = chooseProtectedPackageValues(
+    base.lessonPackage.centers,
+    normalizedAi.centers,
+    base
+  )
+  const nextInterventions = chooseProtectedPackageValues(
+    base.lessonPackage.interventions,
+    normalizedAi.interventions,
+    base
+  )
+  const nextRotationPlan = chooseProtectedRotationPlan(
+    base.lessonPackage.rotationPlan,
+    normalizedAi.rotationPlanLines,
+    base
+  )
 
   const nextReadinessBase = buildLessonPackageReadiness({
     blueprint: nextBlueprint,
@@ -470,11 +617,36 @@ function normalizeAiLessonConstruction(
   ai: AiLessonConstructionResponse
 ): NormalizedAiLessonConstruction {
   const fieldOrigins = buildFieldOrigins(input, ai)
-  const derivedStandards = sanitizeValueList(ai.derivedStandards, 6)
-  const vocabulary = sanitizeValueList(ai.vocabulary, 8)
-  const wordLists = sanitizeValueList(ai.wordLists, 8)
-  const texts = sanitizeValueList(ai.texts, 6)
-  const practiceIdeas = sanitizeValueList(ai.practiceIdeas, 8)
+  const derivedStandards = sanitizeTeacherFacingFieldValues(
+    ai.derivedStandards,
+    "standard",
+    input.baseResult.blueprint.content.target.primary,
+    6
+  )
+  const vocabulary = sanitizeTeacherFacingFieldValues(
+    ai.vocabulary,
+    "vocabulary",
+    input.baseResult.blueprint.content.target.primary,
+    8
+  )
+  const wordLists = sanitizeTeacherFacingFieldValues(
+    ai.wordLists,
+    "wordList",
+    input.baseResult.blueprint.content.target.primary,
+    8
+  )
+  const texts = sanitizeTeacherFacingFieldValues(
+    ai.texts,
+    "text",
+    input.baseResult.blueprint.content.target.primary,
+    6
+  )
+  const practiceIdeas = sanitizeTeacherFacingFieldValues(
+    ai.practiceIdeas,
+    "practice",
+    input.baseResult.blueprint.content.target.primary,
+    8
+  )
   const lessonPlanText = cleanLongText(ai.lessonPlanText)
   const slides = sanitizeSlides(ai.slides)
   const centers = sanitizeValueList(ai.centers, 10)
@@ -915,3 +1087,5 @@ function unique(values: string[]): string[] {
 
   return result
 }
+
+

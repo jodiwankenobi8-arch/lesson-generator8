@@ -1,10 +1,15 @@
-import { readFileSync } from "node:fs"
+﻿import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import {
+  buildMaterialAnalysisReviewDraft,
   buildUploadSourceMetadata,
   getTeacherVisibleMaterialNote,
   inferMimeTypeFromName,
   isSupportedUploadFile,
+  normalizeAutoDraftValue,
+  parseReviewList,
+  serializeReviewList,
+  shouldIgnoreAutoDraftValue,
 } from "./MaterialsPage"
 import { EXEMPLAR_INFLUENCE_MODE_OPTIONS, EXEMPLAR_TARGET_OPTIONS } from "./materialsPageExemplarHelpers"
 
@@ -152,7 +157,6 @@ describe("inferMimeTypeFromName", () => {
   })
 })
 
-
 describe("getTeacherVisibleMaterialNote progress wording", () => {
   it("keeps upload and processing notes teacher-readable", () => {
     expect(
@@ -211,6 +215,140 @@ describe("exemplar restyle and routing copy", () => {
   })
 })
 
+describe("analysis review helpers", () => {
+  it("seeds curriculum review fields from meaningful analyzed curriculum content and humanizes the summary", () => {
+    const review = buildMaterialAnalysisReviewDraft({
+      id: "curr-1",
+      name: "curriculum.txt",
+      role: "curriculum",
+      status: "ready",
+      analysis: {
+        sourceRole: "curriculum",
+        summary: "Curriculum source summary",
+        extractedText: ["RF.1.3"],
+        tags: ["curriculum"],
+        curriculum: {
+          standards: ["RF.1.3"],
+          vocabulary: ["short a"],
+          wordLists: ["cat, map, sat, ram"],
+          texts: ["A short decodable text."],
+          practiceTasks: ["Blend cat, map, sat, ram."],
+          instructionalTargets: ["Blend and read short a CVC words."],
+          examples: ["cat"],
+        },
+      },
+      errorMessage: null,
+      fileBuffer: null,
+      fileContent: null,
+    } as never)
+
+    expect(review).toEqual({
+      standards: ["RF.1.3"],
+      vocabulary: ["short a"],
+      instructionalTargets: ["Blend and read short a CVC words."],
+      texts: ["A short decodable text."],
+      practiceIdeas: ["Blend cat, map, sat, ram."],
+      exemplarStructure: [],
+      teacherSummary: "Use this curriculum source for lesson focus, vocabulary, texts or topics, and practice tasks.",
+    })
+  })
+
+  it("strips placeholder and extraction-failure junk from weak curriculum drafts", () => {
+    const review = buildMaterialAnalysisReviewDraft({
+      id: "curr-2",
+      name: "weak-curriculum.pdf",
+      role: "curriculum",
+      status: "ready",
+      analysis: {
+        sourceRole: "curriculum",
+        summary: "Analyzer summary",
+        extractedText: [
+          "PDF extraction produced no readable text for weak-curriculum.pdf.",
+          "The PDF may be image-based, password-protected, or use unsupported embedded text encoding.",
+        ],
+        tags: ["curriculum"],
+        curriculum: {
+          standards: ["teacher-selected standard"],
+          vocabulary: ["key vocabulary"],
+          wordLists: [],
+          texts: [
+            "PDF extraction produced no readable text for weak-curriculum.pdf.",
+            "The PDF may be image-based, password-protected, or use unsupported embedded text encoding.",
+          ],
+          practiceTasks: ["curriculum-aligned practice task"],
+          instructionalTargets: ["lesson target"],
+          examples: [],
+        },
+      },
+      errorMessage: null,
+      fileBuffer: null,
+      fileContent: null,
+    } as never)
+
+    expect(review).toEqual({
+      standards: [],
+      vocabulary: [],
+      instructionalTargets: [],
+      texts: [],
+      practiceIdeas: [],
+      exemplarStructure: [],
+      teacherSummary: "This curriculum source did not provide enough readable lesson content yet. Review it carefully or replace it before relying on it.",
+    })
+  })
+
+  it("dedupes exemplar review fields case-insensitively and humanizes the summary", () => {
+    const review = buildMaterialAnalysisReviewDraft({
+      id: "ex-1",
+      name: "exemplar.txt",
+      role: "exemplar",
+      status: "ready",
+      analysis: {
+        sourceRole: "exemplar",
+        summary: "Exemplar source summary",
+        extractedText: ["Opening", "Teach"],
+        tags: ["exemplar"],
+        exemplar: {
+          slideFlow: ["Opening", "Teach"],
+          pacing: ["5 min launch"],
+          teacherMoves: ["Model blending"],
+          promptStyle: ["Turn and talk"],
+          layoutCues: ["Large word display"],
+          tone: ["supportive"],
+          reusableStructure: ["center", "CENTER", "I do, we do, you do"],
+        },
+      },
+      errorMessage: null,
+      fileBuffer: null,
+      fileContent: null,
+    } as never)
+
+    expect(review).toEqual({
+      standards: [],
+      vocabulary: [],
+      instructionalTargets: [],
+      texts: [],
+      practiceIdeas: [],
+      exemplarStructure: ["center", "I do, we do, you do"],
+      teacherSummary: "Use this exemplar to preserve structure such as center and I do, we do, you do.",
+    })
+  })
+
+  it("parses newline and semicolon review edits into clean unique lists", () => {
+    expect(parseReviewList("RF.1.3\nRF.1.3; Vocabulary cue ; • Vocabulary cue")).toEqual([
+      "RF.1.3",
+      "Vocabulary cue",
+    ])
+
+    expect(serializeReviewList(["One", "Two"])).toBe("One\nTwo")
+  })
+
+  it("exposes the normalization and ignore rules used for auto-seeded review values", () => {
+    expect(normalizeAutoDraftValue("  • Teacher-selected standard  ")).toBe("Teacher-selected standard")
+    expect(shouldIgnoreAutoDraftValue("teacher-selected standard")).toBe(true)
+    expect(shouldIgnoreAutoDraftValue("PDF extraction produced no readable text for file.pdf.")).toBe(true)
+    expect(shouldIgnoreAutoDraftValue("RF.1.3")).toBe(false)
+  })
+})
 
 describe("Materials page teacher-facing copy", () => {
   it("keeps the visible workbench language simple and classroom-facing", () => {
@@ -226,6 +364,12 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain(
       "Choose where this exemplar should apply. You can keep one exemplar for slides, another for the lesson plan, another for centers or teacher-led support, and another for printables."
     )
+    expect(source).toContain("Review and adjust before generation")
+    expect(source).toContain("Use analysis as-is")
+    expect(source).toContain("Extraction status")
+    expect(source).toContain("This shows whether readable text came from the parser, OCR, both, or only a fallback notice.")
+    expect(source).toContain("OCR status")
+    expect(source).toContain("Usable for content")
 
     expect(source).not.toContain(
       "Lesson generation stays paused until uploads finish processing."
@@ -238,3 +382,5 @@ describe("Materials page teacher-facing copy", () => {
     )
   })
 })
+
+

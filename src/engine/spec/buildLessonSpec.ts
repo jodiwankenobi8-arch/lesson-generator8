@@ -1,4 +1,4 @@
-import {
+﻿import {
   LessonBlueprint,
   LessonPlanIdea,
   LessonPlanningIdeas,
@@ -6,6 +6,7 @@ import {
   LessonSpecSection,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
+import { getNormalizedBlueprintValues } from "../shared/teacherFacingContent"
 
 type LessonSpecContext = {
   areaKeys: string[]
@@ -75,11 +76,31 @@ function buildLessonSpecContext(
   const areaKeys = resolveSpecAreaKeys(blueprint)
   const primaryArea = getOrderedAreaKeys(areaKeys)[0] ?? "general"
 
-  const vocabulary = take(blueprint.content.vocabulary, 4, ["key vocabulary"])
-  const wordList = take(blueprint.content.wordLists, 5, ["teacher-selected examples"])
-  const texts = take(blueprint.content.texts, 2, ["teacher-provided text"])
-  const practiceIdeas = take(blueprint.content.practiceIdeas, 4, ["guided practice"])
-  const standards = take(blueprint.content.standards, 2, ["teacher-selected standard"])
+  const vocabulary = take(
+    getNormalizedBlueprintValues(blueprint, "vocabulary"),
+    4,
+    ["key vocabulary"]
+  )
+  const wordList = take(
+    getNormalizedBlueprintValues(blueprint, "wordList"),
+    5,
+    ["teacher-selected examples"]
+  )
+  const texts = take(
+    getNormalizedBlueprintValues(blueprint, "text"),
+    2,
+    ["teacher-provided text"]
+  )
+  const practiceIdeas = take(
+    getNormalizedBlueprintValues(blueprint, "practice"),
+    4,
+    ["guided practice"]
+  )
+  const standards = take(
+    getNormalizedBlueprintValues(blueprint, "standard"),
+    2,
+    ["teacher-selected standard"]
+  )
 
   const shell = resolveTemplateShell(blueprint, {
     scope: "lesson_plan",
@@ -412,32 +433,42 @@ function buildLessonPortion(areaKey: string, context: LessonSpecContext): Lesson
 }
 
 function resolveSpecAreaKeys(blueprint: LessonBlueprint): string[] {
+  const target = blueprint.content.target
+  const explicitSingleArea =
+    !target.isMixedTarget && !target.secondary
+      ? uniqueStrings(normalizeAreaAliases(target.primary))
+      : []
+
+  if (explicitSingleArea.length > 0) {
+    return explicitSingleArea
+  }
+
   const profileKeys = (
     blueprint as LessonBlueprint & {
       content?: { profile?: { dominantAreaKeys?: string[] | null } | null }
     }
   ).content?.profile?.dominantAreaKeys ?? []
 
-  const rawKeys =
-    profileKeys.length > 0
-      ? profileKeys.flatMap((key) => normalizeAreaAliases(key))
-      : [
-          ...normalizeAreaAliases(blueprint.content.target.primary),
-          ...normalizeAreaAliases(blueprint.content.target.secondary ?? undefined),
-        ]
-
-  const deduped = uniqueStrings(rawKeys)
-
-  if (deduped.length > 0) {
-    return deduped
+  if (profileKeys.length > 0) {
+    return uniqueStrings(profileKeys.flatMap((key) => normalizeAreaAliases(key)))
   }
 
-  if (blueprint.content.target.isMixedTarget) {
+  const targetKeys = uniqueStrings([
+    ...normalizeAreaAliases(target.primary),
+    ...normalizeAreaAliases(target.secondary ?? undefined),
+  ])
+
+  if (targetKeys.length > 0) {
+    return targetKeys
+  }
+
+  if (target.isMixedTarget) {
     return ["foundational", "comprehension"]
   }
 
   return ["general"]
 }
+
 
 function normalizeAreaAliases(value?: string | null): string[] {
   const normalized = (value ?? "").trim().toLowerCase()
@@ -644,3 +675,8 @@ function formatTargetLabel(areaKeys: string[]): string {
 
   return meaningful.map((key) => formatAreaKey(key)).join(" + ")
 }
+
+
+
+
+
