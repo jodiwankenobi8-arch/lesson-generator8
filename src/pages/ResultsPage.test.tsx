@@ -1,4 +1,4 @@
-import React from "react"
+﻿import React from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { renderToStaticMarkup } from "react-dom/server"
 import { readFileSync } from "node:fs"
@@ -24,7 +24,7 @@ import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
 import { exportSlidesPptx, parseSlidesExportContent } from "../engine/exports/exportSlidesPptx"
 import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
-import { CoverageDecisionsSection, PackageOutputsSection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription, getBundledArtifactLabels, getVisiblePackageSectionLabels } from "./ResultsPage"
+import { CoverageDecisionsSection, PackageOutputsSection, PackageSummarySection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription, getBundledArtifactLabels, getVisiblePackageSectionLabels } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
 import type { ExportArtifact, LessonInputs, LessonPackage, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
 
@@ -221,6 +221,85 @@ describe("Results explainability rendering contracts", () => {
       expect(traceabilityMarkup).toContain(material!.name)
       expect(traceMarkup).toContain(id)
     })
+  })
+
+
+  it("keeps package summary and traceability grounded in normalized teacher-facing content", () => {
+    const state = useLessonStore.getState()
+    const blueprint = {
+      ...state.blueprint!,
+      content: {
+        ...state.blueprint!.content,
+        target: {
+          primary: "phonics",
+          secondary: null,
+          isMixedTarget: false,
+          recommendedMode: "single",
+        },
+        standards: [
+          "ELA.K.F.1.3: Demonstrate phonological awareness",
+          "ELA.K.F.1.4: Read high-frequency words",
+          "ELA.K.R.2.1: Identify the main topic and key details in a text (Author's Purpose)",
+          "ELA.K.V.1.1: Identify and use new vocabulary",
+        ],
+        vocabulary: [
+          "Ses tpe metic parses blending practice, story visuals, and, up/down, and letter-sound motions).",
+          "long a",
+        ],
+        wordLists: [
+          "phonics) Edition)",
+          "Word List: made, same, late, cake",
+        ],
+        texts: [
+          "Savvas story slides for The Best Story",
+          "Decodable passage: Jake made a cake at the lake.",
+        ],
+        practiceIdeas: [
+          "pacing, modeling, guided practice, and",
+          "Read and sort long a words",
+        ],
+        coverage: {
+          ...state.blueprint!.content.coverage,
+          standards: [
+            "ELA.K.F.1.3: Demonstrate phonological awareness",
+            "ELA.K.F.1.4: Read high-frequency words",
+            "ELA.K.R.2.1: Identify the main topic and key details in a text (Author's Purpose)",
+            "ELA.K.V.1.1: Identify and use new vocabulary",
+          ],
+          vocabulary: ["long a"],
+          wordLists: ["Word List: made, same, late, cake"],
+          texts: ["Decodable passage: Jake made a cake at the lake."],
+          practiceIdeas: ["Read and sort long a words"],
+        },
+      },
+    }
+
+    const packageMarkup = renderToStaticMarkup(
+      <PackageSummarySection
+        blueprint={blueprint}
+        lessonPackage={state.lessonPackage!}
+        selectedLessonMode="single"
+        materials={state.materials}
+      />
+    )
+
+    const traceabilityMarkup = renderToStaticMarkup(
+      <TraceabilitySection
+        blueprint={blueprint}
+        lessonPackage={state.lessonPackage!}
+        materials={state.materials}
+      />
+    )
+
+    expect(packageMarkup).toContain("ELA.K.F.1.3: Demonstrate phonological awareness")
+    expect(packageMarkup).toContain("ELA.K.F.1.4: Read high-frequency words")
+    expect(packageMarkup).not.toContain("ELA.K.R.2.1")
+    expect(packageMarkup).not.toContain("ELA.K.V.1.1")
+    expect(packageMarkup).not.toContain("Ses tpe metic")
+    expect(traceabilityMarkup).not.toContain("Ses tpe metic")
+    expect(traceabilityMarkup).not.toContain("phonics) Edition)")
+    expect(traceabilityMarkup).not.toContain("pacing, modeling, guided practice, and")
+    expect(traceabilityMarkup).toContain("Read and sort long a words")
   })
 
   it("keeps the teacher-facing results package labels and order aligned", () => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+﻿import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import {
   buildReliabilityDecisions,
@@ -1286,10 +1286,10 @@ export function TraceabilitySection({
           <div style={denseKeyValueStyle}>
             <div><strong>Curriculum support strength:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
             <div><strong>Curriculum sources used:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
-            <div><strong>Standards used:</strong> {joinOrFallback(blueprint.content.standards, "Teacher-selected standard")}</div>
-            <div><strong>Vocabulary used:</strong> {joinOrFallback(blueprint.content.vocabulary, "Key vocabulary")}</div>
-            <div><strong>Text or topic used:</strong> {joinOrFallback(blueprint.content.texts, "Teacher-provided lesson text")}</div>
-            <div><strong>Practice used:</strong> {joinOrFallback(blueprint.content.practiceIdeas, "Curriculum-aligned practice task")}</div>
+            <div><strong>Standards used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "No grounded standard identified yet")}</div>
+            <div><strong>Vocabulary used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "vocabulary"), "Key vocabulary")}</div>
+            <div><strong>Text or topic used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "text"), "Teacher-provided lesson text")}</div>
+            <div><strong>Practice used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "practice"), "Curriculum-aligned practice task")}</div>
           </div>
         </div>
 
@@ -1481,9 +1481,9 @@ function BlueprintDetailsSection({ blueprint }: { blueprint: LessonBlueprint }) 
       <details style={sectionStyle}>
         <summary style={summaryStyle}>Blueprint Content</summary>
         <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
-          <p style={{ marginBottom: 8 }}><strong>Vocabulary:</strong> {blueprint.content.vocabulary.join(", ")}</p>
-          <p style={{ marginBottom: 8 }}><strong>Texts:</strong> {blueprint.content.texts.join(", ")}</p>
-          <p style={{ margin: 0 }}><strong>Practice Ideas:</strong> {blueprint.content.practiceIdeas.join(", ")}</p>
+          <p style={{ marginBottom: 8 }}><strong>Vocabulary:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "vocabulary"), "None")}</p>
+          <p style={{ marginBottom: 8 }}><strong>Texts:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "text"), "None")}</p>
+          <p style={{ margin: 0 }}><strong>Practice Ideas:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "practice"), "None")}</p>
         </div>
       </details>
 

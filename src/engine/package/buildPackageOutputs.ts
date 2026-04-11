@@ -23,6 +23,7 @@ import {
   buildStandardsSummary,
 } from "./buildPackageLessonPlanTextHelpers"
 import {
+  getPackageDisplayValues,
   resolveCenterLabels,
   selectPracticeFocus,
   selectTextFocus,
@@ -303,7 +304,7 @@ function buildLessonPlan(
     isLessonPlanPartSelected(outputContents, "guided_practice")
       ? buildSectionNarrativeBlock("Guided Practice", [
           `Practice Anchor: ${joinOrFallback(
-            blueprint.content.practiceIdeas.slice(0, 3),
+            getPackageDisplayValues(blueprint, "practice", 3),
             "curriculum-aligned guided practice"
           )}`,
           `Prompt Style: ${joinOrFallback(
@@ -322,7 +323,7 @@ function buildLessonPlan(
       ? buildSectionNarrativeBlock("Independent Practice", [
           `Transfer Task: ${selectIndependentResources(blueprint)}`,
           `Student Practice: ${joinOrFallback(
-            blueprint.content.practiceIdeas.slice(0, 2),
+            getPackageDisplayValues(blueprint, "practice", 2),
             "independent application"
           )}`,
         ], spec.independentPractice.steps)
@@ -434,9 +435,9 @@ function buildFirstTeachingMoveLabel(lessonSegments: string[]): string {
 
 function selectOpeningResources(blueprint: LessonBlueprint): string {
   const contentResources = [
-    ...blueprint.content.wordLists.slice(0, 2),
-    ...blueprint.content.texts.slice(0, 1),
-    ...blueprint.content.vocabulary.slice(0, 2),
+    ...getPackageDisplayValues(blueprint, "wordList", 2),
+    ...getPackageDisplayValues(blueprint, "text", 1),
+    ...getPackageDisplayValues(blueprint, "vocabulary", 2),
   ]
 
   return joinOrFallback(contentResources, "the selected lesson materials")
@@ -464,7 +465,7 @@ function buildDifferentiationSteps(
 }
 
 function buildVocabularySummary(blueprint: LessonBlueprint): string {
-  return joinOrFallback(blueprint.content.vocabulary.slice(0, 6), "No vocabulary surfaced yet.")
+  return joinOrFallback(getPackageDisplayValues(blueprint, "vocabulary", 6), "No vocabulary surfaced yet.")
 }
 
 function buildMaterialsPrepSteps(
@@ -637,19 +638,19 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
     `- Source Balance: ${blueprint.sourceReadiness.overall}`,
     `- Standards: ${formatGroundingStandards(blueprint)}`,
     `- Vocabulary: ${joinOrFallback(
-      blueprint.content.vocabulary.slice(0, 4),
+      getPackageDisplayValues(blueprint, "vocabulary", 4),
       "key vocabulary"
     )}`,
     `- Word List: ${joinOrFallback(
-      blueprint.content.wordLists.slice(0, 5),
+      getPackageDisplayValues(blueprint, "wordList", 5),
       "teacher-selected examples"
     )}`,
     `- Texts: ${joinOrFallback(
-      blueprint.content.texts.slice(0, 2),
+      getPackageDisplayValues(blueprint, "text", 2),
       "teacher-provided text"
     )}`,
     `- Practice Ideas: ${joinOrFallback(
-      blueprint.content.practiceIdeas.slice(0, 4),
+      getPackageDisplayValues(blueprint, "practice", 4),
       "guided practice"
     )}`,
     `- Exemplar Segment Order: ${hasReusableFlow ? "Reusable lesson flow available" : "Default lesson flow"}`,
@@ -670,59 +671,8 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
 }
 
 function formatGroundingStandards(blueprint: LessonBlueprint): string {
-  const standards = normalizeGroundingStandards(blueprint.content.standards)
-
-  return standards.length > 0 ? standards.slice(0, 3).join(", ") : "No grounded standard identified yet"
-}
-
-function normalizeGroundingStandards(values: string[]): string[] {
-  const seen = new Set<string>()
-  const result: string[] = []
-
-  for (const value of values.flatMap((item) => splitGroundingStandardCandidates(item))) {
-    const key = value.toLowerCase()
-    if (seen.has(key)) {
-      continue
-    }
-
-    seen.add(key)
-    result.push(value)
-  }
-
-  return result
-}
-
-function splitGroundingStandardCandidates(value: string): string[] {
-  return String(value ?? "")
-    .split(/[\n;|]+/)
-    .map((item) => normalizeGroundingStandard(item))
-    .filter(Boolean)
-}
-
-function normalizeGroundingStandard(value: string): string {
-  let cleaned = String(value ?? "")
-    .replace(/\u2013/g, "-")
-    .replace(/\s+/g, " ")
-    .trim()
-
-  cleaned = cleaned.replace(/^(hb\s+)?florida\s+b\.?e\.?s\.?t\.?\s+standards?:?\s*/i, "")
-  cleaned = cleaned.replace(/^standards?:?\s*/i, "")
-  cleaned = cleaned.replace(/^benchmarks?:?\s*/i, "")
-  cleaned = cleaned.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, "").trim()
-
-  if (!cleaned) {
-    return ""
-  }
-
-  if (/^(standards?|benchmarks?)$/i.test(cleaned)) {
-    return ""
-  }
-
-  if (cleaned.length < 5) {
-    return ""
-  }
-
-  return cleaned
+  const standards = getPackageDisplayValues(blueprint, "standard", 3)
+  return standards.length > 0 ? standards.join(", ") : "No grounded standard identified yet"
 }
 
 function buildSectionNarrativeBlock(
@@ -741,22 +691,22 @@ function selectModelResources(blueprint: LessonBlueprint): string {
 
   if (primary === "phonics") {
     return joinOrFallback(
-      blueprint.content.wordLists.slice(0, 4),
+      getPackageDisplayValues(blueprint, "wordList", 4),
       "teacher-selected word examples"
     )
   }
 
   if (primary === "comprehension") {
     return joinOrFallback(
-      blueprint.content.texts.slice(0, 2),
+      getPackageDisplayValues(blueprint, "text", 2),
       "teacher-selected text"
     )
   }
 
   return joinOrFallback(
     [
-      ...blueprint.content.wordLists.slice(0, 2),
-      ...blueprint.content.texts.slice(0, 1),
+      ...getPackageDisplayValues(blueprint, "wordList", 2),
+      ...getPackageDisplayValues(blueprint, "text", 1),
     ],
     "teacher-selected lesson resources"
   )
@@ -767,22 +717,22 @@ function selectIndependentResources(blueprint: LessonBlueprint): string {
 
   if (primary === "phonics") {
     return joinOrFallback(
-      blueprint.content.wordLists.slice(0, 3),
+      getPackageDisplayValues(blueprint, "wordList", 3),
       "target words for student transfer"
     )
   }
 
   if (primary === "comprehension") {
     return joinOrFallback(
-      blueprint.content.texts.slice(0, 2),
+      getPackageDisplayValues(blueprint, "text", 2),
       "lesson text for student response"
     )
   }
 
   return joinOrFallback(
     [
-      ...blueprint.content.practiceIdeas.slice(0, 2),
-      ...blueprint.content.texts.slice(0, 1),
+      ...getPackageDisplayValues(blueprint, "practice", 2),
+      ...getPackageDisplayValues(blueprint, "text", 1),
     ],
     "independent lesson resources"
   )
@@ -793,13 +743,13 @@ function selectClosureResources(blueprint: LessonBlueprint): string {
 
   if (primary === "phonics") {
     return joinOrFallback(
-      blueprint.content.wordLists.slice(0, 3),
+      getPackageDisplayValues(blueprint, "wordList", 3),
       "strong word examples"
     )
   }
 
   return joinOrFallback(
-    blueprint.content.vocabulary.slice(0, 3),
+    getPackageDisplayValues(blueprint, "vocabulary", 3),
     "key lesson vocabulary"
   )
 }

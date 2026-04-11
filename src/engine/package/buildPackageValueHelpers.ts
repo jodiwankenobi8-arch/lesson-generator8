@@ -46,20 +46,31 @@ function isStudentIndependentCenterLine(line: string): boolean {
   )
 }
 
+
+export type PackageValueKind = "standard" | "vocabulary" | "wordList" | "text" | "practice"
+
+export function getPackageDisplayValues(
+  blueprint: LessonBlueprint,
+  kind: PackageValueKind,
+  count = Number.POSITIVE_INFINITY
+): string[] {
+  return takeClean(getNormalizedBlueprintValues(blueprint, kind), count)
+}
+
 export function selectWordListFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(getNormalizedBlueprintValues(blueprint, "wordList"), 2, fallback)
+  return focusList(getPackageDisplayValues(blueprint, "wordList", 2), 2, fallback)
 }
 
 export function selectTextFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(getNormalizedBlueprintValues(blueprint, "text"), 1, fallback)
+  return focusList(getPackageDisplayValues(blueprint, "text", 1), 1, fallback)
 }
 
 export function selectPracticeFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(getNormalizedBlueprintValues(blueprint, "practice"), 1, fallback)
+  return focusList(getPackageDisplayValues(blueprint, "practice", 1), 1, fallback)
 }
 
 export function selectVocabularyFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(getNormalizedBlueprintValues(blueprint, "vocabulary"), 3, fallback)
+  return focusList(getPackageDisplayValues(blueprint, "vocabulary", 3), 3, fallback)
 }
 
 function focusList(items: string[], count: number, fallback: string): string {

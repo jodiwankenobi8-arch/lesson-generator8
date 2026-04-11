@@ -63,4 +63,39 @@ describe("teacherFacingContent", () => {
     expect(joined).not.toContain("HB Florida B.E.S.T. Standards")
     expect(joined).not.toContain("Ses tpe metic")
   })
+
+  it("narrows auto-selected standards to the active phonics target when off-target standards leak in", () => {
+    const standardsBlueprint = {
+      ...blueprint,
+      content: {
+        ...blueprint.content,
+        target: {
+          primary: "phonics",
+          secondary: null,
+          isMixedTarget: false,
+          recommendedMode: "single",
+        },
+        standards: [
+          "ELA.K.F.1.3: Demonstrate phonological awareness",
+          "ELA.K.F.1.4: Read high-frequency words",
+          "ELA.K.R.2.1: Identify the main topic and key details in a text (Author's Purpose)",
+          "ELA.K.V.1.1: Identify and use new vocabulary",
+        ],
+        coverage: {
+          ...blueprint.content.coverage,
+          standards: [
+            "ELA.K.F.1.3: Demonstrate phonological awareness",
+            "ELA.K.F.1.4: Read high-frequency words",
+            "ELA.K.R.2.1: Identify the main topic and key details in a text (Author's Purpose)",
+            "ELA.K.V.1.1: Identify and use new vocabulary",
+          ],
+        },
+      },
+    } as any
+
+    expect(getNormalizedBlueprintValues(standardsBlueprint, "standard")).toEqual([
+      "ELA.K.F.1.3: Demonstrate phonological awareness",
+      "ELA.K.F.1.4: Read high-frequency words",
+    ])
+  })
 })

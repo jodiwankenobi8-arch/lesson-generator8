@@ -4,7 +4,7 @@
   LessonBlueprint,
   MaterialFile,
 } from "../types"
-import { normalizeTeacherFacingValues } from "../shared/teacherFacingContent"
+import { filterStandardsForPrimaryTarget, normalizeTeacherFacingValues } from "../shared/teacherFacingContent"
 
 export function resolveBlueprintContent(args: {
   curriculumMaterials: MaterialFile[]
@@ -188,10 +188,12 @@ function resolveStandards(
     })
   })
 
-  return candidateStandards
+  const rankedStandards = candidateStandards
     .slice()
     .sort((left, right) => (standardScores.get(right) ?? 0) - (standardScores.get(left) ?? 0))
     .slice(0, 6)
+
+  return filterStandardsForPrimaryTarget(rankedStandards, primaryTarget)
 }
 
 function buildStandardHintTerms(inputs: StandardResolutionInputs): string[] {

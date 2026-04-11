@@ -1,4 +1,4 @@
-﻿import type { LessonBlueprint } from "../types"
+import type { LessonBlueprint } from "../types"
 
 export type TeacherFacingValueKind =
   | "standard"
@@ -35,7 +35,9 @@ export function normalizeTeacherFacingValues(
     }
   }
 
-  return results
+  return kind === "standard"
+    ? filterStandardsForPrimaryTarget(results, primaryTarget)
+    : results
 }
 
 export function getNormalizedBlueprintValues(
@@ -90,6 +92,22 @@ export function getNormalizedBlueprintValues(
   )
 }
 
+export function filterStandardsForPrimaryTarget(
+  standards: string[],
+  primaryTarget?: string | null
+): string[] {
+  const normalizedTarget = normalizeTeacherFacingTarget(primaryTarget)
+  if (!normalizedTarget || standards.length <= 1) {
+    return standards
+  }
+
+  const filtered = standards.filter((standard) =>
+    isRelevantStandardForTarget(standard, normalizedTarget)
+  )
+
+  return filtered.length > 0 ? filtered : standards
+}
+
 export function getBlueprintContentGroundingItems(
   blueprint: LessonBlueprint
 ): string[] {
@@ -121,7 +139,7 @@ function splitTeacherFacingCandidates(
   }
 
   return source
-    .split(/[;\n]+/)
+    .split(/[;\n|]+/)
     .map((part) => part.trim())
     .filter(Boolean)
 }
@@ -133,6 +151,10 @@ function normalizeTeacherFacingValue(value: string): string {
     .replace(/^[a-z]\s+(?=[A-Z]{2,}(?:\.[A-Za-z0-9]+){2,}\s*:)/, "")
     .replace(/^part\s+[a-z0-9]+\s*:\s*/i, "")
     .replace(/^next\s*:\s*/i, "")
+    .replace(/^word list\s*:\s*/i, "Word List: ")
+    .replace(/^vocabulary\s*:\s*/i, "")
+    .replace(/^texts?\s*:\s*/i, "")
+    .replace(/^practice ideas?\s*:\s*/i, "")
     .replace(/^["“”']+|["“”']+$/g, "")
     .replace(/\s+/g, " ")
     .replace(/[;:]+$/g, "")
@@ -187,10 +209,12 @@ function isClearlyNoisyValue(
     lower.includes("savvas story slides") ||
     lower.includes("materials, educational technology, and sources") ||
     lower.includes("educational technology, and sources") ||
+    lower.includes("digital blending board") ||
     lower.includes("unit: unit") ||
     lower.includes("programs:") ||
     lower.includes("ufli + savvas") ||
-    (lower.includes("week ") && lower.includes("day "))
+    (lower.includes("week ") && lower.includes("day ")) ||
+    /,\s*and\.?$/i.test(value)
   ) {
     return true
   }
@@ -236,6 +260,13 @@ function isWeakTeacherFacingValue(
       lower.includes("students have been taught") ||
       lower.includes("students respond") ||
       lower.includes("blending and reading") ||
+      lower.includes("review letter names") ||
+      lower.includes("review short a sound") ||
+      lower.includes("introduce long a sound") ||
+      lower.includes("letter names and letter sounds") ||
+      lower.includes("prior knowledge") ||
+      lower.includes("focus on long") ||
+      lower.includes("focus on short") ||
       wordCount > 10
     )
   }
@@ -251,7 +282,19 @@ function isWeakTeacherFacingValue(
       lower.includes("pacing") ||
       lower.includes("modeling") ||
       lower.includes("story/skill") ||
-      lower.includes("phonological awareness")
+      lower.includes("phonological awareness") ||
+      lower.includes("prior knowledge") ||
+      lower.includes("letter names") ||
+      lower.includes("letter sounds") ||
+      lower.includes("vowel sounds") ||
+      lower.includes("review short a sound") ||
+      lower.includes("introduce long a sound") ||
+      lower.includes("alphabet song") ||
+      lower.includes("short a song") ||
+      lower.includes("long a song") ||
+      lower.includes("focus on long") ||
+      lower.includes("focus on short") ||
+      wordCount > 6
     )
   }
 
@@ -264,7 +307,8 @@ function isWeakTeacherFacingValue(
       lower.includes("author's purpose") ||
       lower.includes("phonological awareness") ||
       lower.includes("story/skill") ||
-      lower.includes("lesson flow")
+      lower.includes("lesson flow") ||
+      lower.includes("prior knowledge")
     )
   }
 
@@ -281,7 +325,9 @@ function isWeakTeacherFacingValue(
       lower.includes("teacher says") ||
       lower.includes("teacher prompts") ||
       lower.includes("routine:") ||
-      lower.includes("lesson flow")
+      lower.includes("lesson flow") ||
+      lower.includes("pacing, modeling") ||
+      lower.includes("guided practice, and")
     ) {
       return true
     }
@@ -309,6 +355,132 @@ function isWeakTeacherFacingValue(
   ].includes(lower)
 }
 
+function normalizeTeacherFacingTarget(primaryTarget?: string | null): string | null {
+  const normalized = String(primaryTarget ?? "").trim().toLowerCase()
+
+  if ([
+    "phonics",
+    "foundational",
+    "foundational_skills",
+    "phonological_awareness",
+    "phonemic_awareness",
+    "high_frequency_words",
+    "letter_identification",
+    "decoding",
+    "encoding",
+    "spelling",
+    "spelling_encoding",
+    "word_recognition",
+    "word_building",
+    "decodable_reading",
+  ].includes(normalized)) {
+    return "foundational"
+  }
+
+  if (["comprehension", "language_comprehension", "reading_response"].includes(normalized)) {
+    return "comprehension"
+  }
+
+  if (["vocabulary", "oral_language", "vocabulary_oral_language", "speaking_listening"].includes(normalized)) {
+    return "vocabulary"
+  }
+
+  if (["fluency"].includes(normalized)) {
+    return "fluency"
+  }
+
+  if (["writing", "writing_about_reading", "writing_sentence_work"].includes(normalized)) {
+    return "writing"
+  }
+
+  if (["grammar", "grammar_language_conventions"].includes(normalized)) {
+    return "grammar"
+  }
+
+  return null
+}
+
+function isRelevantStandardForTarget(value: string, normalizedTarget: string): boolean {
+  const lower = value.toLowerCase()
+
+  if (normalizedTarget === "foundational") {
+    return (
+      /(?:^|\.)f(?:\.|$)/i.test(value) ||
+      /\bRF\./i.test(value) ||
+      containsAnyTerm(lower, [
+        "phonological awareness",
+        "phonemic awareness",
+        "phonics",
+        "foundational",
+        "word-analysis",
+        "word analysis",
+        "high-frequency words",
+        "high frequency words",
+        "decoding",
+        "encode",
+        "encoding",
+        "letter-sound",
+        "segment",
+        "blend",
+        "cvce",
+        "cvc",
+        "sight word",
+        "print concepts",
+      ])
+    )
+  }
+
+  if (normalizedTarget === "comprehension") {
+    return (
+      /(?:^|\.)r(?:\.|$)/i.test(value) ||
+      /\bR[IL]?\./i.test(value) ||
+      containsAnyTerm(lower, [
+        "main topic",
+        "key details",
+        "author's purpose",
+        "author purpose",
+        "theme",
+        "character",
+        "retell",
+        "comprehension",
+        "text evidence",
+      ])
+    )
+  }
+
+  if (normalizedTarget === "vocabulary") {
+    return (
+      /(?:^|\.)v(?:\.|$)/i.test(value) ||
+      /\b(?:L|SL)\./i.test(value) ||
+      containsAnyTerm(lower, [
+        "vocabulary",
+        "oral language",
+        "speaking",
+        "listening",
+        "academic language",
+      ])
+    )
+  }
+
+  if (normalizedTarget === "fluency") {
+    return containsAnyTerm(lower, ["fluency", "rate", "accuracy", "expression"])
+  }
+
+  if (normalizedTarget === "writing") {
+    return /(?:^|\.)w(?:\.|$)/i.test(value) || containsAnyTerm(lower, ["write", "writing", "sentence", "compose"])
+  }
+
+  if (normalizedTarget === "grammar") {
+    return /(?:^|\.)l(?:\.|$)/i.test(value) || containsAnyTerm(lower, ["grammar", "conventions", "language"])
+  }
+
+  return true
+}
+
+function containsAnyTerm(value: string, terms: string[]): boolean {
+  return terms.some((term) => value.includes(term))
+}
+
 function uniqueCaseInsensitive(values: string[]): string[] {
   const seen = new Set<string>()
   const results: string[] = []
@@ -326,6 +498,3 @@ function uniqueCaseInsensitive(values: string[]): string[] {
 
   return results
 }
-
-
-

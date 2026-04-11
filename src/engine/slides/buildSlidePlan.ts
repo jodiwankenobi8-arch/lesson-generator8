@@ -1,4 +1,5 @@
 ﻿import { LessonBlueprint, LessonSpec } from "../types"
+import { getNormalizedBlueprintValues } from "../shared/teacherFacingContent"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
 import { SlideAction, SlideKind, SlideOutline } from "./slideTypes"
 
@@ -21,6 +22,7 @@ export function buildSlidePlan(
   const teacherMoveShell = resolvedShell.teacherMoves
   const promptShell = resolvedShell.promptStyle
   const toneShell = resolvedShell.tone
+  const content = buildSlideContentView(blueprint)
 
   const contentSlides = slideShell.map((shellLabel, index) => {
     const segmentLabel = segmentOrder[index] ?? shellLabel
@@ -42,6 +44,7 @@ export function buildSlidePlan(
         blueprint,
         spec,
         sectionSteps: section.steps,
+        content,
       }),
     }
   })
@@ -59,8 +62,8 @@ export function buildSlidePlan(
       tone: blueprint.structure.tone[0] ?? "clear instructional tone",
       body: compact([
         `Target: ${formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary)}`,
-        `Standards: ${sanitizeSlideValues(blueprint.content.standards, "standard").join(", ") || "TBD"}`,
-        `Focus Vocabulary: ${sanitizeSlideValues(blueprint.content.vocabulary, "vocabulary").slice(0, 3).join(", ") || "TBD"}`,
+        `Standards: ${content.standard.join(", ") || "TBD"}`,
+        `Focus Vocabulary: ${content.vocabulary.slice(0, 3).join(", ") || "TBD"}`,
       ]),
     },
     ...contentSlides,
@@ -75,7 +78,7 @@ export function buildSlidePlan(
       promptStyle: blueprint.structure.promptStyle.join(", "),
       tone: blueprint.structure.tone.join(", "),
       body: compact([
-        `Vocabulary: ${sanitizeSlideValues(blueprint.content.vocabulary, "vocabulary").join(", ") || "None"}`,
+        `Vocabulary: ${content.vocabulary.join(", ") || "None"}`,
         `Teacher Moves: ${blueprint.structure.teacherMoves.join(", ") || "None"}`,
         `Prompts: ${blueprint.structure.promptStyle.join(", ") || "None"}`,
         `Source Balance: ${blueprint.sourceReadiness.overall}`,
@@ -90,6 +93,22 @@ type SlideValueKind =
   | "wordList"
   | "text"
   | "practice"
+
+type SlideContentView = Record<SlideValueKind, string[]>
+
+function buildSlideContentView(blueprint: LessonBlueprint): SlideContentView {
+  return {
+    standard: getSlideValues(blueprint, "standard"),
+    vocabulary: getSlideValues(blueprint, "vocabulary"),
+    wordList: getSlideValues(blueprint, "wordList"),
+    text: getSlideValues(blueprint, "text"),
+    practice: getSlideValues(blueprint, "practice"),
+  }
+}
+
+function getSlideValues(blueprint: LessonBlueprint, kind: SlideValueKind): string[] {
+  return sanitizeSlideValues(getNormalizedBlueprintValues(blueprint, kind), kind)
+}
 
 function sanitizeSlideValues(values: string[], kind: SlideValueKind): string[] {
   return Array.from(
@@ -151,16 +170,17 @@ function buildSlideBody(args: {
   blueprint: LessonBlueprint
   spec: LessonSpec
   sectionSteps: string[]
+  content: SlideContentView
 }): string[] {
-  const { kind, blueprint, spec, sectionSteps } = args
+  const { kind, blueprint, spec, sectionSteps, content } = args
   const primary = blueprint.content.target.primary.toLowerCase()
   const isMixed = blueprint.content.target.isMixedTarget
 
   if (kind === "opening") {
     return compact([
       `Lesson Focus: ${formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary)}`,
-      `Standards: ${sanitizeSlideValues(blueprint.content.standards, "standard").slice(0, 2).join(", ")}`,
-      `Vocabulary: ${sanitizeSlideValues(blueprint.content.vocabulary, "vocabulary").slice(0, 3).join(", ")}`,
+      `Standards: ${content.standard.slice(0, 2).join(", ")}`,
+      `Vocabulary: ${content.vocabulary.slice(0, 3).join(", ")}`,
       ...take(sectionSteps, 2, []),
     ])
   }
@@ -168,8 +188,8 @@ function buildSlideBody(args: {
   if (kind === "teach") {
     return compact([
       primary === "phonics"
-        ? `Model Words: ${sanitizeSlideValues(blueprint.content.wordLists, "wordList").slice(0, 4).join(", ")}`
-        : `Model Text: ${sanitizeSlideValues(blueprint.content.texts, "text").slice(0, 1).join(", ")}`,
+        ? `Model Words: ${content.wordList.slice(0, 4).join(", ")}`
+        : `Model Text: ${content.text.slice(0, 1).join(", ")}`,
       `Teacher Move Focus: ${blueprint.structure.teacherMoves.slice(0, 2).join(", ")}`,
       ...take(sectionSteps, isMixed ? 3 : 2, []),
     ])
@@ -177,20 +197,20 @@ function buildSlideBody(args: {
 
   if (kind === "guided_practice") {
     return compact([
-      `Practice Anchor: ${sanitizeSlideValues(blueprint.content.practiceIdeas, "practice").slice(0, 2).join(", ")}`,
+      `Practice Anchor: ${content.practice.slice(0, 2).join(", ")}`,
       primary === "phonics"
-        ? `Word Support: ${sanitizeSlideValues(blueprint.content.wordLists, "wordList").slice(0, 3).join(", ")}`
-        : `Text Support: ${sanitizeSlideValues(blueprint.content.texts, "text").slice(0, 1).join(", ")}`,
+        ? `Word Support: ${content.wordList.slice(0, 3).join(", ")}`
+        : `Text Support: ${content.text.slice(0, 1).join(", ")}`,
       ...take(sectionSteps, isMixed ? 3 : 2, []),
     ])
   }
 
   if (kind === "independent_practice") {
     return compact([
-      `Independent Task: ${sanitizeSlideValues(blueprint.content.practiceIdeas, "practice").slice(0, 2).join(", ")}`,
+      `Independent Task: ${content.practice.slice(0, 2).join(", ")}`,
       primary === "phonics"
-        ? `Students Apply: ${sanitizeSlideValues(blueprint.content.wordLists, "wordList").slice(0, 3).join(", ")}`
-        : `Students Reference: ${sanitizeSlideValues(blueprint.content.texts, "text").slice(0, 1).join(", ")}`,
+        ? `Students Apply: ${content.wordList.slice(0, 3).join(", ")}`
+        : `Students Reference: ${content.text.slice(0, 1).join(", ")}`,
       ...take(sectionSteps, 2, []),
     ])
   }
@@ -204,8 +224,8 @@ function buildSlideBody(args: {
   if (kind === "closure") {
     return compact([
       primary === "phonics"
-        ? `Review Words: ${sanitizeSlideValues(blueprint.content.wordLists, "wordList").slice(0, 3).join(", ")}`
-        : `Review Vocabulary: ${sanitizeSlideValues(blueprint.content.vocabulary, "vocabulary").slice(0, 3).join(", ")}`,
+        ? `Review Words: ${content.wordList.slice(0, 3).join(", ")}`
+        : `Review Vocabulary: ${content.vocabulary.slice(0, 3).join(", ")}`,
       isMixed
         ? "Reconnect both lesson parts before the final check."
         : "Close with a short understanding check.",

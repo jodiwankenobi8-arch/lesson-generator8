@@ -1,4 +1,6 @@
 ﻿import type { LessonBlueprint, LessonInputs } from "../types"
+import { getNormalizedBlueprintValues, normalizeTeacherFacingValues } from "../shared/teacherFacingContent"
+import { getPackageDisplayValues, selectTextFocus } from "./buildPackageValueHelpers"
 
 export function buildLessonHeader(
   inputs: LessonInputs,
@@ -24,16 +26,31 @@ export function buildLessonHeader(
 
 export function buildStandardsSummary(
   inputs: LessonInputs,
-  blueprint: LessonBlueprint
+  blueprint: LessonBlueprint,
+  options?: {
+    includeTeacherFocusWhenMissing?: boolean
+  }
 ): string {
   const standards = normalizeDisplayedStandards([
-    inputs.standard,
-    ...blueprint.content.standards,
+    ...normalizeTeacherFacingValues([inputs.standard], {
+      kind: "standard",
+      primaryTarget: blueprint.content.target.primary,
+    }),
+    ...getNormalizedBlueprintValues(blueprint, "standard"),
   ])
 
-  return standards.length > 0
-    ? standards.slice(0, 4).join(", ")
-    : "No standards surfaced yet."
+  if (standards.length > 0) {
+    return standards.slice(0, 4).join(", ")
+  }
+
+  const fallback = "No grounded standard identified yet"
+  const skill = inputs.skill.trim()
+
+  if (options?.includeTeacherFocusWhenMissing && skill.length > 0) {
+    return `${fallback}. Current teacher focus: ${skill}.`
+  }
+
+  return fallback
 }
 
 function normalizeDisplayedStandards(values: string[]): string[] {
@@ -128,11 +145,11 @@ function buildLessonPortionLine(
   const label = formatPackageAreaLabel(areaKey)
 
   if (areaKey === "foundational") {
-    return `Lesson Portion ${index + 1} (${label}): Opening - warm up with ${joinOrFallback(blueprint.content.wordLists.slice(0, 3), "target examples")}. Teach - model the skill clearly. Guided Practice - support students with ${joinOrFallback(blueprint.content.practiceIdeas.slice(0, 2), "guided skill practice")}. Independent Practice - give students their own transfer task with the same pattern. Closure / Check - quickly revisit the strongest examples.`
+    return `Lesson Portion ${index + 1} (${label}): Opening - warm up with ${joinOrFallback(getPackageDisplayValues(blueprint, "wordList", 3), "target examples")}. Teach - model the skill clearly. Guided Practice - support students with ${joinOrFallback(getPackageDisplayValues(blueprint, "practice", 2), "guided skill practice")}. Independent Practice - give students their own transfer task with the same pattern. Closure / Check - quickly revisit the strongest examples.`
   }
 
   if (areaKey === "comprehension") {
-    return `Lesson Portion ${index + 1} (${label}): Opening - connect students to ${joinOrFallback(blueprint.content.texts.slice(0, 1), "the lesson text")}. Teach - model the key thinking. Guided Practice - support discussion and evidence work. Independent Practice - move students into an individual response tied to ${joinOrFallback(blueprint.content.practiceIdeas.slice(0, 2), "the text task")}. Closure / Check - reconnect the text takeaway.`
+    return `Lesson Portion ${index + 1} (${label}): Opening - connect students to ${joinOrFallback(getPackageDisplayValues(blueprint, "text", 1), "the lesson text")}. Teach - model the key thinking. Guided Practice - support discussion and evidence work. Independent Practice - move students into an individual response tied to ${joinOrFallback(getPackageDisplayValues(blueprint, "practice", 2), "the text task")}. Closure / Check - reconnect the text takeaway.`
   }
 
   if (areaKey === "vocabulary_oral_language") {
@@ -140,7 +157,7 @@ function buildLessonPortionLine(
   }
 
   if (areaKey === "fluency") {
-    return `Lesson Portion ${index + 1} (${label}): Opening - set the fluency focus with ${joinOrFallback(blueprint.content.texts.slice(0, 1), "the lesson text")}. Teach - model phrasing, accuracy, and pace. Guided Practice - use echo, choral, or partner reading. Independent Practice - students reread independently. Closure / Check - finish with a brief fluency check.`
+    return `Lesson Portion ${index + 1} (${label}): Opening - set the fluency focus with ${joinOrFallback(getPackageDisplayValues(blueprint, "text", 1), "the lesson text")}. Teach - model phrasing, accuracy, and pace. Guided Practice - use echo, choral, or partner reading. Independent Practice - students reread independently. Closure / Check - finish with a brief fluency check.`
   }
 
   if (areaKey === "writing") {
