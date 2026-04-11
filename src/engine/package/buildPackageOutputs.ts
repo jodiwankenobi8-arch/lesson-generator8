@@ -1,4 +1,4 @@
-import {
+﻿import {
   CenterFocusKey,
   ExportArtifact,
   LessonBlueprint,
@@ -246,7 +246,7 @@ function buildLessonPlan(
     toneCount: 2,
   })
 
-  const header = buildLessonHeader(inputs)
+  const header = buildLessonHeader(inputs, blueprint)
   const groundingBlock = buildLessonGroundingBlock(blueprint)
   const readinessBlock = buildBlueprintReadinessBlock(blueprint)
   const coverageBlock = buildCoverageDecisionBlock(planningIdeas, missingAreaDecisions)
@@ -670,16 +670,59 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
 }
 
 function formatGroundingStandards(blueprint: LessonBlueprint): string {
-  const standards = Array.from(
-    new Set(
-      blueprint.content.standards
-        .map((item) => item.trim())
-        .filter(Boolean)
-        .filter((item) => item.toLowerCase() !== "teacher-selected standard")
-    )
-  )
+  const standards = normalizeGroundingStandards(blueprint.content.standards)
 
   return standards.length > 0 ? standards.slice(0, 3).join(", ") : "No grounded standard identified yet"
+}
+
+function normalizeGroundingStandards(values: string[]): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+
+  for (const value of values.flatMap((item) => splitGroundingStandardCandidates(item))) {
+    const key = value.toLowerCase()
+    if (seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    result.push(value)
+  }
+
+  return result
+}
+
+function splitGroundingStandardCandidates(value: string): string[] {
+  return String(value ?? "")
+    .split(/[\n;|]+/)
+    .map((item) => normalizeGroundingStandard(item))
+    .filter(Boolean)
+}
+
+function normalizeGroundingStandard(value: string): string {
+  let cleaned = String(value ?? "")
+    .replace(/\u2013/g, "-")
+    .replace(/\s+/g, " ")
+    .trim()
+
+  cleaned = cleaned.replace(/^(hb\s+)?florida\s+b\.?e\.?s\.?t\.?\s+standards?:?\s*/i, "")
+  cleaned = cleaned.replace(/^standards?:?\s*/i, "")
+  cleaned = cleaned.replace(/^benchmarks?:?\s*/i, "")
+  cleaned = cleaned.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, "").trim()
+
+  if (!cleaned) {
+    return ""
+  }
+
+  if (/^(standards?|benchmarks?)$/i.test(cleaned)) {
+    return ""
+  }
+
+  if (cleaned.length < 5) {
+    return ""
+  }
+
+  return cleaned
 }
 
 function buildSectionNarrativeBlock(
@@ -1367,3 +1410,6 @@ function joinOrFallback(items: string[], fallback: string): string {
 
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
+
+
+

@@ -1,10 +1,17 @@
-import type { LessonBlueprint, LessonInputs } from "../types"
+﻿import type { LessonBlueprint, LessonInputs } from "../types"
 
-export function buildLessonHeader(inputs: LessonInputs): string {
+export function buildLessonHeader(
+  inputs: LessonInputs,
+  blueprint?: LessonBlueprint
+): string {
+  const resolvedStandards = blueprint
+    ? buildStandardsSummary(inputs, blueprint)
+    : inputs.standard.trim()
+
   const lines = [
     `Grade: ${inputs.grade}`,
     `Subject: ${inputs.subject}`,
-    inputs.standard.trim() ? `Standard(s): ${inputs.standard}` : "",
+    resolvedStandards ? `Standard(s): ${resolvedStandards}` : "",
     `Skill / Focus: ${inputs.skill}`,
     inputs.topic.trim() ? `Topic / Text / Unit: ${inputs.topic}` : "",
     inputs.duration.trim() ? `Duration: ${inputs.duration}` : "",
@@ -19,21 +26,63 @@ export function buildStandardsSummary(
   inputs: LessonInputs,
   blueprint: LessonBlueprint
 ): string {
-  const standards = [inputs.standard, ...blueprint.content.standards]
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .filter((item) => item.toLowerCase() !== "teacher-selected standard")
+  const standards = normalizeDisplayStandards([
+    ...splitStandardCandidates(inputs.standard),
+    ...blueprint.content.standards,
+  ])
 
-  if (standards.length > 0) {
-    return joinOrFallback(Array.from(new Set(standards)).slice(0, 4), "No standards surfaced yet.")
-  }
-
-  const skill = inputs.skill.trim()
-  return skill.length > 0
-    ? `No grounded standard identified yet. Current teacher focus: ${skill}.`
-    : "No grounded standard identified yet."
+  return standards.length > 0 ? standards.slice(0, 4).join(", ") : "No standards surfaced yet."
 }
 
+function splitStandardCandidates(value: string): string[] {
+  return String(value ?? "")
+    .split(/[\n;|]+/)
+    .map((item) => normalizeDisplayStandard(item))
+    .filter(Boolean)
+}
+
+function normalizeDisplayStandards(values: string[]): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+
+  for (const value of values.flatMap((item) => splitStandardCandidates(item))) {
+    const key = value.toLowerCase()
+    if (seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    result.push(value)
+  }
+
+  return result
+}
+
+function normalizeDisplayStandard(value: string): string {
+  let cleaned = String(value ?? "")
+    .replace(/\u2013/g, "-")
+    .replace(/\s+/g, " ")
+    .trim()
+
+  cleaned = cleaned.replace(/^(hb\s+)?florida\s+b\.?e\.?s\.?t\.?\s+standards?:?\s*/i, "")
+  cleaned = cleaned.replace(/^standards?:?\s*/i, "")
+  cleaned = cleaned.replace(/^benchmarks?:?\s*/i, "")
+  cleaned = cleaned.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, "").trim()
+
+  if (!cleaned) {
+    return ""
+  }
+
+  if (/^(standards?|benchmarks?)$/i.test(cleaned)) {
+    return ""
+  }
+
+  if (cleaned.length < 5) {
+    return ""
+  }
+
+  return cleaned
+}
 
 export function buildObjectiveSummary(
   inputs: LessonInputs,
@@ -227,3 +276,6 @@ function joinOrFallback(items: string[], fallback: string): string {
 
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
 }
+
+
+

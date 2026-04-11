@@ -1,4 +1,4 @@
-import { extractImageTextWithOcr } from "./extractImageOcr"
+﻿import { extractImageTextWithOcr } from "./extractImageOcr"
 import { extractPdfTextWithOcrFallback, extractPdfTextWithPdfJs } from "./extractPdfOcr"
 import {
   getSupportedSourceUploadExtension,
@@ -200,6 +200,9 @@ export function extractPlainText(content: string): string[] {
   )
 }
 
+function cloneArrayBuffer(buffer: ArrayBuffer): ArrayBuffer {
+  return buffer.slice(0)
+}
 function extractHtmlText(content: string): string[] {
   if (!content.trim()) {
     return ["HTML file was detected, but no HTML content was provided."]
@@ -234,7 +237,9 @@ async function extractPdfText(input: ExtractTextInput): Promise<string[]> {
   }
 
   try {
-    const extractedLines = await extractPdfTextWithPdfJs(input.fileBuffer)
+    const extractedLines = await extractPdfTextWithPdfJs(
+      cloneArrayBuffer(input.fileBuffer)
+    )
 
     if (extractedLines.length === 0) {
       return [
@@ -273,7 +278,9 @@ async function maybeApplyPdfOcrFallback({
   }
 
   try {
-    const ocrResult = await extractPdfTextWithOcrFallback(input.fileBuffer, {
+    const ocrResult = await extractPdfTextWithOcrFallback(
+      cloneArrayBuffer(input.fileBuffer),
+      {
       maxPages: 3,
       language: "eng",
       scale: 2,
@@ -340,6 +347,30 @@ async function maybeApplyPdfOcrFallback({
       },
     }
   }
+}
+
+function getUsefulOcrGain(parserText: string[], ocrLines: string[]): string[] {
+  const parserKeys = new Set(parserText.map((line) => line.toLowerCase()))
+
+  return ocrLines.filter((line) => !parserKeys.has(line.toLowerCase()))
+}
+
+function shouldKeepPdfOcrResult({
+  parserMethod,
+  usefulOcrGainCount,
+  usefulLongOcrGainCount,
+  averageConfidence,
+}: {
+  parserMethod: ExtractionMetadata["method"]
+  usefulOcrGainCount: number
+  usefulLongOcrGainCount: number
+  averageConfidence: number
+}): boolean {
+  if (parserMethod === "fallback_notice") {
+    return usefulOcrGainCount >= 2 && (usefulLongOcrGainCount >= 1 || averageConfidence >= 0.55)
+  }
+
+  return usefulOcrGainCount >= 2 && usefulLongOcrGainCount >= 1 && averageConfidence >= 0.45
 }
 
 async function extractImageText(input: ExtractTextInput): Promise<ExtractTextResult> {
@@ -616,67 +647,114 @@ function normalizeExtractedText(lines: string[]): string[] {
   const cleaned: string[] = []
 
   for (const rawLine of lines) {
-    const line = rawLine.replace(/\s+/g, " ").trim()
+    const line = normalizeExtractedLine(rawLine)
 
-    if (!shouldKeepExtractedLine(line)) {
+    if (!line) {
+      continue
+    }
+
+    if (shouldDropLowValueExtractedLine(line)) {
       continue
     }
 
     cleaned.push(line)
   }
 
-  return Array.from(new Set(cleaned)).slice(0, 400)
+  return Array.from(
+    new Map(cleaned.map((line) => [line.toLowerCase(), line])).values()
+  ).slice(0, 400)
 }
 
-function shouldKeepExtractedLine(line: string): boolean {
-  if (!line) {
-    return false
-  }
-
-  if (/^\d+$/.test(line)) {
-    return false
-  }
-
-  if (/^(page|slide)\s*\d+\b[:.-]*$/i.test(line)) {
-    return false
-  }
-
-  if (/^(https?:\/\/|www\.)\S+$/i.test(line)) {
-    return false
-  }
-
-  if (/^[\W_]+$/.test(line)) {
-    return false
-  }
-
-  return true
+function normalizeExtractedLine(rawLine: string): string {
+  return String(rawLine ?? "")
+    .replace(/\r/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/[|]{2,}/g, " ")
+    .trim()
 }
 
-function buildUnsupportedFormatNotice(
-  fileType: "unknown",
-  fileName: string
-): string[] {
-  return [
-    `Unsupported file type for ${fileName}.`,
-    SUPPORTED_EXTRACTION_TARGETS_NOTICE,
-  ]
-}
+function shouldDropLowValueExtractedLine(line: string): boolean {
+  const lower = line.toLowerCase()
 
-function isFallbackNoticeResult(lines: string[]): boolean {
-  if (lines.length === 0) {
+  if (!lower) {
     return true
   }
 
-  const joined = lines.join(" ").toLowerCase()
+  if (looksLikeRecoverableStandardCode(line)) {
+    return false
+  }
+
+  if (lower.length < 4) {
+    return true
+  }
+
+  const alphaCount = (line.match(/[a-z]/gi) ?? []).length
+  const nonSpaceLength = line.replace(/\s+/g, "").length
+  const alphaRatio = nonSpaceLength > 0 ? alphaCount / nonSpaceLength : 0
+
+  if (/^(page\s+\d+|\d+)$/.test(lower)) {
+    return true
+  }
+
+  if (/^(standards?|benchmarks?|teacher edition|student edition)$/.test(lower)) {
+    return true
+  }
+
+  if (/(all rights reserved|copyright|teacher edition|student edition|printed in)/i.test(lower)) {
+    return true
+  }
+
+  if (/florida\s+b\.?e\.?s\.?t\.?/i.test(lower) && /standards?/i.test(lower)) {
+    return true
+  }
+
+  if (/\bedition\b/i.test(lower) && alphaRatio < 0.75 && lower.length < 60) {
+    return true
+  }
+
+  if ((/[\)\]\(]{2,}/.test(line) || /[^\w\s]{4,}/.test(line)) && alphaRatio < 0.70) {
+    return true
+  }
+
+  if (alphaRatio < 0.45) {
+    return true
+  }
+
+  return false
+}
+
+function looksLikeRecoverableStandardCode(line: string): boolean {
+  return (
+    /\b(?:ELA|RF|RL|RI|L|SL|W)\.[A-Z0-9]+(?:\.[A-Z0-9]+)+\b/i.test(line) ||
+    /\b[A-Z]{1,4}\.\d+(?:\.\d+){1,3}\b/.test(line)
+  )
+}
+
+function isFallbackNoticeText(lines: string[]): boolean {
+  const joined = lines.map((line) => String(line ?? "").trim().toLowerCase()).join(" ")
 
   return (
-    joined.includes("no filebuffer was provided") ||
-    joined.includes("unsupported file type") ||
-    joined.includes("extraction failed") ||
+    joined.includes("not wired yet") ||
+    joined.includes("not supported yet") ||
+    joined.includes("unsupported format") ||
     joined.includes("produced no readable text") ||
     joined.includes("no html content was provided") ||
-    joined.includes("image ocr failed")
+    joined.includes("image ocr failed") ||
+    joined.includes("detected, but no filebuffer was provided")
   )
+}
+
+function isFallbackNoticeResult(lines: string[]): boolean {
+  return isFallbackNoticeText(lines)
+}
+
+function buildUnsupportedFormatNotice(fileType: string, fileName: string): string[] {
+  const normalizedType = String(fileType ?? "unknown").trim() || "unknown"
+
+  return [
+    `${fileName} could not be parsed because ${normalizedType} is not supported yet.`,
+    "Keep this source visible for the teacher, but do not use it for lesson grounding until readable text is recovered from a supported source."
+  ]
 }
 
 function buildExtractionMetadata({
@@ -914,3 +992,10 @@ function computeExtractionSignals(lines: string[]) {
 function clampConfidence(value: number): number {
   return Math.max(0.05, Math.min(0.98, Number(value.toFixed(2))))
 }
+
+
+
+
+
+
+

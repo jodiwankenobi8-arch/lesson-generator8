@@ -192,7 +192,7 @@ function buildResolvedTarget(
   if (resolvedMode === "phonics_only") {
     return {
       primary: "phonics",
-      secondary: rawTarget.primary === "comprehension" ? "comprehension" : null,
+      secondary: null,
       isMixedTarget: false,
       recommendedMode: resolvedMode,
     }
@@ -201,7 +201,7 @@ function buildResolvedTarget(
   if (resolvedMode === "comprehension_only") {
     return {
       primary: "comprehension",
-      secondary: rawTarget.primary === "phonics" ? "phonics" : null,
+      secondary: null,
       isMixedTarget: false,
       recommendedMode: resolvedMode,
     }
@@ -304,3 +304,5 @@ function exemplarTargetsInclude(
   const targets = styleSettings?.targets?.length ? styleSettings.targets : ["shared"]
   return targets.includes(scope as (typeof targets)[number])
 }
+
+
