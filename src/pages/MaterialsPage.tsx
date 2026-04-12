@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+﻿import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   SUPPORTED_SOURCE_UPLOAD_ACCEPT,
@@ -581,6 +581,10 @@ export default function MaterialsPage() {
   )
   const confirmedStandards = useMemo(() => normalizeAndDedupeStandards([inputs.standard]), [inputs.standard])
   const needsStandardsConfirmation = confirmedStandards.length === 0
+  const showStandardsConfirmationCard = useMemo(
+    () => shouldShowStandardsConfirmationCard(materials.length, suggestedStandards, inputs.standard),
+    [materials.length, suggestedStandards, inputs.standard]
+  )
   const generateBlocked = !canGenerate || isGenerating || needsStandardsConfirmation
 
   const curriculumInputRef = useRef<HTMLInputElement | null>(null)
@@ -888,10 +892,11 @@ export default function MaterialsPage() {
         </p>
 
         <div style={{ display: "grid", gap: 10 }}>
-          {needsStandardsConfirmation ? (
+          {showStandardsConfirmationCard ? (
             <StandardsConfirmationCard
               suggestedStandards={suggestedStandards}
               confirmedStandards={inputs.standard}
+              required={needsStandardsConfirmation}
               onApplySuggestions={() => setInputs({ standard: serializeStandardsText(suggestedStandards) })}
               onChange={(value) => setInputs({ standard: value })}
               onToggleStandard={(value) =>
@@ -949,7 +954,15 @@ export default function MaterialsPage() {
   )
 }
 
-export { normalizeAndDedupeStandards, normalizeStandardValue, serializeStandardsText, standardTextIncludes, toggleStandardInText }
+export {
+  normalizeAndDedupeStandards,
+  normalizeStandardValue,
+  serializeStandardsText,
+  standardTextIncludes,
+  toggleStandardInText,
+  shouldShowStandardsConfirmationCard,
+  getStandardsConfirmationHelperText,
+}
 
 function isKindergartenEla(inputs: LessonInputs): boolean {
   return inputs.grade.trim().toUpperCase() === "K" &&
@@ -1034,28 +1047,52 @@ export function buildSuggestedStandards(materials: MaterialFile[], inputs: Lesso
   return inferSuggestedStandardsFromInputs(inputs)
 }
 
+function shouldShowStandardsConfirmationCard(
+  materialCount: number,
+  suggestedStandards: string[],
+  confirmedStandardsText: string
+): boolean {
+  return (
+    materialCount > 0 ||
+    suggestedStandards.length > 0 ||
+    normalizeAndDedupeStandards([confirmedStandardsText]).length > 0
+  )
+}
+
+function getStandardsConfirmationHelperText(confirmedStandardsText: string): string {
+  const count = normalizeAndDedupeStandards([confirmedStandardsText]).length
+  if (count === 0) {
+    return "Choose at least one standard before generating. Click any standard you want to include, or type your own."
+  }
+
+  return `${count} standard${count === 1 ? "" : "s"} selected. Keep clicking standards to add or remove more, or edit the box directly.`
+}
+
 function StandardsConfirmationCard({
   suggestedStandards,
   confirmedStandards,
+  required,
   onApplySuggestions,
   onChange,
   onToggleStandard,
 }: {
   suggestedStandards: string[]
   confirmedStandards: string
+  required: boolean
   onApplySuggestions: () => void
   onChange: (value: string) => void
   onToggleStandard: (value: string) => void
 }) {
   const confirmedList = normalizeAndDedupeStandards([confirmedStandards])
+  const helperText = getStandardsConfirmationHelperText(confirmedStandards)
 
   return (
     <div style={standardsCardStyle}>
       <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 14 }}>
-        Standards confirmation needed
+        {required ? "Standards confirmation needed" : "Confirmed standards"}
       </div>
       <div style={exemplarSubtleTextStyle}>
-        Standards were left blank on Inputs. Review these suggestions, then accept or edit them before generating.
+        Review the standards you want in this lesson package. Suggested chips stay available so you can confirm more than one standard before generating.
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
@@ -1108,7 +1145,7 @@ function StandardsConfirmationCard({
           disabled={suggestedStandards.length === 0}
           style={secondaryButtonStyle()}
         >
-          Use suggested standards
+          Use all suggested standards
         </button>
         {confirmedList.length > 0 ? (
           <button
@@ -1122,7 +1159,7 @@ function StandardsConfirmationCard({
       </div>
 
       <div style={exemplarSubtleTextStyle}>
-        Click a standard chip to add or remove it. Generation unlocks once you confirm at least one standard.
+        {helperText}
       </div>
     </div>
   )

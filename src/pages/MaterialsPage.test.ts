@@ -14,6 +14,8 @@ import {
   serializeStandardsText as serializeConfirmedStandardsText,
   standardTextIncludes,
   toggleStandardInText,
+  shouldShowStandardsConfirmationCard,
+  getStandardsConfirmationHelperText,
 } from "./MaterialsPage"
 import { EXEMPLAR_INFLUENCE_MODE_OPTIONS, EXEMPLAR_TARGET_OPTIONS } from "./materialsPageExemplarHelpers"
 
@@ -369,7 +371,7 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain(
       "The app auto-detects what kind of exemplar each one most likely is, and you can change it only when the guess is wrong."
     )
-    expect(source).toContain("Review before generation")
+    expect(source).toContain("Review the standards you want in this lesson package.")
     expect(source).toContain("What we found")
     expect(source).toContain("Teacher notes and advanced edits feed standards suggestions, grounding, and generated outputs.")
     expect(source).toContain("Extraction status")
@@ -460,5 +462,24 @@ describe("standards confirmation helpers", () => {
       "ELA.K.F.1.3: Demonstrate phonological awareness"
     )
     expect(removed).toBe("ELA.K.F.1.4: Read high-frequency words")
+  })
+
+  it("keeps the standards picker visible after the first standard is selected so teachers can keep adding more", () => {
+    expect(
+      shouldShowStandardsConfirmationCard(
+        2,
+        [
+          "ELA.K.F.1.3: Demonstrate phonological awareness",
+          "ELA.K.F.1.4: Read high-frequency words",
+        ],
+        "ELA.K.F.1.3: Demonstrate phonological awareness"
+      )
+    ).toBe(true)
+
+    expect(
+      getStandardsConfirmationHelperText(
+        "ELA.K.F.1.3: Demonstrate phonological awareness; ELA.K.F.1.4: Read high-frequency words"
+      )
+    ).toContain("2 standards selected")
   })
 })
