@@ -212,6 +212,7 @@ function normalizeMaterialAnalysisReview(
   return {
     standards: normalizeList(review.standards),
     vocabulary: normalizeList(review.vocabulary),
+    wordLists: normalizeList(review.wordLists),
     instructionalTargets: normalizeList(review.instructionalTargets),
     texts: normalizeList(review.texts),
     practiceIdeas: normalizeList(review.practiceIdeas),
@@ -240,9 +241,11 @@ export function mergeMaterialWithReview(material: MaterialFile): MaterialFile {
             ...curriculum,
             standards: review.standards,
             vocabulary: review.vocabulary,
+            wordLists: review.wordLists ?? [],
             instructionalTargets: review.instructionalTargets,
             texts: review.texts,
             practiceTasks: review.practiceIdeas,
+            examples: review.wordLists ?? [],
           }
         : curriculum,
       exemplar: exemplar

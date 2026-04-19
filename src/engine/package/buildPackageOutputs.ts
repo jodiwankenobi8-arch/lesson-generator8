@@ -1,4 +1,4 @@
-﻿import {
+import {
   CenterFocusKey,
   ExportArtifact,
   LessonBlueprint,
@@ -15,6 +15,7 @@
 } from "../types"
 import { assembleSlideDeck } from "../slides/assembleSlideDeck"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
+import { getUnresolvedBlueprintCurriculumLanes } from "../shared/curriculumReviewStatus"
 import { buildExports } from "./buildPackageExportArtifacts"
 import {
   buildLessonHeader,
@@ -78,6 +79,18 @@ export function buildPackageOutputs(args: {
   const includeCentersOutput = isGroupOutputSelected(outputContents, "centers")
   const includeSmallGroupOutput = isGroupOutputSelected(outputContents, "small_group")
   const includeInterventionOutput = isGroupOutputSelected(outputContents, "intervention")
+  const unresolvedCurriculumLanes = getUnresolvedBlueprintCurriculumLanes(blueprint)
+
+  if (unresolvedCurriculumLanes.length > 0) {
+    return {
+      slides: [],
+      lessonPlan: "",
+      centers: [],
+      rotationPlan: "",
+      interventions: [],
+      exports: [],
+    }
+  }
 
   const slides = includeLessonSlidesOutput
     ? buildSlides(blueprint, spec, {

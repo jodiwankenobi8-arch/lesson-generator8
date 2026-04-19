@@ -14,6 +14,7 @@
   isPlanningComponentSelected,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
+import { getBlueprintCurriculumLaneStatus } from "../shared/curriculumReviewStatus"
 import {
   getNormalizedBlueprintValues,
   normalizeTeacherFacingValues,
@@ -38,25 +39,33 @@ export function buildLessonPlanningIdeas(
 
   const vocabulary = withFallback(
     getNormalizedBlueprintValues(blueprint, "vocabulary"),
-    hasFoundationalArea && !hasMeaningArea
-      ? ["key skill vocabulary"]
-      : ["key lesson vocabulary"]
+    getReviewAwarePlanningFallback(
+      blueprint,
+      "vocabulary",
+      hasFoundationalArea && !hasMeaningArea ? "key skill vocabulary" : "key lesson vocabulary"
+    )
   )
   const texts = withFallback(
     getNormalizedBlueprintValues(blueprint, "text"),
-    ["teacher-provided lesson text"]
+    getReviewAwarePlanningFallback(blueprint, "texts", "teacher-confirmed text or topic")
   )
   const practiceIdeas = withFallback(
     getNormalizedBlueprintValues(blueprint, "practice"),
-    hasFoundationalArea && !hasMeaningArea
-      ? ["guided foundational-skill practice"]
-      : ["guided lesson task"]
+    getReviewAwarePlanningFallback(
+      blueprint,
+      "practiceIdeas",
+      hasFoundationalArea && !hasMeaningArea
+        ? "teacher-confirmed foundational-skill practice"
+        : "teacher-confirmed lesson task"
+    )
   )
   const wordLists = withFallback(
     getNormalizedBlueprintValues(blueprint, "wordList"),
-    hasFoundationalArea
-      ? ["target word examples"]
-      : ["teacher-selected examples"]
+    getReviewAwarePlanningFallback(
+      blueprint,
+      "wordLists",
+      hasFoundationalArea ? "teacher-confirmed word examples" : "teacher-confirmed examples"
+    )
   )
   const standards = withFallback(
     getNormalizedBlueprintValues(blueprint, "standard"),
@@ -121,7 +130,7 @@ export function buildLessonPlanningIdeas(
     slidePlans: shell.slideShell.map((shellLabel, index) => {
       const segmentLabel =
         lessonSegments[index] ??
-        blueprint.structure.templateShell.segmentOrder[index] ??
+        blueprint.structure.templateShell?.segmentOrder?.[index] ??
         shellLabel
 
       return {
@@ -1187,6 +1196,23 @@ type PlanningValueKind =
 
 function withFallback(values: string[], fallback: string[]): string[] {
   return values.length > 0 ? values : fallback
+}
+
+function getReviewAwarePlanningFallback(
+  blueprint: LessonBlueprint,
+  lane: "vocabulary" | "wordLists" | "texts" | "practiceIdeas",
+  fallback: string
+): string[] {
+  const status = getBlueprintCurriculumLaneStatus(blueprint, lane)
+  if (status === "review-needed") {
+    return [`Review needed on Materials: confirm ${lane === "wordLists" ? "word list or examples" : lane === "texts" ? "text or topic" : lane}.`]
+  }
+
+  if (status === "blocked") {
+    return [`Blocked until Materials has usable curriculum support for ${lane === "wordLists" ? "word list or examples" : lane === "texts" ? "text or topic" : lane}.`]
+  }
+
+  return [fallback]
 }
 
 function mapCoverageKeyToPlanningKind(

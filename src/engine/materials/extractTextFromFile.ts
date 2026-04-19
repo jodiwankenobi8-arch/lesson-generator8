@@ -712,6 +712,16 @@ function shouldDropLowValueExtractedLine(line: string): boolean {
     return true
   }
 
+  // Filter out URLs
+  if (/^(https?|ftp):\/\/\S+|^www\.\S+/i.test(line)) {
+    return true
+  }
+
+  // Filter out slide numbers like "Slide 1", "Slide 3", etc.
+  if (/^\s*slide\s+[a-z0-9]+\s*$/i.test(line)) {
+    return true
+  }
+
   if ((/[\)\]\(]{2,}/.test(line) || /[^\w\s]{4,}/.test(line)) && alphaRatio < 0.70) {
     return true
   }

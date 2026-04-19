@@ -46,7 +46,7 @@ export function getNormalizedBlueprintValues(
   kind: TeacherFacingValueKind
 ): string[] {
   const coverage = blueprint.content.coverage
-  const primaryTarget = blueprint.content.target.primary
+  const primaryTarget = blueprint.content.target?.primary
 
   if (kind === "standard") {
     return normalizeTeacherFacingValues(
@@ -187,6 +187,13 @@ function isWeakFallbackValue(lower: string): boolean {
     "teacher-selected examples",
     "teacher-selected word examples",
     "teacher-selected example words",
+    "teacher-confirmed vocabulary",
+    "teacher-confirmed word examples",
+    "teacher-confirmed examples",
+    "teacher-confirmed text or topic",
+    "teacher-confirmed practice",
+    "teacher-confirmed lesson task",
+    "teacher-confirmed foundational-skill practice",
     "target word examples",
     "target words for student transfer",
     "strong word examples",

@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 import { buildPackageOutputs } from "./package/buildPackageOutputs"
 import {
   createDefaultOutputContents,
@@ -303,6 +303,56 @@ describe("buildPackageOutputs", () => {
         content: expect.stringContaining("Centers & Support Printables Export"),
       },
     ])
+  })
+
+  it("blocks exports when curriculum review is still needed", () => {
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      blueprint: {
+        ...blueprint,
+        content: {
+          ...blueprint.content,
+          vocabulary: [],
+          wordLists: [],
+          texts: [],
+          practiceIdeas: [],
+          reviewStatus: {
+            vocabulary: "review-needed",
+            wordLists: "review-needed",
+            texts: "review-needed",
+            practiceIdeas: "review-needed",
+          },
+        },
+      },
+      spec,
+      planningIdeas: makePlanningIdeas({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+      }),
+      outputContents: makeOutputContents({
+        assessment: true,
+        centers: true,
+        smallGroup: true,
+        intervention: true,
+        printables: true,
+      }),
+    })
+
+    expect(result.slides).toEqual([])
+    expect(result.lessonPlan).toBe("")
+    expect(result.centers).toEqual([])
+    expect(result.rotationPlan).toBe("")
+    expect(result.interventions).toEqual([])
+    expect(result.exports).toEqual([])
   })
 
   it("omits unselected optional group sections from the lesson plan narrative", () => {

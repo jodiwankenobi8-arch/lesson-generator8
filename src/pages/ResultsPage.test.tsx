@@ -1,4 +1,4 @@
-﻿import React from "react"
+import React from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { renderToStaticMarkup } from "react-dom/server"
 import { readFileSync } from "node:fs"
@@ -306,7 +306,7 @@ describe("Results explainability rendering contracts", () => {
     const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
 
     const packageSummaryCallIndex = source.indexOf("<PackageSummarySection")
-    const packageOutputsCallIndex = source.indexOf("<PackageOutputsSection lessonPackage={lessonPackage} />")
+    const packageOutputsCallIndex = source.indexOf("<PackageOutputsSection lessonPackage={lessonPackage}")
     const coverageDecisionsCallIndex = source.indexOf("<CoverageDecisionsSection")
     const traceabilityCallIndex = source.indexOf("<TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />")
     const planningDetailsCallIndex = source.indexOf("<PlanningDetailsSection")
@@ -336,6 +336,7 @@ describe("Results explainability rendering contracts", () => {
 
     expect(source).toContain("Teacher-facing lesson package first.")
     expect(source).toContain("Teacher Binder Snapshot")
+    expect(source).toContain("Needs teacher review")
     expect(source).toContain("Primary focus:")
     expect(source).toContain("Additional focus:")
     expect(source).toContain("Multi-area lesson:")
@@ -344,6 +345,14 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain("Structure source:")
     expect(source).toContain("Where exemplars apply:")
     expect(source).toContain("Materials used carefully or not used:")
+    expect(source).toContain("<ReviewFlowCard lessonPackage={lessonPackage} reviewNeededLanes={unresolvedCurriculumLanes} />")
+    expect(source).toContain("Current package surface is held while curriculum review is still needed. Exports ready: 0.")
+    expect(source).toContain("Curriculum review still needed")
+    expect(source).toContain("Exports stay blocked until these curriculum lanes are confirmed or corrected on Materials.")
+    expect(source).toContain("Word list or examples used:")
+    expect(source).toContain("Curriculum review still needed")
+    expect(source).toContain("Exports stay blocked until these curriculum lanes are confirmed or corrected on Materials.")
+    expect(source).toContain("Word list or examples used:")
     expect(source).toContain("Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.")
     expect(source).toContain("Download Package ZIP")
     expect(source).not.toContain("Download Full Package ZIP")

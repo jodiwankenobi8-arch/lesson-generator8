@@ -236,8 +236,8 @@ describe("extraction contract", () => {
 
     expect(result.fileType).toBe("unknown")
     expect(result.extractedText).toEqual([
-      "Unsupported file type for materials.csv.",
-      SUPPORTED_EXTRACTION_TARGETS_NOTICE,
+      "materials.csv could not be parsed because unknown is not supported yet.",
+      "Keep this source visible for the teacher, but do not use it for lesson grounding until readable text is recovered from a supported source.",
     ])
     expect(result.extractionMetadata.method).toBe("fallback_notice")
     expect(result.extractionMetadata.quality).toBe("low")
@@ -332,8 +332,8 @@ describe("extraction contract", () => {
 
     expect(result.fileType).toBe("unknown")
     expect(result.extractedText).toEqual([
-      "Unsupported file type for district-scan.bmp.",
-      SUPPORTED_EXTRACTION_TARGETS_NOTICE,
+      "district-scan.bmp could not be parsed because unknown is not supported yet.",
+      "Keep this source visible for the teacher, but do not use it for lesson grounding until readable text is recovered from a supported source.",
     ])
     expect(result.extractionMetadata.ocrCandidate).toBe(false)
     expect(extractImageTextWithOcrMock).not.toHaveBeenCalled()

@@ -34,7 +34,7 @@ export function buildStandardsSummary(
   const standards = normalizeDisplayedStandards([
     ...normalizeTeacherFacingValues([inputs.standard], {
       kind: "standard",
-      primaryTarget: blueprint.content.target.primary,
+      primaryTarget: blueprint.content.target?.primary,
     }),
     ...getNormalizedBlueprintValues(blueprint, "standard"),
   ])

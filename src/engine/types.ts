@@ -1008,6 +1008,7 @@ export type MaterialAnalysis = {
 export type MaterialAnalysisReview = {
   standards: string[]
   vocabulary: string[]
+  wordLists?: string[]
   instructionalTargets: string[]
   texts: string[]
   practiceIdeas: string[]
@@ -1097,6 +1098,23 @@ export type ResolvedLessonProfile = {
 
 
 
+export type BlueprintCurriculumLaneKey =
+  | "vocabulary"
+  | "wordLists"
+  | "texts"
+  | "practiceIdeas"
+
+export type BlueprintContentLaneStatus =
+  | "reviewed"
+  | "extracted"
+  | "review-needed"
+  | "blocked"
+
+export type BlueprintContentReviewStatus = Record<
+  BlueprintCurriculumLaneKey,
+  BlueprintContentLaneStatus
+>
+
 export type BlueprintContentCoverage = {
 
   standards: string[]
@@ -1138,6 +1156,8 @@ export type BlueprintContent = {
   practiceIdeas: string[]
 
   coverage?: BlueprintContentCoverage
+
+  reviewStatus?: BlueprintContentReviewStatus
 
 }
 

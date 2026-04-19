@@ -370,6 +370,12 @@ const CURRICULUM_REVIEW_FIELDS: ReviewFieldConfig[] = [
     placeholder: "Example:\nlong a\nsilent e\nvowel pattern",
   },
   {
+    key: "wordLists",
+    label: "Word list / examples",
+    help: "One per line. Keep the words, examples, or item sets this lesson should actually use.",
+    placeholder: "Example:\ncake\ngame\nlake\nname",
+  },
+  {
     key: "texts",
     label: "Texts / topic",
     help: "One per line. Use this for decodable passages, read-aloud texts, topics, or unit text references.",
@@ -540,6 +546,7 @@ export function buildMaterialAnalysisReviewDraft(
   const draft = {
     standards: sanitizeAutoDraftValues(curriculum?.standards ?? []),
     vocabulary: sanitizeAutoDraftValues(curriculum?.vocabulary ?? []),
+    wordLists: sanitizeAutoDraftValues([...(curriculum?.wordLists ?? []), ...(curriculum?.examples ?? [])]),
     instructionalTargets: sanitizeAutoDraftValues(curriculum?.instructionalTargets ?? []),
     texts: sanitizeAutoDraftValues(curriculum?.texts ?? []),
     practiceIdeas: sanitizeAutoDraftValues(curriculum?.practiceTasks ?? []),
@@ -1413,7 +1420,7 @@ function getSimplifiedExemplarMode(
 
 function buildMaterialUseSummary(material: MaterialFile): string {
   if (material.role === "curriculum") {
-    return "Used as the content authority for lesson focus, standards, vocabulary, texts, and practice."
+    return "Used as the content authority for lesson focus, standards, vocabulary, word lists or examples, texts or topics, and practice."
   }
 
   const settings = getDefaultExemplarStyleSettings(material.styleSettings)
@@ -1445,6 +1452,9 @@ function buildMaterialContentSummary(
     }
     if (draft.vocabulary.length > 0) {
       parts.push(`Key vocabulary: ${summarizeMaterialPreview(draft.vocabulary, 3)}.`)
+    }
+    if ((draft.wordLists ?? []).length > 0) {
+      parts.push(`Word list or examples: ${summarizeMaterialPreview(draft.wordLists ?? [], 4)}.`)
     }
     if (draft.texts.length > 0) {
       parts.push(`Texts or topics: ${summarizeMaterialPreview(draft.texts, 2)}.`)
@@ -1680,6 +1690,37 @@ function MaterialReviewEditor({
         placeholder={notesPlaceholder}
       />
 
+      {material.role === "curriculum" ? (
+        <div
+          style={{
+            ...orchardSoftCardStyle,
+            padding: 12,
+            marginLeft: 0,
+            display: "grid",
+            gap: 10,
+            background: "rgba(255,255,255,0.82)",
+          }}
+        >
+          <div style={{ fontWeight: 700, color: "var(--deep-orchard)" }}>
+            Confirm the lesson details that generation should use
+          </div>
+          <div style={reviewFieldGridStyle}>
+            {CURRICULUM_REVIEW_FIELDS.filter((field) =>
+              ["vocabulary", "wordLists", "texts", "practiceIdeas"].includes(field.key)
+            ).map((field) => (
+              <ReviewTextAreaField
+                key={field.key}
+                label={field.label}
+                help={field.help}
+                value={serializeReviewList((activeReview[field.key] as string[]) ?? [])}
+                onChange={(value) => updateListField(field.key, value)}
+                placeholder={field.placeholder}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <details
         style={{
           ...orchardSoftCardStyle,
@@ -1697,7 +1738,10 @@ function MaterialReviewEditor({
           Use these only when the summary and notes are not enough.
         </div>
         <div style={reviewFieldGridStyle}>
-          {fieldConfigs.map((field) => (
+          {(material.role === "curriculum"
+            ? fieldConfigs.filter((field) => !["vocabulary", "wordLists", "texts", "practiceIdeas"].includes(field.key))
+            : fieldConfigs
+          ).map((field) => (
             <ReviewTextAreaField
               key={field.key}
               label={field.label}

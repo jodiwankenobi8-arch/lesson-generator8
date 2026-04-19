@@ -2,6 +2,8 @@ import {
   LessonBlueprint,
   LessonPackageReadiness,
 } from "../types"
+import { getUnresolvedBlueprintCurriculumLanes } from "../shared/curriculumReviewStatus"
+import { getNormalizedBlueprintValues } from "../shared/teacherFacingContent"
 
 export function buildLessonPackageReadiness(args: {
   blueprint: LessonBlueprint
@@ -20,10 +22,18 @@ export function buildLessonPackageReadiness(args: {
     ? "mixed"
     : "single-focus"
 
+  const unresolvedCurriculumLanes = getUnresolvedBlueprintCurriculumLanes(blueprint)
+  const normalizedVocabulary = getNormalizedBlueprintValues(blueprint, "vocabulary")
+  const normalizedWordLists = getNormalizedBlueprintValues(blueprint, "wordList")
+  const normalizedTexts = getNormalizedBlueprintValues(blueprint, "text")
+  const normalizedPracticeIdeas = getNormalizedBlueprintValues(blueprint, "practice")
+
   const contentFit =
-    blueprint.content.vocabulary.length > 0 &&
-    blueprint.content.texts.length > 0 &&
-    blueprint.content.practiceIdeas.length > 0
+    unresolvedCurriculumLanes.length === 0 &&
+    normalizedVocabulary.length > 0 &&
+    normalizedWordLists.length > 0 &&
+    normalizedTexts.length > 0 &&
+    normalizedPracticeIdeas.length > 0
       ? "grounded"
       : "limited"
 
@@ -35,6 +45,22 @@ export function buildLessonPackageReadiness(args: {
 
   if (contentFit === "limited") {
     warnings.push("Curriculum-driven content signals look sparse.")
+  }
+
+  if (unresolvedCurriculumLanes.length > 0) {
+    warnings.push(
+      `Curriculum review is still needed for: ${unresolvedCurriculumLanes
+        .map((lane) =>
+          lane === "wordLists"
+            ? "word list or examples"
+            : lane === "texts"
+              ? "text or topic"
+              : lane === "practiceIdeas"
+                ? "practice ideas"
+                : lane
+        )
+        .join(", ")}.`
+    )
   }
 
   if (lessonShape === "mixed") {
@@ -71,7 +97,9 @@ export function buildLessonPackageReadiness(args: {
         note:
           contentFit === "grounded"
             ? "Curriculum-driven content signals are present in the package."
-            : "Some curriculum-driven content signals look sparse.",
+            : unresolvedCurriculumLanes.length > 0
+              ? "Some curriculum lanes still need teacher confirmation before the package is classroom-ready."
+              : "Some curriculum-driven content signals look sparse.",
         tone: contentFit === "grounded" ? "good" : "warn",
       },
     ],

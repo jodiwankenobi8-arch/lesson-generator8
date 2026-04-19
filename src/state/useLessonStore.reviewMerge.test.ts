@@ -48,6 +48,7 @@ describe("mergeMaterialWithReview", () => {
       analysisReview: {
         standards: ["ELA.K.F.1.3: Demonstrate phonological awareness"],
         vocabulary: ["long a"],
+        wordLists: ["cake", "game"],
         instructionalTargets: [],
         texts: [],
         practiceIdeas: ["Read and sort long a words"],
@@ -63,6 +64,8 @@ describe("mergeMaterialWithReview", () => {
       "ELA.K.F.1.3: Demonstrate phonological awareness",
     ])
     expect(curriculum?.vocabulary).toEqual(["long a"])
+    expect(curriculum?.wordLists).toEqual(["cake", "game"])
+    expect(curriculum?.examples).toEqual(["cake", "game"])
     expect(curriculum?.instructionalTargets).toEqual([])
     expect(curriculum?.texts).toEqual([])
     expect(curriculum?.practiceTasks).toEqual(["Read and sort long a words"])

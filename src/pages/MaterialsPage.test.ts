@@ -1,4 +1,4 @@
-﻿import { readFileSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import {
   buildMaterialAnalysisReviewDraft,
@@ -251,6 +251,7 @@ describe("analysis review helpers", () => {
     expect(review).toEqual({
       standards: ["RF.1.3"],
       vocabulary: ["short a"],
+      wordLists: ["cat, map, sat, ram", "cat"],
       instructionalTargets: ["Blend and read short a CVC words."],
       texts: ["A short decodable text."],
       practiceIdeas: ["Blend cat, map, sat, ram."],
@@ -294,6 +295,7 @@ describe("analysis review helpers", () => {
     expect(review).toEqual({
       standards: [],
       vocabulary: [],
+      wordLists: [],
       instructionalTargets: [],
       texts: [],
       practiceIdeas: [],
@@ -331,6 +333,7 @@ describe("analysis review helpers", () => {
     expect(review).toEqual({
       standards: [],
       vocabulary: [],
+      wordLists: [],
       instructionalTargets: [],
       texts: [],
       practiceIdeas: [],
@@ -373,6 +376,10 @@ describe("Materials page teacher-facing copy", () => {
     )
     expect(source).toContain("Review the standards you want in this lesson package.")
     expect(source).toContain("What we found")
+    expect(source).toContain("Confirm the lesson details that generation should use")
+    expect(source).toContain("Word list / examples")
+    expect(source).toContain("Confirm the lesson details that generation should use")
+    expect(source).toContain("Word list / examples")
     expect(source).toContain("Teacher notes and advanced edits feed standards suggestions, grounding, and generated outputs.")
     expect(source).toContain("Extraction status")
     expect(source).toContain("This shows whether readable text came from the parser, OCR, both, or only a fallback notice.")

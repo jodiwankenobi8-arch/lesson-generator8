@@ -1,5 +1,6 @@
-﻿import {
+import {
   BlueprintContentCoverage,
+  BlueprintContentReviewStatus,
   CurriculumAnalysis,
   LessonBlueprint,
   MaterialFile,
@@ -22,11 +23,58 @@ export function resolveBlueprintContent(args: {
   const { curriculumMaterials, curriculumAnalyses, inputs, target } = args
 
   const standards = resolveStandards(curriculumMaterials, curriculumAnalyses, inputs, target.primary)
-  const vocabulary = resolveVocabulary(curriculumMaterials, curriculumAnalyses, target.primary, inputs)
-  const wordLists = resolveWordLists(curriculumMaterials, curriculumAnalyses, target.primary, inputs)
-  const texts = resolveTexts(curriculumMaterials, curriculumAnalyses, inputs.topic, target.primary, inputs)
-  const practiceIdeas = resolvePracticeIdeas(curriculumMaterials, curriculumAnalyses, target.primary, inputs)
+  const reviewedVocabulary = normalizeResolvedLane(
+    resolveReviewedLane(curriculumMaterials, "vocabulary", "vocabulary"),
+    "vocabulary",
+    target.primary
+  )
+  const reviewedWordLists = normalizeResolvedLane(
+    resolveReviewedLane(curriculumMaterials, "wordLists", "wordList"),
+    "wordList",
+    target.primary
+  )
+  const reviewedTexts = normalizeResolvedLane(
+    resolveReviewedLane(curriculumMaterials, "texts", "text"),
+    "text",
+    target.primary
+  )
+  const reviewedPracticeIdeas = normalizeResolvedLane(
+    resolveReviewedLane(curriculumMaterials, "practiceIdeas", "practice"),
+    "practice",
+    target.primary
+  )
+  const extractedVocabulary = normalizeResolvedLane(
+    resolveVocabulary(curriculumMaterials, curriculumAnalyses, target.primary, inputs),
+    "vocabulary",
+    target.primary
+  )
+  const extractedWordLists = normalizeResolvedLane(
+    resolveWordLists(curriculumMaterials, curriculumAnalyses, target.primary, inputs),
+    "wordList",
+    target.primary
+  )
+  const extractedTexts = normalizeResolvedLane(
+    resolveTexts(curriculumMaterials, curriculumAnalyses, inputs.topic, target.primary, inputs),
+    "text",
+    target.primary
+  )
+  const extractedPracticeIdeas = normalizeResolvedLane(
+    resolvePracticeIdeas(curriculumMaterials, curriculumAnalyses, target.primary, inputs),
+    "practice",
+    target.primary
+  )
+  const vocabulary = reviewedVocabulary.length > 0 ? reviewedVocabulary : extractedVocabulary
+  const wordLists = reviewedWordLists.length > 0 ? reviewedWordLists : extractedWordLists
+  const texts = reviewedTexts.length > 0 ? reviewedTexts : extractedTexts
+  const practiceIdeas = reviewedPracticeIdeas.length > 0 ? reviewedPracticeIdeas : extractedPracticeIdeas
   const coverage = resolveBlueprintContentCoverage(curriculumAnalyses)
+  const hasContentUsableCurriculum = curriculumMaterials.some((material) => isContentUsableCurriculumMaterial(material))
+  const reviewStatus: BlueprintContentReviewStatus = {
+    vocabulary: resolveLaneStatus(reviewedVocabulary, vocabulary, hasContentUsableCurriculum),
+    wordLists: resolveLaneStatus(reviewedWordLists, wordLists, hasContentUsableCurriculum),
+    texts: resolveLaneStatus(reviewedTexts, texts, hasContentUsableCurriculum),
+    practiceIdeas: resolveLaneStatus(reviewedPracticeIdeas, practiceIdeas, hasContentUsableCurriculum),
+  }
 
   return {
     standards,
@@ -35,6 +83,7 @@ export function resolveBlueprintContent(args: {
     texts,
     practiceIdeas,
     coverage,
+    reviewStatus,
   }
 }
 
@@ -518,12 +567,7 @@ function resolveVocabulary(
     return extractedVocabulary.slice(0, 8)
   }
 
-  const inferredVocabulary = inferTeacherInputVocabulary(primaryTarget, inputs)
-  if (inferredVocabulary.length > 0) {
-    return inferredVocabulary
-  }
-
-  return inferTeacherFacingVocabulary(inputs, primaryTarget)
+  return []
 }
 
 function resolveWordLists(
@@ -536,7 +580,7 @@ function resolveWordLists(
     cleanUnique(
       curriculumAnalyses.flatMap((analysis) => {
         const coverage = getCoverage(analysis)
-        return [...coverage.wordLists, ...analysis.wordLists, ...coverage.sightWords]
+        return [...coverage.wordLists, ...analysis.wordLists, ...(analysis.examples ?? []), ...coverage.sightWords]
       })
     ).filter((value) => !isWeakFallbackValue(value)),
     "wordList"
@@ -589,12 +633,7 @@ function resolveWordLists(
     return extractedWordLists.slice(0, 8)
   }
 
-  const inferredWordLists = inferTeacherInputWordLists(primaryTarget, inputs)
-  if (inferredWordLists.length > 0) {
-    return inferredWordLists
-  }
-
-  return inferTeacherFacingWordLists(inputs, primaryTarget)
+  return []
 }
 
 function resolveTexts(
@@ -640,17 +679,7 @@ function resolveTexts(
     return extractedTexts.slice(0, 6)
   }
 
-  const trimmedTopic = inputs.topic.trim()
-  if (trimmedTopic.length > 0) {
-    return [trimmedTopic]
-  }
-
-  const inferredTexts = inferTeacherInputTexts(primaryTarget, inputs)
-  if (inferredTexts.length > 0) {
-    return inferredTexts
-  }
-
-  return inferTeacherFacingTexts(inputs, primaryTarget)
+  return []
 }
 
 function resolvePracticeIdeas(
@@ -708,29 +737,56 @@ function resolvePracticeIdeas(
     return extractedPracticeIdeas.slice(0, 8)
   }
 
-  const inferredPracticeIdeas = inferTeacherInputPracticeIdeas(primaryTarget, inputs)
-  if (inferredPracticeIdeas.length > 0) {
-    return inferredPracticeIdeas
-  }
+  return []
+}
 
-  const analyzedTargets = normalizeTeacherFacingValues(
+function resolveReviewedLane(
+  curriculumMaterials: MaterialFile[],
+  key: "vocabulary" | "wordLists" | "texts" | "practiceIdeas",
+  kind: TeacherFacingContentKind
+): string[] {
+  return sanitizeTeacherFacingItems(
     cleanUnique(
-      curriculumAnalyses.flatMap((analysis) => {
-        const coverage = getCoverage(analysis)
-        return [...coverage.instructionalTargets, ...analysis.instructionalTargets]
+      curriculumMaterials.flatMap((material) => {
+        if (!material.analysisReview) {
+          return []
+        }
+
+        const values = material.analysisReview[key]
+        return Array.isArray(values) ? values : []
       })
     ),
-    {
-      kind: "practice",
-      primaryTarget,
-    }
+    kind
   )
+}
 
-  if (analyzedTargets.length > 0) {
-    return analyzedTargets.slice(0, 6)
+function resolveLaneStatus(
+  reviewedValues: string[],
+  resolvedValues: string[],
+  hasContentUsableCurriculum: boolean
+): "reviewed" | "extracted" | "review-needed" | "blocked" {
+  if (reviewedValues.length > 0) {
+    return "reviewed"
   }
 
-  return inferTeacherFacingPracticeIdeas(inputs, primaryTarget)
+  if (resolvedValues.length > 0) {
+    return "extracted"
+  }
+
+  return hasContentUsableCurriculum ? "review-needed" : "blocked"
+}
+
+function isContentUsableCurriculumMaterial(material: MaterialFile): boolean {
+  if (material.role !== "curriculum" || material.status !== "ready" || !material.analysis?.curriculum) {
+    return false
+  }
+
+  const reliability = material.analysis.reliability
+  if (!reliability) {
+    return true
+  }
+
+  return reliability.usableForContent
 }
 
 function getCoverage(analysis: CurriculumAnalysis) {
@@ -761,6 +817,17 @@ function uniqueLines(lines: string[], predicate: (line: string) => boolean): str
 }
 
 type TeacherFacingContentKind = "standard" | "vocabulary" | "wordList" | "text" | "practice"
+
+function normalizeResolvedLane(
+  values: string[],
+  kind: TeacherFacingContentKind,
+  primaryTarget: string
+): string[] {
+  return normalizeTeacherFacingValues(values, {
+    kind,
+    primaryTarget,
+  })
+}
 
 function sanitizeTeacherFacingItems(
   values: string[],
@@ -924,6 +991,13 @@ function isWeakTeacherFacingValueForKind(
     return true
   }
 
+  if (
+    lower.startsWith("review needed on materials:") ||
+    lower.startsWith("blocked until materials has usable curriculum support")
+  ) {
+    return true
+  }
+
   if (kind === "vocabulary") {
     return (
       lower === "identify and use new vocabulary" ||
@@ -1028,6 +1102,13 @@ function isWeakFallbackValue(value: string): boolean {
     "teacher-selected examples",
     "teacher-selected word examples",
     "teacher-selected example words",
+    "teacher-confirmed vocabulary",
+    "teacher-confirmed word examples",
+    "teacher-confirmed examples",
+    "teacher-confirmed text or topic",
+    "teacher-confirmed practice",
+    "teacher-confirmed lesson task",
+    "teacher-confirmed foundational-skill practice",
     "target word examples",
     "target words for student transfer",
     "strong word examples",
