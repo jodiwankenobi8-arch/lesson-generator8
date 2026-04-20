@@ -68,7 +68,7 @@ export const orchardHeroCardStyle: CSSProperties = {
   borderRadius: "var(--radius-lg)",
   background: "linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 246, 233, 0.92))",
   border: "1px solid rgba(231, 226, 218, 0.98)",
-  boxShadow: "0 10px 28px rgba(63, 90, 64, 0.08)",
+  boxShadow: "0 10px 28px rgba(184, 84, 90, 0.08)",
 }
 
 export const orchardHeroRibbonStyle: CSSProperties = {
@@ -107,7 +107,7 @@ export const orchardPanelStyle: CSSProperties = {
   background: "rgba(255, 255, 255, 0.96)",
   border: "1px solid rgba(231, 226, 218, 0.98)",
   borderRadius: 24,
-  boxShadow: "0 10px 26px rgba(63, 90, 64, 0.08)",
+  boxShadow: "0 10px 26px rgba(184, 84, 90, 0.08)",
   padding: "var(--space-xl)",
 }
 
@@ -115,7 +115,7 @@ export const orchardCardStyle: CSSProperties = {
   background: "var(--paper-white)",
   border: "1px solid rgba(231, 226, 218, 0.96)",
   borderRadius: "var(--radius-lg)",
-  boxShadow: "0 8px 22px rgba(63, 90, 64, 0.07)",
+  boxShadow: "0 8px 22px rgba(184, 84, 90, 0.07)",
   padding: "var(--space-lg)",
 }
 
@@ -123,7 +123,7 @@ export const orchardSoftCardStyle: CSSProperties = {
   background: "linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 246, 233, 0.68))",
   border: "1px solid rgba(231, 226, 218, 0.96)",
   borderRadius: "var(--radius-lg)",
-  boxShadow: "0 6px 18px rgba(63, 90, 64, 0.06)",
+  boxShadow: "0 6px 18px rgba(184, 84, 90, 0.06)",
   padding: "var(--space-lg)",
 }
 
@@ -154,7 +154,7 @@ export const orchardSectionTitleStyle: CSSProperties = {
   fontFamily: "var(--font-heading)",
   fontSize: 28,
   lineHeight: 1.2,
-  color: "var(--orchard-green)",
+  color: ORCHARD_COLORS.cranberry,
 }
 
 export const orchardSectionBodyStyle: CSSProperties = {
@@ -178,7 +178,7 @@ export const orchardNoticeStyle: CSSProperties = {
   background: "rgba(255, 255, 255, 0.96)",
   color: "var(--text-secondary)",
   fontSize: 14,
-  boxShadow: "0 4px 12px rgba(63, 90, 64, 0.05)",
+  boxShadow: "0 4px 12px rgba(184, 84, 90, 0.05)",
 }
 
 export function orchardStepLinkStyle(active: boolean, disabled = false): CSSProperties {
@@ -186,9 +186,9 @@ export function orchardStepLinkStyle(active: boolean, disabled = false): CSSProp
     padding: "10px 16px",
     borderRadius: "999px",
     textDecoration: "none",
-    border: `1px solid ${disabled ? "var(--border-soft)" : "var(--moss-green)"}`,
-    background: active ? "var(--orchard-green)" : "var(--paper-white)",
-    color: disabled ? "var(--text-secondary)" : active ? "var(--paper-white)" : "var(--orchard-green)",
+    border: `1px solid ${disabled ? "var(--border-soft)" : ORCHARD_COLORS.cranberry}`,
+    background: active ? ORCHARD_COLORS.cranberry : "var(--paper-white)",
+    color: disabled ? "var(--text-secondary)" : active ? "var(--paper-white)" : ORCHARD_COLORS.cranberry,
     fontWeight: 600,
     pointerEvents: disabled ? "none" : "auto",
     opacity: disabled ? 0.65 : 1,
@@ -242,8 +242,8 @@ export function orchardButtonStyle(options?: {
     return {
       padding: "10px 16px",
       borderRadius: "999px",
-      border: "1px solid var(--orchard-green)",
-      background: "var(--orchard-green)",
+      border: `1px solid ${ORCHARD_COLORS.cranberry}`,
+      background: ORCHARD_COLORS.cranberry,
       color: "var(--paper-white)",
       fontWeight: 600,
       boxShadow: "var(--shadow-soft)",
@@ -257,7 +257,7 @@ export function orchardButtonStyle(options?: {
       borderRadius: "999px",
       border: "1px solid rgba(231, 226, 218, 0.98)",
       background: "rgba(255, 255, 255, 0.92)",
-      color: "var(--orchard-green)",
+      color: ORCHARD_COLORS.cranberry,
       fontWeight: 600,
       boxShadow: "var(--shadow-soft)",
       transition: "all 0.15s ease",
@@ -267,9 +267,9 @@ export function orchardButtonStyle(options?: {
   return {
     padding: "10px 16px",
     borderRadius: "999px",
-    border: "1px solid var(--moss-green)",
+    border: `1px solid ${ORCHARD_COLORS.moss}`,
     background: "var(--paper-white)",
-    color: "var(--orchard-green)",
+    color: ORCHARD_COLORS.cranberry,
     fontWeight: 600,
     boxShadow: "var(--shadow-soft)",
     transition: "all 0.15s ease",
@@ -284,7 +284,7 @@ export const orchardInputStyle: CSSProperties = {
   background: "rgba(255, 255, 255, 0.98)",
   color: "var(--text-primary)",
   boxSizing: "border-box",
-  boxShadow: "inset 0 1px 2px rgba(63, 90, 64, 0.04)",
+  boxShadow: "inset 0 1px 2px rgba(184, 84, 90, 0.04)",
 }
 
 export const orchardStackGapStyle: CSSProperties = {
