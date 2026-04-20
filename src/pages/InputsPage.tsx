@@ -1,13 +1,12 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
-import { SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT } from "../engine/materials/sourceIntakeContract"
 import {
   AssessmentOutputTypeKey,
   CenterFocusKey,
   CenterOutputOptionKey,
+  LessonOutputContents,
   LessonPlanContentPartKey,
   SmallGroupTierKey,
-  countSelectedOutputSections,
 } from "../engine/types"
 import {
   orchardButtonStyle,
@@ -231,9 +230,18 @@ const cranberryStyle: React.CSSProperties = {
   marginLeft: 4,
 }
 
+const detailsSummaryStyle: React.CSSProperties = {
+  cursor: "pointer",
+  fontWeight: 700,
+  color: "var(--deep-orchard)",
+  fontSize: 13,
+  userSelect: "none",
+  marginTop: 8,
+  display: "block",
+}
+
 export default function InputsPage() {
   const navigate = useNavigate()
-
   const inputs = useLessonStore((state) => state.inputs)
   const setInputs = useLessonStore((state) => state.setInputs)
   const outputContents = useLessonStore((state) => state.outputContents)
@@ -256,325 +264,151 @@ export default function InputsPage() {
       setInputs({ [field]: event.target.value })
     }
 
-  const selectedOutputSections = countSelectedOutputSections(outputContents)
-  const selectedRequestedParts = lessonPartOptions.filter((option) => outputContents.lessonPlan.parts[option.key]).length
-  const selectedAssessmentCount = [...formativeAssessmentOptions, ...summativeAssessmentOptions].filter(
-    (option) => outputContents.assessment.types[option.key]
-  ).length
-  const selectedCenterFormats = centerOptions.filter((option) => outputContents.centers.options[option.key]).length
-  const selectedCenterFocuses = centerFocusOptions.filter((option) => outputContents.centers.focuses[option.key]).length
-  const selectedSmallGroupTiers = smallGroupTierOptions.filter((option) => outputContents.smallGroup.tiers[option.key]).length
-
-  const requestedOutputsSummary = [
-    outputContents.lessonPlan.selected ? `Lesson plan (${selectedRequestedParts} part${selectedRequestedParts === 1 ? "" : "s"})` : "",
-    outputContents.lessonSlides.selected ? "Slides" : "",
-    outputContents.centers.selected ? `Centers (${selectedCenterFormats} format${selectedCenterFormats === 1 ? "" : "s"}, ${selectedCenterFocuses} focus${selectedCenterFocuses === 1 ? "" : "es"})` : "",
-    outputContents.smallGroup.selected ? `Teacher-led support (${selectedSmallGroupTiers} tier${selectedSmallGroupTiers === 1 ? "" : "s"})` : "",
-    outputContents.assessment.selected ? `Assessment (${selectedAssessmentCount})` : "",
-  ].filter(Boolean)
+  const requestedOutputsSummary = buildRequestedOutputsSummary(outputContents)
 
   return (
     <div style={pageStyle}>
       <OrchardPageHeader label="Planning Notebook" title="Inputs" introMaxWidth={760}>
         <p style={introStyle}>
-          Choose what to create first, then fill in lesson details. Curriculum (content) and exemplar (structure) materials are uploaded next.
-        </p>
-        <p style={introStyle}>
-          Standards can be typed now or suggested from curriculum materials on the next step. Supported uploads: {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
+          Fill in the essentials, choose what you want in the lesson, and continue.
         </p>
       </OrchardPageHeader>
 
       <div style={cardStyle}>
         <div style={sectionCardStyle}>
-          <div style={sectionLabelStyle}>1. What do you want to create?</div>
+          <div style={sectionLabelStyle}>1. Lesson info</div>
           <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-            Start with outputs. The rest of the page adapts around what you actually want.
+            Add the lesson basics first.
+          </div>
+
+          <div style={compactGridStyle}>
+            <InputField id="grade" label="Grade" value={inputs.grade} required placeholder="K, 1st, 3rd" onChange={updateInput("grade")} />
+            <InputField id="subject" label="Subject" value={inputs.subject} required placeholder="ELA, Math, Science" onChange={updateInput("subject")} />
+            <InputField id="skill" label="Skill / Focus" value={inputs.skill} required placeholder="Long a patterns, comparing fractions, main idea" onChange={updateInput("skill")} fullWidth />
+            <TextAreaField id="topic" label="Topic / Text / Unit" value={inputs.topic} placeholder="Frog and Toad chapter 2, weather tools, plant life cycles" onChange={updateInput("topic")} fullWidth />
+            <InputField id="duration" label="Duration" value={inputs.duration} placeholder="20 minutes, 45 minutes, 2 days" onChange={updateInput("duration")} />
+          </div>
+        </div>
+
+        <div style={sectionCardStyle}>
+          <div style={sectionLabelStyle}>2. Requested outputs</div>
+          <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
+            Choose what you want in this lesson package.
           </div>
 
           <div style={outputGridStyle}>
-            <OutputSectionCard
-              title="Lesson Plan"
-              description="Core teacher plan."
-              statusLabel={outputContents.lessonPlan.selected ? "Selected" : "Optional"}
-              active={outputContents.lessonPlan.selected}
-            >
-              <RequestToggleCard
-                checked={outputContents.lessonPlan.selected}
-                title="Include lesson plan"
-                description="Keep the core teacher-facing lesson plan in the requested package."
-                onToggle={toggleLessonPlanOutput}
-              />
+            <OutputSectionCard title="Lesson Plan" description="Core teacher plan." statusLabel={outputContents.lessonPlan.selected ? "Selected" : "Optional"} active={outputContents.lessonPlan.selected}>
+              <RequestToggleCard checked={outputContents.lessonPlan.selected} title="Include lesson plan" description="Keep the core teacher-facing lesson plan in the requested package." onToggle={toggleLessonPlanOutput} />
+              {outputContents.lessonPlan.selected ? (
+                <details>
+                  <summary style={detailsSummaryStyle}>Customize lesson plan parts</summary>
+                  <div style={{ ...compactGridStyle, marginTop: 10 }}>
+                    {lessonPartOptions.map((option) => <RequestToggleCard key={option.key} checked={outputContents.lessonPlan.parts[option.key]} title={option.title} description={option.description} onToggle={() => toggleLessonPlanPart(option.key)} />)}
+                  </div>
+                </details>
+              ) : null}
             </OutputSectionCard>
 
-            <OutputSectionCard
-              title="Lesson Slides"
-              description="Student-facing slide deck that matches the lesson flow."
-              statusLabel={outputContents.lessonSlides.selected ? "Selected" : "Optional"}
-              active={outputContents.lessonSlides.selected}
-            >
-              <RequestToggleCard
-                checked={outputContents.lessonSlides.selected}
-                title="Include student-facing lesson slides"
-                description="Generate student-facing slides when you want a matching slide deck."
-                onToggle={toggleLessonSlidesOutput}
-              />
+            <OutputSectionCard title="Lesson Slides" description="Student-facing slide deck that matches the lesson flow." statusLabel={outputContents.lessonSlides.selected ? "Selected" : "Optional"} active={outputContents.lessonSlides.selected}>
+              <RequestToggleCard checked={outputContents.lessonSlides.selected} title="Include student-facing lesson slides" description="Generate student-facing slides when you want a matching slide deck." onToggle={toggleLessonSlidesOutput} />
             </OutputSectionCard>
 
-            <OutputSectionCard
-              title="Centers"
-              description="Student-independent work only."
-              statusLabel={outputContents.centers.selected ? "Selected" : "Optional"}
-              active={outputContents.centers.selected}
-            >
+            <OutputSectionCard title="Centers" description="Student-independent work only." statusLabel={outputContents.centers.selected ? "Selected" : "Optional"} active={outputContents.centers.selected}>
               <div style={subgroupBlockStyle}>
-                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Choose center format</div>
-                <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-                  Select the kind of center support you want.
-                </div>
-                <div style={{ display: "grid", gap: 12 }}>
-                  {centerOptions.map((option) => (
-                    <RequestToggleCard
-                      key={option.key}
-                      checked={outputContents.centers.options[option.key]}
-                      title={option.title}
-                      description={option.description}
-                      onToggle={() => toggleCenterOption(option.key)}
-                    />
-                  ))}
-                </div>
+                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Center format</div>
+                <div style={{ display: "grid", gap: 12 }}>{centerOptions.map((option) => <RequestToggleCard key={option.key} checked={outputContents.centers.options[option.key]} title={option.title} description={option.description} onToggle={() => toggleCenterOption(option.key)} />)}</div>
               </div>
+              <details>
+                <summary style={detailsSummaryStyle}>Choose center focus areas</summary>
+                <div style={{ display: "grid", gap: 12, marginTop: 10 }}>
+                  {centerFocusOptions.map((option) => <RequestToggleCard key={option.key} checked={outputContents.centers.focuses[option.key]} title={option.title} description={option.description} onToggle={() => toggleCenterFocus(option.key)} />)}
+                </div>
+              </details>
+            </OutputSectionCard>
 
+            <OutputSectionCard title="Teacher-Led Support" description="Small group, intervention, or extension. Separate from centers." statusLabel={outputContents.smallGroup.selected ? "Selected" : "Optional"} active={outputContents.smallGroup.selected}>
               <div style={subgroupBlockStyle}>
-                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Choose center focus</div>
-                <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-                  Select all that apply.
-                </div>
-                <div style={{ display: "grid", gap: 12 }}>
-                  {centerFocusOptions.map((option) => (
-                    <RequestToggleCard
-                      key={option.key}
-                      checked={outputContents.centers.focuses[option.key]}
-                      title={option.title}
-                      description={option.description}
-                      onToggle={() => toggleCenterFocus(option.key)}
-                    />
-                  ))}
-                </div>
+                <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>Choose the teacher-led groups you want.</div>
+                <div style={{ display: "grid", gap: 12 }}>{smallGroupTierOptions.map((option) => <RequestToggleCard key={option.key} checked={outputContents.smallGroup.tiers[option.key]} title={option.title} description={option.description} onToggle={() => toggleSmallGroupTier(option.key)} />)}</div>
               </div>
             </OutputSectionCard>
 
-            <OutputSectionCard
-              title="Teacher-Led Support"
-              description="Small group, intervention, or extension. Separate from centers."
-              statusLabel={outputContents.smallGroup.selected ? "Selected" : "Optional"}
-              active={outputContents.smallGroup.selected}
-            >
-              <div style={subgroupBlockStyle}>
-                <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-                  Choose the teacher-led groups you want.
+            <OutputSectionCard title="Assessment" description="Formative and summative checks." statusLabel={outputContents.assessment.selected ? "Selected" : "Optional"} active={outputContents.assessment.selected}>
+              <details>
+                <summary style={detailsSummaryStyle}>Choose assessment types</summary>
+                <div style={{ display: "grid", gap: "var(--space-sm)", marginTop: 10 }}>
+                  <div style={subgroupBlockStyle}>
+                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Formative</div>
+                    <div style={{ display: "grid", gap: 12 }}>{formativeAssessmentOptions.map((option) => <RequestToggleCard key={option.key} checked={outputContents.assessment.types[option.key]} title={option.title} description={option.description} onToggle={() => toggleAssessmentType(option.key)} />)}</div>
+                  </div>
+                  <div style={subgroupBlockStyle}>
+                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Summative</div>
+                    <div style={{ display: "grid", gap: 12 }}>{summativeAssessmentOptions.map((option) => <RequestToggleCard key={option.key} checked={outputContents.assessment.types[option.key]} title={option.title} description={option.description} onToggle={() => toggleAssessmentType(option.key)} />)}</div>
+                    <div style={helpStyle}>Answer keys generate automatically where applicable.</div>
+                  </div>
                 </div>
-                <div style={{ display: "grid", gap: 12 }}>
-                  {smallGroupTierOptions.map((option) => (
-                    <RequestToggleCard
-                      key={option.key}
-                      checked={outputContents.smallGroup.tiers[option.key]}
-                      title={option.title}
-                      description={option.description}
-                      onToggle={() => toggleSmallGroupTier(option.key)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </OutputSectionCard>
-
-            <OutputSectionCard
-              title="Assessment"
-              description="Formative and summative checks."
-              statusLabel={outputContents.assessment.selected ? "Selected" : "Optional"}
-              active={outputContents.assessment.selected}
-            >
-              <div style={subgroupBlockStyle}>
-                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Formative</div>
-                <div style={{ display: "grid", gap: 12 }}>
-                  {formativeAssessmentOptions.map((option) => (
-                    <RequestToggleCard
-                      key={option.key}
-                      checked={outputContents.assessment.types[option.key]}
-                      title={option.title}
-                      description={option.description}
-                      onToggle={() => toggleAssessmentType(option.key)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div style={subgroupBlockStyle}>
-                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>Summative</div>
-                <div style={{ display: "grid", gap: 12 }}>
-                  {summativeAssessmentOptions.map((option) => (
-                    <RequestToggleCard
-                      key={option.key}
-                      checked={outputContents.assessment.types[option.key]}
-                      title={option.title}
-                      description={option.description}
-                      onToggle={() => toggleAssessmentType(option.key)}
-                    />
-                  ))}
-                </div>
-                <div style={helpStyle}>Answer keys generate automatically where applicable.</div>
-              </div>
+              </details>
             </OutputSectionCard>
           </div>
         </div>
 
-        {outputContents.lessonPlan.selected ? (
-          <div style={sectionCardStyle}>
-            <div style={sectionLabelStyle}>2. Which lesson-plan parts should it include?</div>
-            <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-              Only shown because lesson plan is selected.
-            </div>
-
-            <div style={compactGridStyle}>
-              {lessonPartOptions.map((option) => (
-                <RequestToggleCard
-                  key={option.key}
-                  checked={outputContents.lessonPlan.parts[option.key]}
-                  title={option.title}
-                  description={option.description}
-                  onToggle={() => toggleLessonPlanPart(option.key)}
-                />
-              ))}
-            </div>
-          </div>
-        ) : null}
-
         <div style={sectionCardStyle}>
-          <div style={sectionLabelStyle}>3. What is the lesson focus?</div>
+          <div style={sectionLabelStyle}>3. General notes</div>
           <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-            Only grade, subject, and skill / focus are required to continue.
+            Add any teacher directions the lesson should follow.
           </div>
 
           <div style={compactGridStyle}>
-            <InputField
-              id="grade"
-              label="Grade"
-              value={inputs.grade}
-              required
-              placeholder="K, 1st, 3rd"
-              onChange={updateInput("grade")}
-            />
-            <InputField
-              id="subject"
-              label="Subject"
-              value={inputs.subject}
-              required
-              placeholder="ELA, Math, Science"
-              onChange={updateInput("subject")}
-            />
-            <InputField
-              id="skill"
-              label="Skill / Focus"
-              value={inputs.skill}
-              required
-              placeholder="Long a patterns, comparing fractions, main idea"
-              onChange={updateInput("skill")}
-              fullWidth
-            />
-            <TextAreaField
-              id="topic"
-              label="Topic / Text / Unit"
-              value={inputs.topic}
-              placeholder="Frog and Toad chapter 2, weather tools, plant life cycles"
-              onChange={updateInput("topic")}
-              fullWidth
-            />
-            <InputField
-              id="duration"
-              label="Duration"
-              value={inputs.duration}
-              placeholder="20 minutes, 45 minutes, 2 days"
-              onChange={updateInput("duration")}
-            />
-            <TextAreaField
-              id="notes"
-              label="Anything I should know?"
-              value={inputs.notes ?? ""}
-              placeholder="ELL newcomers, use decodable only, needs partner talk"
-              onChange={updateInput("notes")}
-              help="Use this for constraints, grouping notes, story context, academic vocabulary, or anything else the teacher wants the plan to respect."
-              fullWidth
-            />
+            <TextAreaField id="notes" label="Teacher directions" value={inputs.notes ?? ""} placeholder="Example: keep directions short, include partner talk, and use decodable text only" onChange={updateInput("notes")} fullWidth />
           </div>
         </div>
 
         <div style={sectionCardStyle}>
-          <div style={sectionLabelStyle}>4. Standards</div>
+          <div style={sectionLabelStyle}>Optional advanced settings</div>
           <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
-            Type standards now, or leave them blank and confirm suggested standards later from curriculum + teacher input + AI.
+            Open and adjust only if needed.
           </div>
 
           <div style={compactGridStyle}>
-            <InputField
-              id="standard"
-              label="Standard(s)"
-              value={inputs.standard}
-              placeholder="RF.K.3, 1.OA.1, RI.3.2"
-              onChange={updateInput("standard")}
-              help="Optional now. Suggested standards can be reviewed before generation later."
-              fullWidth
-            />
+            <InputField id="standard" label="Standard(s)" value={inputs.standard} placeholder="RF.K.3, 1.OA.1, RI.3.2" onChange={updateInput("standard")} help="Optional now. Suggested standards can be reviewed on Materials before generation." fullWidth />
           </div>
         </div>
 
         <div style={sectionCardStyle}>
           <div style={sectionLabelStyle}>Request summary</div>
-          <div style={noticeStyle}>
-            Requested outputs: {requestedOutputsSummary.length > 0 ? requestedOutputsSummary.join(" • ") : "None selected yet"}.
-            {" "}Selected output sections: {selectedOutputSections}.
-          </div>
-          <div style={noticeStyle}>
-            Continue once grade, subject, and skill / focus are filled in. Materials and exemplars come next.
-          </div>
+          <div style={noticeStyle}>{requestedOutputsSummary.length > 0 ? requestedOutputsSummary.join(" • ") : "Nothing selected yet — choose at least one output above."}</div>
         </div>
 
         <div style={buttonRowStyle}>
-          <div
-            style={{
-              ...orchardTagStyle(hasRequiredInputs ? "moss" : "honey"),
-              fontWeight: 700,
-            }}
-          >
-            {hasRequiredInputs ? "Ready for Materials" : "Complete grade, subject, and skill / focus"}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate("/materials")}
-            style={hasRequiredInputs ? buttonStyle : disabledButtonStyle}
-            disabled={!hasRequiredInputs}
-          >
-            Continue to Materials
-          </button>
+          <div style={{ ...orchardTagStyle(hasRequiredInputs ? "moss" : "honey"), fontWeight: 700 }}>{hasRequiredInputs ? "Ready for Materials" : "Complete grade, subject, and skill / focus"}</div>
+          <button type="button" onClick={() => navigate("/materials")} style={hasRequiredInputs ? buttonStyle : disabledButtonStyle} disabled={!hasRequiredInputs}>Continue to Materials</button>
         </div>
       </div>
     </div>
   )
 }
 
+function buildRequestedOutputsSummary(outputContents: LessonOutputContents): string[] {
+  const selectedRequestedParts = lessonPartOptions.filter((option) => outputContents.lessonPlan.parts[option.key]).length
+  const selectedAssessmentCount = [...formativeAssessmentOptions, ...summativeAssessmentOptions].filter((option) => outputContents.assessment.types[option.key]).length
+  const selectedCenterFormats = centerOptions.filter((option) => outputContents.centers.options[option.key]).length
+  const selectedCenterFocuses = centerFocusOptions.filter((option) => outputContents.centers.focuses[option.key]).length
+  const selectedSmallGroupTiers = smallGroupTierOptions.filter((option) => outputContents.smallGroup.tiers[option.key]).length
+
+  return [
+    outputContents.lessonPlan.selected ? `Lesson plan (${selectedRequestedParts} part${selectedRequestedParts === 1 ? "" : "s"})` : "",
+    outputContents.lessonSlides.selected ? "Slides" : "",
+    outputContents.centers.selected ? `Centers (${selectedCenterFormats} format${selectedCenterFormats === 1 ? "" : "s"}, ${selectedCenterFocuses} focus${selectedCenterFocuses === 1 ? "" : "es"})` : "",
+    outputContents.smallGroup.selected ? `Teacher-led support (${selectedSmallGroupTiers} tier${selectedSmallGroupTiers === 1 ? "" : "s"})` : "",
+    outputContents.assessment.selected ? `Assessment (${selectedAssessmentCount})` : "",
+  ].filter(Boolean)
+}
+
 function RequiredMark() {
   return <span style={cranberryStyle}>*</span>
 }
 
-function InputField({
-  id,
-  label,
-  value,
-  placeholder,
-  onChange,
-  help,
-  required = false,
-  fullWidth = false,
-}: {
+function InputField({ id, label, value, placeholder, onChange, help, required = false, fullWidth = false }: {
   id: string
   label: string
   value: string
@@ -586,25 +420,14 @@ function InputField({
 }) {
   return (
     <div style={fullWidth ? fullWidthStyle : undefined}>
-      <label style={fieldLabelStyle} htmlFor={id}>
-        {label}
-        {required ? <RequiredMark /> : null}
-      </label>
+      <label style={fieldLabelStyle} htmlFor={id}>{label}{required ? <RequiredMark /> : null}</label>
       <input id={id} value={value} onChange={onChange} placeholder={placeholder} style={inputStyle} />
       {help ? <div style={helpStyle}>{help}</div> : null}
     </div>
   )
 }
 
-function TextAreaField({
-  id,
-  label,
-  value,
-  placeholder,
-  onChange,
-  help,
-  fullWidth = false,
-}: {
+function TextAreaField({ id, label, value, placeholder, onChange, help, fullWidth = false }: {
   id: string
   label: string
   value: string
@@ -615,28 +438,14 @@ function TextAreaField({
 }) {
   return (
     <div style={fullWidth ? fullWidthStyle : undefined}>
-      <label style={fieldLabelStyle} htmlFor={id}>
-        {label}
-      </label>
-      <textarea
-        id={id}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        style={{ ...inputStyle, minHeight: 110, resize: "vertical" }}
-      />
+      <label style={fieldLabelStyle} htmlFor={id}>{label}</label>
+      <textarea id={id} value={value} onChange={onChange} placeholder={placeholder} style={{ ...inputStyle, minHeight: 110, resize: "vertical" }} />
       {help ? <div style={helpStyle}>{help}</div> : null}
     </div>
   )
 }
 
-function OutputSectionCard({
-  title,
-  description,
-  statusLabel,
-  active,
-  children,
-}: {
+function OutputSectionCard({ title, description, statusLabel, active, children }: {
   title: string
   description: string
   statusLabel: string
@@ -648,58 +457,31 @@ function OutputSectionCard({
       <div style={rowStyle}>
         <div>
           <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
-          <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
-            {description}
-          </div>
+          <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>{description}</div>
         </div>
-        <span style={{ ...orchardTagStyle(active ? "moss" : "honey"), fontWeight: 700 }}>
-          {statusLabel}
-        </span>
+        <span style={{ ...orchardTagStyle(active ? "moss" : "honey"), fontWeight: 700 }}>{statusLabel}</span>
       </div>
       {children}
     </div>
   )
 }
 
-function RequestToggleCard({
-  checked,
-  title,
-  description,
-  onToggle,
-}: {
+function RequestToggleCard({ checked, title, description, onToggle }: {
   checked: boolean
   title: string
   description: string
   onToggle: () => void
 }) {
   const activeStyle: React.CSSProperties = checked
-    ? {
-        background: "rgba(110, 139, 107, 0.12)",
-        border: "1px solid var(--border-moss)",
-      }
-    : {
-        background: "rgba(255, 255, 255, 0.98)",
-        border: "1px solid var(--border-paper)",
-      }
+    ? { background: "rgba(110, 139, 107, 0.12)", border: "1px solid var(--border-moss)" }
+    : { background: "rgba(255, 255, 255, 0.98)", border: "1px solid var(--border-paper)" }
 
   return (
-    <label
-      style={{
-        ...orchardSoftCardStyle,
-        ...activeStyle,
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 12,
-        padding: "14px 14px",
-        cursor: "pointer",
-      }}
-    >
+    <label style={{ ...orchardSoftCardStyle, ...activeStyle, display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 14px", cursor: "pointer" }}>
       <input type="checkbox" checked={checked} onChange={onToggle} style={{ marginTop: 3 }} />
       <div>
         <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
-        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
-          {description}
-        </div>
+        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>{description}</div>
       </div>
     </label>
   )

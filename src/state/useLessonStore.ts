@@ -28,6 +28,7 @@ import {
   normalizeOutputContents,
 } from "../engine/types"
 import { evaluateGenerationReadiness } from "./workflows/evaluateGenerationReadiness"
+import { buildCompactInferredMaterialReview } from "../engine/materials/buildCompactInferredMaterialReview"
 
 type MaterialCounts = {
   total: number
@@ -223,8 +224,13 @@ function normalizeMaterialAnalysisReview(
   }
 }
 
-export function mergeMaterialWithReview(material: MaterialFile): MaterialFile {
-  const review = normalizeMaterialAnalysisReview(material.analysisReview)
+export function mergeMaterialWithReview(
+  material: MaterialFile,
+  inputs?: LessonInputs
+): MaterialFile {
+  const review = normalizeMaterialAnalysisReview(
+    material.analysisReview ?? (inputs ? buildCompactInferredMaterialReview(material, inputs) : null)
+  )
 
   if (!material.analysis || !review) {
     return material
@@ -757,7 +763,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
           return {
             inputs: current.inputs,
-            materials: current.materials.map(mergeMaterialWithReview),
+            materials: current.materials.map((material) => mergeMaterialWithReview(material, current.inputs)),
             selectedLessonMode: current.selectedLessonMode,
             outputContents: current.outputContents,
             missingAreaDecisions: current.missingAreaDecisions,
@@ -815,7 +821,7 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     }
 
     const { inputs, materials, selectedLessonMode } = store
-    const mergedMaterials = materials.map(mergeMaterialWithReview)
+    const mergedMaterials = materials.map((material) => mergeMaterialWithReview(material, inputs))
 
     const readiness = evaluateGenerationReadiness({
       inputs,

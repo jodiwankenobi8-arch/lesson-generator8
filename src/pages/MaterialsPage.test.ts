@@ -364,22 +364,25 @@ describe("Materials page teacher-facing copy", () => {
     const source = readFileSync("src/pages/MaterialsPage.tsx", "utf8")
 
     expect(source).toContain(
-      "Add the curriculum and exemplar materials you want this lesson to follow."
+      "Upload your curriculum and exemplar files. The lesson draft fills in once they're ready."
     )
-    expect(source).toContain("You can generate now. Confirmed curriculum content is ready to use.")
+    expect(source).toContain("Upload files, review the lesson draft, then generate.")
     expect(source).toContain(
-      "Each file shows whether it is being prepared, ready to use, or needs attention."
+      "No files added yet. Upload curriculum or exemplar files above."
     )
     expect(source).toContain("Exemplar setup")
     expect(source).toContain(
       "The app auto-detects what kind of exemplar each one most likely is, and you can change it only when the guess is wrong."
     )
     expect(source).toContain("Review the standards you want in this lesson package.")
-    expect(source).toContain("What we found")
-    expect(source).toContain("Confirm the lesson details that generation should use")
-    expect(source).toContain("Word list / examples")
-    expect(source).toContain("Confirm the lesson details that generation should use")
-    expect(source).toContain("Word list / examples")
+    expect(source).toContain("Lesson draft")
+    expect(source).toContain("Curriculum draft source:")
+    expect(source).toContain("Exemplar draft source:")
+    expect(source).toContain("Review file details below if you want to adjust the other files.")
+    expect(source).toContain("Review file details")
+    expect(source).toContain("Words")
+    expect(source).toContain("Upload curriculum files that carry the lesson content.")
+    expect(source).toContain("Upload exemplar files that show structure, pacing, and delivery style.")
     expect(source).toContain("Teacher notes and advanced edits feed standards suggestions, grounding, and generated outputs.")
     expect(source).toContain("Extraction status")
     expect(source).toContain("This shows whether readable text came from the parser, OCR, both, or only a fallback notice.")
