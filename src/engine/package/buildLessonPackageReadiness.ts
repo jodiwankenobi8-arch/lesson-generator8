@@ -2,8 +2,11 @@ import {
   LessonBlueprint,
   LessonPackageReadiness,
 } from "../types"
-import { getUnresolvedBlueprintCurriculumLanes } from "../shared/curriculumReviewStatus"
-import { getNormalizedBlueprintValues } from "../shared/teacherFacingContent"
+import {
+  evaluateGroundingReviewState,
+  formatGroundingReviewKinds,
+  REVIEW_CONTENT_ANCHOR_STATUS,
+} from "../shared/reviewGuidance"
 
 export function buildLessonPackageReadiness(args: {
   blueprint: LessonBlueprint
@@ -22,20 +25,8 @@ export function buildLessonPackageReadiness(args: {
     ? "mixed"
     : "single-focus"
 
-  const unresolvedCurriculumLanes = getUnresolvedBlueprintCurriculumLanes(blueprint)
-  const normalizedVocabulary = getNormalizedBlueprintValues(blueprint, "vocabulary")
-  const normalizedWordLists = getNormalizedBlueprintValues(blueprint, "wordList")
-  const normalizedTexts = getNormalizedBlueprintValues(blueprint, "text")
-  const normalizedPracticeIdeas = getNormalizedBlueprintValues(blueprint, "practice")
-
-  const contentFit =
-    unresolvedCurriculumLanes.length === 0 &&
-    normalizedVocabulary.length > 0 &&
-    normalizedWordLists.length > 0 &&
-    normalizedTexts.length > 0 &&
-    normalizedPracticeIdeas.length > 0
-      ? "grounded"
-      : "limited"
+  const groundingReview = evaluateGroundingReviewState(blueprint)
+  const contentFit = groundingReview.blocksExports ? "limited" : "grounded"
 
   const warnings: string[] = []
 
@@ -43,24 +34,18 @@ export function buildLessonPackageReadiness(args: {
     warnings.push("Package outputs look thin and may need richer planning signals.")
   }
 
-  if (contentFit === "limited") {
-    warnings.push("Curriculum-driven content signals look sparse.")
+  if (groundingReview.missingRequired.length > 0) {
+    warnings.push(
+      `Review Materials before export: confirm ${formatGroundingReviewKinds(groundingReview.missingRequired)}.`
+    )
   }
 
-  if (unresolvedCurriculumLanes.length > 0) {
-    warnings.push(
-      `Curriculum review is still needed for: ${unresolvedCurriculumLanes
-        .map((lane) =>
-          lane === "wordLists"
-            ? "word list or examples"
-            : lane === "texts"
-              ? "text or topic"
-              : lane === "practiceIdeas"
-                ? "practice ideas"
-                : lane
-        )
-        .join(", ")}.`
-    )
+  if (groundingReview.needsContentAnchor) {
+    warnings.push(REVIEW_CONTENT_ANCHOR_STATUS)
+  }
+
+  if (groundingReview.blocksExports) {
+    warnings.push("Exports stay blocked until the required lesson content is confirmed on Materials.")
   }
 
   if (lessonShape === "mixed") {
@@ -93,13 +78,11 @@ export function buildLessonPackageReadiness(args: {
       },
       {
         label: "Content Source Fit",
-        value: contentFit === "grounded" ? "Grounded" : "Limited",
+        value: contentFit === "grounded" ? "Grounded" : "Needs teacher review",
         note:
           contentFit === "grounded"
-            ? "Curriculum-driven content signals are present in the package."
-            : unresolvedCurriculumLanes.length > 0
-              ? "Some curriculum lanes still need teacher confirmation before the package is classroom-ready."
-              : "Some curriculum-driven content signals look sparse.",
+            ? "Required lesson content is grounded strongly enough for classroom-ready exports."
+            : "Review Materials and confirm the missing lesson content before exporting.",
         tone: contentFit === "grounded" ? "good" : "warn",
       },
     ],

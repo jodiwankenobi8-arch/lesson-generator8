@@ -1,4 +1,4 @@
-import {
+﻿import {
   CenterFocusKey,
   ExportArtifact,
   LessonBlueprint,
@@ -15,7 +15,13 @@ import {
 } from "../types"
 import { assembleSlideDeck } from "../slides/assembleSlideDeck"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
-import { getUnresolvedBlueprintCurriculumLanes } from "../shared/curriculumReviewStatus"
+import {
+  REVIEW_PRACTICE_STATUS,
+  REVIEW_TEXT_STATUS,
+  REVIEW_VOCABULARY_STATUS,
+  REVIEW_WORD_EXAMPLES_STATUS,
+  evaluateGroundingReviewState,
+} from "../shared/reviewGuidance"
 import { buildExports } from "./buildPackageExportArtifacts"
 import {
   buildLessonHeader,
@@ -79,18 +85,7 @@ export function buildPackageOutputs(args: {
   const includeCentersOutput = isGroupOutputSelected(outputContents, "centers")
   const includeSmallGroupOutput = isGroupOutputSelected(outputContents, "small_group")
   const includeInterventionOutput = isGroupOutputSelected(outputContents, "intervention")
-  const unresolvedCurriculumLanes = getUnresolvedBlueprintCurriculumLanes(blueprint)
-
-  if (unresolvedCurriculumLanes.length > 0) {
-    return {
-      slides: [],
-      lessonPlan: "",
-      centers: [],
-      rotationPlan: "",
-      interventions: [],
-      exports: [],
-    }
-  }
+  const groundingReview = evaluateGroundingReviewState(blueprint)
 
   const slides = includeLessonSlidesOutput
     ? buildSlides(blueprint, spec, {
@@ -146,19 +141,21 @@ export function buildPackageOutputs(args: {
         missingAreaDecisions
       )
     : []
-  const exports = buildExports(
-    inputs,
-    slides,
-    lessonPlan,
-    centers,
-    rotationPlan,
-    interventions,
-    {
-      includeLessonSlidesExport: includeLessonSlidesOutput,
-      includeLessonPlanExport: includeLessonPlanOutput,
-      includePrintablesExport: isSupportPrintablesSelected(outputContents),
-    }
-  )
+  const exports = groundingReview.blocksExports
+    ? []
+    : buildExports(
+        inputs,
+        slides,
+        lessonPlan,
+        centers,
+        rotationPlan,
+        interventions,
+        {
+          includeLessonSlidesExport: includeLessonSlidesOutput,
+          includeLessonPlanExport: includeLessonPlanOutput,
+          includePrintablesExport: isSupportPrintablesSelected(outputContents),
+        }
+      )
 
   return {
     slides,
@@ -652,19 +649,19 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
     `- Standards: ${formatGroundingStandards(blueprint)}`,
     `- Vocabulary: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "vocabulary", 4),
-      "No grounded vocabulary surfaced yet"
+      REVIEW_VOCABULARY_STATUS
     )}`,
     `- Word List: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "wordList", 5),
-      "No grounded word examples surfaced yet"
+      REVIEW_WORD_EXAMPLES_STATUS
     )}`,
     `- Texts: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "text", 2),
-      "No grounded text or topic surfaced yet"
+      REVIEW_TEXT_STATUS
     )}`,
     `- Practice Ideas: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "practice", 4),
-      "No grounded practice task surfaced yet"
+      REVIEW_PRACTICE_STATUS
     )}`,
     `- Exemplar Segment Order: ${hasReusableFlow ? "Reusable lesson flow available" : "Default lesson flow"}`,
     `- Exemplar Slide Shell: ${hasReusableSlideStructure ? "Reusable slide structure available" : "Default slide structure"}`,

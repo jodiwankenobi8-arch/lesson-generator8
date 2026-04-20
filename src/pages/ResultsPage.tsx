@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+﻿import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import {
   buildReliabilityDecisions,
@@ -66,10 +66,6 @@ import {
   summarizeStructureImpact,
 } from "./resultsPageTraceabilityHelpers"
 import { getNormalizedBlueprintValues } from "../engine/shared/teacherFacingContent"
-import {
-  formatBlueprintCurriculumLaneLabel,
-  getUnresolvedBlueprintCurriculumLanes,
-} from "../engine/shared/curriculumReviewStatus"
 
 export {
   downloadExportArtifact,
@@ -461,8 +457,6 @@ export default function ResultsPage() {
     )
   }
 
-  const unresolvedCurriculumLanes = getUnresolvedBlueprintCurriculumLanes(blueprint)
-
   return (
     <div style={pageStyle}>
       <OrchardPageHeader label="Planning Binder" title="Results">
@@ -497,16 +491,12 @@ export default function ResultsPage() {
             lessonPackage={lessonPackage}
             selectedLessonMode={selectedLessonMode}
             materials={materials}
-            reviewNeededLanes={unresolvedCurriculumLanes}
           />
-          {unresolvedCurriculumLanes.length > 0 ? (
-            <CurriculumReviewNeededSection unresolvedLanes={unresolvedCurriculumLanes} />
-          ) : null}
-          <PackageOutputsSection lessonPackage={lessonPackage} reviewNeededLanes={unresolvedCurriculumLanes} />
+          <PackageOutputsSection lessonPackage={lessonPackage} />
         </div>
 
         <div style={sideColumnStyle}>
-          <ReviewFlowCard lessonPackage={lessonPackage} reviewNeededLanes={unresolvedCurriculumLanes} />
+          <ReviewFlowCard lessonPackage={lessonPackage} />
           <CoverageDecisionsSection
             planningIdeas={planningIdeas}
             decisions={missingAreaDecisions}
@@ -529,36 +519,7 @@ export default function ResultsPage() {
   )
 }
 
-function CurriculumReviewNeededSection({
-  unresolvedLanes,
-}: {
-  unresolvedLanes: Array<"vocabulary" | "wordLists" | "texts" | "practiceIdeas">
-}) {
-  return (
-    <div style={sectionStyle}>
-      <h3 style={sectionHeadingStyle}>Curriculum review still needed</h3>
-      <p style={sectionLeadStyle}>
-        The package is not export-ready yet. Confirm these lesson details on Materials before treating the outputs as classroom-ready.
-      </p>
-      <ul style={previewListStyle}>
-        {unresolvedLanes.map((lane) => (
-          <li key={lane}>{formatBlueprintCurriculumLaneLabel(lane)}</li>
-        ))}
-      </ul>
-      <div style={smallNoteStyle}>
-        Exports stay blocked until these curriculum lanes are confirmed or corrected on Materials.
-      </div>
-    </div>
-  )
-}
-
-function ReviewFlowCard({
-  lessonPackage,
-  reviewNeededLanes = [],
-}: {
-  lessonPackage: LessonPackage
-  reviewNeededLanes?: Array<"vocabulary" | "wordLists" | "texts" | "practiceIdeas">
-}) {
+function ReviewFlowCard({ lessonPackage }: { lessonPackage: LessonPackage }) {
   const visibleSections = buildVisiblePackageSectionItems(lessonPackage)
   const exports = lessonPackage.exports ?? []
 
@@ -572,9 +533,7 @@ function ReviewFlowCard({
         <li>Use exports after the package reads coherently.</li>
       </ul>
       <div style={smallNoteStyle}>
-        {reviewNeededLanes.length > 0
-          ? `Current package surface is held while curriculum review is still needed. Exports ready: 0.`
-          : `Current package surface: ${visibleSections.length} teacher-facing section${visibleSections.length === 1 ? "" : "s"}. Exports ready: ${exports.length}.`}
+        Current package surface: {visibleSections.length} teacher-facing section{visibleSections.length === 1 ? "" : "s"}. Exports ready: {exports.length}.
       </div>
     </div>
   )
@@ -585,13 +544,11 @@ export function PackageSummarySection({
   lessonPackage,
   selectedLessonMode,
   materials,
-  reviewNeededLanes = [],
 }: {
   blueprint: LessonBlueprint
   lessonPackage: LessonPackage
   selectedLessonMode: string
   materials: MaterialFile[]
-  reviewNeededLanes?: Array<"vocabulary" | "wordLists" | "texts" | "practiceIdeas">
 }) {
   const teacherLedSupportCount = countTeacherLedSupportLines(lessonPackage.rotationPlan)
   const selectedContentSourceNames = getSelectedMaterialNames(
@@ -617,8 +574,6 @@ export function PackageSummarySection({
   const contentGroundingSummary = summarizeContentGrounding(blueprint)
   const structureImpactSummary = summarizeStructureImpact(blueprint)
   const fallbackUsageLabel = getFallbackUsageLabel(blueprint, lessonPackage)
-  const summaryStatusTone = reviewNeededLanes.length > 0 ? "honey" : getBinderReadinessTone(lessonPackage)
-  const summaryStatusLabel = reviewNeededLanes.length > 0 ? "Needs teacher review" : getBinderReadinessLabel(lessonPackage)
 
   return (
     <div style={sectionStyle}>
@@ -629,8 +584,8 @@ export function PackageSummarySection({
             Confirm the lesson focus, package shape, and source authority in one scan before you move into the full package review.
           </p>
         </div>
-        <span style={orchardStatusBadgeStyle(summaryStatusTone)}>
-          {summaryStatusLabel}
+        <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
+          {getBinderReadinessLabel(lessonPackage)}
         </span>
       </div>
 
@@ -700,23 +655,12 @@ function SummaryCard({
   )
 }
 
-function TeacherBinderSnapshotSection({
-  lessonPackage,
-  reviewNeededLanes = [],
-}: {
-  lessonPackage: LessonPackage
-  reviewNeededLanes?: Array<"vocabulary" | "wordLists" | "texts" | "practiceIdeas">
-}) {
-  const outputsHeld = reviewNeededLanes.length > 0
-  const visiblePackageSections = outputsHeld ? [] : buildVisiblePackageSectionItems(lessonPackage)
-  const exports = outputsHeld ? [] : lessonPackage.exports ?? []
+function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
+  const visiblePackageSections = buildVisiblePackageSectionItems(lessonPackage)
+  const exports = lessonPackage.exports ?? []
   const bundledArtifactLabels = getBundledArtifactLabels(exports)
   const hasFullPackageZip = exports.some((artifact) => artifact.kind === "full_package")
-  const warningCount = outputsHeld
-    ? Math.max(lessonPackage.readiness.warnings.length, reviewNeededLanes.length)
-    : lessonPackage.readiness.warnings.length
-  const binderStatusTone = outputsHeld ? "honey" : getBinderReadinessTone(lessonPackage)
-  const binderStatusLabel = outputsHeld ? "Needs teacher review" : getBinderReadinessLabel(lessonPackage)
+  const warningCount = lessonPackage.readiness.warnings.length
 
   return (
     <div style={sectionStyle}>
@@ -725,8 +669,8 @@ function TeacherBinderSnapshotSection({
           <h3 style={sectionHeadingStyle}>Teacher Binder Snapshot</h3>
           <p style={sectionLeadStyle}>{getTeacherBinderLeadText()}</p>
         </div>
-        <span style={orchardStatusBadgeStyle(binderStatusTone)}>
-          {binderStatusLabel}
+        <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
+          {getBinderReadinessLabel(lessonPackage)}
         </span>
       </div>
 
@@ -734,13 +678,13 @@ function TeacherBinderSnapshotSection({
         <div style={binderSnapshotCardStyle}>
           <div style={binderSnapshotStatLabelStyle}>Package sections</div>
           <div style={binderSnapshotStatValueStyle}>{visiblePackageSections.length}</div>
-          <div style={smallNoteStyle}>{outputsHeld ? "Teacher-facing sections stay held until curriculum review is complete." : "Teacher-facing sections currently included in this package."}</div>
+          <div style={smallNoteStyle}>Teacher-facing sections currently included in this package.</div>
         </div>
 
         <div style={binderSnapshotCardStyle}>
           <div style={binderSnapshotStatLabelStyle}>Exports ready</div>
           <div style={binderSnapshotStatValueStyle}>{exports.length}</div>
-          <div style={smallNoteStyle}>{outputsHeld ? "Exports stay blocked until Materials confirms the missing curriculum lanes." : "Package ZIP plus individual downloads when available."}</div>
+          <div style={smallNoteStyle}>Package ZIP plus individual downloads when available.</div>
         </div>
 
         <div style={binderSnapshotCardStyle}>
@@ -768,11 +712,9 @@ function TeacherBinderSnapshotSection({
       <div style={{ ...binderSnapshotCardStyle, marginTop: 12 }}>
         <div style={subHeadingStyle}>Available exports</div>
         <div style={smallNoteStyle}>
-          {outputsHeld
-            ? "Exports are intentionally held while Materials review is still needed."
-            : hasFullPackageZip
-              ? "Use the package ZIP when you want the whole generated binder together, or use the individual downloads when you only need one file."
-              : "Only individual downloads are available in this package right now."}
+          {hasFullPackageZip
+            ? "Use the package ZIP when you want the whole generated binder together, or use the individual downloads when you only need one file."
+            : "Only individual downloads are available in this package right now."}
         </div>
         {(hasFullPackageZip || bundledArtifactLabels.length > 0) ? (
           <div style={tagRowStyle}>
@@ -947,13 +889,7 @@ function AiConstructionSection({ lessonTrace }: { lessonTrace: LessonPipelineTra
     </div>
   )
 }
-export function PackageOutputsSection({
-  lessonPackage,
-  reviewNeededLanes = [],
-}: {
-  lessonPackage: LessonPackage
-  reviewNeededLanes?: Array<"vocabulary" | "wordLists" | "texts" | "practiceIdeas">
-}) {
+export function PackageOutputsSection({ lessonPackage }: { lessonPackage: LessonPackage }) {
   const lessonPlan = lessonPackage.lessonPlan.trim()
   const slides = sanitizeListItems(lessonPackage.slides)
   const interventions = sanitizeListItems(lessonPackage.interventions)
@@ -962,6 +898,7 @@ export function PackageOutputsSection({
   const teacherLedSupportLines = extractTeacherLedSupportLines(rotationPlan)
   const rotationOnly = extractRotationOnlyText(rotationPlan)
   const exports = lessonPackage.exports ?? []
+  const exportBlockedForReview = exports.length === 0 && lessonPackage.readiness.warnings.length > 0
 
   const hasVisibleOutputs =
     lessonPlan.length > 0 ||
@@ -970,25 +907,12 @@ export function PackageOutputsSection({
     interventions.length > 0 ||
     centers.length > 0 ||
     rotationOnly.length > 0 ||
-    exports.length > 0
-
-  if (reviewNeededLanes.length > 0) {
-    return (
-      <>
-        <TeacherBinderSnapshotSection lessonPackage={lessonPackage} reviewNeededLanes={reviewNeededLanes} />
-        <div style={sectionStyle}>
-          <h3 style={sectionHeadingStyle}>Package Outputs</h3>
-          <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-            Teacher-facing outputs are held until Materials confirms the missing curriculum lanes. Use the review block on Materials to confirm vocabulary, word list or examples, text or topic, and practice ideas.
-          </p>
-        </div>
-      </>
-    )
-  }
+    exports.length > 0 ||
+    exportBlockedForReview
 
   return (
     <>
-      {hasVisibleOutputs ? <TeacherBinderSnapshotSection lessonPackage={lessonPackage} reviewNeededLanes={reviewNeededLanes} /> : null}
+      {hasVisibleOutputs ? <TeacherBinderSnapshotSection lessonPackage={lessonPackage} /> : null}
 
       {hasVisibleOutputs ? (
         <div style={reviewStripStyle}>
@@ -1006,6 +930,19 @@ export function PackageOutputsSection({
       {centers.length > 0 ? <SimpleListSection title="Centers / Independent Work" items={centers} /> : null}
       {rotationOnly.length > 0 ? <PreSection title="Centers / Independent Work Rotation" content={rotationOnly} /> : null}
       {exports.length > 0 ? <ExportArtifactsSection exports={exports} /> : null}
+      {exportBlockedForReview ? (
+        <div style={sectionStyle}>
+          <h3 style={sectionHeadingStyle}>Exports</h3>
+          <p style={sectionLeadStyle}>
+            Exports stay blocked until you review Materials and confirm the missing lesson content.
+          </p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <Link to="/materials" style={{ ...orchardButtonStyle(), textDecoration: "none", fontWeight: 700 }}>
+              Return to Materials
+            </Link>
+          </div>
+        </div>
+      ) : null}
 
       {!hasVisibleOutputs ? (
         <div style={sectionStyle}>
@@ -1365,10 +1302,9 @@ export function TraceabilitySection({
             <div><strong>Curriculum support strength:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
             <div><strong>Curriculum sources used:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
             <div><strong>Standards used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "No grounded standard identified yet")}</div>
-            <div><strong>Vocabulary used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "vocabulary"), "Review needed on Materials")}</div>
-            <div><strong>Word list or examples used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "wordList"), "Review needed on Materials")}</div>
-            <div><strong>Text or topic used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "text"), "Review needed on Materials")}</div>
-            <div><strong>Practice used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "practice"), "Review needed on Materials")}</div>
+            <div><strong>Vocabulary used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "vocabulary"), "No grounded vocabulary surfaced yet")}</div>
+            <div><strong>Text or topic used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "text"), "No grounded text or topic surfaced yet")}</div>
+            <div><strong>Practice used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "practice"), "No grounded practice task surfaced yet")}</div>
           </div>
         </div>
 

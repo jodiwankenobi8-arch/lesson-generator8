@@ -6,8 +6,13 @@
   LessonSpecSection,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
-import { getBlueprintCurriculumLaneStatus } from "../shared/curriculumReviewStatus"
 import { getNormalizedBlueprintValues } from "../shared/teacherFacingContent"
+import {
+  REVIEW_PRACTICE_REFERENCE,
+  REVIEW_TEXT_REFERENCE,
+  REVIEW_VOCABULARY_REFERENCE,
+  REVIEW_WORD_EXAMPLES_REFERENCE,
+} from "../shared/reviewGuidance"
 
 type LessonSpecContext = {
   areaKeys: string[]
@@ -80,22 +85,22 @@ function buildLessonSpecContext(
   const vocabulary = take(
     getNormalizedBlueprintValues(blueprint, "vocabulary"),
     4,
-    getReviewAwareSpecFallback(blueprint, "vocabulary", "teacher-confirmed vocabulary")
+    [REVIEW_VOCABULARY_REFERENCE]
   )
   const wordList = take(
     getNormalizedBlueprintValues(blueprint, "wordList"),
     5,
-    getReviewAwareSpecFallback(blueprint, "wordLists", "teacher-confirmed word examples")
+    [REVIEW_WORD_EXAMPLES_REFERENCE]
   )
   const texts = take(
     getNormalizedBlueprintValues(blueprint, "text"),
     2,
-    getReviewAwareSpecFallback(blueprint, "texts", "teacher-confirmed text or topic")
+    [REVIEW_TEXT_REFERENCE]
   )
   const practiceIdeas = take(
     getNormalizedBlueprintValues(blueprint, "practice"),
     4,
-    getReviewAwareSpecFallback(blueprint, "practiceIdeas", "teacher-confirmed practice")
+    [REVIEW_PRACTICE_REFERENCE]
   )
   const standards = take(
     getNormalizedBlueprintValues(blueprint, "standard"),
@@ -591,23 +596,6 @@ function takeLines(lines: string[], count: number, start = 0): string[] {
 function take(items: string[], count: number, fallback: string[]): string[] {
   const cleaned = uniqueStrings(items.map((item) => item.trim()).filter(Boolean)).slice(0, count)
   return cleaned.length > 0 ? cleaned : fallback
-}
-
-function getReviewAwareSpecFallback(
-  blueprint: LessonBlueprint,
-  lane: "vocabulary" | "wordLists" | "texts" | "practiceIdeas",
-  fallback: string
-): string[] {
-  const status = getBlueprintCurriculumLaneStatus(blueprint, lane)
-  if (status === "review-needed") {
-    return [`Review needed on Materials: confirm ${lane === "wordLists" ? "word list or examples" : lane === "texts" ? "text or topic" : lane}.`]
-  }
-
-  if (status === "blocked") {
-    return [`Blocked until Materials has usable curriculum support for ${lane === "wordLists" ? "word list or examples" : lane === "texts" ? "text or topic" : lane}.`]
-  }
-
-  return [fallback]
 }
 
 function compactSteps(steps: string[]): string[] {

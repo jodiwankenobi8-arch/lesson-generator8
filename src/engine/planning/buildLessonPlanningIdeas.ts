@@ -14,11 +14,16 @@
   isPlanningComponentSelected,
 } from "../types"
 import { resolveTemplateShell } from "../shared/resolveTemplateShell"
-import { getBlueprintCurriculumLaneStatus } from "../shared/curriculumReviewStatus"
 import {
   getNormalizedBlueprintValues,
   normalizeTeacherFacingValues,
 } from "../shared/teacherFacingContent"
+import {
+  REVIEW_PRACTICE_REFERENCE,
+  REVIEW_TEXT_REFERENCE,
+  REVIEW_VOCABULARY_REFERENCE,
+  REVIEW_WORD_EXAMPLES_REFERENCE,
+} from "../shared/reviewGuidance"
 
 export function buildLessonPlanningIdeas(
   blueprint: LessonBlueprint,
@@ -39,33 +44,19 @@ export function buildLessonPlanningIdeas(
 
   const vocabulary = withFallback(
     getNormalizedBlueprintValues(blueprint, "vocabulary"),
-    getReviewAwarePlanningFallback(
-      blueprint,
-      "vocabulary",
-      hasFoundationalArea && !hasMeaningArea ? "key skill vocabulary" : "key lesson vocabulary"
-    )
+    [REVIEW_VOCABULARY_REFERENCE]
   )
   const texts = withFallback(
     getNormalizedBlueprintValues(blueprint, "text"),
-    getReviewAwarePlanningFallback(blueprint, "texts", "teacher-confirmed text or topic")
+    [REVIEW_TEXT_REFERENCE]
   )
   const practiceIdeas = withFallback(
     getNormalizedBlueprintValues(blueprint, "practice"),
-    getReviewAwarePlanningFallback(
-      blueprint,
-      "practiceIdeas",
-      hasFoundationalArea && !hasMeaningArea
-        ? "teacher-confirmed foundational-skill practice"
-        : "teacher-confirmed lesson task"
-    )
+    [REVIEW_PRACTICE_REFERENCE]
   )
   const wordLists = withFallback(
     getNormalizedBlueprintValues(blueprint, "wordList"),
-    getReviewAwarePlanningFallback(
-      blueprint,
-      "wordLists",
-      hasFoundationalArea ? "teacher-confirmed word examples" : "teacher-confirmed examples"
-    )
+    [REVIEW_WORD_EXAMPLES_REFERENCE]
   )
   const standards = withFallback(
     getNormalizedBlueprintValues(blueprint, "standard"),
@@ -130,7 +121,7 @@ export function buildLessonPlanningIdeas(
     slidePlans: shell.slideShell.map((shellLabel, index) => {
       const segmentLabel =
         lessonSegments[index] ??
-        blueprint.structure.templateShell?.segmentOrder?.[index] ??
+        blueprint.structure.templateShell.segmentOrder?.[index] ??
         shellLabel
 
       return {
@@ -423,18 +414,18 @@ function selectSlideContentAnchor(
 
   if (lower.includes("teach")) {
     return hasFoundationalArea && !hasMeaningArea
-      ? wordLists.slice(0, 3).join(", ") || "target word examples"
-      : texts.slice(0, 1).join(", ") || "lesson text"
+      ? wordLists.slice(0, 3).join(", ") || REVIEW_WORD_EXAMPLES_REFERENCE
+      : texts.slice(0, 1).join(", ") || REVIEW_TEXT_REFERENCE
   }
 
   if (lower.includes("guided") || lower.includes("independent") || lower.includes("center")) {
-    return practiceIdeas.slice(0, 2).join(", ") || "curriculum practice task"
+    return practiceIdeas.slice(0, 2).join(", ") || REVIEW_PRACTICE_REFERENCE
   }
 
   if (lower.includes("closure")) {
     return hasFoundationalArea && !hasMeaningArea
-      ? wordLists.slice(0, 2).join(", ") || "target words"
-      : vocabulary.slice(0, 2).join(", ") || "key vocabulary"
+      ? wordLists.slice(0, 2).join(", ") || REVIEW_WORD_EXAMPLES_REFERENCE
+      : vocabulary.slice(0, 2).join(", ") || REVIEW_VOCABULARY_REFERENCE
   }
 
   return standards.slice(0, 1).join(", ") || "lesson objective"
@@ -749,7 +740,7 @@ function buildCenterIdeas(
       },
       {
         title: "Second-area application center",
-        description: `Create a second center tied to ${texts.slice(0, 1).join(", ") || practiceIdeas.slice(0, 2).join(", ")} for applying the next selected area.`,
+        description: `Create a second center tied to ${texts.slice(0, 1).join(", ") || practiceIdeas.slice(0, 2).join(", ") || REVIEW_TEXT_REFERENCE} for applying the next selected area.`,
         rationale: "Preserves the multi-area lesson structure during rotation work.",
       },
     ]
@@ -1196,23 +1187,6 @@ type PlanningValueKind =
 
 function withFallback(values: string[], fallback: string[]): string[] {
   return values.length > 0 ? values : fallback
-}
-
-function getReviewAwarePlanningFallback(
-  blueprint: LessonBlueprint,
-  lane: "vocabulary" | "wordLists" | "texts" | "practiceIdeas",
-  fallback: string
-): string[] {
-  const status = getBlueprintCurriculumLaneStatus(blueprint, lane)
-  if (status === "review-needed") {
-    return [`Review needed on Materials: confirm ${lane === "wordLists" ? "word list or examples" : lane === "texts" ? "text or topic" : lane}.`]
-  }
-
-  if (status === "blocked") {
-    return [`Blocked until Materials has usable curriculum support for ${lane === "wordLists" ? "word list or examples" : lane === "texts" ? "text or topic" : lane}.`]
-  }
-
-  return [fallback]
 }
 
 function mapCoverageKeyToPlanningKind(

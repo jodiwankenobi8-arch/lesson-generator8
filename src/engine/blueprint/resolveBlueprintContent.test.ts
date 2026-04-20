@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+﻿import { describe, expect, it } from "vitest"
 import { resolveBlueprintContent } from "./resolveBlueprintContent"
 
 describe("resolveBlueprintContent", () => {
@@ -12,7 +12,7 @@ describe("resolveBlueprintContent", () => {
       vocabulary: [
         "e Read CVCe words with long A (a_e pattern) (e.g., made)",
         "Ses tpe metic parses blending practice, story visuals, and, up/down, and letter-sound motions).",
-        "@ Materials, Educational Technology, and Sources",
+        "@® Materials, Educational Technology, and Sources",
       ],
       wordLists: [
         "Unit: Unit 3, Week 4, Day 3 Programs: UFLI + Savvas",
@@ -100,7 +100,7 @@ describe("resolveBlueprintContent", () => {
     expect(result.vocabulary.join(" ")).not.toContain("Ses tpe metic parses")
   })
 
-  it("keeps curriculum lanes unresolved when only abstract standards-style content remains", () => {
+  it("falls back to concrete phonics cues when only abstract standards-style content remains", () => {
     const curriculumAnalysis = {
       standards: [
         "ELA.K.F.1.3: Demonstrate phonological awareness",
@@ -148,87 +148,17 @@ describe("resolveBlueprintContent", () => {
       } as any,
     })
 
-    expect(result.vocabulary).toEqual([])
-    expect(result.wordLists).toEqual([])
-    expect(result.texts).toEqual([])
-    expect(result.practiceIdeas).toEqual([])
-    expect(result.reviewStatus).toEqual({
-      vocabulary: "blocked",
-      wordLists: "blocked",
-      texts: "blocked",
-      practiceIdeas: "blocked",
-    })
+    expect(result.vocabulary).toEqual(expect.arrayContaining(["long a", "silent e"]))
+    expect(result.vocabulary.join(" ")).not.toContain("Identify and use new vocabulary")
+    expect(result.wordLists).toEqual(expect.arrayContaining(["cake", "game", "lake"]))
+    expect(result.wordLists.join(" ")).not.toContain("Read high-frequency words")
+    expect(result.texts[0]).toContain("Short decodable")
+    expect(result.practiceIdeas).toEqual(
+      expect.arrayContaining(["Read and sort long a CVCe words"])
+    )
+    expect(result.practiceIdeas.join(" ")).not.toContain("guided practice")
   })
 
-
-
-  it("does not treat teacher-confirmed placeholder phrases as resolved curriculum content", () => {
-    const result = resolveBlueprintContent({
-      curriculumMaterials: [
-        {
-          role: "curriculum",
-          status: "ready",
-          analysisReview: {
-            standards: [],
-            vocabulary: ["teacher-confirmed vocabulary"],
-            wordLists: ["teacher-confirmed word examples"],
-            instructionalTargets: [],
-            texts: ["teacher-confirmed text or topic"],
-            practiceIdeas: ["teacher-confirmed practice"],
-            exemplarStructure: [],
-            teacherSummary: "",
-          },
-          analysis: {
-            curriculum: {
-              standards: [],
-              vocabulary: ["teacher-confirmed vocabulary"],
-              wordLists: ["teacher-confirmed word examples"],
-              texts: ["teacher-confirmed text or topic"],
-              practiceTasks: ["teacher-confirmed practice"],
-              instructionalTargets: [],
-              examples: [],
-            },
-            reliability: {
-              level: "high",
-              score: 0.9,
-              usableForContent: true,
-              usableForStructure: false,
-              contentDecision: "allow",
-              structureDecision: "block",
-              reasons: [],
-              warnings: [],
-            },
-            extractedText: [],
-          },
-        } as any,
-      ],
-      curriculumAnalyses: [],
-      inputs: {
-        standard: "",
-        grade: "K",
-        subject: "ELA",
-        skill: "Long A phonics",
-        topic: "",
-      },
-      target: {
-        primary: "phonics",
-        secondary: null,
-        isMixedTarget: false,
-        recommendedMode: "full",
-      } as any,
-    })
-
-    expect(result.vocabulary).toEqual([])
-    expect(result.wordLists).toEqual([])
-    expect(result.texts).toEqual([])
-    expect(result.practiceIdeas).toEqual([])
-    expect(result.reviewStatus).toEqual({
-      vocabulary: "review-needed",
-      wordLists: "review-needed",
-      texts: "review-needed",
-      practiceIdeas: "review-needed",
-    })
-  })
 
   it("uses individually confirmed standards from the textarea instead of one raw combined string", () => {
     const result = resolveBlueprintContent({
@@ -307,74 +237,6 @@ describe("resolveBlueprintContent", () => {
     expect(result.wordLists).toEqual(["cake, game, lake"])
     expect(result.texts).toEqual(["Short decodable text about long a words"])
     expect(result.practiceIdeas).toEqual(["Read and sort long a CVCe words"])
-  })
-
-  it("records review status and uses teacher-reviewed values ahead of extracted values", () => {
-    const result = resolveBlueprintContent({
-      curriculumMaterials: [
-        {
-          role: "curriculum",
-          status: "ready",
-          analysisReview: {
-            standards: ["RF.1.3"],
-            vocabulary: ["silent e"],
-            wordLists: ["cake", "game"],
-            instructionalTargets: [],
-            texts: ["Teacher-confirmed decodable passage"],
-            practiceIdeas: ["Read and sort long a words"],
-            exemplarStructure: [],
-            teacherSummary: "",
-          },
-          analysis: {
-            curriculum: {
-              standards: ["RF.1.3"],
-              vocabulary: ["key vocabulary"],
-              wordLists: ["teacher-selected examples"],
-              texts: ["teacher-provided text"],
-              practiceTasks: ["guided practice"],
-              instructionalTargets: [],
-              examples: [],
-            },
-            reliability: {
-              level: "high",
-              score: 0.9,
-              usableForContent: true,
-              usableForStructure: false,
-              contentDecision: "allow",
-              structureDecision: "block",
-              reasons: [],
-              warnings: [],
-            },
-            extractedText: [],
-          },
-        } as any,
-      ],
-      curriculumAnalyses: [],
-      inputs: {
-        standard: "",
-        grade: "K",
-        subject: "ELA",
-        skill: "Long A phonics",
-        topic: "",
-      },
-      target: {
-        primary: "phonics",
-        secondary: null,
-        isMixedTarget: false,
-        recommendedMode: "full",
-      } as any,
-    })
-
-    expect(result.vocabulary).toEqual(["silent e"])
-    expect(result.wordLists).toEqual(["cake", "game"])
-    expect(result.texts).toEqual(["Teacher-confirmed decodable passage"])
-    expect(result.practiceIdeas).toEqual(["Read and sort long a words"])
-    expect(result.reviewStatus).toEqual({
-      vocabulary: "reviewed",
-      wordLists: "reviewed",
-      texts: "reviewed",
-      practiceIdeas: "reviewed",
-    })
   })
 
 })

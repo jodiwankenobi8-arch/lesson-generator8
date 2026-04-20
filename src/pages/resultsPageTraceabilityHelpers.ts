@@ -1,5 +1,6 @@
-import type { LessonBlueprint } from "../engine/types"
+﻿import type { LessonBlueprint } from "../engine/types"
 import { getBlueprintContentGroundingItems } from "../engine/shared/teacherFacingContent"
+import { REVIEW_CONTENT_SUMMARY } from "../engine/shared/reviewGuidance"
 
 function joinOrFallback(items: string[], fallback: string): string {
   return items.length > 0 ? items.join(", ") : fallback
@@ -34,7 +35,7 @@ export function summarizeContentAuthorityLead(
 export function summarizeContentGrounding(blueprint: LessonBlueprint): string {
   return joinOrFallback(
     getBlueprintContentGroundingItems(blueprint),
-    "Standards, vocabulary, examples, texts, and practice are using default lesson grounding."
+    REVIEW_CONTENT_SUMMARY
   )
 }
 

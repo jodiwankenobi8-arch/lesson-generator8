@@ -1,6 +1,12 @@
-import type { LessonBlueprint, LessonSpec } from "../types"
-import { getBlueprintCurriculumLaneStatus } from "../shared/curriculumReviewStatus"
+﻿import type { LessonBlueprint, LessonSpec } from "../types"
 import { getNormalizedBlueprintValues } from "../shared/teacherFacingContent"
+import {
+  REVIEW_PRACTICE_REFERENCE,
+  REVIEW_TEXT_REFERENCE,
+  REVIEW_VOCABULARY_REFERENCE,
+  REVIEW_WORD_EXAMPLES_REFERENCE,
+  isReviewGuidanceValue,
+} from "../shared/reviewGuidance"
 
 export function resolveCenterLabels(spec: LessonSpec, fallbackLabels: string[]): string[] {
   const rawLabels = takeClean(spec.centers.steps, 6)
@@ -59,40 +65,94 @@ export function getPackageDisplayValues(
 }
 
 export function selectWordListFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(
-    getPackageDisplayValues(blueprint, "wordList", 2),
-    2,
-    getReviewAwarePackageFallback(blueprint, "wordLists", fallback)
-  )
+  return focusList(getPackageDisplayValues(blueprint, "wordList", 2), 2, normalizeFocusFallback("wordList", fallback))
 }
 
 export function selectTextFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(
-    getPackageDisplayValues(blueprint, "text", 1),
-    1,
-    getReviewAwarePackageFallback(blueprint, "texts", fallback)
-  )
+  return focusList(getPackageDisplayValues(blueprint, "text", 1), 1, normalizeFocusFallback("text", fallback))
 }
 
 export function selectPracticeFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(
-    getPackageDisplayValues(blueprint, "practice", 1),
-    1,
-    getReviewAwarePackageFallback(blueprint, "practiceIdeas", fallback)
-  )
+  return focusList(getPackageDisplayValues(blueprint, "practice", 1), 1, normalizeFocusFallback("practice", fallback))
 }
 
 export function selectVocabularyFocus(blueprint: LessonBlueprint, fallback: string): string {
-  return focusList(
-    getPackageDisplayValues(blueprint, "vocabulary", 3),
-    3,
-    getReviewAwarePackageFallback(blueprint, "vocabulary", fallback)
-  )
+  return focusList(getPackageDisplayValues(blueprint, "vocabulary", 3), 3, normalizeFocusFallback("vocabulary", fallback))
 }
 
 function focusList(items: string[], count: number, fallback: string): string {
   const cleaned = takeClean(items, count)
   return cleaned.length > 0 ? cleaned.join(", ") : fallback
+}
+
+function normalizeFocusFallback(kind: PackageValueKind, fallback: string): string {
+  const normalized = fallback.trim()
+  const lower = normalized.toLowerCase()
+
+  if (!normalized || isReviewGuidanceValue(normalized)) {
+    return normalized
+  }
+
+  if (kind === "vocabulary") {
+    if ([
+      "grounded lesson vocabulary",
+      "no grounded vocabulary surfaced yet",
+      "key vocabulary",
+      "key skill vocabulary",
+    ].includes(lower)) {
+      return REVIEW_VOCABULARY_REFERENCE
+    }
+  }
+
+  if (kind === "wordList") {
+    if ([
+      "teacher-selected examples",
+      "teacher-selected word examples",
+      "target word examples",
+      "target words for student transfer",
+      "grounded word examples from the selected lesson materials",
+      "grounded examples for student transfer",
+      "grounded review examples",
+      "grounded lesson words",
+      "target words",
+      "strong word examples",
+      "no grounded word examples surfaced yet",
+    ].includes(lower)) {
+      return REVIEW_WORD_EXAMPLES_REFERENCE
+    }
+  }
+
+  if (kind === "text") {
+    if ([
+      "teacher-provided text",
+      "teacher-provided lesson text",
+      "lesson text",
+      "lesson text for student response",
+      "grounded text or topic from the selected lesson materials",
+      "no grounded text or topic surfaced yet",
+    ].includes(lower)) {
+      return REVIEW_TEXT_REFERENCE
+    }
+  }
+
+  if (kind === "practice") {
+    if ([
+      "guided practice",
+      "guided foundational-skill practice",
+      "guided response work",
+      "curriculum-aligned guided practice",
+      "curriculum-aligned foundational-skill practice",
+      "curriculum practice task",
+      "curriculum-aligned practice task",
+      "a grounded guided-practice task from the selected lesson materials",
+      "a grounded practice task from the selected lesson materials",
+      "no grounded practice task surfaced yet",
+    ].includes(lower)) {
+      return REVIEW_PRACTICE_REFERENCE
+    }
+  }
+
+  return normalized
 }
 
 function takeClean(items: string[], count: number): string[] {
@@ -170,26 +230,7 @@ function isWeakPackageValue(value: string): boolean {
     return true
   }
 
-  if ([
-    "standard",
-    "standards",
-    "slide",
-    "visual / image",
-    "teacher-confirmed vocabulary",
-    "teacher-confirmed word examples",
-    "teacher-confirmed examples",
-    "teacher-confirmed text or topic",
-    "teacher-confirmed practice",
-    "teacher-confirmed lesson task",
-    "teacher-confirmed foundational-skill practice",
-  ].includes(lower)) {
-    return true
-  }
-
-  if (
-    lower.startsWith("review needed on materials:") ||
-    lower.startsWith("blocked until materials has usable curriculum support")
-  ) {
+  if (["standard", "standards", "slide", "visual / image"].includes(lower)) {
     return true
   }
 
@@ -200,21 +241,3 @@ function stripTrailingPunctuation(value: string): string {
   return value.replace(/[.!?]+$/g, "").trim()
 }
 
-
-function getReviewAwarePackageFallback(
-  blueprint: LessonBlueprint,
-  lane: "vocabulary" | "wordLists" | "texts" | "practiceIdeas",
-  fallback: string
-): string {
-  const status = getBlueprintCurriculumLaneStatus(blueprint, lane)
-
-  if (status === "review-needed") {
-    return `Review needed on Materials: confirm ${lane === "wordLists" ? "word list or examples" : lane === "texts" ? "text or topic" : lane}.`
-  }
-
-  if (status === "blocked") {
-    return `Blocked until Materials has usable curriculum support for ${lane === "wordLists" ? "word list or examples" : lane === "texts" ? "text or topic" : lane}.`
-  }
-
-  return fallback
-}
