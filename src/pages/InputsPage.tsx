@@ -277,10 +277,10 @@ export default function InputsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Planning Notebook" title="Inputs" introMaxWidth={760}>
         <p style={introStyle}>
-          Choose what to create first, then fill in only the lesson details that matter before moving to Materials.
+          Choose what to create first, then fill in lesson details. Curriculum (content) and exemplar (structure) materials are uploaded next.
         </p>
         <p style={introStyle}>
-          Standards can be typed now or suggested later from usable curriculum materials. Materials and exemplars come on the next step. Supported uploads: {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
+          Standards can be typed now or suggested from curriculum materials on the next step. Supported uploads: {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
         </p>
       </OrchardPageHeader>
 

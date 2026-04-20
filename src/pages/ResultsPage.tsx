@@ -461,7 +461,7 @@ export default function ResultsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Planning Binder" title="Results">
         <p style={introStyle}>
-          Teacher-facing lesson package first. Review the generated package, confirm the lesson details, and download only the files you want to use.
+          Review the lesson package below. Content comes from your curriculum materials. Structure comes from your exemplar materials. Missing pieces are generated to complete the lesson.
         </p>
         <p style={introStyle}>{getResultsHeaderStatusText()}</p>
       </OrchardPageHeader>
@@ -527,7 +527,7 @@ function ReviewFlowCard({ lessonPackage }: { lessonPackage: LessonPackage }) {
     <div style={sidebarCardStyle}>
       <div style={subHeadingStyle}>Use this order</div>
       <ul style={reviewSequenceListStyle}>
-        <li>Scan the package overview and grounding snapshot.</li>
+        <li>Review what came from your materials and what was generated.</li>
         <li>Review the teacher package before downloading anything.</li>
         <li>Handle only the teacher decisions still missing from the source materials.</li>
         <li>Use exports after the package reads coherently.</li>

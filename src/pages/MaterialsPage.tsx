@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   SUPPORTED_SOURCE_UPLOAD_ACCEPT,
@@ -515,22 +515,22 @@ function buildTeacherFacingDraftSummary(
     }
 
     if (parts.length === 0) {
-      return "This curriculum source did not provide enough readable lesson content yet. Review it carefully or replace it before relying on it."
+      return "This curriculum material is still processing. Review it before generating."
     }
 
-    return `Use this curriculum source for ${formatSummaryParts(parts)}.`
+    return `Ready to use for content: ${formatSummaryParts(parts)}.`
   }
 
   if (draft.exemplarStructure.length === 0) {
-    return "Use this exemplar only for structure you can clearly confirm here."
+    return "Review and confirm the structure this exemplar provides."
   }
 
   const preview = draft.exemplarStructure.slice(0, 2)
   if (preview.length === 1) {
-    return `Use this exemplar to preserve structure such as ${preview[0]}.`
+    return `Ready to use for structure: ${preview[0]}.`
   }
 
-  return `Use this exemplar to preserve structure such as ${preview[0]} and ${preview[1]}.`
+  return `Ready to use for structure: ${preview[0]}, ${preview[1]}.`
 }
 
 export function buildMaterialAnalysisReviewDraft(
@@ -740,7 +740,7 @@ export default function MaterialsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Source Workbench" title="Materials" introMaxWidth={760}>
         <p style={introStyle}>
-          Add the curriculum and exemplar materials you want this lesson to follow. Drag files in or browse from your device, then generate once at least one material is ready to use.
+          Upload your materials to ground this lesson. Curriculum provides the content (standards, vocabulary, texts). Exemplar provides the structure (pacing, teacher moves, prompts).
         </p>
         <p style={introStyle}>
           Curriculum shapes lesson content. Exemplar shapes pacing, prompts, and structure.
@@ -1892,7 +1892,3 @@ const summaryValueStyle: React.CSSProperties = {
   fontSize: 30,
   color: "var(--orchard-green)",
 }
-
-
-
-
