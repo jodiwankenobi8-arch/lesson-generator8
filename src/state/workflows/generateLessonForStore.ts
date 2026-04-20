@@ -12,6 +12,7 @@ import {
   MissingAreaDecisionChoice,
   PlanningComponentKey,
 } from "../../engine/types"
+import { evaluateGenerationReadiness } from "./evaluateGenerationReadiness"
 
 type GenerateLessonDependencies = {
   processMaterial: (id: string) => Promise<void>
@@ -96,6 +97,16 @@ export async function generateLessonForStore(
     throw new Error(
       "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source material."
     )
+  }
+
+  const readiness = evaluateGenerationReadiness({
+    inputs: refreshed.inputs,
+    materials: readyMaterials,
+    selectedLessonMode: refreshed.selectedLessonMode,
+  })
+
+  if (!readiness.ready) {
+    throw new Error(readiness.blockerMessage ?? "Confirm lesson content on Materials before generating.")
   }
 
   const result = runLessonPipeline(

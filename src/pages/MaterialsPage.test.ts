@@ -366,7 +366,7 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain(
       "Add the curriculum and exemplar materials you want this lesson to follow."
     )
-    expect(source).toContain("You can generate now. At least one material is ready to use.")
+    expect(source).toContain("You can generate now. Confirmed curriculum content is ready to use.")
     expect(source).toContain(
       "Each file shows whether it is being prepared, ready to use, or needs attention."
     )

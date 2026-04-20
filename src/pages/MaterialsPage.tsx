@@ -580,6 +580,9 @@ export default function MaterialsPage() {
   const hasUsableMaterialsForGeneration = useLessonStore(
     (state) => state.hasUsableMaterialsForGeneration
   )()
+  const generationReadinessMessage = useLessonStore(
+    (state) => state.getGenerationReadinessMessage
+  )()
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const canGenerate = useLessonStore((state) => state.canGenerate)()
   const suggestedStandards = useMemo(
@@ -592,7 +595,9 @@ export default function MaterialsPage() {
     () => shouldShowStandardsConfirmationCard(materials.length, suggestedStandards, inputs.standard),
     [materials.length, suggestedStandards, inputs.standard]
   )
-  const generateBlocked = !canGenerate || isGenerating || needsStandardsConfirmation
+  const hasCurriculumReadinessBlocker = Boolean(generationReadinessMessage)
+  const generateBlocked =
+    !canGenerate || isGenerating || needsStandardsConfirmation || hasCurriculumReadinessBlocker
 
   const curriculumInputRef = useRef<HTMLInputElement | null>(null)
   const exemplarInputRef = useRef<HTMLInputElement | null>(null)
@@ -716,6 +721,11 @@ export default function MaterialsPage() {
       return
     }
 
+    if (generationReadinessMessage) {
+      setGenerationError(generationReadinessMessage)
+      return
+    }
+
     if (!canGenerate) {
       return
     }
@@ -815,8 +825,10 @@ export default function MaterialsPage() {
         >
           {hasProcessingMaterials
             ? "Wait for the current uploads to finish before generating."
-            : hasUsableMaterialsForGeneration
-              ? "You can generate now. At least one material is ready to use."
+            : generationReadinessMessage
+              ? generationReadinessMessage
+              : hasUsableMaterialsForGeneration
+                ? "You can generate now. Confirmed curriculum content is ready to use."
               : "Add materials until at least one curriculum or exemplar file is ready to use."}
         </div>
       </div>
@@ -926,11 +938,13 @@ export default function MaterialsPage() {
               ? "Complete the required lesson inputs before generating."
               : needsStandardsConfirmation
                 ? "Confirm at least one standard before generating."
+                : generationReadinessMessage
+                  ? generationReadinessMessage
                 : hasProcessingMaterials
                   ? "Wait until the current uploads finish."
                   : !hasUsableMaterialsForGeneration
                     ? "At least one curriculum or exemplar material needs to finish ready to use."
-                    : "Inputs, standards, and materials are ready. You can generate now."}
+                    : "Inputs, standards, and confirmed curriculum content are ready. You can generate now."}
           </div>
 
           {generationError ? <div style={errorTextStyle}>{generationError}</div> : null}

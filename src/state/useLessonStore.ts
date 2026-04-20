@@ -27,6 +27,7 @@ import {
   createDefaultOutputContents,
   normalizeOutputContents,
 } from "../engine/types"
+import { evaluateGenerationReadiness } from "./workflows/evaluateGenerationReadiness"
 
 type MaterialCounts = {
   total: number
@@ -108,6 +109,7 @@ type LessonStore = {
   hasRequiredInputs: () => boolean
   hasReadyMaterials: () => boolean
   hasUsableMaterialsForGeneration: () => boolean
+  getGenerationReadinessMessage: () => string | null
   hasProcessingMaterials: () => boolean
   canGenerate: () => boolean
   getMaterialCounts: () => MaterialCounts
@@ -230,6 +232,9 @@ export function mergeMaterialWithReview(material: MaterialFile): MaterialFile {
 
   const curriculum = material.analysis.curriculum
   const exemplar = material.analysis.exemplar
+  const teacherSummary = review.teacherSummary.trim()
+  const withTeacherSummary = (values: string[]) =>
+    teacherSummary.length > 0 ? [...values, teacherSummary] : values
 
   return {
     ...material,
@@ -242,10 +247,16 @@ export function mergeMaterialWithReview(material: MaterialFile): MaterialFile {
             standards: review.standards,
             vocabulary: review.vocabulary,
             wordLists: review.wordLists ?? [],
-            instructionalTargets: review.instructionalTargets,
+            instructionalTargets: withTeacherSummary(review.instructionalTargets),
             texts: review.texts,
             practiceTasks: review.practiceIdeas,
             examples: review.wordLists ?? [],
+            coverage: curriculum.coverage
+              ? {
+                  ...curriculum.coverage,
+                  instructionalTargets: withTeacherSummary(review.instructionalTargets),
+                }
+              : curriculum.coverage,
           }
         : curriculum,
       exemplar: exemplar
@@ -796,6 +807,25 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
     })
   },
 
+  getGenerationReadinessMessage: () => {
+    const store = get()
+
+    if (!store.hasRequiredInputs() || store.hasProcessingMaterials() || !store.hasUsableMaterialsForGeneration()) {
+      return null
+    }
+
+    const { inputs, materials, selectedLessonMode } = store
+    const mergedMaterials = materials.map(mergeMaterialWithReview)
+
+    const readiness = evaluateGenerationReadiness({
+      inputs,
+      materials: mergedMaterials,
+      selectedLessonMode,
+    })
+
+    return readiness.blockerMessage
+  },
+
   hasProcessingMaterials: () => {
     const { materials } = get()
     return materials.some(
@@ -808,10 +838,13 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   canGenerate: () => {
     const store = get()
+    const readinessMessage = store.getGenerationReadinessMessage()
+
     return (
       store.hasRequiredInputs() &&
       !store.hasProcessingMaterials() &&
-      store.hasUsableMaterialsForGeneration()
+      store.hasUsableMaterialsForGeneration() &&
+      !readinessMessage
     )
   },
 
