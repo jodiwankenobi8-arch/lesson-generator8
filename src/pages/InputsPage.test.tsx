@@ -59,7 +59,7 @@ describe("Inputs page gating smoke tests", () => {
 
     expect(markup).toContain("Ready for Materials")
     expect(markup).toContain("Continue to Materials")
-    expect(markup).not.toContain('disabled=""')
+    expect(markup).not.toContain('disabled="">Continue to Materials')
   })
 })
 

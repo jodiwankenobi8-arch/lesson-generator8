@@ -33,6 +33,13 @@ export function statusBadgeStyle(status: MaterialStatus): React.CSSProperties {
 export function uploadCardStyle(role: MaterialRole, dragging: boolean): React.CSSProperties {
   return {
     ...orchardSoftCardStyle,
+    display: "grid",
+    gridTemplateRows: "auto auto 1fr auto",
+    alignContent: "start",
+    gap: "var(--space-md)",
+    height: "100%",
+    padding: "18px",
+    boxSizing: "border-box",
     background:
       role === "curriculum"
         ? "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,246,233,0.82))"
@@ -46,10 +53,14 @@ export function uploadCardStyle(role: MaterialRole, dragging: boolean): React.CS
 
 export function dropZoneStyle(dragging: boolean): React.CSSProperties {
   return {
-    display: "grid",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
     gap: 12,
-    justifyItems: "center",
     padding: "18px 16px",
+    minHeight: 172,
+    boxSizing: "border-box",
     borderRadius: "var(--radius-md)",
     border: dragging
       ? "2px dashed var(--orchard-green)"

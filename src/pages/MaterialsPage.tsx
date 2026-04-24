@@ -81,6 +81,7 @@ const cardStyle: React.CSSProperties = {
 const uploadGridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  alignItems: "stretch",
   gap: "var(--space-md)",
   marginBottom: "var(--space-lg)",
 }
@@ -115,25 +116,32 @@ const laneMetaStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "space-between",
   gap: 10,
-  flexWrap: "wrap",
-  marginBottom: "var(--space-sm)",
+  flexWrap: "nowrap",
+  minHeight: 28,
+}
+
+const laneHeaderStyle: React.CSSProperties = {
+  display: "grid",
+  alignContent: "start",
+  gap: 6,
+  minHeight: 76,
 }
 
 const laneTitleStyle: React.CSSProperties = {
   marginTop: 0,
-  marginBottom: "var(--space-xs)",
+  marginBottom: 0,
   color: "var(--orchard-green)",
 }
 
 const laneBodyStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
   marginTop: 0,
-  marginBottom: "var(--space-md)",
-  lineHeight: 1.6,
+  marginBottom: 0,
+  lineHeight: 1.5,
 }
 
 const laneSupportTextStyle: React.CSSProperties = {
-  marginTop: "var(--space-sm)",
+  marginTop: 0,
   color: "var(--text-secondary)",
   fontSize: 13,
   lineHeight: 1.5,
@@ -344,11 +352,78 @@ const standardsLabelStyle: React.CSSProperties = {
 
 const quickDraftCardStyle: React.CSSProperties = {
   ...orchardSoftCardStyle,
-  padding: 14,
+  padding: 18,
   display: "grid",
-  gap: 12,
+  gap: 14,
   border: "1px solid var(--border-moss)",
   background: "rgba(110, 139, 107, 0.08)",
+}
+
+const draftSummaryGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: 10,
+}
+
+const draftSummaryCardStyle: React.CSSProperties = {
+  ...orchardSoftCardStyle,
+  padding: 12,
+  display: "grid",
+  gap: 6,
+  background: "rgba(255,255,255,0.88)",
+  border: "1px solid var(--border-paper)",
+}
+
+const draftSupportRowStyle: React.CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 8,
+  alignItems: "center",
+}
+
+const draftFooterStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 12,
+  flexWrap: "wrap",
+  paddingTop: 4,
+}
+
+const quietDetailsSummaryStyle: React.CSSProperties = {
+  cursor: "pointer",
+  fontSize: 13,
+  color: "var(--text-secondary)",
+  userSelect: "none",
+}
+
+const filesSectionStyle: React.CSSProperties = {
+  ...cardStyle,
+  marginTop: "var(--space-md)",
+  padding: 0,
+  overflow: "hidden",
+}
+
+const filesDetailsStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 0,
+}
+
+const filesSummaryStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 8,
+  flexWrap: "wrap",
+  padding: "16px 18px",
+  cursor: "pointer",
+  userSelect: "none",
+}
+
+const filesBodyStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 12,
+  padding: "0 18px 18px",
 }
 
 type ReviewListKey = Exclude<keyof MaterialAnalysisReview, "teacherSummary">
@@ -602,6 +677,7 @@ export default function MaterialsPage() {
   )
   const confirmedStandards = useMemo(() => normalizeAndDedupeStandards([inputs.standard]), [inputs.standard])
   const needsStandardsConfirmation = confirmedStandards.length === 0
+  const confirmedStandardsCount = confirmedStandards.length
   const showStandardsConfirmationCard = useMemo(
     () => shouldShowStandardsConfirmationCard(materials.length, suggestedStandards, inputs.standard),
     [materials.length, suggestedStandards, inputs.standard]
@@ -829,6 +905,24 @@ export default function MaterialsPage() {
   }
 
   const processingCount = counts.uploaded + counts.extracting + counts.analyzing
+  const lessonDraftStatusText =
+    primaryCurriculumReview || primaryExemplarReview
+      ? "Review this draft, make any quick changes, and generate when it looks right."
+      : "Add a ready curriculum file to fill the lesson draft."
+  const generationHelperText = !hasRequiredInputs
+    ? "Finish the lesson basics on Inputs first."
+    : hasProcessingMaterials
+      ? `Wait for ${processingCount} file${processingCount === 1 ? "" : "s"} to finish.`
+      : needsStandardsConfirmation
+        ? "Check at least one standard before generating."
+        : generationReadinessMessage
+          ? generationReadinessMessage
+          : !hasUsableMaterialsForGeneration
+            ? "Add at least one ready file before generating."
+            : "Ready to generate."
+  const standardsSummaryLabel = needsStandardsConfirmation
+    ? "Standards to confirm"
+    : `Standards (${confirmedStandardsCount} selected)`
 
   return (
     <div style={pageStyle}>
@@ -862,7 +956,7 @@ export default function MaterialsPage() {
           role="curriculum"
           title="Curriculum"
           authorityLabel="Content authority"
-          description="Upload curriculum files that carry the lesson content."
+          description="Upload curriculum files that provide the lesson content."
           count={laneCounts.curriculum}
           dragging={draggingRole === "curriculum"}
           onBrowse={() => curriculumInputRef.current?.click()}
@@ -874,7 +968,7 @@ export default function MaterialsPage() {
           role="exemplar"
           title="Exemplar"
           authorityLabel="Presentation authority"
-          description="Upload exemplar files that show structure, pacing, and delivery style."
+          description="Upload exemplar files that provide structure and presentation."
           count={laneCounts.exemplar}
           dragging={draggingRole === "exemplar"}
           onBrowse={() => exemplarInputRef.current?.click()}
@@ -884,26 +978,31 @@ export default function MaterialsPage() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: "var(--space-md)" }}>
-        <div
-          style={noticeStyle(
-            hasProcessingMaterials
-              ? "processing"
-              : hasUsableMaterialsForGeneration
-                ? "ready"
-                : "idle"
-          )}
-        >
-          {hasProcessingMaterials
-            ? `Processing ${processingCount} file${processingCount === 1 ? "" : "s"}.`
-            : "Upload files, review the lesson draft, then generate."}
-        </div>
+        {(hasProcessingMaterials || (!primaryCurriculumReview && !primaryExemplarReview)) ? (
+          <div
+            style={noticeStyle(
+              hasProcessingMaterials
+                ? "processing"
+                : hasUsableMaterialsForGeneration
+                  ? "ready"
+                  : "idle"
+            )}
+          >
+            {hasProcessingMaterials
+              ? `Processing ${processingCount} file${processingCount === 1 ? "" : "s"}.`
+              : "Upload files, review the lesson draft, then generate."}
+          </div>
+        ) : null}
 
-        <div style={{ display: "grid", gap: 10, marginTop: "var(--space-sm)" }}>
+        <div style={{ display: "grid", gap: 10, marginTop: hasProcessingMaterials || (!primaryCurriculumReview && !primaryExemplarReview) ? "var(--space-sm)" : 0 }}>
           {primaryCurriculumReview || primaryExemplarReview ? (
             <div style={quickDraftCardStyle}>
               <div style={reviewHeaderRowStyle}>
-                <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 14 }}>
-                  Lesson draft
+                <div style={{ display: "grid", gap: 6 }}>
+                  <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 14 }}>
+                    Lesson draft
+                  </div>
+                  <div style={exemplarSubtleTextStyle}>{lessonDraftStatusText}</div>
                 </div>
                 {!compactEditMode ? (
                   <button
@@ -923,21 +1022,39 @@ export default function MaterialsPage() {
                   </button>
                 )}
               </div>
-              <div style={exemplarSubtleTextStyle}>
-                Confirm this draft and edit only what you want to change.
+
+              <div style={draftSupportRowStyle}>
+                {primaryCurriculumReview ? <span style={orchardTagStyle("moss")}>Content draft ready</span> : null}
+                {primaryExemplarReview ? <span style={orchardTagStyle("cranberry")}>Structure draft ready</span> : null}
+                <span style={orchardTagStyle(needsStandardsConfirmation ? "honey" : "neutral")}>
+                  {needsStandardsConfirmation ? "Standards to confirm" : `${confirmedStandardsCount} standard${confirmedStandardsCount === 1 ? "" : "s"} selected`}
+                </span>
               </div>
 
               {primaryCurriculumMaterial || primaryExemplarMaterial ? (
-                <div style={exemplarSubtleTextStyle}>
-                  {primaryCurriculumMaterial
-                    ? `Curriculum draft source: ${primaryCurriculumMaterial.name}${additionalReadyCurriculumCount > 0 ? ` (+${additionalReadyCurriculumCount} more ready)` : ""}. `
-                    : ""}
-                  {primaryExemplarMaterial
-                    ? `Exemplar draft source: ${primaryExemplarMaterial.name}${additionalReadyExemplarCount > 0 ? ` (+${additionalReadyExemplarCount} more ready)` : ""}.`
-                    : ""}
-                  {(additionalReadyCurriculumCount > 0 || additionalReadyExemplarCount > 0)
-                    ? " Review file details below if you want to adjust the other files."
-                    : ""}
+                <div style={draftSummaryGridStyle}>
+                  {primaryCurriculumMaterial && primaryCurriculumReview ? (
+                    <div style={draftSummaryCardStyle}>
+                      <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>Content</div>
+                      <div style={exemplarSubtleTextStyle}>
+                        {buildTeacherFacingDraftSummary(primaryCurriculumMaterial, primaryCurriculumReview)}
+                      </div>
+                      <div style={exemplarSubtleTextStyle}>
+                        From {primaryCurriculumMaterial.name}{additionalReadyCurriculumCount > 0 ? ` (+${additionalReadyCurriculumCount} more ready)` : ""}
+                      </div>
+                    </div>
+                  ) : null}
+                  {primaryExemplarMaterial && primaryExemplarReview ? (
+                    <div style={draftSummaryCardStyle}>
+                      <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>Structure</div>
+                      <div style={exemplarSubtleTextStyle}>
+                        {buildTeacherFacingDraftSummary(primaryExemplarMaterial, primaryExemplarReview)}
+                      </div>
+                      <div style={exemplarSubtleTextStyle}>
+                        From {primaryExemplarMaterial.name}{additionalReadyExemplarCount > 0 ? ` (+${additionalReadyExemplarCount} more ready)` : ""}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -1006,8 +1123,8 @@ export default function MaterialsPage() {
 
               {showStandardsConfirmationCard ? (
                 <details>
-                  <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-secondary)", userSelect: "none" }}>
-                    Standards
+                  <summary style={quietDetailsSummaryStyle}>
+                    {standardsSummaryLabel}
                   </summary>
                   <div style={{ marginTop: 8 }}>
                     <StandardsConfirmationCard
@@ -1023,13 +1140,27 @@ export default function MaterialsPage() {
                   </div>
                 </details>
               ) : null}
+
+              <div style={draftFooterStyle}>
+                <div style={helperTextStyle}>{generationHelperText}</div>
+                <button
+                  type="button"
+                  onClick={handleGenerateLesson}
+                  disabled={generateBlocked}
+                  style={primaryButtonStyle(generateBlocked)}
+                >
+                  {isGenerating ? "Generating..." : "Generate Lesson"}
+                </button>
+              </div>
+
+              {generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
             </div>
           ) : null}
 
           {!primaryCurriculumReview && !primaryExemplarReview && showStandardsConfirmationCard ? (
             <details>
-              <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-secondary)", userSelect: "none" }}>
-                Standards
+              <summary style={quietDetailsSummaryStyle}>
+                {standardsSummaryLabel}
               </summary>
               <div style={{ marginTop: 8 }}>
                 <StandardsConfirmationCard
@@ -1046,108 +1177,106 @@ export default function MaterialsPage() {
             </details>
           ) : null}
 
-          <button
-            type="button"
-            onClick={handleGenerateLesson}
-            disabled={generateBlocked}
-            style={primaryButtonStyle(generateBlocked)}
-          >
-            {isGenerating ? "Generating..." : "Generate Lesson"}
-          </button>
+          {!primaryCurriculumReview && !primaryExemplarReview ? (
+            <div style={draftFooterStyle}>
+              <div style={helperTextStyle}>{generationHelperText}</div>
+              <button
+                type="button"
+                onClick={handleGenerateLesson}
+                disabled={generateBlocked}
+                style={primaryButtonStyle(generateBlocked)}
+              >
+                {isGenerating ? "Generating..." : "Generate Lesson"}
+              </button>
+            </div>
+          ) : null}
 
-          <div style={helperTextStyle}>
-            {!hasRequiredInputs
-              ? "Complete the required lesson inputs before generating."
-              : needsStandardsConfirmation
-                ? "Confirm at least one standard before generating."
-                : generationReadinessMessage
-                  ? generationReadinessMessage
-                : hasProcessingMaterials
-                  ? "Wait for uploads to finish."
-                  : !hasUsableMaterialsForGeneration
-                    ? "At least one file needs to be ready before generating."
-                    : "Ready to generate."}
-          </div>
-
-          {generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
+          {!primaryCurriculumReview && !primaryExemplarReview && generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
         </div>
       </div>
 
-      <div style={{ ...cardStyle, marginTop: "var(--space-md)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-sm)", flexWrap: "wrap", gap: 8 }}>
-          <h3 style={{ margin: 0, color: "var(--orchard-green)" }}>Your files</h3>
-          {counts.total > 0 ? (
-            <span style={orchardTagStyle("neutral")}>
-              {counts.ready} ready
-              {processingCount > 0 ? ` · ${processingCount} processing` : ""}
-              {counts.error > 0 ? ` · ${counts.error} needs attention` : ""}
-            </span>
-          ) : null}
-        </div>
-
+      <div style={filesSectionStyle}>
         {materials.length === 0 ? (
-          <p style={{ color: "var(--text-secondary)", marginBottom: 0 }}>
-            No files added yet. Upload curriculum or exemplar files above.
-          </p>
-        ) : (
-          <div style={listStyle}>
-            {materials.map((material) => (
-              <div key={material.id} style={{ display: "grid", gap: 10 }}>
-                <div style={rowStyle}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-word" }}>
-                      {material.name}
-                    </div>
-
-                    <div style={materialMetaStyle}>
-                      <span style={roleBadgeStyle(material.role)}>{formatRoleLabel(material.role)}</span>
-                      <span style={statusBadgeStyle(material.status)}>{formatStatus(material.status)}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ minWidth: 220, display: "grid", gap: 8, justifyItems: "end" }}>
-                    <div style={materialStatusTextStyle}>{getTeacherVisibleMaterialNote(material)}</div>
-                    {material.errorMessage && material.status !== "error" ? (
-                      <div style={{ ...materialStatusTextStyle, color: "var(--cranberry)" }}>
-                        {material.errorMessage}
-                      </div>
-                    ) : null}
-
-                    {material.role === "exemplar" ? (
-                      <SimplifiedExemplarControls
-                        material={material}
-                        onChange={(settings) => setMaterialStyleSettings(material.id, settings)}
-                      />
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={() => removeMaterial(material.id)}
-                      style={secondaryButtonStyle()}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-
-                {material.status === "ready" && material.analysis ? (
-                  <details>
-                    <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-secondary)", userSelect: "none", paddingBottom: 4 }}>
-                      Review file details
-                    </summary>
-                    <div style={{ display: "grid", gap: 10, marginTop: 8 }}>
-                      <MaterialExtractionStatusCard material={material} />
-                      <MaterialReviewEditor
-                        material={material}
-                        onChange={(review) => setMaterialAnalysisReview(material.id, review)}
-                        onReset={() => setMaterialAnalysisReview(material.id, null)}
-                      />
-                    </div>
-                  </details>
-                ) : null}
-              </div>
-            ))}
+          <div style={{ padding: "18px" }}>
+            <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+              No files added yet. Upload curriculum or exemplar files above.
+            </p>
           </div>
+        ) : (
+          <details style={filesDetailsStyle}>
+            <summary style={filesSummaryStyle}>
+              <span style={{ fontWeight: 700, color: "var(--orchard-green)" }}>Files in this lesson</span>
+              <span style={orchardTagStyle("neutral")}>
+                {counts.ready} ready
+                {processingCount > 0 ? ` · ${processingCount} processing` : ""}
+                {counts.error > 0 ? ` · ${counts.error} needs attention` : ""}
+              </span>
+            </summary>
+
+            <div style={filesBodyStyle}>
+              <div style={listStyle}>
+                {materials.map((material) => (
+                  <div key={material.id} style={{ display: "grid", gap: 10 }}>
+                    <div style={rowStyle}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-word" }}>
+                          {material.name}
+                        </div>
+
+                        <div style={materialMetaStyle}>
+                          <span style={roleBadgeStyle(material.role)}>{formatRoleLabel(material.role)}</span>
+                          <span style={statusBadgeStyle(material.status)}>{formatStatus(material.status)}</span>
+                        </div>
+                      </div>
+
+                      <div style={{ minWidth: 220, display: "grid", gap: 8, justifyItems: "end" }}>
+                        <div style={materialStatusTextStyle}>{getTeacherVisibleMaterialNote(material)}</div>
+                        {material.errorMessage && material.status !== "error" ? (
+                          <div style={{ ...materialStatusTextStyle, color: "var(--cranberry)" }}>
+                            {material.errorMessage}
+                          </div>
+                        ) : null}
+
+                        <button
+                          type="button"
+                          onClick={() => removeMaterial(material.id)}
+                          style={secondaryButtonStyle()}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+
+                    {material.role === "exemplar" || (material.status === "ready" && material.analysis) ? (
+                      <details>
+                        <summary style={quietDetailsSummaryStyle}>
+                          Open file details
+                        </summary>
+                        <div style={{ display: "grid", gap: 10, marginTop: 8 }}>
+                          {material.role === "exemplar" ? (
+                            <SimplifiedExemplarControls
+                              material={material}
+                              onChange={(settings) => setMaterialStyleSettings(material.id, settings)}
+                            />
+                          ) : null}
+                          {material.status === "ready" && material.analysis ? (
+                            <>
+                              <MaterialExtractionStatusCard material={material} />
+                              <MaterialReviewEditor
+                                material={material}
+                                onChange={(review) => setMaterialAnalysisReview(material.id, review)}
+                                onReset={() => setMaterialAnalysisReview(material.id, null)}
+                              />
+                            </>
+                          ) : null}
+                        </div>
+                      </details>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </details>
         )}
       </div>
 
@@ -1864,10 +1993,10 @@ function MaterialReviewEditor({
       <div style={reviewHeaderRowStyle}>
         <div style={{ display: "grid", gap: 6 }}>
           <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 14 }}>
-            Review before generation
+              File notes
           </div>
           <div style={exemplarSubtleTextStyle}>
-            Start with the summary and notes. Open advanced options only when you need to correct extracted details directly.
+              Start with the summary and notes. Open advanced options only if something needs a direct fix.
           </div>
         </div>
         <span style={orchardTagStyle(material.analysisReview ? "moss" : "neutral")}>
@@ -1886,7 +2015,7 @@ function MaterialReviewEditor({
         }}
       >
         <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>
-          What we found
+          Quick summary
         </div>
         <div style={exemplarSubtleTextStyle}>
           {summaryText || "No readable summary is available yet."}
@@ -1916,7 +2045,7 @@ function MaterialReviewEditor({
           }}
         >
           <div style={{ fontWeight: 700, color: "var(--deep-orchard)" }}>
-            Confirm the lesson details that generation should use
+            Use these lesson details
           </div>
           <div style={reviewFieldGridStyle}>
             {CURRICULUM_REVIEW_FIELDS.filter((field) =>
@@ -1975,10 +2104,10 @@ function MaterialReviewEditor({
           disabled={!material.analysisReview}
           style={secondaryButtonStyle()}
         >
-          Reset to detected analysis
+          Reset file notes
         </button>
         <div style={exemplarSubtleTextStyle}>
-          Teacher notes and advanced edits feed standards suggestions, grounding, and generated outputs.
+          Notes here help shape the lesson draft and final materials.
         </div>
       </div>
     </div>
@@ -2067,8 +2196,10 @@ function UploadLaneCard({
         <span style={orchardTagStyle("neutral")}>{count} added</span>
       </div>
 
-      <h3 style={laneTitleStyle}>{title}</h3>
-      <p style={laneBodyStyle}>{description}</p>
+      <div style={laneHeaderStyle}>
+        <h3 style={laneTitleStyle}>{title}</h3>
+        <p style={laneBodyStyle}>{description}</p>
+      </div>
 
       <div style={dropZoneStyle(dragging)}>
         <div style={dragPromptStyle}>
@@ -2079,7 +2210,7 @@ function UploadLaneCard({
         </div>
 
         <button type="button" style={buttonStyle()} onClick={onBrowse}>
-          {role === "curriculum" ? "Browse curriculum materials" : "Browse exemplar materials"}
+          {role === "curriculum" ? "Browse curriculum files" : "Browse exemplar files"}
         </button>
       </div>
 

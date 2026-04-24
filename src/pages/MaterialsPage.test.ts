@@ -18,6 +18,7 @@ import {
   getStandardsConfirmationHelperText,
 } from "./MaterialsPage"
 import { EXEMPLAR_INFLUENCE_MODE_OPTIONS, EXEMPLAR_TARGET_OPTIONS } from "./materialsPageExemplarHelpers"
+import { dropZoneStyle, uploadCardStyle } from "./materialsPageUiHelpers"
 
 describe("buildUploadSourceMetadata", () => {
   it("classifies image uploads as bounded OCR recovery sources with traceable metadata", () => {
@@ -367,6 +368,7 @@ describe("Materials page teacher-facing copy", () => {
       "Upload your curriculum and exemplar files. The lesson draft fills in once they're ready."
     )
     expect(source).toContain("Upload files, review the lesson draft, then generate.")
+    expect(source).toContain("Review this draft, make any quick changes, and generate when it looks right.")
     expect(source).toContain(
       "No files added yet. Upload curriculum or exemplar files above."
     )
@@ -376,14 +378,20 @@ describe("Materials page teacher-facing copy", () => {
     )
     expect(source).toContain("Review the standards you want in this lesson package.")
     expect(source).toContain("Lesson draft")
-    expect(source).toContain("Curriculum draft source:")
-    expect(source).toContain("Exemplar draft source:")
-    expect(source).toContain("Review file details below if you want to adjust the other files.")
-    expect(source).toContain("Review file details")
+    expect(source).toContain("Content draft ready")
+    expect(source).toContain("Structure draft ready")
+    expect(source).toContain("Files in this lesson")
+    expect(source).toContain("Open file details")
     expect(source).toContain("Words")
-    expect(source).toContain("Upload curriculum files that carry the lesson content.")
-    expect(source).toContain("Upload exemplar files that show structure, pacing, and delivery style.")
-    expect(source).toContain("Teacher notes and advanced edits feed standards suggestions, grounding, and generated outputs.")
+    expect(source).toContain("Upload curriculum files that provide the lesson content.")
+    expect(source).toContain("Upload exemplar files that provide structure and presentation.")
+    expect(source).toContain("Browse curriculum files")
+    expect(source).toContain("Browse exemplar files")
+    expect(source).toContain("File notes")
+    expect(source).toContain("Quick summary")
+    expect(source).toContain("Use these lesson details")
+    expect(source).toContain("Reset file notes")
+    expect(source).toContain("Notes here help shape the lesson draft and final materials.")
     expect(source).toContain("Extraction status")
     expect(source).toContain("This shows whether readable text came from the parser, OCR, both, or only a fallback notice.")
     expect(source).toContain("OCR status")
@@ -398,6 +406,35 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).not.toContain(
       "Status stays visible while each file moves through upload, extraction, analysis, and ready."
     )
+  })
+})
+
+describe("upload lane layout helpers", () => {
+  it("keeps both upload cards on a matched-height grid layout", () => {
+    expect(uploadCardStyle("curriculum", false)).toMatchObject({
+      display: "grid",
+      gridTemplateRows: "auto auto 1fr auto",
+      height: "100%",
+      boxSizing: "border-box",
+    })
+
+    expect(uploadCardStyle("exemplar", false)).toMatchObject({
+      display: "grid",
+      gridTemplateRows: "auto auto 1fr auto",
+      height: "100%",
+      boxSizing: "border-box",
+    })
+  })
+
+  it("keeps both drop zones at the same visual height with aligned button placement", () => {
+    expect(dropZoneStyle(false)).toMatchObject({
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      alignItems: "center",
+      minHeight: 172,
+      boxSizing: "border-box",
+    })
   })
 })
 
