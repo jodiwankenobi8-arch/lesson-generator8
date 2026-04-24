@@ -94,7 +94,7 @@ export function buildPackageOutputs(args: {
         includeInterventionOutput,
       })
     : []
-  const lessonPlan = includeLessonPlanOutput
+  const rawLessonPlan = includeLessonPlanOutput
     ? buildLessonPlan(
         inputs,
         blueprint,
@@ -109,24 +109,24 @@ export function buildPackageOutputs(args: {
         }
       )
     : ""
-  const centers = includeCentersOutput
+  const rawCenters = includeCentersOutput
     ? buildCenters(blueprint, spec, planningIdeas, missingAreaDecisions, outputContents)
     : []
-  const rotationPlan =
+  const rawRotationPlan =
     includeSmallGroupOutput
       ? buildRotationPlan(
           blueprint,
-          centers,
+          rawCenters,
           planningIdeas,
           missingAreaDecisions,
           {
             includeTeacherLedSupport: true,
           }
         )
-      : includeCentersOutput && centers.length > 0
+      : includeCentersOutput && rawCenters.length > 0
         ? buildRotationPlan(
             blueprint,
-            centers,
+            rawCenters,
             planningIdeas,
             missingAreaDecisions,
             {
@@ -134,18 +134,24 @@ export function buildPackageOutputs(args: {
             }
           )
         : ""
-  const interventions = includeInterventionOutput
+  const rawInterventions = includeInterventionOutput
     ? buildInterventions(
         blueprint,
         planningIdeas,
         missingAreaDecisions
       )
     : []
+  const lessonPlan = sanitizeTeacherFacingText(rawLessonPlan)
+  const slidesCleaned = slides.map((slide) => sanitizeTeacherFacingText(slide))
+  const centers = rawCenters.map((line) => sanitizeTeacherFacingText(line))
+  const rotationPlan = sanitizeTeacherFacingText(rawRotationPlan)
+  const interventions = rawInterventions.map((line) => sanitizeTeacherFacingText(line))
+
   const exports = groundingReview.blocksExports
     ? []
     : buildExports(
         inputs,
-        slides,
+        slidesCleaned,
         lessonPlan,
         centers,
         rotationPlan,
@@ -158,7 +164,7 @@ export function buildPackageOutputs(args: {
       )
 
   return {
-    slides,
+    slides: slidesCleaned,
     lessonPlan,
     centers,
     rotationPlan,
@@ -280,14 +286,14 @@ function buildLessonPlan(
   const openingBlock = isLessonPlanPartSelected(outputContents, "opening")
     ? buildSectionNarrativeBlock("Opening", [
         `Opening flow: ${buildOpeningSequenceLabel(resolvedTemplateShell.lessonSegments)}`,
-        `Teacher language cue: ${joinOrFallback(
+        `Try language like: ${joinOrFallback(
           resolvedTemplateShell.promptStyle.slice(0, 2),
           "teacher prompt"
         )}`,
         "Opening purpose: Start the lesson, activate prior knowledge, and orient students to the work. The objective can be shared here if helpful, but it is not the same thing as the opening.",
       ], [
         `Use ${selectOpeningResources(blueprint)} to connect students to the lesson context or materials.`,
-        `Set the purpose for the lesson in a ${normalizeToneCue(joinOrFallback(
+        `Set the purpose for the lesson using ${normalizeToneCue(joinOrFallback(
           resolvedTemplateShell.tone.slice(0, 2),
           "clear, supportive"
         ))}, then move into ${buildFirstTeachingMoveLabel(resolvedTemplateShell.lessonSegments)}.`,
@@ -301,11 +307,11 @@ function buildLessonPlan(
   )
     ? buildSectionNarrativeBlock("Direct Instruction / Modeling", [
         `Model Resources: ${selectModelResources(blueprint)}`,
-        `Teacher Moves: ${joinOrFallback(
+        `Suggested teacher moves: ${joinOrFallback(
           resolvedTemplateShell.teacherMoves.slice(0, 3),
           "teacher model, guided support"
         )}`,
-        `Slide Shell Cue: ${joinOrFallback(
+        `Slide flow: ${joinOrFallback(
           resolvedTemplateShell.slideShell.slice(0, 3),
           "Opening, Teach, Guided Practice"
         )}`,
@@ -319,11 +325,11 @@ function buildLessonPlan(
             getPackageDisplayValues(blueprint, "practice", 3),
             "a grounded guided-practice task from the selected lesson materials"
           )}`,
-          `Teacher language cue: ${joinOrFallback(
+        `Try language like: ${joinOrFallback(
             resolvedTemplateShell.promptStyle.slice(0, 3),
             "teacher prompt"
           )}`,
-          `Timing cue: ${joinOrFallback(
+        `Suggested timing: ${joinOrFallback(
             resolvedTemplateShell.timing.slice(0, 3),
             "Opening, Mini-lesson, Guided Practice"
           )}`,
@@ -344,7 +350,7 @@ function buildLessonPlan(
     isLessonPlanPartSelected(outputContents, "closure")
       ? buildSectionNarrativeBlock("Closure", [
           `Review focus: ${selectClosureResources(blueprint)}`,
-          `Delivery approach: ${joinOrFallback(
+          `Keep delivery: ${joinOrFallback(
             resolvedTemplateShell.tone.slice(0, 2),
             "clear instructional tone"
           )}`,
@@ -383,7 +389,6 @@ function buildLessonPlan(
       ], [])
     : ""
 
-  const planningBlock = buildPlanningBlock(planningIdeas)
   const supportBlock = buildSupportBlock(
     blueprint,
     planningIdeas,
@@ -410,7 +415,6 @@ function buildLessonPlan(
     vocabularyBlock,
     materialsPrepBlock,
     assessmentConnectionBlock,
-    planningBlock,
     supportBlock,
   ]
     .filter(Boolean)
@@ -819,8 +823,8 @@ function buildSupportBlock(
     sections.push(
       "Teacher-Led Support",
       `- Requested tiers: ${buildSelectedSmallGroupTierSummary(outputContents)}`,
-      `- Structure cue: ${buildScopedFlowCue(blueprint, "small_group")}`,
-      `- Prompt cue: ${buildScopedPromptCue(blueprint, "small_group")}`,
+      `- Suggested flow: ${buildScopedFlowCue(blueprint, "small_group")}`,
+      `- Try prompts like: ${buildScopedPromptCue(blueprint, "small_group")}`,
       ...smallGroup
     )
   }
@@ -828,8 +832,8 @@ function buildSupportBlock(
   if (interventions.length > 0) {
     sections.push(
       "Intervention Support",
-      `- Structure cue: ${buildScopedFlowCue(blueprint, "intervention")}`,
-      `- Prompt cue: ${buildScopedPromptCue(blueprint, "intervention")}`,
+      `- Suggested flow: ${buildScopedFlowCue(blueprint, "intervention")}`,
+      `- Try prompts like: ${buildScopedPromptCue(blueprint, "intervention")}`,
       ...interventions
     )
   }
@@ -1273,6 +1277,15 @@ function normalizeToneCue(value: string): string {
 
   const withoutRepeat = collapseRepeatedWords(cleaned)
   return /\btone\b/i.test(withoutRepeat) ? withoutRepeat : `${withoutRepeat} tone`
+}
+
+function sanitizeTeacherFacingText(text: string): string {
+  return text
+    .replace(/\b(\w+)\s+\1\b/gi, "$1")
+    .replace(/\btone\s+tone\b/gi, "tone")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
 }
 
 function collapseRepeatedWords(value: string): string {

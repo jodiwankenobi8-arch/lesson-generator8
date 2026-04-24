@@ -256,7 +256,7 @@ describe("buildPackageOutputs", () => {
 
     expect(result.slides.length).toBeGreaterThan(0)
     expect(result.lessonPlan).toContain("Lesson at a Glance")
-    expect(result.lessonPlan).toContain("Planning Notes")
+    expect(result.lessonPlan).not.toContain("Planning Notes")
     expect(result.lessonPlan).toContain("Assessment")
     expect(result.lessonPlan).toContain("Teacher-Led Support")
     expect(result.lessonPlan).toContain("Intervention Support")
@@ -761,19 +761,19 @@ describe("buildPackageOutputs", () => {
       "Preserve the exemplar slide shell: Independent Practice -> Teach -> Passage / Text"
     )
     expect(teacherFacingContent).not.toContain(
-      "Slide Shell Cue: Guided Practice, Independent Practice, Closure"
+      "Slide flow: Guided Practice, Independent Practice, Closure"
     )
     expect(teacherFacingContent).not.toContain(
       "teacher-directed pacing | Practice | Closure"
     )
     expect(teacherFacingContent).not.toContain(
-      "Timing Cue: 5 min launch, 10 min model, 10 min practice"
+      "Suggested timing: 5 min launch, 10 min model, 10 min practice"
     )
 
     expect(teacherFacingContent).toContain("Opening flow: Opening")
-    expect(teacherFacingContent).toContain("Slide Shell Cue: Objective / Opening, Model / Teach, Guided Practice")
+    expect(teacherFacingContent).toContain("Slide flow: Objective / Opening, Model / Teach, Guided Practice")
     expect(teacherFacingContent).toContain(
-      "Timing cue: Opening, Mini-lesson, Guided Practice"
+      "Suggested timing: Opening, Mini-lesson, Guided Practice"
     )
   })
   })

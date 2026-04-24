@@ -7,14 +7,14 @@ export function buildSlideContent(outline: SlideOutline): string {
 
   const studentContent = cleanedBody.slice(0, 2).join("; ")
   const examples = cleanedBody.slice(2, 4).join("; ")
+  const teacherNote = normalizeTeacherPhrase(outline.teacherMove)
+  const purpose = normalizeTeacherPhrase(outline.purpose)
 
   return [
     `Slide ${outline.slideNumber}: ${normalizeTeacherPhrase(outline.title)}`,
-    normalizeTeacherPhrase(outline.purpose),
-    `Teacher move: ${normalizeTeacherPhrase(outline.teacherMove)}`,
-    studentContent ? `Student content: ${studentContent}` : "",
-    examples ? `Examples and practice: ${examples}` : "",
-    `Teacher language: ${normalizeTeacherPhrase(outline.promptStyle)}; ${normalizeTeacherPhrase(outline.tone)} approach.`,
+    studentContent ? `Students will: ${studentContent}` : purpose,
+    examples ? `Practice: ${examples}` : "",
+    teacherNote ? `Teacher note: ${teacherNote}` : "",
   ]
     .filter(Boolean)
     .join("\n")
