@@ -924,6 +924,31 @@ export default function MaterialsPage() {
     ? "Standards to confirm"
     : `Standards (${confirmedStandardsCount} selected)`
 
+  const draftReadinessState: "ready" | "needs_standards" | "needs_review" | "processing" | "idle" =
+    hasProcessingMaterials
+      ? "processing"
+      : !primaryCurriculumReview && !primaryExemplarReview
+        ? "idle"
+        : hasCurriculumReadinessBlocker
+          ? "needs_review"
+          : needsStandardsConfirmation
+            ? "needs_standards"
+            : "ready"
+
+  const draftReadinessLabel =
+    draftReadinessState === "ready"
+      ? "Ready to generate"
+      : draftReadinessState === "needs_standards"
+        ? "Confirm standards to continue"
+        : draftReadinessState === "needs_review"
+          ? "One quick step needed"
+          : draftReadinessState === "processing"
+            ? "Still preparing files"
+            : "Upload a file to get started"
+
+  const draftReadinessTagColor: Parameters<typeof orchardTagStyle>[0] =
+    draftReadinessState === "ready" ? "moss" : draftReadinessState === "processing" ? "neutral" : "honey"
+
   return (
     <div style={pageStyle}>
       <OrchardPageHeader label="Source Workbench" title="Materials" introMaxWidth={760}>
@@ -1024,11 +1049,7 @@ export default function MaterialsPage() {
               </div>
 
               <div style={draftSupportRowStyle}>
-                {primaryCurriculumReview ? <span style={orchardTagStyle("moss")}>Content draft ready</span> : null}
-                {primaryExemplarReview ? <span style={orchardTagStyle("cranberry")}>Structure draft ready</span> : null}
-                <span style={orchardTagStyle(needsStandardsConfirmation ? "honey" : "neutral")}>
-                  {needsStandardsConfirmation ? "Standards to confirm" : `${confirmedStandardsCount} standard${confirmedStandardsCount === 1 ? "" : "s"} selected`}
-                </span>
+                <span style={orchardTagStyle(draftReadinessTagColor)}>{draftReadinessLabel}</span>
               </div>
 
               {primaryCurriculumMaterial || primaryExemplarMaterial ? (
@@ -1261,12 +1282,17 @@ export default function MaterialsPage() {
                           ) : null}
                           {material.status === "ready" && material.analysis ? (
                             <>
-                              <MaterialExtractionStatusCard material={material} />
                               <MaterialReviewEditor
                                 material={material}
                                 onChange={(review) => setMaterialAnalysisReview(material.id, review)}
                                 onReset={() => setMaterialAnalysisReview(material.id, null)}
                               />
+                              <details>
+                                <summary style={quietDetailsSummaryStyle}>Technical details</summary>
+                                <div style={{ marginTop: 8 }}>
+                                  <MaterialExtractionStatusCard material={material} />
+                                </div>
+                              </details>
                             </>
                           ) : null}
                         </div>
