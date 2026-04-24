@@ -105,4 +105,56 @@ describe("buildCompactInferredMaterialReview", () => {
       "Turn and talk prompts",
     ])
   })
+
+  it("falls back to input-inferred vocabulary and word examples when curriculum analysis has no content anchor", () => {
+    const material: MaterialFile = {
+      id: "curriculum-weak",
+      name: "weak-curriculum.pdf",
+      role: "curriculum",
+      status: "ready",
+      errorMessage: null,
+      fileBuffer: null,
+      fileContent: null,
+      analysis: {
+        summary: "Weak curriculum with no usable vocabulary or word examples",
+        extractedText: [],
+        tags: [],
+        sourceRole: "curriculum",
+        curriculum: {
+          standards: ["RF.1.3"],
+          vocabulary: [],
+          wordLists: [],
+          texts: [],
+          practiceTasks: [],
+          instructionalTargets: ["Students will decode long a words."],
+          examples: [],
+        },
+      },
+    }
+
+    const inputs = {
+      grade: "1",
+      subject: "ELA",
+      standard: "RF.1.3",
+      skill: "Long A phonics with silent e",
+      topic: "Decode long a words",
+      duration: "30 minutes",
+      notes: "",
+    }
+
+    const review = buildCompactInferredMaterialReview(material, inputs)
+
+    expect(review).not.toBeNull()
+    expect(review!.vocabulary).toContain("long a")
+    expect(review!.vocabulary).toContain("silent e")
+    expect((review!.wordLists ?? []).length).toBeGreaterThan(0)
+    expect(review!.texts.length).toBeGreaterThan(0)
+    expect(review!.practiceIdeas.length).toBeGreaterThan(0)
+    // Should not block generation — content anchor is now filled
+    const hasContentAnchor =
+      (review!.vocabulary?.length ?? 0) > 0 ||
+      (review!.wordLists?.length ?? 0) > 0 ||
+      (review!.texts?.length ?? 0) > 0
+    expect(hasContentAnchor).toBe(true)
+  })
 })

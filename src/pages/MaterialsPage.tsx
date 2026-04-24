@@ -905,6 +905,9 @@ export default function MaterialsPage() {
   }
 
   const processingCount = counts.uploaded + counts.extracting + counts.analyzing
+  const contentAnchorBlocker =
+    hasCurriculumReadinessBlocker &&
+    Boolean(generationReadinessMessage?.includes("concrete word examples"))
   const lessonDraftStatusText =
     primaryCurriculumReview || primaryExemplarReview
       ? "Review this draft, make any quick changes, and generate when it looks right."
@@ -915,11 +918,13 @@ export default function MaterialsPage() {
       ? `Wait for ${processingCount} file${processingCount === 1 ? "" : "s"} to finish.`
       : needsStandardsConfirmation
         ? "Check at least one standard before generating."
-        : generationReadinessMessage
-          ? generationReadinessMessage
-          : !hasUsableMaterialsForGeneration
-            ? "Add at least one ready file before generating."
-            : "Ready to generate."
+        : contentAnchorBlocker
+          ? "Add vocabulary or word examples to the lesson draft, then generate."
+          : generationReadinessMessage
+            ? generationReadinessMessage
+            : !hasUsableMaterialsForGeneration
+              ? "Add at least one ready file before generating."
+              : "Ready to generate."
   const standardsSummaryLabel = needsStandardsConfirmation
     ? "Standards to confirm"
     : `Standards (${confirmedStandardsCount} selected)`
@@ -941,7 +946,9 @@ export default function MaterialsPage() {
       : draftReadinessState === "needs_standards"
         ? "Confirm standards to continue"
         : draftReadinessState === "needs_review"
-          ? "One quick step needed"
+          ? contentAnchorBlocker
+            ? "Add vocabulary or word examples"
+            : "Confirm details to continue"
           : draftReadinessState === "processing"
             ? "Still preparing files"
             : "Upload a file to get started"

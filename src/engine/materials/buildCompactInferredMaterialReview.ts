@@ -72,6 +72,21 @@ function buildCompactCurriculumReview(
   const texts = compactTextAnchors(curriculum.texts ?? [], focus, inputs, primaryTarget).slice(0, 2)
   const practiceIdeas = compactPracticeIdeas(curriculum.practiceTasks ?? [], focus, primaryTarget).slice(0, 4)
 
+  const hasContentAnchor = vocabulary.length > 0 || wordLists.length > 0 || texts.length > 0
+  if (!hasContentAnchor) {
+    const fallback = inferContentAnchorFromInputs(inputs, focus)
+    return {
+      standards,
+      vocabulary: fallback.vocabulary,
+      wordLists: fallback.wordLists,
+      instructionalTargets,
+      texts: fallback.texts,
+      practiceIdeas: practiceIdeas.length > 0 ? practiceIdeas : fallback.practiceIdeas,
+      exemplarStructure: [],
+      teacherSummary: "",
+    }
+  }
+
   return {
     standards,
     vocabulary,
@@ -551,4 +566,83 @@ function sentenceCase(value: string): string {
   const trimmed = value.trim()
   if (!trimmed) return ""
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
+}
+
+const PHONICS_LONG_WORDS: Record<string, string[]> = {
+  a: ["cake", "game", "lake", "name", "tape"],
+  e: ["feet", "keep", "read", "seat", "tree"],
+  i: ["bike", "fine", "pine", "ride", "time"],
+  o: ["bone", "code", "home", "note", "rope"],
+  u: ["cube", "cute", "mule", "tune", "use"],
+}
+
+const PHONICS_SHORT_WORDS: Record<string, string[]> = {
+  a: ["cat", "hat", "map", "ran", "sat"],
+  e: ["bed", "leg", "met", "pet", "red"],
+  i: ["big", "dig", "hit", "lip", "pin"],
+  o: ["box", "dog", "hot", "log", "pop"],
+  u: ["bug", "cup", "fun", "mud", "run"],
+}
+
+type InputFallback = {
+  vocabulary: string[]
+  wordLists: string[]
+  texts: string[]
+  practiceIdeas: string[]
+}
+
+function inferContentAnchorFromInputs(
+  inputs: LessonInputs,
+  focus: CompactFocus
+): InputFallback {
+  const combined = `${inputs.skill} ${inputs.topic}`.toLowerCase()
+
+  if (focus === "foundational") {
+    const vowelMatch = combined.match(/\b(long|short)\s+([aeiou])\b/)
+    if (vowelMatch) {
+      const kind = vowelMatch[1] as "long" | "short"
+      const vowel = vowelMatch[2]
+      const hasSilentE = /\bsilent[\s-]?e\b|cvce\b/.test(combined)
+
+      const vocab = [`${kind} ${vowel}`]
+      if (kind === "long" && hasSilentE) vocab.push("silent e")
+      if (/\bvowel[\s-]?pattern\b/.test(combined)) vocab.push("vowel pattern")
+      if (/\bvowel[\s-]?team\b/.test(combined)) vocab.push("vowel team")
+
+      const wordTable = kind === "long" ? PHONICS_LONG_WORDS : PHONICS_SHORT_WORDS
+      const wordList = wordTable[vowel] ?? []
+      const practiceIdeas = [`Blend and read ${kind} ${vowel} words`, `Sort ${kind} ${vowel} words`]
+      const texts = [`Decodable text with ${kind} ${vowel} words`]
+
+      return { vocabulary: vocab.slice(0, 4), wordLists: wordList.slice(0, 5), texts, practiceIdeas }
+    }
+
+    if (/\bsight[\s-]?word|high[\s-]?frequen/.test(combined)) {
+      return {
+        vocabulary: ["sight words", "high-frequency words"],
+        wordLists: [],
+        texts: [],
+        practiceIdeas: ["Read and practice high-frequency words"],
+      }
+    }
+
+    const texts = inputs.topic?.trim() ? [inputs.topic.trim()] : []
+    return { vocabulary: [], wordLists: [], texts, practiceIdeas: [] }
+  }
+
+  if (focus === "comprehension") {
+    const vocab: string[] = []
+    if (/\bmain[\s-]?idea\b/.test(combined)) vocab.push("main idea", "key details")
+    if (/\bcharacter\b/.test(combined)) vocab.push("character")
+    if (/\bsetting\b/.test(combined)) vocab.push("setting")
+    if (/\bretell\b/.test(combined)) vocab.push("retell")
+    if (/\bauthor'?s?\s+purpose\b/.test(combined)) vocab.push("author's purpose")
+    if (/\binfer/.test(combined)) vocab.push("inference")
+
+    const texts = inputs.topic?.trim() ? [inputs.topic.trim()] : []
+    return { vocabulary: vocab.slice(0, 4), wordLists: [], texts, practiceIdeas: [] }
+  }
+
+  const texts = inputs.topic?.trim() ? [inputs.topic.trim()] : []
+  return { vocabulary: [], wordLists: [], texts, practiceIdeas: [] }
 }
