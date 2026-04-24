@@ -213,11 +213,16 @@ function filterSlidesForSelectedOutputs(
 ): string[] {
   return slides.filter((slide) => {
     const normalized = slide.toLowerCase()
+    const firstLine = slide.split(/\r?\n/)[0]?.toLowerCase() ?? ""
+    const isCentersSlide =
+      normalized.includes("| kind: centers |") ||
+      /slide\s+\d+\s*:\s*.*center/.test(firstLine)
 
-    if (!options.includeCentersOutput && normalized.includes("| kind: centers |")) {
+    if (!options.includeCentersOutput && isCentersSlide) {
       return false
     }
-return true
+
+    return true
   })
 }
 
@@ -259,8 +264,6 @@ function buildLessonPlan(
 
   const header = buildLessonHeader(inputs, blueprint)
   const groundingBlock = buildLessonGroundingBlock(blueprint)
-  const readinessBlock = buildBlueprintReadinessBlock(blueprint)
-  const coverageBlock = buildCoverageDecisionBlock(planningIdeas, missingAreaDecisions)
 
   const standardsBlock = isLessonPlanPartSelected(outputContents, "standards")
     ? buildSectionNarrativeBlock("Standards", [
@@ -270,18 +273,18 @@ function buildLessonPlan(
 
   const objectiveBlock = isLessonPlanPartSelected(outputContents, "objective")
     ? buildSectionNarrativeBlock("Objective", [
-        `Teacher-Facing Objective: ${buildObjectiveSummary(inputs, blueprint)}`,
+        `Objective focus: ${buildObjectiveSummary(inputs, blueprint)}`,
       ], [])
     : ""
 
   const openingBlock = isLessonPlanPartSelected(outputContents, "opening")
     ? buildSectionNarrativeBlock("Opening", [
-        `Launch Move: ${buildOpeningSequenceLabel(resolvedTemplateShell.lessonSegments)}`,
-        `Prompt Style: ${joinOrFallback(
+        `Opening flow: ${buildOpeningSequenceLabel(resolvedTemplateShell.lessonSegments)}`,
+        `Teacher language cue: ${joinOrFallback(
           resolvedTemplateShell.promptStyle.slice(0, 2),
           "teacher prompt"
         )}`,
-        "Opening Purpose: Start the lesson, activate prior knowledge, and orient students to the work. The objective can be shared here if helpful, but it is not the same thing as the opening.",
+        "Opening purpose: Start the lesson, activate prior knowledge, and orient students to the work. The objective can be shared here if helpful, but it is not the same thing as the opening.",
       ], [
         `Use ${selectOpeningResources(blueprint)} to connect students to the lesson context or materials.`,
         `Set the purpose for the lesson in a ${normalizeToneCue(joinOrFallback(
@@ -290,7 +293,6 @@ function buildLessonPlan(
         ))}, then move into ${buildFirstTeachingMoveLabel(resolvedTemplateShell.lessonSegments)}.`,
       ])
     : ""
-
   const lessonPortionsBlock = buildLessonPortionsBlock(blueprint)
 
   const directInstructionBlock = isLessonPlanPartSelected(
@@ -313,21 +315,20 @@ function buildLessonPlan(
   const guidedBlock =
     isLessonPlanPartSelected(outputContents, "guided_practice")
       ? buildSectionNarrativeBlock("Guided Practice", [
-          `Practice Anchor: ${joinOrFallback(
+          `Practice focus: ${joinOrFallback(
             getPackageDisplayValues(blueprint, "practice", 3),
             "a grounded guided-practice task from the selected lesson materials"
           )}`,
-          `Prompt Style: ${joinOrFallback(
+          `Teacher language cue: ${joinOrFallback(
             resolvedTemplateShell.promptStyle.slice(0, 3),
             "teacher prompt"
           )}`,
-          `Timing Cue: ${joinOrFallback(
+          `Timing cue: ${joinOrFallback(
             resolvedTemplateShell.timing.slice(0, 3),
             "Opening, Mini-lesson, Guided Practice"
           )}`,
         ], spec.guidedPractice.steps)
       : ""
-
   const independentBlock =
     isLessonPlanPartSelected(outputContents, "independent_practice")
       ? buildSectionNarrativeBlock("Independent Practice", [
@@ -342,14 +343,13 @@ function buildLessonPlan(
   const closureBlock =
     isLessonPlanPartSelected(outputContents, "closure")
       ? buildSectionNarrativeBlock("Closure", [
-          `Review Focus: ${selectClosureResources(blueprint)}`,
-          `Delivery Tone: ${joinOrFallback(
+          `Review focus: ${selectClosureResources(blueprint)}`,
+          `Delivery approach: ${joinOrFallback(
             resolvedTemplateShell.tone.slice(0, 2),
             "clear instructional tone"
           )}`,
         ], spec.closure.steps)
       : ""
-
   const differentiationBlock = isLessonPlanPartSelected(outputContents, "differentiation")
     ? buildSectionNarrativeBlock("Differentiation", [
         `Centers: ${includeCentersOutput ? "Requested" : "Not requested"}`,
@@ -398,8 +398,6 @@ function buildLessonPlan(
   const lessonPlan = [
     header,
     groundingBlock,
-    readinessBlock,
-    coverageBlock,
     standardsBlock,
     objectiveBlock,
     openingBlock,
@@ -637,45 +635,27 @@ function dedupeStrings(items: string[]): string[] {
 }
 
 function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
-  const hasReusableFlow = blueprint.structure.lessonSegments.length > 0
-  const hasReusableSlideStructure = blueprint.structure.templateShell.slideShell.length > 0
-
   return [
-    "Lesson Grounding",
-    `- Primary Lesson Area: ${blueprint.content.target.primary}`,
-    `- Additional Lesson Area: ${blueprint.content.target.secondary ?? "None"}`,
-    `- Multiple Lesson Areas: ${blueprint.content.target.isMixedTarget ? "Yes" : "No"}`,
-    `- Source Balance: ${blueprint.sourceReadiness.overall}`,
+    "Lesson at a Glance",
+    `- Primary focus: ${blueprint.content.target.primary}`,
+    `- Additional focus: ${blueprint.content.target.secondary ?? "None"}`,
+    `- Lesson coverage: ${blueprint.content.target.isMixedTarget ? "Integrated focus" : "Single focus"}`,
     `- Standards: ${formatGroundingStandards(blueprint)}`,
     `- Vocabulary: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "vocabulary", 4),
       REVIEW_VOCABULARY_STATUS
     )}`,
-    `- Word List: ${joinOrFallback(
+    `- Word examples: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "wordList", 5),
       REVIEW_WORD_EXAMPLES_STATUS
     )}`,
-    `- Texts: ${joinOrFallback(
+    `- Text or topic: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "text", 2),
       REVIEW_TEXT_STATUS
     )}`,
     `- Practice Ideas: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "practice", 4),
       REVIEW_PRACTICE_STATUS
-    )}`,
-    `- Exemplar Segment Order: ${hasReusableFlow ? "Reusable lesson flow available" : "Default lesson flow"}`,
-    `- Exemplar Slide Shell: ${hasReusableSlideStructure ? "Reusable slide structure available" : "Default slide structure"}`,
-    `- Exemplar Teacher Moves: ${joinOrFallback(
-      blueprint.structure.teacherMoves.slice(0, 4),
-      "teacher model, guided support"
-    )}`,
-    `- Exemplar Prompt Style: ${joinOrFallback(
-      blueprint.structure.promptStyle.slice(0, 4),
-      "teacher prompt"
-    )}`,
-    `- Exemplar Tone: ${joinOrFallback(
-      blueprint.structure.tone.slice(0, 2),
-      "clear instructional tone"
     )}`,
   ].join("\n")
 }
@@ -762,47 +742,6 @@ function selectClosureResources(blueprint: LessonBlueprint): string {
     getPackageDisplayValues(blueprint, "vocabulary", 3),
     "grounded lesson vocabulary"
   )
-}
-
-function buildCoverageDecisionBlock(
-  planningIdeas?: LessonPlanningIdeas,
-  missingAreaDecisions: MissingAreaDecisionMap = {}
-): string {
-  if (!planningIdeas) {
-    return ""
-  }
-
-  const coverageLines =
-    planningIdeas.componentCoverage?.flatMap((entry) => {
-      const evidence =
-        entry.evidence.length > 0 ? ` Evidence: ${entry.evidence.join(", ")}.` : ""
-
-      return [
-        `- ${formatCoverageLabel(entry.component)}: ${entry.status}. ${entry.rationale}${evidence}`,
-      ]
-    }) ?? []
-
-  const promptLines =
-    planningIdeas.missingAreaPrompts?.map((prompt) => {
-      const currentDecision = missingAreaDecisions[prompt.component] ?? "undecided"
-      return `- ${formatCoverageLabel(prompt.component)} (${prompt.importance}): ${prompt.prompt} Current decision: ${formatDecisionLabel(currentDecision)}.`
-    }) ?? []
-
-  if (coverageLines.length === 0 && promptLines.length === 0) {
-    return ""
-  }
-
-  const sections: string[] = []
-
-  if (coverageLines.length > 0) {
-    sections.push("Coverage Decisions", ...coverageLines)
-  }
-
-  if (promptLines.length > 0) {
-    sections.push("Missing-Area Prompts", ...promptLines)
-  }
-
-  return sections.join("\n")
 }
 
 function buildPlanningBlock(planningIdeas?: LessonPlanningIdeas): string {
@@ -896,18 +835,6 @@ function buildSupportBlock(
   }
 
   return sections.length > 0 ? sections.join("\n") : ""
-}
-
-function buildBlueprintReadinessBlock(blueprint: LessonBlueprint): string {
-  const warnings = blueprint.sourceReadiness.warnings.map((warning) => `- ${warning}`)
-
-  return [
-    "Blueprint Readiness",
-    `- Curriculum Support: ${blueprint.sourceReadiness.curriculumSupport}`,
-    `- Exemplar Support: ${blueprint.sourceReadiness.exemplarSupport}`,
-    `- Overall Balance: ${blueprint.sourceReadiness.overall}`,
-    ...warnings,
-  ].join("\n")
 }
 
 function buildCenters(
@@ -1338,31 +1265,20 @@ function shouldLeaveOut(
   return missingAreaDecisions[component] === "leave_out"
 }
 
-function formatCoverageLabel(component: string): string {
-  return component.replace(/_/g, " ")
-}
-
-function formatDecisionLabel(choice: MissingAreaDecisionChoice): string {
-  if (choice === "add") {
-    return "Add it"
-  }
-
-  if (choice === "leave_out") {
-    return "Leave it out"
-  }
-
-  return "Decide later"
-}
-
-
 function normalizeToneCue(value: string): string {
   const cleaned = value.trim()
   if (cleaned.length === 0) {
     return "clear, supportive tone"
   }
 
-  return /\btone\b/i.test(cleaned) ? cleaned : `${cleaned} tone`
+  const withoutRepeat = collapseRepeatedWords(cleaned)
+  return /\btone\b/i.test(withoutRepeat) ? withoutRepeat : `${withoutRepeat} tone`
 }
+
+function collapseRepeatedWords(value: string): string {
+  return value.replace(/\b(\w+)\s+\1\b/gi, "$1")
+}
+
 function joinOrFallback(items: string[], fallback: string): string {
   const cleaned = Array.from(
     new Set((items ?? []).map((item) => item.trim()).filter((item) => item.length > 0))

@@ -37,8 +37,8 @@ export function buildSlidePlan(
       purpose: inferPurpose(kind, blueprint.content.target.primary, blueprint.content.target.isMixedTarget),
       timing: timingShell[index] ?? "Flexible timing",
       teacherMove: teacherMoveShell[index % teacherMoveShell.length] ?? "teacher guidance",
-      promptStyle: promptShell[index % promptShell.length] ?? "teacher prompt",
-      tone: toneShell[index % toneShell.length] ?? "clear instructional tone",
+      promptStyle: normalizeTeacherPhrase(promptShell[index % promptShell.length] ?? "teacher prompt"),
+      tone: normalizeTeacherPhrase(toneShell[index % toneShell.length] ?? "clear instructional tone"),
       body: buildSlideBody({
         kind,
         blueprint,
@@ -58,8 +58,8 @@ export function buildSlidePlan(
       purpose: "Introduce the lesson objective and frame the learning.",
       timing: "Opening",
       teacherMove: blueprint.structure.teacherMoves[0] ?? "teacher guidance",
-      promptStyle: blueprint.structure.promptStyle[0] ?? "teacher prompt",
-      tone: blueprint.structure.tone[0] ?? "clear instructional tone",
+      promptStyle: normalizeTeacherPhrase(blueprint.structure.promptStyle[0] ?? "teacher prompt"),
+      tone: normalizeTeacherPhrase(blueprint.structure.tone[0] ?? "clear instructional tone"),
       body: compact([
         `Target: ${formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary)}`,
         `Standards: ${content.standard.join(", ") || "TBD"}`,
@@ -74,14 +74,14 @@ export function buildSlidePlan(
       action: "create_new",
       purpose: "Summarize teacher-facing notes, moves, and reminders.",
       timing: "Flexible timing",
-      teacherMove: blueprint.structure.teacherMoves.join(", "),
-      promptStyle: blueprint.structure.promptStyle.join(", "),
-      tone: blueprint.structure.tone.join(", "),
+      teacherMove: normalizeTeacherPhrase(blueprint.structure.teacherMoves.join(", ")),
+      promptStyle: normalizeTeacherPhrase(blueprint.structure.promptStyle.join(", ")),
+      tone: normalizeTeacherPhrase(blueprint.structure.tone.join(", ")),
       body: compact([
         `Vocabulary: ${content.vocabulary.join(", ") || "None"}`,
         `Teacher Moves: ${blueprint.structure.teacherMoves.join(", ") || "None"}`,
         `Prompts: ${blueprint.structure.promptStyle.join(", ") || "None"}`,
-        `Source Balance: ${blueprint.sourceReadiness.overall}`,
+        `Classroom focus: ${formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary)}`,
       ]),
     },
   ]
@@ -335,7 +335,25 @@ function take(items: string[], count: number, fallback: string[]): string[] {
 }
 
 function compact(items: string[]): string[] {
-  return Array.from(new Set(items.map((item) => item.trim()).filter((item) => item.length > 0)))
+  return Array.from(
+    new Set(
+      items
+        .map((item) => normalizeTeacherPhrase(item))
+        .filter((item) => item.length > 0)
+    )
+  )
+}
+
+function normalizeTeacherPhrase(value: string): string {
+  const cleaned = value.trim()
+  if (!cleaned) {
+    return ""
+  }
+
+  return cleaned
+    .replace(/\b(\w+)\s+\1\b/gi, "$1")
+    .replace(/\s+/g, " ")
+    .trim()
 }
 
 

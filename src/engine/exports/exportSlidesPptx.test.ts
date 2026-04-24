@@ -8,16 +8,16 @@ describe("parseSlidesExportContent", () => {
     const content = [
       "Slides Export",
       "",
-      "Slide 1: Objective | Kind: objective",
-      "Slide 2: Guided Practice | Kind: guided_practice Slide 3: Closure | Kind: closure",
-      "Slide 4: Teaching Notes | Kind: teaching_notes",
+      "Slide 1: Objective",
+      "Slide 2: Guided Practice Slide 3: Closure",
+      "Slide 4: Teaching Notes",
     ].join("\n")
 
     expect(parseSlidesExportContent(content)).toEqual([
-      "Slide 1: Objective | Kind: objective",
-      "Slide 2: Guided Practice | Kind: guided_practice",
-      "Slide 3: Closure | Kind: closure",
-      "Slide 4: Teaching Notes | Kind: teaching_notes",
+      "Slide 1: Objective",
+      "Slide 2: Guided Practice",
+      "Slide 3: Closure",
+      "Slide 4: Teaching Notes",
     ])
   })
 })
@@ -33,9 +33,9 @@ describe("exportFullPackageZip PPTX packaging", () => {
       content: [
         "Slides Export",
         "",
-        "Slide 1: Objective | Kind: objective",
-        "Slide 2: Guided Practice | Kind: guided_practice Slide 3: Closure | Kind: closure",
-        "Slide 4: Teaching Notes | Kind: teaching_notes",
+        "Slide 1: Objective",
+        "Slide 2: Guided Practice Slide 3: Closure",
+        "Slide 4: Teaching Notes",
       ].join("\n"),
     } as const
 

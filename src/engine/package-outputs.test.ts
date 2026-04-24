@@ -223,7 +223,7 @@ describe("buildPackageOutputs", () => {
 
     expect(result.lessonPlan).toContain("- Standards: No grounded standard identified yet")
     expect(result.lessonPlan).toContain("- Requested / grounded standards: No grounded standard identified yet")
-    expect(result.lessonPlan).toContain("- Word List: cake, game, lake, name")
+    expect(result.lessonPlan).toContain("- Word examples: cake, game, lake, name")
     expect(result.lessonPlan).toContain("- Practice Ideas: Read and sort long a CVCe words")
   })
 
@@ -255,7 +255,7 @@ describe("buildPackageOutputs", () => {
     })
 
     expect(result.slides.length).toBeGreaterThan(0)
-    expect(result.lessonPlan).toContain("Blueprint Readiness")
+    expect(result.lessonPlan).toContain("Lesson at a Glance")
     expect(result.lessonPlan).toContain("Planning Notes")
     expect(result.lessonPlan).toContain("Assessment")
     expect(result.lessonPlan).toContain("Teacher-Led Support")
@@ -276,7 +276,7 @@ describe("buildPackageOutputs", () => {
         format: "zip",
         fileName: "ELA-full-lesson-package.zip",
         mimeType: "application/zip",
-        content: expect.stringContaining("Blueprint Readiness"),
+        content: expect.stringContaining("Lesson at a Glance"),
       },
       {
         kind: "slides",
@@ -292,7 +292,7 @@ describe("buildPackageOutputs", () => {
         format: "docx",
         fileName: "ELA-lesson-plan-export.docx",
         mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        content: expect.stringContaining("Blueprint Readiness"),
+        content: expect.stringContaining("Lesson at a Glance"),
       },
       {
         kind: "printables",
@@ -373,8 +373,11 @@ describe("buildPackageOutputs", () => {
       "Reteach the target phonics pattern with cake, game, same, late.",
       "Provide extra guided decoding and blending practice with Read the word list aloud.",
     ])
-    expect(result.lessonPlan).toContain("Source Balance: balanced")
-    expect(result.lessonPlan).toContain("Minor warning for visibility.")
+    expect(result.lessonPlan).toContain("Lesson at a Glance")
+    expect(result.lessonPlan).not.toContain("Source Balance:")
+    expect(result.lessonPlan).not.toContain("Blueprint Readiness")
+    expect(result.lessonPlan).not.toContain("Coverage Decisions")
+    expect(result.lessonPlan).not.toContain("Minor warning for visibility.")
   })
 
   it("keeps export support labels aligned without forcing results-page center wording", () => {
@@ -767,10 +770,10 @@ describe("buildPackageOutputs", () => {
       "Timing Cue: 5 min launch, 10 min model, 10 min practice"
     )
 
-    expect(teacherFacingContent).toContain("Launch Move: Opening")
+    expect(teacherFacingContent).toContain("Opening flow: Opening")
     expect(teacherFacingContent).toContain("Slide Shell Cue: Objective / Opening, Model / Teach, Guided Practice")
     expect(teacherFacingContent).toContain(
-      "Timing Cue: Opening, Mini-lesson, Guided Practice"
+      "Timing cue: Opening, Mini-lesson, Guided Practice"
     )
   })
   })
@@ -790,8 +793,8 @@ describe("buildPackageOutputs", () => {
       outputContents: makeOutputContents(),
     })
 
-    expect(result.lessonPlan).toContain("Teacher-Facing Objective:")
-    expect(result.lessonPlan).toContain("Opening Purpose: Start the lesson")
+    expect(result.lessonPlan).toContain("Objective focus:")
+    expect(result.lessonPlan).toContain("Opening purpose: Start the lesson")
     expect(result.lessonPlan).toContain("The objective can be shared here if helpful, but it is not the same thing as the opening.")
     expect(result.lessonPlan).not.toContain("Opening - Introduce the lesson target and objective")
   })

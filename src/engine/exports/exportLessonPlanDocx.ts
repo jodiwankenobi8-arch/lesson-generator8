@@ -1,7 +1,8 @@
 const SECTION_HEADINGS = new Set([
-  "Blueprint Readiness",
-  "Coverage Decisions",
-  "Missing-Area Prompts",
+  "Lesson at a Glance",
+  "Standards",
+  "Objective",
+  "Opening",
   "Teach",
   "Guided Practice",
   "Independent Practice",

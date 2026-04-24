@@ -497,12 +497,17 @@ export default function ResultsPage() {
 
         <div style={sideColumnStyle}>
           <ReviewFlowCard lessonPackage={lessonPackage} />
-          <CoverageDecisionsSection
-            planningIdeas={planningIdeas}
-            decisions={missingAreaDecisions}
-            onSetDecision={handleMissingAreaDecision}
-            isRegenerating={isRegenerating}
-          />
+          <details style={sidebarCardStyle}>
+            <summary style={summaryStyle}>Optional planning decisions</summary>
+            <div style={{ marginTop: 10 }}>
+              <CoverageDecisionsSection
+                planningIdeas={planningIdeas}
+                decisions={missingAreaDecisions}
+                onSetDecision={handleMissingAreaDecision}
+                isRegenerating={isRegenerating}
+              />
+            </div>
+          </details>
         </div>
       </div>
 
@@ -581,7 +586,7 @@ export function PackageSummarySection({
         <div>
           <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
           <p style={sectionLeadStyle}>
-            Teacher-facing lesson package first. Confirm the lesson focus, source authority, and what came from your materials before moving into the full package review.
+            Start with a quick package scan, then move into the full teacher binder preview.
           </p>
         </div>
         <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
@@ -613,8 +618,8 @@ export function PackageSummarySection({
           <div style={denseKeyValueStyle}>
             <div><strong>Primary focus:</strong> {blueprint.content.target.primary}</div>
             <div><strong>Additional focus:</strong> {blueprint.content.target.secondary || "None"}</div>
-            <div><strong>Multi-area lesson:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
-            <div><strong>Lesson coverage:</strong> {selectedLessonMode === "full" ? "Multiple lesson areas" : "Single lesson area"}</div>
+            <div><strong>Integrated focus:</strong> {blueprint.content.target.isMixedTarget ? "Yes" : "No"}</div>
+            <div><strong>Lesson coverage:</strong> {selectedLessonMode === "full" ? "Integrated focus" : "Single focus"}</div>
             <div><strong>Standards:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "No grounded standard identified yet")}</div>
           </div>
           <div style={smallNoteStyle}>Use this snapshot to confirm the lesson focus and standards before exporting.</div>
@@ -997,8 +1002,11 @@ function PreSection({ title, content }: { title: string; content: string }) {
 }
 
 function SimpleListSection({ title, items }: { title: string; items: string[] }) {
-  const visible = items.slice(0, 4)
-  const hidden = items.slice(4)
+  const previewItems = title === "Slides"
+    ? items.map((item) => formatSlidePreviewItem(item))
+    : items
+  const visible = previewItems.slice(0, 4)
+  const hidden = previewItems.slice(4)
   const openByDefault = title === "Slides" || title === "Teacher-Led Support"
 
   return (
@@ -1008,7 +1016,7 @@ function SimpleListSection({ title, items }: { title: string; items: string[] })
         <div style={detailsSectionGridStyle}>
           <div style={previewHeaderStyle}>
             <div style={subHeadingStyle}>{title}</div>
-            <span style={orchardTagStyle("neutral")}>{items.length}</span>
+            <span style={orchardTagStyle("neutral")}>{previewItems.length}</span>
           </div>
           <ul style={previewListStyle}>
             {visible.map((item) => <li key={item}>{item}</li>)}
@@ -1023,6 +1031,50 @@ function SimpleListSection({ title, items }: { title: string; items: string[] })
       </details>
     </div>
   )
+}
+
+function formatSlidePreviewItem(item: string): string {
+  const normalized = item.replace(/\s+/g, " ").trim()
+  if (normalized.length === 0) {
+    return ""
+  }
+
+  const lines = item
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  if (lines.length > 1) {
+    return lines.join(" ")
+  }
+
+  if (!normalized.includes("|")) {
+    return normalized
+  }
+
+  const parts = normalized.split("|").map((part) => part.trim()).filter(Boolean)
+  const title = parts.find((part) => /^Slide\s+\d+:/i.test(part)) ?? "Slide"
+  const teacherMove = readLegacySlideField(parts, "Teacher Move")
+  const content = readLegacySlideField(parts, "Content")
+  const purpose = readLegacySlideField(parts, "Purpose")
+
+  const summaryParts = [
+    title,
+    purpose,
+    teacherMove ? `Teacher move: ${teacherMove}` : "",
+    content ? `Student content: ${content}` : "",
+  ].filter(Boolean)
+
+  return summaryParts.join(". ")
+}
+
+function readLegacySlideField(parts: string[], label: string): string {
+  const lowerLabel = `${label.toLowerCase()}:`
+  const match = parts.find((part) => part.toLowerCase().startsWith(lowerLabel))
+  if (!match) {
+    return ""
+  }
+  return match.slice(label.length + 1).trim()
 }
 
 export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
