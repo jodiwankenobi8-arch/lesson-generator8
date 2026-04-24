@@ -581,7 +581,7 @@ export function PackageSummarySection({
         <div>
           <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
           <p style={sectionLeadStyle}>
-            Confirm the lesson focus, package shape, and source authority in one scan before you move into the full package review.
+            Teacher-facing lesson package first. Confirm the lesson focus, source authority, and what came from your materials before moving into the full package review.
           </p>
         </div>
         <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
@@ -621,16 +621,21 @@ export function PackageSummarySection({
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Grounding Snapshot</div>
+          <div style={subHeadingStyle}>What came from your materials</div>
           <div style={denseKeyValueStyle}>
             <div><strong>Content source:</strong> {resolvedContentSourceSummary}</div>
             <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
-            <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
-            <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
-            <div><strong>Current lesson content uses:</strong> {contentGroundingSummary}</div>
-            <div><strong>Structure came from:</strong> {structureImpactSummary}</div>
-            <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
           </div>
+          <details style={{ marginTop: 10 }}>
+            <summary style={{ cursor: "pointer", color: "var(--text-secondary)", fontSize: 13 }}>Review source details</summary>
+            <div style={{ ...denseKeyValueStyle, marginTop: 8 }}>
+              <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
+              <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
+              <div><strong>Lesson content grounding:</strong> {contentGroundingSummary}</div>
+              <div><strong>Structure grounding:</strong> {structureImpactSummary}</div>
+              <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
+            </div>
+          </details>
         </div>
       </div>
     </div>

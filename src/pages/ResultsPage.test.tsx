@@ -942,7 +942,7 @@ describe("Results export format labels", () => {
     const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
 
     expect(source).toContain("Exemplar style choice:")
-    expect(source).toContain("Current lesson content uses:")
+    expect(source).toContain("Lesson content grounding:")
     expect(source).toContain("Structure came from:")
   })
 })
