@@ -1045,7 +1045,11 @@ function formatSlidePreviewItem(item: string): string {
     .filter(Boolean)
 
   if (lines.length > 1) {
-    const title = lines[0] ?? "Slide"
+    const titleLine = lines[0] ?? ""
+    const titleMatch = titleLine.match(/^(Slide \d+):\s*(.+)$/)
+    const slideNum = titleMatch?.[1] ?? ""
+    const slideTitle = titleMatch?.[2] ?? titleLine
+    
     const contentLines = lines
       .slice(1)
       .filter((line) => !line.startsWith("Teacher note:"))
@@ -1053,7 +1057,7 @@ function formatSlidePreviewItem(item: string): string {
     const teacherNote = lines.find((line) => line.startsWith("Teacher note:"))
 
     const summaryParts = [
-      title,
+      slideNum && slideTitle ? `${slideNum}: ${slideTitle}` : titleLine,
       ...contentLines,
       teacherNote,
     ].filter(Boolean)

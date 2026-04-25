@@ -46,7 +46,6 @@ function normalizeBodyLine(value: string): string {
   const remainder = normalized
     .slice(colonIndex + 1)
     .trim()
-    .replace(/:\s*/g, " — ")
     .replace(/\s+/g, " ")
 
   return `${label} ${remainder}`.trim()
@@ -69,8 +68,9 @@ function isMeaningfulTeacherNote(note: string): boolean {
     "teacher model",
     "guided support",
     "teacher move",
+    "isolate",
   ]
-  return !genericFallbacks.some((f) => lower === f || lower.startsWith(f + ","))
+  return !genericFallbacks.some((f) => lower === f || lower.startsWith(f))
 }
 
 function normalizeTeacherPhrase(value: string): string {

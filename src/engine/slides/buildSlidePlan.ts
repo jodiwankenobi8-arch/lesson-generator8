@@ -63,7 +63,6 @@ export function buildSlidePlan(
       tone: normalizeTeacherPhrase(blueprint.structure.tone[0] ?? "clear instructional tone"),
       body: compact([
         `Focus: ${capitalizeTargetLabel(formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary))}`,
-        `Standards: ${content.standard.slice(0, 2).join(", ") || "TBD"}`,
         content.wordList.length > 0
           ? `Words: ${content.wordList.slice(0, 3).join(", ")}`
           : content.vocabulary.length > 0
