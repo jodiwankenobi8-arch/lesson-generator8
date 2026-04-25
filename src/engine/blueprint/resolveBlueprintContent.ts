@@ -280,7 +280,149 @@ function resolveStandards(
     .sort((left, right) => (standardScores.get(right) ?? 0) - (standardScores.get(left) ?? 0))
     .slice(0, 6)
 
-  return rankedStandards
+  return filterRankedStandardsForRequestedScope(rankedStandards, inputs, primaryTarget)
+}
+
+function filterRankedStandardsForRequestedScope(
+  rankedStandards: string[],
+  inputs: StandardResolutionInputs,
+  primaryTarget: string
+): string[] {
+  if (!isFoundationalTarget(primaryTarget)) {
+    return rankedStandards
+  }
+
+  const combinedRequest = `${inputs.skill} ${inputs.topic}`.toLowerCase()
+  const requestIncludesComprehension = containsAny(combinedRequest, [
+    "comprehension",
+    "retell",
+    "main idea",
+    "key details",
+    "character",
+    "theme",
+    "author's purpose",
+    "informational",
+    "answer comprehension questions",
+  ])
+  const requestIncludesVocabularyOrConversation = containsAny(combinedRequest, [
+    "vocabulary",
+    "word meaning",
+    "categories",
+    "oral language",
+    "speaking",
+    "listening",
+    "collaborative conversation",
+    "discussion",
+  ])
+
+  const filtered = rankedStandards.filter((standard) => {
+    const family = inferStandardFamily(standard)
+
+    if (family === "foundational") {
+      return true
+    }
+
+    if (family === "comprehension") {
+      return requestIncludesComprehension
+    }
+
+    if (family === "vocabulary_or_conversation") {
+      return requestIncludesVocabularyOrConversation
+    }
+
+    return false
+  })
+
+  return filtered.length > 0 ? filtered : filterStandardsForPrimaryTarget(rankedStandards, primaryTarget)
+}
+
+function inferStandardFamily(
+  standard: string
+): "foundational" | "comprehension" | "vocabulary_or_conversation" | "other" {
+  const lower = standard.toLowerCase()
+
+  if (
+    /\bRF\./i.test(standard) ||
+    /(?:^|\.)f(?:\.|$)/i.test(standard) ||
+    containsAny(lower, [
+      "phonological awareness",
+      "phonemic awareness",
+      "phonics",
+      "foundational",
+      "word-analysis",
+      "word analysis",
+      "high-frequency words",
+      "high frequency words",
+      "decoding",
+      "encode",
+      "encoding",
+      "letter-sound",
+      "segment",
+      "blend",
+      "cvce",
+      "cvc",
+      "sight word",
+      "print concepts",
+    ])
+  ) {
+    return "foundational"
+  }
+
+  if (
+    /\bR[IL]?\./i.test(standard) ||
+    /(?:^|\.)r(?:\.|$)/i.test(standard) ||
+    containsAny(lower, [
+      "main topic",
+      "key details",
+      "author's purpose",
+      "author purpose",
+      "theme",
+      "character",
+      "retell",
+      "comprehension",
+      "text evidence",
+    ])
+  ) {
+    return "comprehension"
+  }
+
+  if (
+    /\b(?:L|SL)\./i.test(standard) ||
+    /(?:^|\.)v(?:\.|$)/i.test(standard) ||
+    containsAny(lower, [
+      "vocabulary",
+      "oral language",
+      "speaking",
+      "listening",
+      "academic language",
+      "collaborative conversation",
+    ])
+  ) {
+    return "vocabulary_or_conversation"
+  }
+
+  return "other"
+}
+
+function isFoundationalTarget(primaryTarget: string): boolean {
+  const normalized = primaryTarget.trim().toLowerCase()
+
+  return [
+    "phonics",
+    "foundational",
+    "foundational_skills",
+    "phonological_awareness",
+    "phonemic_awareness",
+    "high_frequency_words",
+    "letter_identification",
+    "decoding",
+    "encoding",
+    "spelling",
+    "spelling_encoding",
+    "word_recognition",
+    "word_building",
+    "decodable_reading",
+  ].includes(normalized)
 }
 
 function buildStandardHintTerms(inputs: StandardResolutionInputs): string[] {

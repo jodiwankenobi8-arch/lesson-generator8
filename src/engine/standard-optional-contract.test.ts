@@ -126,6 +126,6 @@ describe("standard optional contract", () => {
       target: { primary: "phonics" } as any,
     })
 
-    expect(result.standards).toEqual(["RF.1.3", "RL.1.2"])
+    expect(result.standards).toEqual(["RF.1.3"])
   })
 })

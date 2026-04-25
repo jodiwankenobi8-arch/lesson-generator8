@@ -50,6 +50,7 @@ import {
   standardTextIncludes,
   toggleStandardInText,
 } from "../engine/shared/standards"
+import { filterStandardsForPrimaryTarget } from "../engine/shared/teacherFacingContent"
 import { buildCompactInferredMaterialReview } from "../engine/materials/buildCompactInferredMaterialReview"
 
 export {
@@ -1422,12 +1423,43 @@ export function buildSuggestedStandards(materials: MaterialFile[], inputs: Lesso
     ),
     { requireCode: true }
   )
+  const inferredTarget = inferRequestedStandardsTarget(inputs)
+  const filteredCandidates =
+    inferredTarget
+      ? filterStandardsForPrimaryTarget(candidates, inferredTarget)
+      : candidates
+
+  if (filteredCandidates.length > 0) {
+    return filteredCandidates.slice(0, 6)
+  }
 
   if (candidates.length > 0) {
     return candidates.slice(0, 6)
   }
 
   return inferSuggestedStandardsFromInputs(inputs)
+}
+
+function inferRequestedStandardsTarget(inputs: LessonInputs): string | null {
+  const combined = `${inputs.skill} ${inputs.topic} ${inputs.notes}`.toLowerCase()
+
+  const mentionsFoundational = /(phonics|decode|encoding|long [aeiou]|short [aeiou]|silent e|magic e|cvce|cvc|digraph|blend|segment|vowel)/i.test(combined)
+  const mentionsComprehension = /(retell|character|setting|important events|story|informational|topic|details|main idea|key details|author'?s purpose|comprehension)/i.test(combined)
+  const mentionsVocabularyOrConversation = /(vocabulary|categories|sort words|unfamiliar words|word meaning|collaborative conversation|discussion|speaking|listening|oral language)/i.test(combined)
+
+  if (mentionsFoundational && !mentionsComprehension && !mentionsVocabularyOrConversation) {
+    return "phonics"
+  }
+
+  if (mentionsComprehension && !mentionsFoundational) {
+    return "comprehension"
+  }
+
+  if (mentionsVocabularyOrConversation && !mentionsFoundational && !mentionsComprehension) {
+    return "vocabulary"
+  }
+
+  return null
 }
 
 function shouldShowStandardsConfirmationCard(

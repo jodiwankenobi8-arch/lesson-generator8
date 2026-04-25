@@ -482,7 +482,6 @@ describe("standards confirmation helpers", () => {
     expect(suggestions).toEqual([
       "ELA.K.F.1.3: Demonstrate phonological awareness",
       "ELA.K.F.1.4: Read high-frequency words",
-      "ELA.K.R.2.1: Identify the main topic and key details in a text",
     ])
     expect(suggestions.join(" | ")).not.toContain("Edition")
   })
