@@ -131,11 +131,11 @@ function buildLessonSpecContext(
     guidedTaskLine: buildGuidedTaskLine(primaryArea, practiceIdeas, standards),
     independentTaskLine: buildIndependentTaskLine(primaryArea, practiceIdeas, wordList, texts),
     closureLine: buildClosureLine(primaryArea, vocabulary, wordList),
-    flowLine: `Use this resolved lesson flow: ${shell.lessonSegments.join(" -> ")}.`,
-    slideShellLine: `Use this resolved slide shell: ${shell.slideShell.join(" -> ")}.`,
+    flowLine: "",
+    slideShellLine: "",
     timingLine: `Keep pacing aligned to: ${shell.timing.join(" | ")}.`,
     teacherMoveLine: `Use these teacher moves where helpful: ${shell.teacherMoves.join(", ")}.`,
-    promptLine: `Use prompts and response frames such as: ${shell.promptStyle.join(", ")}.`,
+    promptLine: buildPromptLine(shell.promptStyle),
     toneLine: `Keep the delivery tone aligned to: ${shell.tone.join(", ")}.`,
     teachPlanLines: planningLines(planningIdeas, "teach"),
     guidedPlanLines: planningLines(planningIdeas, "guided_practice"),
@@ -164,7 +164,7 @@ function buildMultiAreaSpec(context: LessonSpecContext): LessonSpec {
       context.slideShellLine,
     ]),
     guidedPractice: createSection("Guided Practice", [
-      "Keep each resolved lesson area in its own guided-practice portion before moving on.",
+      "Keep each lesson area in its own guided-practice portion before moving on.",
       ...portions.map(
         (portion, index) =>
           `Lesson Portion ${index + 1} (${portion.label}) - Guided Practice: ${portion.guided}`
@@ -176,7 +176,7 @@ function buildMultiAreaSpec(context: LessonSpecContext): LessonSpec {
       context.timingLine,
     ]),
     independentPractice: createSection("Independent Practice", [
-      "Each resolved lesson area keeps its own independent-practice moment instead of one vague mixed task.",
+      "Give each lesson area its own independent-practice moment instead of one vague mixed task.",
       ...portions.map(
         (portion, index) =>
           `Lesson Portion ${index + 1} (${portion.label}) - Independent Practice: ${portion.independent}`
@@ -196,7 +196,7 @@ function buildMultiAreaSpec(context: LessonSpecContext): LessonSpec {
       "Teacher-led support / reteach center",
     ]),
     closure: createSection("Closure", [
-      "Close the lesson by reconnecting what students learned across the resolved lesson portions.",
+      "Close the lesson by reconnecting what students learned across the lesson portions.",
       ...portions.map(
         (portion, index) =>
           `Lesson Portion ${index + 1} (${portion.label}) - Closure / Check: ${portion.closure}`
@@ -340,7 +340,7 @@ function buildGenericSpec(context: LessonSpecContext): LessonSpec {
     ]),
     closure: createSection("Closure", [
       "Review the lesson focus and what students learned.",
-      `Revisit the lesson flow: ${context.shell.lessonSegments.join(" -> ")}.`,
+      `Reconnect the lesson sequence: ${context.shell.lessonSegments.join(" -> ")}.`,
       context.closureLine,
       ...context.closurePlanLines,
       context.promptLine,
@@ -666,6 +666,19 @@ function buildClosureLine(primaryArea: string, vocabulary: string[], wordList: s
   }
 
   return `Reconnect students to the key takeaway using ${vocabulary.slice(0, 3).join(", ")}.`
+}
+
+function buildPromptLine(promptStyle: string[]): string {
+  const prompts = promptStyle
+    .map((prompt) => prompt.trim())
+    .filter(Boolean)
+    .filter((prompt) => !/^teacher prompt$/i.test(prompt))
+
+  if (prompts.length === 0) {
+    return ""
+  }
+
+  return `Use prompts and response frames such as: ${prompts.join(", ")}.`
 }
 
 function formatTargetLabel(areaKeys: string[]): string {

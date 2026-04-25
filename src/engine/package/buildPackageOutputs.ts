@@ -812,8 +812,9 @@ function buildSupportBlock(
       "Teacher-Led Support",
       `- Requested tiers: ${buildSelectedSmallGroupTierSummary(outputContents)}`,
       `- Flow: ${buildScopedFlowCue(blueprint, "small_group")}`,
-      `- Prompts: ${buildScopedPromptCue(blueprint, "small_group")}`,
-
+      buildScopedPromptCue(blueprint, "small_group")
+        ? `- Prompts: ${buildScopedPromptCue(blueprint, "small_group")}`
+        : "",
       ...smallGroup
     )
   }
@@ -822,13 +823,14 @@ function buildSupportBlock(
     sections.push(
       "Intervention Support",
       `- Flow: ${buildScopedFlowCue(blueprint, "intervention")}`,
-      `- Prompts: ${buildScopedPromptCue(blueprint, "intervention")}`,
-
+      buildScopedPromptCue(blueprint, "intervention")
+        ? `- Prompts: ${buildScopedPromptCue(blueprint, "intervention")}`
+        : "",
       ...interventions
     )
   }
 
-  return sections.length > 0 ? sections.join("\n") : ""
+  return sections.filter(Boolean).length > 0 ? sections.filter(Boolean).join("\n") : ""
 }
 
 function buildCenters(
@@ -1016,7 +1018,12 @@ function buildScopedPromptCue(blueprint: LessonBlueprint, scope: "small_group" |
     toneCount: 1,
   })
 
-  return joinOrFallback(shell.promptStyle.slice(0, 2), "Teacher prompt")
+  return shell.promptStyle
+    .slice(0, 2)
+    .map((prompt) => prompt.trim())
+    .filter(Boolean)
+    .filter((prompt) => !/^teacher prompt$/i.test(prompt))
+    .join(", ")
 }
 
 function buildAddFallbackInterventions(blueprint: LessonBlueprint): string[] {

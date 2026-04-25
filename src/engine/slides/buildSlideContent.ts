@@ -3,8 +3,8 @@
 export function buildSlideContent(outline: SlideOutline): string {
   const bodyLines = outline.body
     .map((entry) => normalizeBodyLine(normalizeTeacherPhrase(entry)))
-    .filter(Boolean)
-    .slice(0, 3)
+    .filter(isPreviewFriendlyBodyLine)
+    .slice(0, 2)
 
   const teacherNote = normalizeTeacherPhrase(outline.teacherMove)
   const purpose = normalizeTeacherPhrase(outline.purpose)
@@ -22,7 +22,7 @@ export function buildSlideContent(outline: SlideOutline): string {
 }
 
 function normalizeBodyLine(value: string): string {
-  return value
+  const normalized = value
     .replace(/^Model Words:\s*/i, "Words: ")
     .replace(/^Model Text:\s*/i, "Text: ")
     .replace(/^Practice Anchor:\s*/i, "Practice: ")
@@ -36,6 +36,27 @@ function normalizeBodyLine(value: string): string {
     .replace(/^Review Words:\s*/i, "Review: ")
     .replace(/^Review Vocabulary:\s*/i, "Review: ")
     .trim()
+
+  const colonIndex = normalized.indexOf(":")
+  if (colonIndex < 0) {
+    return normalized
+  }
+
+  const label = normalized.slice(0, colonIndex + 1)
+  const remainder = normalized
+    .slice(colonIndex + 1)
+    .trim()
+    .replace(/:\s+/g, " - ")
+    .replace(/\s+/g, " ")
+
+  return `${label} ${remainder}`.trim()
+}
+
+function isPreviewFriendlyBodyLine(line: string): boolean {
+  if (!line) return false
+  if (line.length > 120) return false
+
+  return /^(Words|Text|Practice|Focus|Review|Target|Standards|Vocabulary):/i.test(line)
 }
 
 function isMeaningfulTeacherNote(note: string): boolean {

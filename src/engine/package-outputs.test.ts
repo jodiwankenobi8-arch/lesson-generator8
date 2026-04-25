@@ -760,6 +760,9 @@ describe("buildPackageOutputs", () => {
     expect(teacherFacingContent).not.toContain(
       "Preserve the exemplar slide shell: Independent Practice -> Teach -> Passage / Text"
     )
+    expect(teacherFacingContent).not.toContain("teacher prompt")
+    expect(teacherFacingContent).not.toContain("resolved lesson flow")
+    expect(teacherFacingContent).not.toContain("resolved slide shell")
     expect(teacherFacingContent).not.toContain(
       "Slide flow: Guided Practice, Independent Practice, Closure"
     )

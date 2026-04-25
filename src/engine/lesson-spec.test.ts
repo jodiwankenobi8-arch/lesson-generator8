@@ -281,7 +281,7 @@ describe("buildLessonSpec", () => {
       "Lesson Portion 2 (comprehension) - Independent Practice"
     )
     expect(spec.closure.steps.join(" ")).toContain(
-      "Close the lesson by reconnecting what students learned across the resolved lesson portions."
+      "Close the lesson by reconnecting what students learned across the lesson portions."
     )
   })
 
