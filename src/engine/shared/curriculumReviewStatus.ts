@@ -39,7 +39,7 @@ export function getBlueprintCurriculumLaneStatus(
   }
 
   if (explicitStatus === "review-needed") {
-    return groundedValues.length > 0 ? "extracted" : "review-needed"
+    return "review-needed"
   }
 
   return groundedValues.length > 0 ? "extracted" : "review-needed"

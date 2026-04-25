@@ -1,10 +1,16 @@
 import { buildBlueprint } from "../../engine/blueprint/buildBlueprint"
+import { getBlueprintCurriculumLaneStatus } from "../../engine/shared/curriculumReviewStatus"
 import {
   REVIEW_CONTENT_ANCHOR_STATUS,
   evaluateGroundingReviewState,
   formatGroundingReviewKinds,
 } from "../../engine/shared/reviewGuidance"
-import type { LessonInputs, LessonMode, MaterialFile } from "../../engine/types"
+import type {
+  BlueprintCurriculumLaneKey,
+  LessonInputs,
+  LessonMode,
+  MaterialFile,
+} from "../../engine/types"
 
 export type GenerationReadinessResult = {
   ready: boolean
@@ -34,7 +40,21 @@ export function evaluateGenerationReadiness(args: {
   }
 
   const blueprint = buildBlueprint(inputs, materials, selectedLessonMode)
+  const requiredCurriculumLanes = getRequiredCurriculumLanes(blueprint)
+  const unresolvedRequiredLanes = requiredCurriculumLanes.filter((lane) => {
+    const status = getBlueprintCurriculumLaneStatus(blueprint, lane)
+    return status === "review-needed" || status === "blocked"
+  })
   const groundingReview = evaluateGroundingReviewState(blueprint)
+
+  if (unresolvedRequiredLanes.length > 0) {
+    return {
+      ready: false,
+      blockerMessage: `Before generating, confirm ${formatGroundingReviewKinds(
+        unresolvedRequiredLanes.map((lane) => mapLaneToGroundingKind(lane))
+      )} on Materials so the lesson is classroom-ready.`,
+    }
+  }
 
   if (groundingReview.needsContentAnchor) {
     return {
@@ -55,5 +75,61 @@ export function evaluateGenerationReadiness(args: {
   return {
     ready: true,
     blockerMessage: null,
+  }
+}
+
+function getRequiredCurriculumLanes(
+  blueprint: ReturnType<typeof buildBlueprint>
+): BlueprintCurriculumLaneKey[] {
+  if (blueprint.content.target.isMixedTarget) {
+    return ["practiceIdeas"]
+  }
+
+  switch (blueprint.content.target.primary) {
+    case "phonics":
+    case "foundational":
+    case "foundational_skills":
+    case "phonological_awareness":
+    case "phonemic_awareness":
+    case "high_frequency_words":
+    case "letter_identification":
+    case "decoding":
+    case "encoding":
+    case "spelling":
+    case "spelling_encoding":
+    case "word_recognition":
+    case "word_building":
+    case "decodable_reading":
+      return ["wordLists", "practiceIdeas"]
+    case "comprehension":
+    case "language_comprehension":
+    case "reading_response":
+    case "fluency":
+    case "writing":
+    case "writing_about_reading":
+    case "writing_sentence_work":
+      return ["texts", "practiceIdeas"]
+    case "vocabulary":
+    case "oral_language":
+    case "vocabulary_oral_language":
+    case "speaking_listening":
+      return ["vocabulary", "practiceIdeas"]
+    default:
+      return ["practiceIdeas"]
+  }
+}
+
+function mapLaneToGroundingKind(
+  lane: BlueprintCurriculumLaneKey
+): "vocabulary" | "wordList" | "text" | "practice" {
+  switch (lane) {
+    case "vocabulary":
+      return "vocabulary"
+    case "wordLists":
+      return "wordList"
+    case "texts":
+      return "text"
+    case "practiceIdeas":
+      return "practice"
   }
 }

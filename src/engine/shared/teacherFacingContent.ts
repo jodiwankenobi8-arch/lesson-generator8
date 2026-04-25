@@ -46,7 +46,7 @@ export function getNormalizedBlueprintValues(
   kind: TeacherFacingValueKind
 ): string[] {
   const coverage = blueprint.content.coverage
-  const primaryTarget = blueprint.content.target.primary
+  const primaryTarget = blueprint.content.target?.primary
 
   if (kind === "standard") {
     return normalizeTeacherFacingValues(
@@ -112,7 +112,7 @@ export function filterStandardsForPrimaryTarget(
 export function getBlueprintContentGroundingItems(
   blueprint: LessonBlueprint
 ): string[] {
-  const primaryTarget = blueprint.content.target.primary
+  const primaryTarget = blueprint.content.target?.primary
   const coverage = blueprint.content.coverage
 
   return uniqueCaseInsensitive([

@@ -29,6 +29,8 @@ import {
 } from "../engine/types"
 import { evaluateGenerationReadiness } from "./workflows/evaluateGenerationReadiness"
 import { buildCompactInferredMaterialReview } from "../engine/materials/buildCompactInferredMaterialReview"
+import { processMaterialForStore } from "./workflows/processMaterialForStore"
+import { generateLessonForStore } from "./workflows/generateLessonForStore"
 
 type MaterialCounts = {
   total: number
@@ -735,7 +737,9 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
   processMaterial: async (id) => {
     const store = get()
 
-    const { processMaterialForStore } = await import("./workflows/processMaterialForStore")
+    if (!store.materials.some((material) => material.id === id)) {
+      return
+    }
 
     await processMaterialForStore(id, store.materials, {
       beginMaterialExtraction: store.beginMaterialExtraction,
@@ -747,8 +751,6 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   generateLesson: async () => {
     const store = get()
-
-    const { generateLessonForStore } = await import("./workflows/generateLessonForStore")
 
     const result = await generateLessonForStore(
       {

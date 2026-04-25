@@ -63,17 +63,45 @@ export function resolveBlueprintContent(args: {
     "practice",
     target.primary
   )
-  const vocabulary = reviewedVocabulary.length > 0 ? reviewedVocabulary : extractedVocabulary
-  const wordLists = reviewedWordLists.length > 0 ? reviewedWordLists : extractedWordLists
-  const texts = reviewedTexts.length > 0 ? reviewedTexts : extractedTexts
-  const practiceIdeas = reviewedPracticeIdeas.length > 0 ? reviewedPracticeIdeas : extractedPracticeIdeas
+  const fallbackVocabulary = extractedVocabulary.length > 0
+    ? []
+    : normalizeResolvedLane(inferFallbackVocabulary(inputs, target.primary), "vocabulary", target.primary)
+  const fallbackWordLists = extractedWordLists.length > 0
+    ? []
+    : normalizeResolvedLane(inferFallbackWordLists(inputs, target.primary), "wordList", target.primary)
+  const fallbackTexts = extractedTexts.length > 0
+    ? []
+    : normalizeResolvedLane(inferFallbackTexts(inputs, target.primary), "text", target.primary)
+  const fallbackPracticeIdeas = extractedPracticeIdeas.length > 0
+    ? []
+    : normalizeResolvedLane(inferFallbackPracticeIdeas(inputs, target.primary), "practice", target.primary)
+  const vocabulary = reviewedVocabulary.length > 0
+    ? reviewedVocabulary
+    : extractedVocabulary.length > 0
+      ? extractedVocabulary
+      : fallbackVocabulary
+  const wordLists = reviewedWordLists.length > 0
+    ? reviewedWordLists
+    : extractedWordLists.length > 0
+      ? extractedWordLists
+      : fallbackWordLists
+  const texts = reviewedTexts.length > 0
+    ? reviewedTexts
+    : extractedTexts.length > 0
+      ? extractedTexts
+      : fallbackTexts
+  const practiceIdeas = reviewedPracticeIdeas.length > 0
+    ? reviewedPracticeIdeas
+    : extractedPracticeIdeas.length > 0
+      ? extractedPracticeIdeas
+      : fallbackPracticeIdeas
   const coverage = resolveBlueprintContentCoverage(curriculumAnalyses)
   const hasContentUsableCurriculum = curriculumMaterials.some((material) => isContentUsableCurriculumMaterial(material))
   const reviewStatus: BlueprintContentReviewStatus = {
-    vocabulary: resolveLaneStatus(reviewedVocabulary, vocabulary, hasContentUsableCurriculum),
-    wordLists: resolveLaneStatus(reviewedWordLists, wordLists, hasContentUsableCurriculum),
-    texts: resolveLaneStatus(reviewedTexts, texts, hasContentUsableCurriculum),
-    practiceIdeas: resolveLaneStatus(reviewedPracticeIdeas, practiceIdeas, hasContentUsableCurriculum),
+    vocabulary: resolveLaneStatus(reviewedVocabulary, extractedVocabulary, hasContentUsableCurriculum),
+    wordLists: resolveLaneStatus(reviewedWordLists, extractedWordLists, hasContentUsableCurriculum),
+    texts: resolveLaneStatus(reviewedTexts, extractedTexts, hasContentUsableCurriculum),
+    practiceIdeas: resolveLaneStatus(reviewedPracticeIdeas, extractedPracticeIdeas, hasContentUsableCurriculum),
   }
 
   return {
@@ -252,7 +280,7 @@ function resolveStandards(
     .sort((left, right) => (standardScores.get(right) ?? 0) - (standardScores.get(left) ?? 0))
     .slice(0, 6)
 
-  return filterStandardsForPrimaryTarget(rankedStandards, primaryTarget)
+  return rankedStandards
 }
 
 function buildStandardHintTerms(inputs: StandardResolutionInputs): string[] {
@@ -486,6 +514,54 @@ function inferTeacherFacingPracticeIdeas(
     `Partner practice using ${focus}`,
     `Independent application of ${focus}`,
   ])
+}
+
+function inferFallbackVocabulary(
+  inputs: StandardResolutionInputs,
+  primaryTarget: string
+): string[] {
+  const teacherInputVocabulary = inferTeacherInputVocabulary(primaryTarget, inputs)
+  if (teacherInputVocabulary.length > 0) {
+    return teacherInputVocabulary
+  }
+
+  return inferTeacherFacingVocabulary(inputs, primaryTarget)
+}
+
+function inferFallbackWordLists(
+  inputs: StandardResolutionInputs,
+  primaryTarget: string
+): string[] {
+  const teacherInputWordLists = inferTeacherInputWordLists(primaryTarget, inputs)
+  if (teacherInputWordLists.length > 0) {
+    return teacherInputWordLists
+  }
+
+  return inferTeacherFacingWordLists(inputs, primaryTarget)
+}
+
+function inferFallbackTexts(
+  inputs: StandardResolutionInputs,
+  primaryTarget: string
+): string[] {
+  const teacherInputTexts = inferTeacherInputTexts(primaryTarget, inputs)
+  if (teacherInputTexts.length > 0 && inputs.topic.trim().length === 0) {
+    return teacherInputTexts
+  }
+
+  return inferTeacherFacingTexts(inputs, primaryTarget)
+}
+
+function inferFallbackPracticeIdeas(
+  inputs: StandardResolutionInputs,
+  primaryTarget: string
+): string[] {
+  const teacherInputPracticeIdeas = inferTeacherInputPracticeIdeas(primaryTarget, inputs)
+  if (teacherInputPracticeIdeas.length > 0) {
+    return teacherInputPracticeIdeas
+  }
+
+  return inferTeacherFacingPracticeIdeas(inputs, primaryTarget)
 }
 
 const STANDARD_HINT_STOPWORDS = new Set([
