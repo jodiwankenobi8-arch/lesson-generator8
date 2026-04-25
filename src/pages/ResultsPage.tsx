@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react"
+import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import {
   buildReliabilityDecisions,
@@ -1048,8 +1048,24 @@ function formatSlidePreviewItem(item: string): string {
     const titleLine = lines[0] ?? ""
     const titleMatch = titleLine.match(/^(Slide \d+):\s*(.+)$/)
     const slideNum = titleMatch?.[1] ?? ""
-    const slideTitle = titleMatch?.[2] ?? titleLine
-    
+    let slideTitle = titleMatch?.[2] ?? titleLine
+
+    const practiceTypeMatch = slideTitle.match(/^(Guided Practice|Independent Practice):\s*(.+)$/)
+    const extraParts: string[] = []
+    if (practiceTypeMatch) {
+      slideTitle = practiceTypeMatch[1]
+      const remainder = practiceTypeMatch[2]
+      const lastColon = remainder.lastIndexOf(":")
+      if (lastColon > 0) {
+        const practiceContent = remainder.substring(0, lastColon).trim()
+        const wordsContent = remainder.substring(lastColon + 1).trim()
+        if (practiceContent) extraParts.push(`Practice: ${practiceContent}`)
+        if (wordsContent) extraParts.push(`Words: ${wordsContent}`)
+      } else if (remainder) {
+        extraParts.push(`Practice: ${remainder}`)
+      }
+    }
+
     const contentLines = lines
       .slice(1)
       .filter((line) => !line.startsWith("Teacher note:"))
@@ -1058,6 +1074,7 @@ function formatSlidePreviewItem(item: string): string {
 
     const summaryParts = [
       slideNum && slideTitle ? `${slideNum}: ${slideTitle}` : titleLine,
+      ...extraParts,
       ...contentLines,
       teacherNote,
     ].filter(Boolean)
@@ -1799,3 +1816,5 @@ function countNonEmptyLines(content: string): number {
     .map((line) => line.trim())
     .filter(Boolean).length
 }
+
+
