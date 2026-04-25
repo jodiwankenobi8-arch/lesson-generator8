@@ -286,10 +286,6 @@ function buildLessonPlan(
   const openingBlock = isLessonPlanPartSelected(outputContents, "opening")
     ? buildSectionNarrativeBlock("Opening", [
         `Opening flow: ${buildOpeningSequenceLabel(resolvedTemplateShell.lessonSegments)}`,
-        `Try language like: ${joinOrFallback(
-          resolvedTemplateShell.promptStyle.slice(0, 2),
-          "teacher prompt"
-        )}`,
         "Opening purpose: Start the lesson, activate prior knowledge, and orient students to the work. The objective can be shared here if helpful, but it is not the same thing as the opening.",
       ], [
         `Use ${selectOpeningResources(blueprint)} to connect students to the lesson context or materials.`,
@@ -307,13 +303,9 @@ function buildLessonPlan(
   )
     ? buildSectionNarrativeBlock("Direct Instruction / Modeling", [
         `Model Resources: ${selectModelResources(blueprint)}`,
-        `Suggested teacher moves: ${joinOrFallback(
+        `Teacher moves: ${joinOrFallback(
           resolvedTemplateShell.teacherMoves.slice(0, 3),
           "teacher model, guided support"
-        )}`,
-        `Slide flow: ${joinOrFallback(
-          resolvedTemplateShell.slideShell.slice(0, 3),
-          "Opening, Teach, Guided Practice"
         )}`,
       ], spec.teach.steps)
     : ""
@@ -325,11 +317,7 @@ function buildLessonPlan(
             getPackageDisplayValues(blueprint, "practice", 3),
             "a grounded guided-practice task from the selected lesson materials"
           )}`,
-        `Try language like: ${joinOrFallback(
-            resolvedTemplateShell.promptStyle.slice(0, 3),
-            "teacher prompt"
-          )}`,
-        `Suggested timing: ${joinOrFallback(
+        `Timing: ${joinOrFallback(
             resolvedTemplateShell.timing.slice(0, 3),
             "Opening, Mini-lesson, Guided Practice"
           )}`,
@@ -823,8 +811,9 @@ function buildSupportBlock(
     sections.push(
       "Teacher-Led Support",
       `- Requested tiers: ${buildSelectedSmallGroupTierSummary(outputContents)}`,
-      `- Suggested flow: ${buildScopedFlowCue(blueprint, "small_group")}`,
-      `- Try prompts like: ${buildScopedPromptCue(blueprint, "small_group")}`,
+      `- Flow: ${buildScopedFlowCue(blueprint, "small_group")}`,
+      `- Prompts: ${buildScopedPromptCue(blueprint, "small_group")}`,
+
       ...smallGroup
     )
   }
@@ -832,8 +821,9 @@ function buildSupportBlock(
   if (interventions.length > 0) {
     sections.push(
       "Intervention Support",
-      `- Suggested flow: ${buildScopedFlowCue(blueprint, "intervention")}`,
-      `- Try prompts like: ${buildScopedPromptCue(blueprint, "intervention")}`,
+      `- Flow: ${buildScopedFlowCue(blueprint, "intervention")}`,
+      `- Prompts: ${buildScopedPromptCue(blueprint, "intervention")}`,
+
       ...interventions
     )
   }

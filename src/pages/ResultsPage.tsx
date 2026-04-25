@@ -1046,18 +1046,16 @@ function formatSlidePreviewItem(item: string): string {
 
   if (lines.length > 1) {
     const title = lines[0] ?? "Slide"
-    const studentLine = lines.find((line) => line.startsWith("Students will:"))
-    const practiceLine = lines.find((line) => line.startsWith("Practice:"))
+    const contentLine = lines.slice(1).find((line) => !line.startsWith("Teacher note:"))
     const teacherNote = lines.find((line) => line.startsWith("Teacher note:"))
 
     const summaryParts = [
       title,
-      studentLine,
-      practiceLine,
+      contentLine,
       teacherNote,
     ].filter(Boolean)
 
-    return summaryParts.join(" ")
+    return summaryParts.join(" — ")
   }
 
   if (!normalized.includes("|")) {

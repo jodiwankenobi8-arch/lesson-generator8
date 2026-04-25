@@ -771,9 +771,9 @@ describe("buildPackageOutputs", () => {
     )
 
     expect(teacherFacingContent).toContain("Opening flow: Opening")
-    expect(teacherFacingContent).toContain("Slide flow: Objective / Opening, Model / Teach, Guided Practice")
+    expect(teacherFacingContent).not.toContain("Slide flow:")
     expect(teacherFacingContent).toContain(
-      "Suggested timing: Opening, Mini-lesson, Guided Practice"
+      "Timing: Opening, Mini-lesson, Guided Practice"
     )
   })
   })
