@@ -1046,12 +1046,15 @@ function formatSlidePreviewItem(item: string): string {
 
   if (lines.length > 1) {
     const title = lines[0] ?? "Slide"
-    const contentLine = lines.slice(1).find((line) => !line.startsWith("Teacher note:"))
+    const contentLines = lines
+      .slice(1)
+      .filter((line) => !line.startsWith("Teacher note:"))
+      .slice(0, 2)
     const teacherNote = lines.find((line) => line.startsWith("Teacher note:"))
 
     const summaryParts = [
       title,
-      contentLine,
+      ...contentLines,
       teacherNote,
     ].filter(Boolean)
 

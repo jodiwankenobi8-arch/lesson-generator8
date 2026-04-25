@@ -58,12 +58,17 @@ export function buildSlidePlan(
       purpose: "Introduce the lesson objective and frame the learning.",
       timing: "Opening",
       teacherMove: blueprint.structure.teacherMoves[0] ?? "teacher guidance",
+
       promptStyle: normalizeTeacherPhrase(blueprint.structure.promptStyle[0] ?? "teacher prompt"),
       tone: normalizeTeacherPhrase(blueprint.structure.tone[0] ?? "clear instructional tone"),
       body: compact([
-        `Target: ${formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary)}`,
-        `Standards: ${content.standard.join(", ") || "TBD"}`,
-        `Focus Vocabulary: ${content.vocabulary.slice(0, 3).join(", ") || "TBD"}`,
+        `Focus: ${capitalizeTargetLabel(formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary))}`,
+        `Standards: ${content.standard.slice(0, 2).join(", ") || "TBD"}`,
+        content.wordList.length > 0
+          ? `Words: ${content.wordList.slice(0, 3).join(", ")}`
+          : content.vocabulary.length > 0
+          ? `Words: ${content.vocabulary.slice(0, 3).join(", ")}`
+          : "",
       ]),
     },
     ...contentSlides,
@@ -74,14 +79,17 @@ export function buildSlidePlan(
       action: "create_new",
       purpose: "Summarize teacher-facing notes, moves, and reminders.",
       timing: "Flexible timing",
-      teacherMove: normalizeTeacherPhrase(blueprint.structure.teacherMoves.join(", ")),
-      promptStyle: normalizeTeacherPhrase(blueprint.structure.promptStyle.join(", ")),
-      tone: normalizeTeacherPhrase(blueprint.structure.tone.join(", ")),
+      teacherMove: normalizeTeacherPhrase(blueprint.structure.teacherMoves[0] ?? "teacher guidance"),
+      promptStyle: normalizeTeacherPhrase(blueprint.structure.promptStyle[0] ?? "teacher prompt"),
+      tone: normalizeTeacherPhrase(blueprint.structure.tone[0] ?? "clear instructional tone"),
       body: compact([
-        `Vocabulary: ${content.vocabulary.join(", ") || "None"}`,
-        `Teacher Moves: ${blueprint.structure.teacherMoves.join(", ") || "None"}`,
-        `Prompts: ${blueprint.structure.promptStyle.join(", ") || "None"}`,
-        `Classroom focus: ${formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary)}`,
+        `Focus: ${capitalizeTargetLabel(formatTargetLabel(blueprint.content.target.primary, blueprint.content.target.secondary))}`,
+        content.wordList.length > 0
+          ? `Words: ${content.wordList.slice(0, 4).join(", ")}`
+          : content.vocabulary.length > 0
+          ? `Words: ${content.vocabulary.slice(0, 3).join(", ")}`
+          : "",
+        buildKeyReminderLine(blueprint.structure.teacherMoves),
       ]),
     },
   ]
@@ -197,7 +205,7 @@ function buildSlideBody(args: {
 
   if (kind === "guided_practice") {
     return compact([
-      `Practice Anchor: ${content.practice.slice(0, 2).join(", ")}`,
+      `Practice Anchor: ${content.practice.slice(0, 2).join("; ")}`,
       primary === "phonics"
         ? `Word Support: ${content.wordList.slice(0, 3).join(", ")}`
         : `Text Support: ${content.text.slice(0, 1).join(", ")}`,
@@ -207,7 +215,7 @@ function buildSlideBody(args: {
 
   if (kind === "independent_practice") {
     return compact([
-      `Independent Task: ${content.practice.slice(0, 2).join(", ")}`,
+      `Independent Task: ${content.practice.slice(0, 2).join("; ")}`,
       primary === "phonics"
         ? `Students Apply: ${content.wordList.slice(0, 3).join(", ")}`
         : `Students Reference: ${content.text.slice(0, 1).join(", ")}`,
@@ -324,6 +332,28 @@ function getSectionForKind(kind: SlideKind, spec: LessonSpec) {
 
 function formatTargetLabel(primary: string, secondary: string | null): string {
   return secondary ? `${primary} + ${secondary}` : primary
+}
+
+function capitalizeTargetLabel(label: string): string {
+  return label
+    .split("+")
+    .map((part) => part.trim())
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" + ")
+}
+
+function buildKeyReminderLine(teacherMoves: string[]): string {
+  const genericMoves = new Set([
+    "teacher guidance",
+    "teacher model",
+    "teacher prompt",
+    "guided support",
+    "teacher move",
+  ])
+  const meaningful = (teacherMoves ?? []).find(
+    (move) => move.trim().length > 0 && !genericMoves.has(move.trim().toLowerCase())
+  )
+  return meaningful ? `Key reminder: ${meaningful}` : ""
 }
 
 function take(items: string[], count: number, fallback: string[]): string[] {

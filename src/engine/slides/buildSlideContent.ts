@@ -46,7 +46,7 @@ function normalizeBodyLine(value: string): string {
   const remainder = normalized
     .slice(colonIndex + 1)
     .trim()
-    .replace(/:\s+/g, " - ")
+    .replace(/:\s*/g, " — ")
     .replace(/\s+/g, " ")
 
   return `${label} ${remainder}`.trim()
@@ -56,7 +56,7 @@ function isPreviewFriendlyBodyLine(line: string): boolean {
   if (!line) return false
   if (line.length > 120) return false
 
-  return /^(Words|Text|Practice|Focus|Review|Target|Standards|Vocabulary):/i.test(line)
+  return /^(Words|Text|Practice|Focus|Review|Target|Standards|Vocabulary|Key reminder):/i.test(line)
 }
 
 function isMeaningfulTeacherNote(note: string): boolean {
@@ -67,6 +67,8 @@ function isMeaningfulTeacherNote(note: string): boolean {
     "teacher prompt",
     "teacher model, guided support",
     "teacher model",
+    "guided support",
+    "teacher move",
   ]
   return !genericFallbacks.some((f) => lower === f || lower.startsWith(f + ","))
 }
