@@ -14,3 +14,5 @@ repo_truth_normalization_report_*.md
 lesson-generator8_*_report_*.md
 .DS_Store
 Thumbs.db
+playwright-report/
+test-results/

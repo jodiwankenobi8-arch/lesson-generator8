@@ -9,10 +9,12 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e:release": "playwright test -c playwright.release.config.ts",
     "test:engine": "vitest run src/engine",
     "test:standards-contract": "vitest run src/engine/standard-optional-contract.test.ts src/engine/blueprint/resolveBlueprintContent.test.ts src/engine/analysis-and-blueprint.test.ts",
     "dist:check": "node ./scripts/check-dist-bundle.mjs",
     "verify": "npm run typecheck && npm test && npm run build && npm run dist:check",
+    "verify:release": "npm run typecheck && npm run build && npm run test && npm run test:e2e:release",
     "ai:server": "node server/material-analysis-server.mjs",
     "dev:teacher": "vite --host 127.0.0.1 --port 4173"
   },
@@ -35,6 +37,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/node": "^25.4.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
