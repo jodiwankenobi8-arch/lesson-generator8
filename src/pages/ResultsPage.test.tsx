@@ -856,6 +856,44 @@ describe("Results package output section parity", () => {
     expect(markup).toContain("Current package ZIP includes:")
     expect(markup).toContain("Lesson Plan Export, Slides Export, Centers &amp; Support Printables Export")
   })
+
+  it("renders single-line guided and independent practice slide strings in normalized preview format", () => {
+    const markup = renderToStaticMarkup(
+      <MemoryRouter>
+        <PackageOutputsSection
+          lessonPackage={makeLessonPackage({
+            slides: [
+              "Slide 4: Guided Practice: Blend and read long a words; Sort long a words: cake, game, lake",
+              "Slide 5: Independent Practice: Blend and read long a words; Sort long a words: cake, game, lake",
+            ],
+            exports: [
+              makeExportArtifact({
+                kind: "slides",
+                format: "pptx",
+                label: "Slides Export",
+                fileName: "ELA-slides-export.pptx",
+                mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                content: "Slides Export\n\nSlide 4\nSlide 5",
+              }),
+            ],
+          })}
+        />
+      </MemoryRouter>
+    )
+
+    expect(markup).toContain(
+      "Slide 4: Guided Practice — Practice: Blend and read long a words; Sort long a words — Words: cake, game, lake"
+    )
+    expect(markup).toContain(
+      "Slide 5: Independent Practice — Practice: Blend and read long a words; Sort long a words — Words: cake, game, lake"
+    )
+    expect(markup).not.toContain(
+      "Slide 4: Guided Practice: Blend and read long a words; Sort long a words: cake, game, lake"
+    )
+    expect(markup).not.toContain(
+      "Slide 5: Independent Practice: Blend and read long a words; Sort long a words: cake, game, lake"
+    )
+  })
 })
 
 describe("Results export format labels", () => {

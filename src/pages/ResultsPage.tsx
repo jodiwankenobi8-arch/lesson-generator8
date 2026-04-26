@@ -1631,7 +1631,9 @@ function SlidePlanList({ slides }: { slides: SlidePlan[] }) {
     <div style={{ display: "grid", gap: 12 }}>
       {slides.map((slide, index) => (
         <div key={`${slide.shellLabel}-${index}`} style={subCardStyle}>
-          <p style={{ margin: "0 0 6px 0" }}><strong>{slide.shellLabel}</strong></p>
+          <p style={{ margin: "0 0 6px 0" }}>
+            <strong>{formatSlidePreviewItem(slide.shellLabel)}</strong>
+          </p>
           <p style={{ margin: "0 0 6px 0" }}><strong>Action:</strong> {slide.action}</p>
           <p style={{ margin: "0 0 6px 0" }}><strong>Purpose:</strong> {slide.purpose}</p>
           <p style={{ margin: 0 }}><strong>Notes:</strong> {slide.notes}</p>
