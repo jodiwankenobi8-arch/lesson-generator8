@@ -1,7 +1,8 @@
 :root {
   /* Approved orchard palette */
   --orchard-cream: #FFF6E9;
-  --apple-blush: #F7D6D0;
+  --blush: #F7D6D0;
+  --apple-blush: var(--blush);
   --cranberry: #B8545A;
   --moss: #6E8B6B;
   --deep-orchard: #3F5A40;
@@ -10,6 +11,15 @@
   --warm-gray: #E7E2DA;
   --charcoal: #2F2F2F;
   --muted: #6B7280;
+
+  /* Spec-aligned semantic aliases */
+  --color-cream-50: var(--orchard-cream);
+  --color-paper-100: var(--paper-white);
+  --color-cranberry-500: var(--cranberry);
+  --color-moss-500: var(--moss);
+  --color-moss-700: var(--deep-orchard);
+  --color-warm-gray-300: var(--warm-gray);
+  --color-warm-gray-700: var(--charcoal);
 
   /* Compatibility aliases for existing app code */
   --orchard-green: var(--cranberry);

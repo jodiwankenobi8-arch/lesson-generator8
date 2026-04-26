@@ -10,7 +10,7 @@ export const ORCHARD_COLORS = {
   paperWhite: "#FFFFFF",
   warmGray: "#E7E2DA",
   charcoal: "#2F2F2F",
-  muted: "#6B7280",
+  muted: "#746B63",
 } as const
 
 export type OrchardTone = "neutral" | "moss" | "honey" | "cranberry"
@@ -23,24 +23,24 @@ type OrchardToneStyle = {
 
 const ORCHARD_TONE_STYLES: Record<OrchardTone, OrchardToneStyle> = {
   neutral: {
-    background: "rgba(255, 255, 255, 0.88)",
-    color: ORCHARD_COLORS.charcoal,
-    borderColor: "rgba(231, 226, 218, 0.98)",
+    background: "rgba(255, 255, 255, 0.92)",
+    color: "var(--charcoal)",
+    borderColor: "var(--border-paper)",
   },
   moss: {
-    background: "rgba(110, 139, 107, 0.14)",
-    color: ORCHARD_COLORS.deepOrchard,
-    borderColor: "rgba(110, 139, 107, 0.28)",
+    background: "rgba(110, 139, 107, 0.16)",
+    color: "var(--deep-orchard)",
+    borderColor: "var(--border-moss)",
   },
   honey: {
-    background: "rgba(242, 192, 120, 0.2)",
+    background: "rgba(242, 192, 120, 0.22)",
     color: "#7A5B1B",
-    borderColor: "rgba(242, 192, 120, 0.4)",
+    borderColor: "var(--border-honey)",
   },
   cranberry: {
-    background: "rgba(184, 84, 90, 0.12)",
-    color: ORCHARD_COLORS.cranberry,
-    borderColor: "rgba(184, 84, 90, 0.24)",
+    background: "rgba(184, 84, 90, 0.14)",
+    color: "var(--cranberry)",
+    borderColor: "var(--border-cranberry)",
   },
 }
 
@@ -51,8 +51,8 @@ function getToneStyle(tone: OrchardTone): OrchardToneStyle {
 export const orchardPageShellStyle: CSSProperties = {
   minHeight: "100vh",
   padding: "32px 20px",
-  background:
-    "radial-gradient(circle at top left, rgba(247, 214, 208, 0.32), transparent 28%), linear-gradient(180deg, #fff6e9 0%, #fdf9f2 48%, #fffdf8 100%)",
+  background: "var(--surface-canvas)",
+  backgroundColor: "var(--orchard-cream)",
 }
 
 export const orchardWrapStyle: CSSProperties = {
@@ -112,18 +112,18 @@ export const orchardPanelStyle: CSSProperties = {
 }
 
 export const orchardCardStyle: CSSProperties = {
-  background: "var(--paper-white)",
-  border: "1px solid rgba(231, 226, 218, 0.96)",
+  background: "var(--surface-paper)",
+  border: "1px solid var(--border-paper)",
   borderRadius: "var(--radius-lg)",
-  boxShadow: "0 8px 22px rgba(184, 84, 90, 0.07)",
+  boxShadow: "var(--shadow-card)",
   padding: "var(--space-lg)",
 }
 
 export const orchardSoftCardStyle: CSSProperties = {
-  background: "linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 246, 233, 0.68))",
-  border: "1px solid rgba(231, 226, 218, 0.96)",
+  background: "var(--surface-paper-soft)",
+  border: "1px solid var(--border-paper)",
   borderRadius: "var(--radius-lg)",
-  boxShadow: "0 6px 18px rgba(184, 84, 90, 0.06)",
+  boxShadow: "var(--shadow-soft)",
   padding: "var(--space-lg)",
 }
 
@@ -212,6 +212,7 @@ export function orchardStatusBadgeStyle(tone: OrchardTone = "neutral"): CSSPrope
     background: toneStyle.background,
     color: toneStyle.color,
     border: `1px solid ${toneStyle.borderColor}`,
+    boxShadow: "var(--shadow-soft)",
   }
 }
 
@@ -228,6 +229,7 @@ export function orchardTagStyle(tone: OrchardTone = "neutral"): CSSProperties {
     background: toneStyle.background,
     color: toneStyle.color,
     border: `1px solid ${toneStyle.borderColor}`,
+    boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.42)",
   }
 }
 
@@ -242,8 +244,8 @@ export function orchardButtonStyle(options?: {
     return {
       padding: "10px 16px",
       borderRadius: "999px",
-      border: `1px solid ${ORCHARD_COLORS.cranberry}`,
-      background: ORCHARD_COLORS.cranberry,
+      border: "1px solid var(--cranberry)",
+      background: "linear-gradient(180deg, rgba(184, 84, 90, 0.96), rgba(158, 39, 68, 0.94))",
       color: "var(--paper-white)",
       fontWeight: 600,
       boxShadow: "var(--shadow-soft)",
@@ -255,9 +257,9 @@ export function orchardButtonStyle(options?: {
     return {
       padding: "10px 16px",
       borderRadius: "999px",
-      border: "1px solid rgba(231, 226, 218, 0.98)",
-      background: "rgba(255, 255, 255, 0.92)",
-      color: ORCHARD_COLORS.cranberry,
+      border: "1px solid var(--border-paper)",
+      background: "var(--surface-paper-soft)",
+      color: "var(--cranberry)",
       fontWeight: 600,
       boxShadow: "var(--shadow-soft)",
       transition: "all 0.15s ease",
@@ -267,9 +269,9 @@ export function orchardButtonStyle(options?: {
   return {
     padding: "10px 16px",
     borderRadius: "999px",
-    border: `1px solid ${ORCHARD_COLORS.moss}`,
+    border: "1px solid var(--border-moss)",
     background: "var(--paper-white)",
-    color: ORCHARD_COLORS.cranberry,
+    color: "var(--deep-orchard)",
     fontWeight: 600,
     boxShadow: "var(--shadow-soft)",
     transition: "all 0.15s ease",
