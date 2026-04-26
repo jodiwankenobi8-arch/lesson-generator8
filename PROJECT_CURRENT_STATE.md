@@ -3,7 +3,7 @@
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
 - Published main checkpoint: 1e547b5
-- Last auto-sync UTC: 2026-04-26T21:33:55Z
+- Last auto-sync UTC: 2026-04-26T21:36:00Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
@@ -49,8 +49,10 @@
 
 ## Current next steps
 
-1. Keep canonical docs aligned with the live product charter.
-2. Use take-over mode by default when advancing the repo.
-3. Prefer seams that improve exemplar payoff, artifact-scoped exemplar behavior, default-shell behavior, parsing quality, and teacher-facing coherence.
-4. Use automated verification plus targeted browser/manual checks before claiming regressions or completion.
-5. Do not reopen broad architecture changes without fresh evidence from the live repo or browser behavior.
+1. Start future sessions with `npm run verify:release`.
+2. If `verify:release` is green, only pursue browser-visible or export-visible mismatches; avoid reopening broad architecture seams.
+3. Keep canonical docs aligned with the live product charter.
+4. Use take-over mode by default when advancing the repo.
+5. Prefer seams that improve exemplar payoff, artifact-scoped exemplar behavior, default-shell behavior, parsing quality, and teacher-facing coherence.
+6. Use automated verification plus targeted browser/manual checks before claiming regressions or completion.
+7. Do not reopen broad architecture changes without fresh evidence from the live repo or browser behavior.

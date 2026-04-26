@@ -131,10 +131,16 @@ Build for production:
 
     npm run build
 
+Full release-proof gate (typecheck + build + tests + browser/export proof):
+
+    npm run verify:release
+
 ## Notes for future continuation
 
 - Use the repo files in the current working tree as code truth.
 - Use the active documentation chain above for continuation.
+- Start continuation by running `npm run verify:release`.
+- If `verify:release` is green, only fix issues still proven by browser visuals or export visuals.
 - If notes conflict with live code/tests, trust the live repo first.
 - Keep the worktree free of unrelated staging before the next seam.
 - Do not let closeout-only notes erase the product charter, artifact-scoped exemplar model, or the optional-exemplar/default-shell rule.

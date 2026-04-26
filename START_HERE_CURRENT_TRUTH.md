@@ -3,7 +3,7 @@
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
 - Published main checkpoint: 1e547b5
-- Last auto-sync UTC: 2026-04-26T21:33:55Z
+- Last auto-sync UTC: 2026-04-26T21:36:00Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
@@ -55,6 +55,8 @@ Use take-over mode by default:
 
 ## Exact next move
 
+- Start each continuation by running `npm run verify:release`.
+- If `verify:release` is green, do not reopen broad seams; only fix what current browser visuals or export visuals still prove is off.
 - Keep docs aligned to the clarified product charter and live runtime.
 - Use live browser/code evidence to choose the next seam rather than relying on stale “final pass” notes.
 - Prioritize work that improves:
