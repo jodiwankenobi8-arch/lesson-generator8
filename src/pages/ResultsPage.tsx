@@ -58,6 +58,7 @@ import {
   shouldShowSecondaryEvidencePanel,
 } from "./resultsPagePackageHelpers"
 import {
+  summarizeExemplarPayoff,
   summarizeContentAuthorityLead,
   summarizeContentGrounding,
   summarizeResolvedContentSource,
@@ -1378,6 +1379,7 @@ export function TraceabilitySection({
     materials,
     blueprint.sourceReadiness.selectedExemplarMaterialIds
   )
+  const exemplarPayoffSummary = summarizeExemplarPayoff(blueprint)
   const contentGroundingSummary = summarizeContentGrounding(blueprint)
   const structureImpactSummary = summarizeStructureImpact(blueprint)
   const addedLessonSummary = getAddedLessonSummary(lessonTrace, fallbackUsageLabel)
@@ -1440,6 +1442,19 @@ export function TraceabilitySection({
             <div><strong>Lesson direction:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher direction")}</div>
             <div><strong>What came from exemplar materials:</strong> {structureImpactSummary}</div>
           </div>
+          {exemplarPayoffSummary ? (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>{exemplarPayoffSummary.title}</div>
+              <div style={denseKeyValueStyle}>
+                {exemplarPayoffSummary.lines.map((line) => (
+                  <div key={line.label}><strong>{line.label}:</strong> {line.value}</div>
+                ))}
+              </div>
+              {exemplarPayoffSummary.note ? (
+                <div style={{ color: "var(--text-secondary)", marginTop: 6 }}>{exemplarPayoffSummary.note}</div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         <div style={subCardStyle}>

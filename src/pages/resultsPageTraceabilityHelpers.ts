@@ -160,3 +160,121 @@ function formatExemplarTargetLabel(value: string): string {
       return value.replace(/_/g, " ")
   }
 }
+
+type ExemplarPayoffLine = {
+  label: string
+  value: string
+}
+
+export type ExemplarPayoffSummary = {
+  title: string
+  lines: ExemplarPayoffLine[]
+  note?: string
+}
+
+export function summarizeExemplarPayoff(
+  blueprint: LessonBlueprint
+): ExemplarPayoffSummary | null {
+  const scoped = blueprint.structure.scopedTemplateShells
+  if (!scoped) {
+    return null
+  }
+
+  const lines: ExemplarPayoffLine[] = []
+
+  addStructureLine(lines, "Lesson plan structure", scoped.lesson_plan)
+  addStructureLine(lines, "Slide structure", scoped.lesson_slides)
+  addStructureLine(lines, "Center structure", scoped.centers)
+
+  addLine(
+    lines,
+    "Pacing and routines carried forward",
+    joinValues([
+      ...take(scoped.lesson_plan?.timingShell, 2),
+      ...take(scoped.lesson_slides?.timingShell, 2),
+      ...take(scoped.centers?.timingShell, 1),
+    ])
+  )
+
+  addLine(
+    lines,
+    "Teacher moves reflected from exemplar",
+    joinValues([
+      ...take(scoped.lesson_plan?.teacherMoveShell, 2),
+      ...take(scoped.lesson_slides?.teacherMoveShell, 2),
+      ...take(scoped.centers?.teacherMoveShell, 1),
+    ])
+  )
+
+  addLine(
+    lines,
+    "Presentation moves from your exemplar",
+    joinValues([
+      ...take(scoped.lesson_plan?.promptShell, 2),
+      ...take(scoped.lesson_slides?.promptShell, 2),
+      ...take(scoped.centers?.promptShell, 1),
+    ])
+  )
+
+  addLine(
+    lines,
+    "Exemplar patterns used",
+    joinValues([
+      ...take(scoped.lesson_slides?.slideShell, 2),
+      ...take(scoped.lesson_plan?.slideShell, 2),
+      ...take(scoped.centers?.slideShell, 1),
+    ])
+  )
+
+  if (lines.length === 0) {
+    return null
+  }
+
+  const note =
+    blueprint.sourceReadiness.exemplarSupport === "strong"
+      ? undefined
+      : "Limited exemplar structure signals were detected. Use these cues as partial guidance."
+
+  return {
+    title: "How the exemplar shaped this lesson",
+    lines,
+    note,
+  }
+}
+
+function addStructureLine(
+  lines: ExemplarPayoffLine[],
+  label: string,
+  shell:
+    | {
+        segmentOrder: string[]
+        slideShell: string[]
+      }
+    | undefined
+) {
+  if (!shell) {
+    return
+  }
+
+  const value = joinValues([...take(shell.segmentOrder, 3), ...take(shell.slideShell, 2)])
+  addLine(lines, label, value)
+}
+
+function addLine(lines: ExemplarPayoffLine[], label: string, value: string) {
+  if (!value) {
+    return
+  }
+
+  lines.push({ label, value })
+}
+
+function take(items: string[] | undefined, count: number): string[] {
+  return (items ?? [])
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+    .slice(0, count)
+}
+
+function joinValues(items: string[]): string {
+  return Array.from(new Set(items)).join(", ")
+}
