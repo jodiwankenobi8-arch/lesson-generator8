@@ -450,7 +450,7 @@ export default function ResultsPage() {
       <BlockedResultsState
         title="Results"
         message="Inputs are complete and at least one material is usable, but no generated lesson is currently loaded."
-        details="Return to the generation flow to create a blueprint, planning ideas, lesson spec, and lesson package."
+        details="Return to the generation flow to create the lesson content, planning ideas, lesson details, and lesson package."
         linkTo="/inputs"
         linkLabel="Go to Inputs"
       />
@@ -756,25 +756,25 @@ function AiConstructionSection({ lessonTrace }: { lessonTrace: LessonPipelineTra
     <div style={sectionStyle}>
       <div style={orchardSectionHeaderRowStyle}>
         <div>
-          <h3 style={sectionHeadingStyle}>AI Construction Review</h3>
+          <h3 style={sectionHeadingStyle}>Lesson Review</h3>
           <p style={sectionLeadStyle}>
-            Review what the AI grounded, what it inferred, and what still needs teacher confirmation before export.
+            Review what came directly from your materials, what was added to complete the lesson, and what still needs teacher confirmation before export.
           </p>
         </div>
         <span style={orchardStatusBadgeStyle(hasReviewNeeds ? "honey" : "moss")}>
-          {`AI confidence ${confidencePercent}`}
+          {`Lesson readiness ${confidencePercent}`}
         </span>
       </div>
 
       <div style={detailsSectionGridStyle}>
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Grounded vs inferred content</div>
+          <div style={subHeadingStyle}>Content from materials and completed details</div>
           <div style={smallNoteStyle}>
-            Grounded items came from stronger source support. Inferred items were generated and should be reviewed more carefully.
+            Content from materials came from stronger source support. Added details were completed where the lesson needed more support and should be reviewed more carefully.
           </div>
 
           <div style={{ marginTop: 10 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Grounded</div>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>From materials</div>
             {aiTrace.groundedContentLabels.length > 0 ? (
               <div style={tagRowStyle}>
                 {aiTrace.groundedContentLabels.map((label) => (
@@ -784,12 +784,12 @@ function AiConstructionSection({ lessonTrace }: { lessonTrace: LessonPipelineTra
                 ))}
               </div>
             ) : (
-              <div style={smallNoteStyle}>No grounded AI-added content was recorded.</div>
+              <div style={smallNoteStyle}>No added lesson details grounded in source materials were recorded.</div>
             )}
           </div>
 
           <div style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Inferred</div>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Added to complete the lesson</div>
             {aiTrace.inferredContentLabels.length > 0 ? (
               <div style={tagRowStyle}>
                 {aiTrace.inferredContentLabels.map((label) => (
@@ -799,7 +799,7 @@ function AiConstructionSection({ lessonTrace }: { lessonTrace: LessonPipelineTra
                 ))}
               </div>
             ) : (
-              <div style={smallNoteStyle}>No inferred AI-added content was recorded.</div>
+              <div style={smallNoteStyle}>No extra completed lesson details were recorded.</div>
             )}
           </div>
         </div>
@@ -849,7 +849,7 @@ function AiConstructionSection({ lessonTrace }: { lessonTrace: LessonPipelineTra
               ))}
             </div>
           ) : (
-            <div style={smallNoteStyle}>No AI standards suggestions were recorded.</div>
+            <div style={smallNoteStyle}>No standards suggestions were recorded.</div>
           )}
         </div>
 
@@ -881,13 +881,13 @@ function AiConstructionSection({ lessonTrace }: { lessonTrace: LessonPipelineTra
               ))}
             </div>
           ) : (
-            <div style={smallNoteStyle}>No extra teacher review items were recorded by the AI layer.</div>
+            <div style={smallNoteStyle}>No extra teacher review items were recorded.</div>
           )}
         </div>
 
         {aiTrace.warnings.length > 0 ? (
           <div style={subCardStyle}>
-            <div style={subHeadingStyle}>AI warnings</div>
+            <div style={subHeadingStyle}>Items to review</div>
             <div style={{ display: "grid", gap: 8 }}>
               {aiTrace.warnings.map((warning) => (
                 <div key={warning} style={warningStyle}>{warning}</div>
@@ -1297,7 +1297,7 @@ function SecondaryEvidenceSection({
 }) {
   return (
     <details style={{ ...sectionStyle, marginTop: "var(--space-md)" }}>
-      <summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>
+      <summary style={summaryStyle}>Lesson Sources and Planning Notes</summary>
       <div style={detailsSectionGridStyle}>
         <SignalSection
           title="Source Support Signals"
@@ -1335,17 +1335,17 @@ export function TraceabilitySection({
       ? blueprint.sourceReadiness.selectedCurriculumMaterialIds.length > 1
         ? "Curriculum materials strongly influenced the lesson content. The strongest curriculum source led content grounding, with secondary curriculum support threaded in where useful."
         : "A curriculum material strongly influenced the lesson content."
-      : "Curriculum support is limited, so some content may rely on fallback lesson logic."
+      : "Curriculum support is limited, so some content may have been completed from teacher directions."
 
   const structureSourceLabel =
     blueprint.sourceReadiness.exemplarSupport === "strong"
       ? "Exemplar materials strongly influenced pacing, flow, and teacher-facing structure."
-      : "Exemplar support is limited, so structure may rely on fallback lesson organization."
+      : "Exemplar support is limited, so structure may rely on added lesson organization."
 
   const packageConfidenceLabel =
     lessonPackage.readiness.contentFit === "grounded"
       ? "The package appears grounded in the available source materials."
-      : "The package appears partially grounded and may rely on more fallback logic."
+      : "The package appears partially grounded and may include more added lesson details."
 
   const fallbackUsageLabel = getFallbackUsageLabel(blueprint, lessonPackage)
   const combinedWarnings = [...blueprint.sourceReadiness.warnings, ...lessonPackage.readiness.warnings]
@@ -1397,7 +1397,7 @@ export function TraceabilitySection({
             <div><strong>Content source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
             <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
             <div><strong>Lesson grounding:</strong> {packageConfidenceLabel}</div>
-            <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
+            <div><strong>Added where materials were limited:</strong> {fallbackUsageLabel}</div>
             <div><strong>Materials used carefully or not used:</strong> {joinOrFallback(cautionOrBlockedSummary, "None")}</div>
           </div>
           <div style={{ color: "var(--text-secondary)", marginTop: 8 }}>
@@ -1429,7 +1429,7 @@ export function TraceabilitySection({
             <div><strong>Lesson flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
             <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
             <div><strong>Teacher moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
-            <div><strong>Prompt style:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher prompt")}</div>
+            <div><strong>Lesson direction:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher direction")}</div>
             <div><strong>Content came from:</strong> {contentGroundingSummary}</div>
             <div><strong>Structure came from:</strong> {structureImpactSummary}</div>
           </div>
@@ -1439,12 +1439,12 @@ export function TraceabilitySection({
           <div style={subHeadingStyle}>Package Confidence</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{packageConfidenceLabel}</div>
           <div style={denseKeyValueStyle}>
-            <div><strong>Source balance:</strong> {blueprint.sourceReadiness.overall}</div>
+            <div><strong>Source summary:</strong> {blueprint.sourceReadiness.overall}</div>
             <div><strong>Coverage support:</strong> {blueprint.sourceReadiness.coverageSupport}</div>
             <div><strong>Content fit:</strong> {lessonPackage.readiness.contentFit}</div>
             <div><strong>Lesson shape:</strong> {lessonPackage.readiness.lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area"}</div>
             <div><strong>Package density:</strong> {lessonPackage.readiness.density}</div>
-            <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
+            <div><strong>Added where materials were limited:</strong> {fallbackUsageLabel}</div>
           </div>
         </div>
 
@@ -1467,14 +1467,14 @@ export function TraceabilitySection({
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Warnings and Fallback Notes</div>
+          <div style={subHeadingStyle}>Review notes and added details</div>
           {combinedWarnings.length > 0 ? (
             <div style={{ display: "grid", gap: 8 }}>
               {combinedWarnings.map((warning) => <div key={warning} style={warningStyle}>{warning}</div>)}
             </div>
           ) : (
             <div style={{ color: "var(--text-secondary)" }}>
-              No major blueprint or package warnings were triggered for this lesson.
+              No major lesson or package warnings were triggered for this lesson.
             </div>
           )}
         </div>
@@ -1604,7 +1604,7 @@ function BlueprintDetailsSection({ blueprint }: { blueprint: LessonBlueprint }) 
   return (
     <>
       <details style={sectionStyle}>
-        <summary style={summaryStyle}>Blueprint Content</summary>
+        <summary style={summaryStyle}>Lesson Content</summary>
         <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
           <p style={{ marginBottom: 8 }}><strong>Vocabulary:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "vocabulary"), "None")}</p>
           <p style={{ marginBottom: 8 }}><strong>Texts:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "text"), "None")}</p>
@@ -1613,12 +1613,12 @@ function BlueprintDetailsSection({ blueprint }: { blueprint: LessonBlueprint }) 
       </details>
 
       <details style={sectionStyle}>
-        <summary style={summaryStyle}>Blueprint Structure</summary>
+        <summary style={summaryStyle}>Lesson Structure</summary>
         <div style={{ marginTop: 12, color: "var(--text-secondary)" }}>
           <p style={{ marginBottom: 8 }}><strong>Timing:</strong> {blueprint.structure.timing.join(" | ")}</p>
           <p style={{ marginBottom: 8 }}><strong>Segments:</strong> {blueprint.structure.lessonSegments.join(" -> ")}</p>
           <p style={{ marginBottom: 8 }}><strong>Teacher Moves:</strong> {blueprint.structure.teacherMoves.join(", ")}</p>
-          <p style={{ marginBottom: 8 }}><strong>Prompt Style:</strong> {blueprint.structure.promptStyle.join(", ")}</p>
+          <p style={{ marginBottom: 8 }}><strong>Lesson Direction:</strong> {blueprint.structure.promptStyle.join(", ")}</p>
           <p style={{ margin: 0 }}><strong>Tone:</strong> {blueprint.structure.tone.join(", ")}</p>
         </div>
       </details>
@@ -1660,7 +1660,7 @@ function IdeaList({ ideas }: { ideas: LessonPlanIdea[] }) {
 export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) {
   return (
     <details style={sectionStyle}>
-      <summary style={summaryStyle}>Pipeline Trace</summary>
+      <summary style={summaryStyle}>How this lesson was assembled</summary>
       <div style={detailsSectionGridStyle}>
         <div style={subCardStyle}>
           <div style={subHeadingStyle}>Mode and Material Counts</div>
@@ -1673,7 +1673,7 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Selected Source IDs</div>
+          <div style={subHeadingStyle}>Selected lesson sources</div>
           <div style={denseKeyValueStyle}>
             <div><strong>Curriculum:</strong> {joinOrFallback(trace.selectedSources.curriculumMaterialIds, "None selected")}</div>
             <div><strong>Exemplar:</strong> {joinOrFallback(trace.selectedSources.exemplarMaterialIds, "None selected")}</div>
@@ -1681,7 +1681,7 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Target Resolution</div>
+          <div style={subHeadingStyle}>Lesson focus summary</div>
           <div style={denseKeyValueStyle}>
             <div><strong>Primary Lesson Area:</strong> {trace.target.primary}</div>
             <div><strong>Additional Lesson Area:</strong> {trace.target.secondary ?? "None"}</div>
@@ -1701,16 +1701,16 @@ export function PipelineTraceSection({ trace }: { trace: LessonPipelineTrace }) 
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Warnings and Missing-Area Prompts</div>
+          <div style={subHeadingStyle}>Warnings and missing lesson parts</div>
           <div style={{ display: "grid", gap: 6, marginBottom: 8 }}>
-            <div><strong>Missing-Area Prompt Components:</strong> {joinOrFallback(trace.missingAreaPromptComponents, "None")}</div>
+            <div><strong>Missing lesson parts flagged:</strong> {joinOrFallback(trace.missingAreaPromptComponents, "None")}</div>
           </div>
           {trace.blueprintWarnings.length > 0 ? (
             <div style={{ display: "grid", gap: 8 }}>
               {trace.blueprintWarnings.map((warning) => <div key={warning} style={warningStyle}>{warning}</div>)}
             </div>
           ) : (
-            <div style={{ color: "var(--text-secondary)" }}>No blueprint warnings were recorded in the pipeline trace.</div>
+            <div style={{ color: "var(--text-secondary)" }}>No lesson assembly warnings were recorded.</div>
           )}
         </div>
       </div>

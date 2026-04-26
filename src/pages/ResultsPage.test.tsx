@@ -205,7 +205,7 @@ describe("Results explainability rendering contracts", () => {
     expect(traceabilityMarkup).toContain("lesson plan")
     expect(traceabilityMarkup).toContain("slides")
     expect(traceabilityMarkup).toContain("Materials used carefully or not used:")
-    expect(traceabilityMarkup).toContain("Fallback use:")
+    expect(traceabilityMarkup).toContain("Added where materials were limited:")
 
     const traceMarkup = renderToStaticMarkup(<PipelineTraceSection trace={lessonTrace} />)
 
@@ -348,13 +348,13 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain("Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.")
     expect(source).toContain("Download Package ZIP")
     expect(source).not.toContain("Download Full Package ZIP")
-    expect(source).toContain("Lesson Evidence and Planning Details")
-    expect(source).toContain('<summary style={summaryStyle}>Lesson Evidence and Planning Details</summary>')
+    expect(source).toContain("Lesson Sources and Planning Notes")
+    expect(source).toContain('<summary style={summaryStyle}>Lesson Sources and Planning Notes</summary>')
     expect(source).toContain("<SecondaryEvidenceSection")
     expect(source).toContain("Source Authority and Lesson Grounding")
     expect(source).toContain("Optional planning decisions")
     expect(source).toContain('<summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>')
-    expect(source).toContain('<summary style={summaryStyle}>Pipeline Trace</summary>')
+    expect(source).toContain('<summary style={summaryStyle}>How this lesson was assembled</summary>')
     expect(source).toContain("Teacher Decisions")
     expect(source).not.toContain('SimpleListSection title="Interventions"')
     expect(source).not.toContain('PreSection title="Rotation Plan"')
@@ -413,7 +413,7 @@ describe("Results explainability rendering contracts", () => {
     expect(traceabilityMarkup).toContain("lesson plan")
     expect(traceabilityMarkup).toContain("slides")
     expect(traceabilityMarkup).toContain("Materials used carefully or not used:")
-    expect(traceabilityMarkup).toContain("Fallback use:")
+    expect(traceabilityMarkup).toContain("Added where materials were limited:")
 
     const traceMarkup = renderToStaticMarkup(<PipelineTraceSection trace={lessonTrace} />)
 
