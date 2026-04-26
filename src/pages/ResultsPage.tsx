@@ -1033,7 +1033,7 @@ function SimpleListSection({ title, items }: { title: string; items: string[] })
   )
 }
 
-function formatSlidePreviewItem(item: string): string {
+export function formatSlidePreviewItem(item: string): string {
   const normalized = item.replace(/\s+/g, " ").trim()
   if (normalized.length === 0) {
     return ""
@@ -1080,6 +1080,25 @@ function formatSlidePreviewItem(item: string): string {
     ].filter(Boolean)
 
     return summaryParts.join(" — ")
+  }
+
+  // Single-line case: title itself encodes Guided/Independent Practice with embedded body
+  const singleLinePracticeMatch = normalized.match(
+    /^(Slide \d+):\s*(Guided Practice|Independent Practice):\s*(.+)$/i
+  )
+  if (singleLinePracticeMatch) {
+    const slideNum = singleLinePracticeMatch[1]
+    const practiceType = singleLinePracticeMatch[2]
+    const remainder = singleLinePracticeMatch[3]
+    const lastColon = remainder.lastIndexOf(":")
+    const summaryParts = [slideNum + ": " + practiceType]
+    if (lastColon > 0) {
+      summaryParts.push("Practice: " + remainder.substring(0, lastColon).trim())
+      summaryParts.push("Words: " + remainder.substring(lastColon + 1).trim())
+    } else if (remainder) {
+      summaryParts.push("Practice: " + remainder)
+    }
+    return summaryParts.join(" \u2014 ")
   }
 
   if (!normalized.includes("|")) {
