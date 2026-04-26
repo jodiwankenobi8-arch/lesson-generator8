@@ -491,6 +491,7 @@ export default function ResultsPage() {
             lessonPackage={lessonPackage}
             selectedLessonMode={selectedLessonMode}
             materials={materials}
+            lessonTrace={lessonTrace}
           />
           <PackageOutputsSection lessonPackage={lessonPackage} />
         </div>
@@ -549,11 +550,13 @@ export function PackageSummarySection({
   lessonPackage,
   selectedLessonMode,
   materials,
+  lessonTrace,
 }: {
   blueprint: LessonBlueprint
   lessonPackage: LessonPackage
   selectedLessonMode: string
   materials: MaterialFile[]
+  lessonTrace: LessonPipelineTrace | null
 }) {
   const teacherLedSupportCount = countTeacherLedSupportLines(lessonPackage.rotationPlan)
   const selectedContentSourceNames = getSelectedMaterialNames(
@@ -579,6 +582,8 @@ export function PackageSummarySection({
   const contentGroundingSummary = summarizeContentGrounding(blueprint)
   const structureImpactSummary = summarizeStructureImpact(blueprint)
   const fallbackUsageLabel = getFallbackUsageLabel(blueprint, lessonPackage)
+  const addedLessonSummary = getAddedLessonSummary(lessonTrace, fallbackUsageLabel)
+  const addedLessonReviewLabel = getAddedLessonReviewLabel(lessonTrace)
 
   return (
     <div style={sectionStyle}>
@@ -626,19 +631,20 @@ export function PackageSummarySection({
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>What came from your materials</div>
+          <div style={subHeadingStyle}>How materials shaped this lesson</div>
           <div style={denseKeyValueStyle}>
-            <div><strong>Content source:</strong> {resolvedContentSourceSummary}</div>
-            <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+            <div><strong>Content from curriculum:</strong> {resolvedContentSourceSummary}</div>
+            <div><strong>Structure from exemplars:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+            <div><strong>Added where materials were limited:</strong> {addedLessonSummary}</div>
           </div>
           <details style={{ marginTop: 10 }}>
             <summary style={{ cursor: "pointer", color: "var(--text-secondary)", fontSize: 13 }}>Review source details</summary>
             <div style={{ ...denseKeyValueStyle, marginTop: 8 }}>
-              <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
+              <div><strong>What came from curriculum materials:</strong> {contentGroundingSummary}</div>
+              <div><strong>What came from exemplar materials:</strong> {structureImpactSummary}</div>
               <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
-              <div><strong>Lesson content grounding:</strong> {contentGroundingSummary}</div>
-              <div><strong>Structure grounding:</strong> {structureImpactSummary}</div>
-              <div><strong>Fallback use:</strong> {fallbackUsageLabel}</div>
+              <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
+              <div><strong>Review these added details before teaching:</strong> {addedLessonReviewLabel}</div>
             </div>
           </details>
         </div>
@@ -756,9 +762,9 @@ function AiConstructionSection({ lessonTrace }: { lessonTrace: LessonPipelineTra
     <div style={sectionStyle}>
       <div style={orchardSectionHeaderRowStyle}>
         <div>
-          <h3 style={sectionHeadingStyle}>Lesson Review</h3>
+          <h3 style={sectionHeadingStyle}>What was added to complete the lesson</h3>
           <p style={sectionLeadStyle}>
-            Review what came directly from your materials, what was added to complete the lesson, and what still needs teacher confirmation before export.
+            Use this review to confirm what was added beyond your materials and what still needs teacher confirmation before export.
           </p>
         </div>
         <span style={orchardStatusBadgeStyle(hasReviewNeeds ? "honey" : "moss")}>
@@ -1309,7 +1315,8 @@ function SecondaryEvidenceSection({
           signals={lessonPackage.readiness.signals}
           warnings={lessonPackage.readiness.warnings}
         />
-        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />
+        <AiConstructionSection lessonTrace={lessonTrace} />
+        <TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} lessonTrace={lessonTrace} />
         <PlanningDetailsSection
           slidePlans={planningIdeas.slidePlans}
           lessonPlanSections={planningIdeas.lessonPlanSections}
@@ -1325,10 +1332,12 @@ export function TraceabilitySection({
   blueprint,
   lessonPackage,
   materials,
+  lessonTrace,
 }: {
   blueprint: LessonBlueprint
   lessonPackage: LessonPackage
   materials: MaterialFile[]
+  lessonTrace: LessonPipelineTrace | null
 }) {
   const contentSourceLabel =
     blueprint.sourceReadiness.curriculumSupport === "strong"
@@ -1353,6 +1362,10 @@ export function TraceabilitySection({
     materials,
     blueprint.sourceReadiness.selectedCurriculumMaterialIds
   )
+  const resolvedContentSourceSummary = summarizeResolvedContentSource(
+    selectedContentSourceNames,
+    blueprint
+  )
   const selectedStructureSourceNames = getSelectedMaterialNames(
     materials,
     blueprint.sourceReadiness.selectedExemplarMaterialIds
@@ -1367,6 +1380,12 @@ export function TraceabilitySection({
   )
   const contentGroundingSummary = summarizeContentGrounding(blueprint)
   const structureImpactSummary = summarizeStructureImpact(blueprint)
+  const addedLessonSummary = getAddedLessonSummary(lessonTrace, fallbackUsageLabel)
+  const addedLessonReviewLabel = getAddedLessonReviewLabel(lessonTrace)
+  const requestedButMissingLabel = joinOrFallback(
+    lessonTrace?.aiConstruction?.requestedButMissing ?? [],
+    "No lesson parts are currently flagged as missing."
+  )
   const contentMaterials = buildReliabilityDecisions(
     materials,
     "curriculum",
@@ -1389,62 +1408,47 @@ export function TraceabilitySection({
 
   return (
     <details style={sectionStyle}>
-      <summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>
+      <summary style={summaryStyle}>How materials shaped this lesson</summary>
       <div style={detailsSectionGridStyle}>
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Authority at a Glance</div>
-          <div style={denseKeyValueStyle}>
-            <div><strong>Content source:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
-            <div><strong>Structure source:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
-            <div><strong>Lesson grounding:</strong> {packageConfidenceLabel}</div>
-            <div><strong>Added where materials were limited:</strong> {fallbackUsageLabel}</div>
-            <div><strong>Materials used carefully or not used:</strong> {joinOrFallback(cautionOrBlockedSummary, "None")}</div>
-          </div>
-          <div style={{ color: "var(--text-secondary)", marginTop: 8 }}>
-            This is the quickest summary of what shaped the lesson and where extra review may help.
-          </div>
-        </div>
-
-        <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Content Authority</div>
+          <div style={subHeadingStyle}>What came from curriculum materials</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{contentSourceLabel}</div>
           <div style={denseKeyValueStyle}>
-            <div><strong>Curriculum support strength:</strong> {blueprint.sourceReadiness.curriculumSupport}</div>
-            <div><strong>Curriculum sources used:</strong> {joinOrFallback(selectedContentSourceNames, "No selected curriculum source")}</div>
+            <div><strong>Content from curriculum:</strong> {resolvedContentSourceSummary}</div>
             <div><strong>Standards used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "standard"), "No grounded standard identified yet")}</div>
             <div><strong>Vocabulary used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "vocabulary"), "No grounded vocabulary surfaced yet")}</div>
             <div><strong>Text or topic used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "text"), "No grounded text or topic surfaced yet")}</div>
             <div><strong>Practice used:</strong> {joinOrFallback(getNormalizedBlueprintValues(blueprint, "practice"), "No grounded practice task surfaced yet")}</div>
+            <div><strong>What came from curriculum materials:</strong> {contentGroundingSummary}</div>
+            <div><strong>Materials used carefully or not used:</strong> {joinOrFallback(cautionOrBlockedSummary, "None")}</div>
+          </div>
+          <div style={{ color: "var(--text-secondary)", marginTop: 8 }}>
+            This shows the lesson content the package pulled forward from curriculum materials.
           </div>
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Presentation Authority</div>
+          <div style={subHeadingStyle}>What came from exemplar materials</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{structureSourceLabel}</div>
           <div style={denseKeyValueStyle}>
-            <div><strong>Exemplar support strength:</strong> {blueprint.sourceReadiness.exemplarSupport}</div>
-            <div><strong>Exemplar sources used:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
+            <div><strong>Structure from exemplars:</strong> {joinOrFallback(selectedStructureSourceNames, "No selected exemplar source")}</div>
             <div><strong>Exemplar style choice:</strong> {selectedExemplarInfluenceSummary}</div>
             <div><strong>Where exemplars apply:</strong> {joinOrFallback(selectedExemplarTargetSummary, "Whole package structure")}</div>
             <div><strong>Lesson flow:</strong> {joinOrFallback(blueprint.structure.lessonSegments, "Default lesson flow")}</div>
             <div><strong>Pacing:</strong> {joinOrFallback(blueprint.structure.timing, "Default pacing")}</div>
             <div><strong>Teacher moves:</strong> {joinOrFallback(blueprint.structure.teacherMoves, "Teacher model and guided support")}</div>
             <div><strong>Lesson direction:</strong> {joinOrFallback(blueprint.structure.promptStyle, "Teacher direction")}</div>
-            <div><strong>Content came from:</strong> {contentGroundingSummary}</div>
-            <div><strong>Structure came from:</strong> {structureImpactSummary}</div>
+            <div><strong>What came from exemplar materials:</strong> {structureImpactSummary}</div>
           </div>
         </div>
 
         <div style={subCardStyle}>
-          <div style={subHeadingStyle}>Package Confidence</div>
+          <div style={subHeadingStyle}>What was added to complete the lesson</div>
           <div style={{ color: "var(--text-secondary)", marginBottom: 8 }}>{packageConfidenceLabel}</div>
           <div style={denseKeyValueStyle}>
-            <div><strong>Source summary:</strong> {blueprint.sourceReadiness.overall}</div>
-            <div><strong>Coverage support:</strong> {blueprint.sourceReadiness.coverageSupport}</div>
-            <div><strong>Content fit:</strong> {lessonPackage.readiness.contentFit}</div>
-            <div><strong>Lesson shape:</strong> {lessonPackage.readiness.lessonShape === "mixed" ? "Multiple lesson areas" : "Single lesson area"}</div>
-            <div><strong>Package density:</strong> {lessonPackage.readiness.density}</div>
-            <div><strong>Added where materials were limited:</strong> {fallbackUsageLabel}</div>
+            <div><strong>Added where materials were limited:</strong> {addedLessonSummary}</div>
+            <div><strong>Review these added details before teaching:</strong> {addedLessonReviewLabel}</div>
+            <div><strong>Still missing:</strong> {requestedButMissingLabel}</div>
           </div>
         </div>
 
@@ -1817,14 +1821,50 @@ function getFallbackUsageLabel(blueprint: LessonBlueprint, lessonPackage: Lesson
   const hasLimitedContentFit = lessonPackage.readiness.contentFit === "limited"
 
   if (hasLimitedContentFit && hasLimitedCurriculum && hasLimitedExemplar) {
-    return "Heavy fallback usage likely."
+    return "Much of this lesson was completed where materials were limited."
   }
 
   if (hasLimitedContentFit || hasLimitedCurriculum || hasLimitedExemplar) {
-    return "Partial fallback usage likely."
+    return "Some lesson details were completed where materials were limited."
   }
 
-  return "Minimal fallback usage likely."
+  return "Very little had to be added beyond your materials."
+}
+
+function getAddedLessonSummary(
+  lessonTrace: LessonPipelineTrace | null,
+  fallbackUsageLabel: string
+): string {
+  const aiTrace = lessonTrace?.aiConstruction
+
+  if (!aiTrace?.applied) {
+    return fallbackUsageLabel
+  }
+
+  if (aiTrace.inferredContentLabels.length > 0) {
+    return aiTrace.inferredContentLabels.join(", ")
+  }
+
+  return fallbackUsageLabel
+}
+
+function getAddedLessonReviewLabel(lessonTrace: LessonPipelineTrace | null): string {
+  const aiTrace = lessonTrace?.aiConstruction
+
+  if (!aiTrace?.applied) {
+    return "No extra review is flagged right now."
+  }
+
+  const reviewCount =
+    aiTrace.teacherReviewItems.length +
+    aiTrace.requestedButMissing.length +
+    aiTrace.warnings.length
+
+  if (reviewCount === 0) {
+    return "No extra review is flagged right now."
+  }
+
+  return `${reviewCount} item${reviewCount === 1 ? "" : "s"} still need review.`
 }
 
 function joinOrFallback(items: string[], fallback: string): string {

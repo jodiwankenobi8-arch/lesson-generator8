@@ -195,11 +195,13 @@ describe("Results explainability rendering contracts", () => {
         blueprint={blueprint}
         lessonPackage={lessonPackage}
         materials={state.materials}
+        lessonTrace={lessonTrace}
       />
     )
-    expect(traceabilityMarkup).toContain("Authority at a Glance")
-    expect(traceabilityMarkup).toContain("Content source:")
-    expect(traceabilityMarkup).toContain("Structure source:")
+    expect(traceabilityMarkup).toContain("What came from curriculum materials")
+    expect(traceabilityMarkup).toContain("Content from curriculum:")
+    expect(traceabilityMarkup).toContain("What came from exemplar materials")
+    expect(traceabilityMarkup).toContain("Structure from exemplars:")
     expect(traceabilityMarkup).toContain("exemplar.txt: Choose specific aspects: slide flow, pacing")
     expect(traceabilityMarkup).toContain("Where exemplars apply:")
     expect(traceabilityMarkup).toContain("lesson plan")
@@ -281,6 +283,7 @@ describe("Results explainability rendering contracts", () => {
         lessonPackage={state.lessonPackage!}
         selectedLessonMode="single"
         materials={state.materials}
+        lessonTrace={state.lessonTrace}
       />
     )
 
@@ -289,6 +292,7 @@ describe("Results explainability rendering contracts", () => {
         blueprint={blueprint}
         lessonPackage={state.lessonPackage!}
         materials={state.materials}
+        lessonTrace={state.lessonTrace}
       />
     )
 
@@ -309,7 +313,8 @@ describe("Results explainability rendering contracts", () => {
     const packageSummaryCallIndex = source.indexOf("<PackageSummarySection")
     const packageOutputsCallIndex = source.indexOf("<PackageOutputsSection lessonPackage={lessonPackage} />")
     const coverageDecisionsCallIndex = source.indexOf("<CoverageDecisionsSection")
-    const traceabilityCallIndex = source.indexOf("<TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} />")
+    const aiConstructionCallIndex = source.indexOf("<AiConstructionSection lessonTrace={lessonTrace} />")
+    const traceabilityCallIndex = source.indexOf("<TraceabilitySection blueprint={blueprint} lessonPackage={lessonPackage} materials={materials} lessonTrace={lessonTrace} />")
     const planningDetailsCallIndex = source.indexOf("<PlanningDetailsSection")
     const blueprintDetailsCallIndex = source.indexOf("<BlueprintDetailsSection blueprint={blueprint} />")
     const pipelineTraceCallIndex = source.indexOf("{lessonTrace && <PipelineTraceSection trace={lessonTrace} />}")
@@ -323,7 +328,8 @@ describe("Results explainability rendering contracts", () => {
     expect(packageSummaryCallIndex).toBeGreaterThanOrEqual(0)
     expect(packageOutputsCallIndex).toBeGreaterThan(packageSummaryCallIndex)
     expect(coverageDecisionsCallIndex).toBeGreaterThan(packageOutputsCallIndex)
-    expect(traceabilityCallIndex).toBeGreaterThan(coverageDecisionsCallIndex)
+    expect(aiConstructionCallIndex).toBeGreaterThan(coverageDecisionsCallIndex)
+    expect(traceabilityCallIndex).toBeGreaterThan(aiConstructionCallIndex)
     expect(planningDetailsCallIndex).toBeGreaterThan(traceabilityCallIndex)
     expect(blueprintDetailsCallIndex).toBeGreaterThan(planningDetailsCallIndex)
     expect(pipelineTraceCallIndex).toBeGreaterThan(blueprintDetailsCallIndex)
@@ -341,19 +347,25 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain("Additional focus:")
     expect(source).toContain("Integrated focus:")
     expect(source).toContain("Lesson coverage:")
-    expect(source).toContain("Content source:")
-    expect(source).toContain("Structure source:")
+    expect(source).toContain("How materials shaped this lesson")
+    expect(source).toContain("Content from curriculum:")
+    expect(source).toContain("Structure from exemplars:")
+    expect(source).toContain("What came from curriculum materials:")
+    expect(source).toContain("What came from exemplar materials:")
+    expect(source).toContain("What was added to complete the lesson")
     expect(source).toContain("Where exemplars apply:")
     expect(source).toContain("Materials used carefully or not used:")
+    expect(source).toContain("Review these added details before teaching:")
     expect(source).toContain("Download the current generated artifacts as one ZIP bundle, or download each artifact in its classroom-ready format.")
     expect(source).toContain("Download Package ZIP")
     expect(source).not.toContain("Download Full Package ZIP")
     expect(source).toContain("Lesson Sources and Planning Notes")
     expect(source).toContain('<summary style={summaryStyle}>Lesson Sources and Planning Notes</summary>')
     expect(source).toContain("<SecondaryEvidenceSection")
-    expect(source).toContain("Source Authority and Lesson Grounding")
+    expect(source).toContain("<AiConstructionSection lessonTrace={lessonTrace} />")
+    expect(source).toContain("How materials shaped this lesson")
     expect(source).toContain("Optional planning decisions")
-    expect(source).toContain('<summary style={summaryStyle}>Source Authority and Lesson Grounding</summary>')
+    expect(source).toContain('<summary style={summaryStyle}>How materials shaped this lesson</summary>')
     expect(source).toContain('<summary style={summaryStyle}>How this lesson was assembled</summary>')
     expect(source).toContain("Teacher Decisions")
     expect(source).not.toContain('SimpleListSection title="Interventions"')
@@ -403,11 +415,13 @@ describe("Results explainability rendering contracts", () => {
         blueprint={blueprint}
         lessonPackage={lessonPackage}
         materials={state.materials}
+        lessonTrace={lessonTrace}
       />
     )
-    expect(traceabilityMarkup).toContain("Authority at a Glance")
-    expect(traceabilityMarkup).toContain("Content source:")
-    expect(traceabilityMarkup).toContain("Structure source:")
+    expect(traceabilityMarkup).toContain("What came from curriculum materials")
+    expect(traceabilityMarkup).toContain("Content from curriculum:")
+    expect(traceabilityMarkup).toContain("What came from exemplar materials")
+    expect(traceabilityMarkup).toContain("Structure from exemplars:")
     expect(traceabilityMarkup).toContain("exemplar.txt: Choose specific aspects: slide flow, pacing")
     expect(traceabilityMarkup).toContain("Where exemplars apply:")
     expect(traceabilityMarkup).toContain("lesson plan")
@@ -980,8 +994,8 @@ describe("Results export format labels", () => {
     const source = readFileSync("src/pages/ResultsPage.tsx", "utf8")
 
     expect(source).toContain("Exemplar style choice:")
-    expect(source).toContain("Lesson content grounding:")
-    expect(source).toContain("Structure came from:")
+    expect(source).toContain("What came from curriculum materials:")
+    expect(source).toContain("What came from exemplar materials:")
   })
 })
 
