@@ -1,0 +1,83 @@
+{
+  "pack": "lesson-generator8-ribbon-label-assets-pack",
+  "created_for": "Project 4 / Lesson Generator 8",
+  "notes": [
+    "The uploaded source image was fully opaque with a baked checkerboard background.",
+    "The six production assets are transparent PNG cutouts derived from that source.",
+    "Use as material/image layers only; keep real app text and controls as HTML."
+  ],
+  "items": [
+    {
+      "file": "green-floral-stitched-ribbon-label.png",
+      "source": "80013ce2-2e2d-4973-892a-d695f7a078f6.png",
+      "type": "transparent_png_cutout",
+      "recommended_use": "asset-backed tactile stationery label/ribbon layer behind real HTML text",
+      "bounds_in_source": {
+        "x": 1093,
+        "y": 175,
+        "width": 852,
+        "height": 293
+      }
+    },
+    {
+      "file": "cranberry-layered-stitched-ribbon-label.png",
+      "source": "80013ce2-2e2d-4973-892a-d695f7a078f6.png",
+      "type": "transparent_png_cutout",
+      "recommended_use": "asset-backed tactile stationery label/ribbon layer behind real HTML text",
+      "bounds_in_source": {
+        "x": 88,
+        "y": 201,
+        "width": 916,
+        "height": 280
+      }
+    },
+    {
+      "file": "cream-apple-stitched-banner-label.png",
+      "source": "80013ce2-2e2d-4973-892a-d695f7a078f6.png",
+      "type": "transparent_png_cutout",
+      "recommended_use": "asset-backed tactile stationery label/ribbon layer behind real HTML text",
+      "bounds_in_source": {
+        "x": 76,
+        "y": 626,
+        "width": 914,
+        "height": 303
+      }
+    },
+    {
+      "file": "honey-floral-stitched-banner-label.png",
+      "source": "80013ce2-2e2d-4973-892a-d695f7a078f6.png",
+      "type": "transparent_png_cutout",
+      "recommended_use": "asset-backed tactile stationery label/ribbon layer behind real HTML text",
+      "bounds_in_source": {
+        "x": 1061,
+        "y": 615,
+        "width": 911,
+        "height": 296
+      }
+    },
+    {
+      "file": "moss-hanging-stitched-pennant-label.png",
+      "source": "80013ce2-2e2d-4973-892a-d695f7a078f6.png",
+      "type": "transparent_png_cutout",
+      "recommended_use": "asset-backed tactile stationery label/ribbon layer behind real HTML text",
+      "bounds_in_source": {
+        "x": 198,
+        "y": 1040,
+        "width": 706,
+        "height": 340
+      }
+    },
+    {
+      "file": "cream-small-stitched-ribbon-label.png",
+      "source": "80013ce2-2e2d-4973-892a-d695f7a078f6.png",
+      "type": "transparent_png_cutout",
+      "recommended_use": "asset-backed tactile stationery label/ribbon layer behind real HTML text",
+      "bounds_in_source": {
+        "x": 1105,
+        "y": 1066,
+        "width": 727,
+        "height": 269
+      }
+    }
+  ]
+}
