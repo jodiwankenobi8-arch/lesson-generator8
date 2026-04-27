@@ -645,10 +645,36 @@ export function buildMaterialAnalysisReviewDraft(
 
 export default function MaterialsPage() {
   const navigate = useNavigate()
+  const [isNarrowViewport, setIsNarrowViewport] = useState(() => {
+    if (typeof window === "undefined") {
+      return false
+    }
+
+    return window.matchMedia("(max-width: 900px)").matches
+  })
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationError, setGenerationError] = useState<string | null>(null)
   const [draggingRole, setDraggingRole] = useState<MaterialRole | null>(null)
   const [compactEditMode, setCompactEditMode] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const mediaQuery = window.matchMedia("(max-width: 900px)")
+    const handleViewportChange = () => setIsNarrowViewport(mediaQuery.matches)
+
+    handleViewportChange()
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleViewportChange)
+      return () => mediaQuery.removeEventListener("change", handleViewportChange)
+    }
+
+    mediaQuery.addListener(handleViewportChange)
+    return () => mediaQuery.removeListener(handleViewportChange)
+  }, [])
 
   const inputs = useLessonStore((state) => state.inputs)
   const setInputs = useLessonStore((state) => state.setInputs)
@@ -984,7 +1010,13 @@ export default function MaterialsPage() {
         style={hiddenInputStyle}
       />
 
-      <div style={uploadGridStyle}>
+      <div
+        style={{
+          ...uploadGridStyle,
+          gridTemplateColumns: isNarrowViewport ? "minmax(0, 1fr)" : uploadGridStyle.gridTemplateColumns,
+          gap: isNarrowViewport ? "var(--space-lg)" : uploadGridStyle.gap,
+        }}
+      >
         <UploadLaneCard
           role="curriculum"
           title="Curriculum"
@@ -1314,26 +1346,28 @@ export default function MaterialsPage() {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        style={{
-          position: "fixed",
-          right: 20,
-          bottom: 20,
-          zIndex: 20,
-          border: "1px solid var(--border-honey)",
-          borderRadius: "999px",
-          padding: "10px 14px",
-          background: "var(--paper)",
-          color: "var(--deep-orchard)",
-          boxShadow: "0 8px 18px rgba(36, 53, 44, 0.12)",
-          cursor: "pointer",
-          fontWeight: 700,
-        }}
-      >
-        Return to top
-      </button>
+      {!isNarrowViewport ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          style={{
+            position: "fixed",
+            right: 20,
+            bottom: 20,
+            zIndex: 20,
+            border: "1px solid var(--border-honey)",
+            borderRadius: "999px",
+            padding: "10px 14px",
+            background: "var(--paper)",
+            color: "var(--deep-orchard)",
+            boxShadow: "0 8px 18px rgba(36, 53, 44, 0.12)",
+            cursor: "pointer",
+            fontWeight: 700,
+          }}
+        >
+          Return to top
+        </button>
+      ) : null}
     </div>
   )
 }
