@@ -1,0 +1,26 @@
+{
+  "pack": "lesson-generator8-generated-smart-assets-pack",
+  "target_repo_path": "src/assets/visual/generated-smart/",
+  "items": [
+    {
+      "file": "rustic_country_kraft_scrapbook_layout.png",
+      "intended_use": "desktop shared app/page-shell background",
+      "implementation_status": "ready to use as decorative background"
+    },
+    {
+      "file": "wooden_sign_components_with_floral_accents.png",
+      "intended_use": "source sheet for future smart stretchable wood labels",
+      "implementation_status": "defer until split into left/stretch/right assets"
+    },
+    {
+      "file": "torn_paper_frame_set_with_accents.png",
+      "intended_use": "source sheet for future smart torn-paper card components",
+      "implementation_status": "defer until split into 9-slice/card-frame pieces"
+    }
+  ],
+  "notes": [
+    "Desktop/computer is the current target.",
+    "Do not use source sheets as static UI labels/cards with baked text.",
+    "Images should remain decorative; text/buttons/inputs must remain HTML."
+  ]
+}
