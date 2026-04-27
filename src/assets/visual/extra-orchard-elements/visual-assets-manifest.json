@@ -1,0 +1,505 @@
+{
+  "pack": "lesson-generator8-extra-orchard-elements-pack",
+  "created_for": "Project 4 / Lesson Generator 8",
+  "production_asset_count": 39,
+  "notes": [
+    "Source sheets were opaque images with baked checkerboard backgrounds.",
+    "Production assets are transparent PNG cutouts.",
+    "Use as decorative image/material layers only; preserve real accessible HTML for all text and controls."
+  ],
+  "items": [
+    {
+      "file": "paper-labels-01-cream-clip-moss-tab.png",
+      "source_sheet": "4ae7402e-09cd-42ac-8266-a60b6d7a1945.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 35,
+        "y0": 25,
+        "x1": 1010,
+        "y1": 455
+      },
+      "recommended_use": "large header/card label behind real HTML text"
+    },
+    {
+      "file": "paper-labels-02-torn-paper-apple-floral.png",
+      "source_sheet": "4ae7402e-09cd-42ac-8266-a60b6d7a1945.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 1075,
+        "y0": 35,
+        "x1": 1990,
+        "y1": 470
+      },
+      "recommended_use": "large section or result-card label behind real HTML text"
+    },
+    {
+      "file": "paper-labels-03-apple-red-flag-label.png",
+      "source_sheet": "4ae7402e-09cd-42ac-8266-a60b6d7a1945.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 45,
+        "y0": 475,
+        "x1": 1010,
+        "y1": 800
+      },
+      "recommended_use": "wide section label or material trace card backing"
+    },
+    {
+      "file": "paper-labels-04-rope-tag-leaf-label.png",
+      "source_sheet": "4ae7402e-09cd-42ac-8266-a60b6d7a1945.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 1040,
+        "y0": 490,
+        "x1": 1990,
+        "y1": 800
+      },
+      "recommended_use": "wide content label/card backing"
+    },
+    {
+      "file": "paper-labels-05-torn-gingham-floral-strip.png",
+      "source_sheet": "4ae7402e-09cd-42ac-8266-a60b6d7a1945.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 95,
+        "y0": 795,
+        "x1": 1020,
+        "y1": 1165
+      },
+      "recommended_use": "soft decorative paper strip behind real HTML text"
+    },
+    {
+      "file": "paper-labels-06-clipboard-moss-label.png",
+      "source_sheet": "4ae7402e-09cd-42ac-8266-a60b6d7a1945.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 1080,
+        "y0": 795,
+        "x1": 1990,
+        "y1": 1150
+      },
+      "recommended_use": "section card backing or teacher note label"
+    },
+    {
+      "file": "paper-labels-07-green-berry-ribbon-label.png",
+      "source_sheet": "4ae7402e-09cd-42ac-8266-a60b6d7a1945.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 80,
+        "y0": 1200,
+        "x1": 1030,
+        "y1": 1500
+      },
+      "recommended_use": "stitched ribbon section label behind real HTML text"
+    },
+    {
+      "file": "paper-labels-08-red-backed-ornate-label.png",
+      "source_sheet": "4ae7402e-09cd-42ac-8266-a60b6d7a1945.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 1100,
+        "y0": 1140,
+        "x1": 1995,
+        "y1": 1530
+      },
+      "recommended_use": "large ornamental title/card label behind real HTML text"
+    },
+    {
+      "file": "apple-stickers-01-single-apple-moss.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1380,
+        "y": 80,
+        "width": 575,
+        "height": 485
+      },
+      "area": 157986,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "apple-stickers-02-apple-cluster-moss.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 144,
+        "y": 169,
+        "width": 432,
+        "height": 324
+      },
+      "area": 81589,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "apple-stickers-03-apple-on-books.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 664,
+        "y": 103,
+        "width": 618,
+        "height": 451
+      },
+      "area": 176423,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "apple-stickers-04-apple-blossom-cluster.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 76,
+        "y": 630,
+        "width": 586,
+        "height": 339
+      },
+      "area": 128698,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "apple-stickers-05-apple-note-card-pin.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 736,
+        "y": 699,
+        "width": 531,
+        "height": 274
+      },
+      "area": 103975,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "apple-stickers-06-apple-corner-moss.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1381,
+        "y": 616,
+        "width": 495,
+        "height": 383
+      },
+      "area": 92173,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "apple-stickers-07-apples-books-vignette.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 115,
+        "y": 1047,
+        "width": 613,
+        "height": 394
+      },
+      "area": 153656,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "apple-stickers-08-apple-basket-vignette.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 879,
+        "y": 1069,
+        "width": 587,
+        "height": 385
+      },
+      "area": 159737,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "apple-stickers-09-round-apple-tag.png",
+      "source_sheet": "e80770fa-ffb0-4f60-88f2-6c5c9a13c4b0.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1588,
+        "y": 1126,
+        "width": 237,
+        "height": 289
+      },
+      "area": 46063,
+      "recommended_use": "small non-interactive orchard accent or corner vignette"
+    },
+    {
+      "file": "mushroom-stickers-01-floral-redcap-cluster.png",
+      "source_sheet": "980875e8-e4b2-4eeb-832b-4026e6615162.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 182,
+        "y": 162,
+        "width": 480,
+        "height": 394
+      },
+      "area": 88694,
+      "recommended_use": "small woodland accent; use sparingly so the app stays teacher-planner/orchard, not forest-themed"
+    },
+    {
+      "file": "mushroom-stickers-02-redcap-pair-moss.png",
+      "source_sheet": "980875e8-e4b2-4eeb-832b-4026e6615162.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 838,
+        "y": 166,
+        "width": 369,
+        "height": 366
+      },
+      "area": 87354,
+      "recommended_use": "small woodland accent; use sparingly so the app stays teacher-planner/orchard, not forest-themed"
+    },
+    {
+      "file": "mushroom-stickers-03-brown-mushroom-fern.png",
+      "source_sheet": "980875e8-e4b2-4eeb-832b-4026e6615162.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1436,
+        "y": 216,
+        "width": 420,
+        "height": 334
+      },
+      "area": 86117,
+      "recommended_use": "small woodland accent; use sparingly so the app stays teacher-planner/orchard, not forest-themed"
+    },
+    {
+      "file": "mushroom-stickers-04-branch-corner-mushroom.png",
+      "source_sheet": "980875e8-e4b2-4eeb-832b-4026e6615162.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 195,
+        "y": 654,
+        "width": 463,
+        "height": 423
+      },
+      "area": 69428,
+      "recommended_use": "small woodland accent; use sparingly so the app stays teacher-planner/orchard, not forest-themed"
+    },
+    {
+      "file": "mushroom-stickers-05-redcap-floral-cluster.png",
+      "source_sheet": "980875e8-e4b2-4eeb-832b-4026e6615162.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 820,
+        "y": 646,
+        "width": 385,
+        "height": 327
+      },
+      "area": 77258,
+      "recommended_use": "small woodland accent; use sparingly so the app stays teacher-planner/orchard, not forest-themed"
+    },
+    {
+      "file": "mushroom-stickers-06-log-flower-redcap-strip.png",
+      "source_sheet": "980875e8-e4b2-4eeb-832b-4026e6615162.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1370,
+        "y": 713,
+        "width": 538,
+        "height": 206
+      },
+      "area": 67728,
+      "recommended_use": "small woodland accent; use sparingly so the app stays teacher-planner/orchard, not forest-themed"
+    },
+    {
+      "file": "mushroom-stickers-07-brown-mushroom-trio.png",
+      "source_sheet": "980875e8-e4b2-4eeb-832b-4026e6615162.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 415,
+        "y": 1041,
+        "width": 408,
+        "height": 329
+      },
+      "area": 78949,
+      "recommended_use": "small woodland accent; use sparingly so the app stays teacher-planner/orchard, not forest-themed"
+    },
+    {
+      "file": "mushroom-stickers-08-redcap-oak-leaf-cluster.png",
+      "source_sheet": "980875e8-e4b2-4eeb-832b-4026e6615162.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1182,
+        "y": 1060,
+        "width": 407,
+        "height": 305
+      },
+      "area": 70626,
+      "recommended_use": "small woodland accent; use sparingly so the app stays teacher-planner/orchard, not forest-themed"
+    },
+    {
+      "file": "teacher-scrapbook-01-book-stack-apple.png",
+      "source_sheet": "4ef93e40-54ed-4a77-ba70-49bd9d990363.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 45,
+        "y0": 145,
+        "x1": 750,
+        "y1": 710
+      },
+      "recommended_use": "large decorative vignette for empty states or non-interactive page edges"
+    },
+    {
+      "file": "teacher-scrapbook-02-floral-mushroom-strip.png",
+      "source_sheet": "4ef93e40-54ed-4a77-ba70-49bd9d990363.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 690,
+        "y0": 250,
+        "x1": 1440,
+        "y1": 725
+      },
+      "recommended_use": "soft floral divider/accent; use sparingly"
+    },
+    {
+      "file": "teacher-scrapbook-03-pencil-paper-ribbon-vignette.png",
+      "source_sheet": "4ef93e40-54ed-4a77-ba70-49bd9d990363.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 1435,
+        "y0": 245,
+        "x1": 2020,
+        "y1": 735
+      },
+      "recommended_use": "teacher-planner vignette for materials/results decorative corner"
+    },
+    {
+      "file": "teacher-scrapbook-04-apple-basket-gingham.png",
+      "source_sheet": "4ef93e40-54ed-4a77-ba70-49bd9d990363.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 40,
+        "y0": 755,
+        "x1": 735,
+        "y1": 1380
+      },
+      "recommended_use": "large orchard accent, suitable for empty or success states"
+    },
+    {
+      "file": "teacher-scrapbook-05-paper-label-books-floral.png",
+      "source_sheet": "4ef93e40-54ed-4a77-ba70-49bd9d990363.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 680,
+        "y0": 865,
+        "x1": 1440,
+        "y1": 1340
+      },
+      "recommended_use": "content label/card backing with real HTML text overlaid"
+    },
+    {
+      "file": "teacher-scrapbook-06-floral-corner-paper-label.png",
+      "source_sheet": "4ef93e40-54ed-4a77-ba70-49bd9d990363.png",
+      "type": "transparent_png_cutout",
+      "source_crop": {
+        "x0": 1420,
+        "y0": 810,
+        "x1": 2025,
+        "y1": 1350
+      },
+      "recommended_use": "decorative corner label/card backing"
+    },
+    {
+      "file": "fabric-ribbons-01-tricolor-stitched-tabs.png",
+      "source_sheet": "794fd202-6b1b-44fa-ae25-391c11eeda50.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 218,
+        "y": 69,
+        "width": 762,
+        "height": 312
+      },
+      "area": 200208,
+      "recommended_use": "fabric/ribbon label layer behind real HTML text or as a small non-interactive material accent"
+    },
+    {
+      "file": "fabric-ribbons-02-green-stitched-strip.png",
+      "source_sheet": "794fd202-6b1b-44fa-ae25-391c11eeda50.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1079,
+        "y": 113,
+        "width": 802,
+        "height": 205
+      },
+      "area": 151617,
+      "recommended_use": "fabric/ribbon label layer behind real HTML text or as a small non-interactive material accent"
+    },
+    {
+      "file": "fabric-ribbons-03-cranberry-gingham-bandana.png",
+      "source_sheet": "794fd202-6b1b-44fa-ae25-391c11eeda50.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1088,
+        "y": 384,
+        "width": 799,
+        "height": 336
+      },
+      "area": 232452,
+      "recommended_use": "fabric/ribbon label layer behind real HTML text or as a small non-interactive material accent"
+    },
+    {
+      "file": "fabric-ribbons-04-cream-lace-label.png",
+      "source_sheet": "794fd202-6b1b-44fa-ae25-391c11eeda50.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 187,
+        "y": 431,
+        "width": 796,
+        "height": 367
+      },
+      "area": 166362,
+      "recommended_use": "fabric/ribbon label layer behind real HTML text or as a small non-interactive material accent"
+    },
+    {
+      "file": "fabric-ribbons-05-cream-gingham-ribbon-strip.png",
+      "source_sheet": "794fd202-6b1b-44fa-ae25-391c11eeda50.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1087,
+        "y": 755,
+        "width": 810,
+        "height": 346
+      },
+      "area": 221553,
+      "recommended_use": "fabric/ribbon label layer behind real HTML text or as a small non-interactive material accent"
+    },
+    {
+      "file": "fabric-ribbons-06-cranberry-gingham-folded-pocket.png",
+      "source_sheet": "794fd202-6b1b-44fa-ae25-391c11eeda50.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 163,
+        "y": 827,
+        "width": 868,
+        "height": 235
+      },
+      "area": 182054,
+      "recommended_use": "fabric/ribbon label layer behind real HTML text or as a small non-interactive material accent"
+    },
+    {
+      "file": "fabric-ribbons-07-moss-gingham-bow.png",
+      "source_sheet": "794fd202-6b1b-44fa-ae25-391c11eeda50.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 242,
+        "y": 1065,
+        "width": 661,
+        "height": 438
+      },
+      "area": 184760,
+      "recommended_use": "fabric/ribbon label layer behind real HTML text or as a small non-interactive material accent"
+    },
+    {
+      "file": "fabric-ribbons-08-moss-scallop-cream-label.png",
+      "source_sheet": "794fd202-6b1b-44fa-ae25-391c11eeda50.png",
+      "type": "transparent_png_cutout",
+      "source_bounds": {
+        "x": 1056,
+        "y": 1132,
+        "width": 810,
+        "height": 313
+      },
+      "area": 227362,
+      "recommended_use": "fabric/ribbon label layer behind real HTML text or as a small non-interactive material accent"
+    }
+  ]
+}
