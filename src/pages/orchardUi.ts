@@ -52,11 +52,14 @@ export const orchardPageShellStyle: CSSProperties = {
   minHeight: "100vh",
   padding: "32px 20px",
   background:
+    "var(--surface-canvas-soft-overlay),\n" +
     "var(--surface-canvas),\n" +
-    "url('/src/assets/visual/paper-bg-cream-aged.png')",
+    "var(--visual-paper-bg),\n" +
+    "var(--visual-desktop-scrapbook-bg)",
   backgroundAttachment: "fixed",
-  backgroundSize: "cover",
-  backgroundPosition: "center",
+  backgroundSize: "cover, cover, cover, cover",
+  backgroundPosition: "center, center, center, center",
+  backgroundRepeat: "no-repeat, no-repeat, no-repeat, no-repeat",
   backgroundColor: "var(--orchard-cream)",
 }
 

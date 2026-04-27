@@ -61,6 +61,11 @@
 
   /* Visual assets */
   --visual-paper-bg: url("../assets/visual/paper-bg-cream-aged.png");
+  --visual-desktop-scrapbook-bg: none;
+
+  /* Overlay helper to keep center content readable over richer shell imagery */
+  --surface-canvas-soft-overlay:
+    radial-gradient(circle at center, rgba(255, 252, 246, 0.84) 0%, rgba(255, 250, 242, 0.66) 48%, rgba(255, 247, 236, 0.46) 100%);
 
   /* Layout */
   --radius-xl: 28px;
@@ -99,6 +104,12 @@ body {
   background: var(--surface-canvas);
   background-color: var(--orchard-cream);
   line-height: 1.5;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --visual-desktop-scrapbook-bg: url("../assets/visual/generated-smart/rustic_country_kraft_scrapbook_layout.png");
+  }
 }
 
 /* Global texture / tactile helpers */
