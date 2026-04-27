@@ -1,0 +1,42 @@
+{
+  "installPath": "src/assets/visual",
+  "assets": [
+    {
+      "file": "paper-bg-cream-aged.png",
+      "role": "page background",
+      "use": "background image, cover or tile subtly"
+    },
+    {
+      "file": "panel-notebook-stack.png",
+      "role": "primary content panel",
+      "use": "decorative material layer behind real HTML content"
+    },
+    {
+      "file": "plaque-wood-paper-moss.png",
+      "role": "header plaque",
+      "use": "visual label/header basis with real text overlay"
+    },
+    {
+      "file": "label-fabric-cranberry-floral.png",
+      "role": "section label",
+      "use": "accent banner/section label visual basis"
+    },
+    {
+      "file": "option-cards-pinned-set.png",
+      "role": "option card material",
+      "use": "output selection card visual direction"
+    },
+    {
+      "file": "tags-labels-set.png",
+      "role": "buttons/tags asset sheet",
+      "use": "reference or sprite source for tactile labels/buttons"
+    }
+  ],
+  "guardrails": [
+    "Do not turn app into static screenshots.",
+    "Keep text as accessible HTML.",
+    "Use assets as visual layers, not as content replacements.",
+    "Avoid page flow or logic changes.",
+    "Run npm run verify:release after implementation."
+  ]
+}

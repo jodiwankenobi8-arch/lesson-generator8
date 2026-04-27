@@ -51,7 +51,12 @@ function getToneStyle(tone: OrchardTone): OrchardToneStyle {
 export const orchardPageShellStyle: CSSProperties = {
   minHeight: "100vh",
   padding: "32px 20px",
-  background: "var(--surface-canvas)",
+  background:
+    "var(--surface-canvas),\n" +
+    "url('/src/assets/visual/paper-bg-cream-aged.png')",
+  backgroundAttachment: "fixed",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
   backgroundColor: "var(--orchard-cream)",
 }
 
