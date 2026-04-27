@@ -60,7 +60,7 @@
     linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
 
   /* Visual assets */
-  --visual-paper-bg: url("/src/assets/visual/paper-bg-cream-aged.png");
+  --visual-paper-bg: url("../assets/visual/paper-bg-cream-aged.png");
 
   /* Layout */
   --radius-xl: 28px;
