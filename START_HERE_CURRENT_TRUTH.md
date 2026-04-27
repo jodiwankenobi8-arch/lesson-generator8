@@ -2,8 +2,8 @@
 
 ## Auto-sync status
 <!-- AUTO_SYNC_START -->
-- Published main checkpoint: dc7585e
-- Last auto-sync UTC: 2026-04-27T00:45:33Z
+- Published main checkpoint: a93bf48
+- Last auto-sync UTC: 2026-04-27T00:55:15Z
 - Manual/browser verification notes must still be updated by hand.
 <!-- AUTO_SYNC_END -->
 
