@@ -25,11 +25,12 @@ const wrapStyle: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  alignSelf: "start",
+  alignSelf: "center",
   // Responsive width: use max 356px on desktop, scale down on narrow screens
   width: "min(100%, 356px)",
   height: "auto",
   aspectRatio: "856 / 345",
+  marginInline: "auto",
   marginBottom: 8,
   // Role and aria-label provided dynamically
 }
