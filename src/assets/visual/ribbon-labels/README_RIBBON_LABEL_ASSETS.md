@@ -21,7 +21,7 @@ Recommended visual seams:
 
 ## Files
 
-- green-floral-stitched-ribbon-label.png
+- brick-floral-stitched-ribbon-label.png
 - cranberry-layered-stitched-ribbon-label.png
 - cream-apple-stitched-banner-label.png
 - honey-floral-stitched-banner-label.png

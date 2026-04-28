@@ -629,16 +629,16 @@
       "notes": "Do not place production text on fixed-width ribbon art."
     },
     {
-      "file": "src/assets/visual/ribbon-labels/green-floral-stitched-ribbon-label.png",
+      "file": "src/assets/visual/ribbon-labels/brick-floral-stitched-ribbon-label.png",
       "pack": "ribbon-labels",
       "assetType": "label",
-      "autoSizeStatus": "needs-editing",
-      "intendedUse": "Candidate ribbon label component after split.",
-      "textSafeAreaNotes": "Requires cap/tile/cap extraction and safe text zone calibration.",
-      "stretchDirection": "horizontal",
-      "requiresSplit": true,
-      "recommendedComponentTarget": "SmartRibbonLabel",
-      "notes": "Do not place production text on fixed-width ribbon art."
+      "autoSizeStatus": "ready",
+      "intendedUse": "Source for fixed baked-text page label ribbons (see ribbon-labels/fixed-page-labels/).",
+      "textSafeAreaNotes": "Pre-composed by generate-fixed-ribbon-labels.py; no further split needed.",
+      "stretchDirection": "none",
+      "requiresSplit": false,
+      "recommendedComponentTarget": "OrchardRibbon or fixed baked-text variants",
+      "notes": "Source for automated generation of fixed page label variants."
     },
     {
       "file": "src/assets/visual/ribbon-labels/honey-floral-stitched-banner-label.png",

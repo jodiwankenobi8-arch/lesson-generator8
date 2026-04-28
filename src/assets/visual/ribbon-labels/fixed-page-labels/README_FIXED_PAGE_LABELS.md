@@ -21,7 +21,7 @@ until every file in the table below is physically present and has passed visual 
 
 ## Visual spec
 
-- **Base art:** Same visual as `../green-floral-stitched-ribbon-label.png` (green floral stitched ribbon).
+- **Base art:** Same visual as `../brick-floral-stitched-ribbon-label.png` (brick/terracotta floral stitched ribbon).
 - **Transparent PNG — no checkerboard, no solid background.**
 - **Text must be visually integrated into the ribbon surface**, not browser-rendered over the top.
   Compose text as part of the same image layer (Photoshop / Figma / Illustrator / similar).
@@ -29,7 +29,7 @@ until every file in the table below is physically present and has passed visual 
 - **Export size:** Minimum 1712 × 586 px (2× source scale: 856 × 293 display px).
   Larger is fine; display size is controlled by CSS.
 - **Consistency:** All four files must look like they belong to the same set.
-- **No other colors, styles, or base art.** Keep visual identity identical to the existing green ribbon.
+- **No other colors, styles, or base art.** Keep visual identity identical to the existing brick ribbon.
 
 ---
 

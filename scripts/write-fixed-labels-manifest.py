@@ -30,7 +30,7 @@ for slug, text, use in LABELS:
             "variant": variant,
             "dimensions": f"{w}x{h}",
             "sizeKB": kb,
-            "sourceAsset": "green-floral-stitched-ribbon-label.png",
+            "sourceAsset": "brick-floral-stitched-ribbon-label.png",
             "intendedUse": use,
             "accessibilityNote": 'img must have alt="" aria-hidden="true"; wrapper must supply aria-label matching bakedText',
             "status": "needs-visual-review",
@@ -40,7 +40,7 @@ for slug, text, use in LABELS:
 manifest = {
     "pack": "lesson-generator8-fixed-page-label-ribbons",
     "generatedBy": "scripts/generate-fixed-ribbon-labels.py",
-    "sourceAsset": "../green-floral-stitched-ribbon-label.png",
+    "sourceAsset": "../brick-floral-stitched-ribbon-label.png",
     "tool": "Python 3.14 / Pillow 12.2.0 / Georgia Bold font",
     "accessibilityContract": 'Each image has baked visible text. In React: wrapper div must have role="img" and aria-label matching bakedText. The img element must have alt="" and aria-hidden="true".',
     "scopeConstraint": "These labels are STATIC stable page labels only. All dynamic, user-generated, or variable text must remain real HTML. Do not substitute for interactive controls or variable data.",

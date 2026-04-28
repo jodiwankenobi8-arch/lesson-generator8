@@ -2,7 +2,7 @@
 generate-fixed-ribbon-labels.py
 ================================
 Generates 16 fixed baked-text ribbon label PNGs from the existing
-green-floral-stitched-ribbon-label.png source asset.
+brick-floral-stitched-ribbon-label.png source asset.
 
 Output: src/assets/visual/ribbon-labels/fixed-page-labels/
 Each PNG is transparent with text composited onto the ribbon surface.
@@ -20,7 +20,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageChops
 # Paths
 # ---------------------------------------------------------------------------
 REPO_ROOT = Path(__file__).parent.parent
-SOURCE_PNG = REPO_ROOT / "src/assets/visual/ribbon-labels/green-floral-stitched-ribbon-label.png"
+SOURCE_PNG = REPO_ROOT / "src/assets/visual/ribbon-labels/brick-floral-stitched-ribbon-label.png"
 OUT_DIR = REPO_ROOT / "src/assets/visual/ribbon-labels/fixed-page-labels"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 

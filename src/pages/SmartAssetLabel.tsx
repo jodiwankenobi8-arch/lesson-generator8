@@ -10,17 +10,17 @@
  * stretched uncomfortably.  The caller picks a variant, or lets the component
  * auto-pick based on text length.
  *
- *   small    – very short text (= 8 chars)   ? narrower asset
- *   medium   – short-to-mid text (9–18 chars) ? standard ribbon width
- *   large    – mid-length text (19–30 chars)  ? wider ribbon
- *   xlarge   – long text (31+ chars)          ? widest ribbon
- *   two-line – text that wraps or is very long ? taller asset variant
+ *   small    ï¿½ very short text (= 8 chars)   ? narrower asset
+ *   medium   ï¿½ short-to-mid text (9ï¿½18 chars) ? standard ribbon width
+ *   large    ï¿½ mid-length text (19ï¿½30 chars)  ? wider ribbon
+ *   xlarge   ï¿½ long text (31+ chars)          ? widest ribbon
+ *   two-line ï¿½ text that wraps or is very long ? taller asset variant
  *
  * ## Authoring constraint
  *
  * Images are BLANK backgrounds / material layers only.
  * All text that belongs in the label must be passed as children and will be
- * rendered as real HTML — never baked into the PNG.
+ * rendered as real HTML ï¿½ never baked into the PNG.
  *
  * ## Current status: SCAFFOLD (no production wiring)
  *
@@ -36,12 +36,12 @@ import type { CSSProperties, ReactNode } from "react"
 // ---------------------------------------------------------------------------
 // Placeholder: one real asset available now.
 // Add more imports here when the blank multi-size variant assets are ready.
-import greenRibbon from "../assets/visual/ribbon-labels/green-floral-stitched-ribbon-label.png"
+import brickRibbon from "../assets/visual/ribbon-labels/brick-floral-stitched-ribbon-label.png"
 
 // Source natural dimensions for each asset (px).
 // Used to compute the display height from a desired display width.
 const ASSET_NATURAL = {
-  green: { w: 852, h: 293 },
+  brick: { w: 936, h: 377 },
 } as const
 
 // ---------------------------------------------------------------------------
@@ -63,9 +63,9 @@ const VARIANT_CONFIG: Record<
     natural: { w: number; h: number }
     /** Display width (px) */
     displayW: number
-    /** Inline padding as % of display width — keeps text inside the art bounds */
+    /** Inline padding as % of display width ï¿½ keeps text inside the art bounds */
     paddingInlinePct: number
-    /** Bottom offset as % of display height — accounts for ribbon shadow/tail depth */
+    /** Bottom offset as % of display height ï¿½ accounts for ribbon shadow/tail depth */
     paddingBottomPct: number
     /** Font size (px) */
     fontSize: number
@@ -74,40 +74,40 @@ const VARIANT_CONFIG: Record<
   // -- When blank multi-size variants are available, replace `asset` and
   // -- `natural` per row with the correct import and natural dimensions.
   small: {
-    asset: greenRibbon,   // TODO: replace with small-variant blank PNG
-    natural: ASSET_NATURAL.green,
+    asset: brickRibbon,   // TODO: replace with small-variant blank PNG
+    natural: ASSET_NATURAL.brick,
     displayW: 220,
     paddingInlinePct: 16,
     paddingBottomPct: 6,
     fontSize: 13,
   },
   medium: {
-    asset: greenRibbon,   // TODO: replace with medium-variant blank PNG
-    natural: ASSET_NATURAL.green,
+    asset: brickRibbon,   // TODO: replace with medium-variant blank PNG
+    natural: ASSET_NATURAL.brick,
     displayW: 310,
     paddingInlinePct: 15,
     paddingBottomPct: 6,
     fontSize: 14,
   },
   large: {
-    asset: greenRibbon,   // TODO: replace with large-variant blank PNG
-    natural: ASSET_NATURAL.green,
+    asset: brickRibbon,   // TODO: replace with large-variant blank PNG
+    natural: ASSET_NATURAL.brick,
     displayW: 390,
     paddingInlinePct: 14,
     paddingBottomPct: 6,
     fontSize: 14,
   },
   xlarge: {
-    asset: greenRibbon,   // TODO: replace with xlarge-variant blank PNG
-    natural: ASSET_NATURAL.green,
+    asset: brickRibbon,   // TODO: replace with xlarge-variant blank PNG
+    natural: ASSET_NATURAL.brick,
     displayW: 460,
     paddingInlinePct: 13,
     paddingBottomPct: 6,
     fontSize: 14,
   },
   "two-line": {
-    asset: greenRibbon,   // TODO: replace with tall/two-line blank PNG
-    natural: ASSET_NATURAL.green,
+    asset: brickRibbon,   // TODO: replace with tall/two-line blank PNG
+    natural: ASSET_NATURAL.brick,
     displayW: 360,
     paddingInlinePct: 15,
     paddingBottomPct: 8,
@@ -138,9 +138,9 @@ export function pickVariantForText(text: string): AssetLabelVariant {
 export type SmartAssetLabelProps = {
   /** Override the auto-picked size variant */
   variant?: AssetLabelVariant
-  /** Additional wrapper style — layout / positioning overrides from parent */
+  /** Additional wrapper style ï¿½ layout / positioning overrides from parent */
   style?: CSSProperties
-  /** The label text.  Must be real HTML — never bake text into assets. */
+  /** The label text.  Must be real HTML ï¿½ never bake text into assets. */
   children: ReactNode
   /** Accessible label when the text alone is insufficient context */
   "aria-label"?: string
@@ -156,7 +156,7 @@ export function SmartAssetLabel({
   children,
   "aria-label": ariaLabel,
 }: SmartAssetLabelProps) {
-  // Determine variant — auto-pick from text length when not specified
+  // Determine variant ï¿½ auto-pick from text length when not specified
   const resolvedVariant: AssetLabelVariant =
     variant ??
     (typeof children === "string" ? pickVariantForText(children) : "medium")

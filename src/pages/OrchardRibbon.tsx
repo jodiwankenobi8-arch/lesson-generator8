@@ -1,11 +1,11 @@
 import type { CSSProperties } from "react"
-import greenRibbon from "../assets/visual/ribbon-labels/green-floral-stitched-ribbon-label.png"
+import brickRibbon from "../assets/visual/ribbon-labels/brick-floral-stitched-ribbon-label.png"
 
 type OrchardRibbonProps = {
   text: string
 }
 
-// Display size for the green ribbon (source: 852×293).
+// Display size for the brick ribbon (source: 852Ã—293).
 // Scale to ~356px wide to fit the page header. Height follows aspect ratio.
 const DISPLAY_W = 356
 const DISPLAY_H = Math.round(293 * (DISPLAY_W / 852)) // ~122px
@@ -56,7 +56,7 @@ export function OrchardRibbon({ text }: OrchardRibbonProps) {
   return (
     <div style={wrapStyle}>
       <img
-        src={greenRibbon}
+        src={brickRibbon}
         alt=""
         aria-hidden="true"
         style={imgStyle}
