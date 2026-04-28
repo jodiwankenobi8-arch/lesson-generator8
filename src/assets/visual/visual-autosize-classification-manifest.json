@@ -776,37 +776,37 @@
       "file": "src/assets/visual/smart-components/wood-label/wood-label-center-tile.png",
       "pack": "smart-components",
       "assetType": "label",
-      "autoSizeStatus": "ready",
-      "intendedUse": "Production slice for SmartWoodLabel composition with real HTML text.",
+      "autoSizeStatus": "needs-editing",
+      "intendedUse": "Candidate slice for SmartWoodLabel composition with real HTML text after visual-quality refinement.",
       "textSafeAreaNotes": "Text belongs to composed container, not individual slice.",
       "stretchDirection": "horizontal",
       "requiresSplit": false,
       "recommendedComponentTarget": "SmartWoodLabel",
-      "notes": "Ready slice from first-pass split set; validate seams in component implementation."
+      "notes": "Passes functional autosize behavior but failed visual quality in production header seam; requires improved art/crops before production rollout."
     },
     {
       "file": "src/assets/visual/smart-components/wood-label/wood-label-left-cap.png",
       "pack": "smart-components",
       "assetType": "label",
-      "autoSizeStatus": "ready",
-      "intendedUse": "Production slice for SmartWoodLabel composition with real HTML text.",
+      "autoSizeStatus": "needs-editing",
+      "intendedUse": "Candidate slice for SmartWoodLabel composition with real HTML text after visual-quality refinement.",
       "textSafeAreaNotes": "Text belongs to composed container, not individual slice.",
       "stretchDirection": "none",
       "requiresSplit": false,
       "recommendedComponentTarget": "SmartWoodLabel",
-      "notes": "Ready slice from first-pass split set; validate seams in component implementation."
+      "notes": "Passes functional autosize behavior but failed visual quality in production header seam; requires improved art/crops before production rollout."
     },
     {
       "file": "src/assets/visual/smart-components/wood-label/wood-label-right-cap.png",
       "pack": "smart-components",
       "assetType": "label",
-      "autoSizeStatus": "ready",
-      "intendedUse": "Production slice for SmartWoodLabel composition with real HTML text.",
+      "autoSizeStatus": "needs-editing",
+      "intendedUse": "Candidate slice for SmartWoodLabel composition with real HTML text after visual-quality refinement.",
       "textSafeAreaNotes": "Text belongs to composed container, not individual slice.",
       "stretchDirection": "none",
       "requiresSplit": false,
       "recommendedComponentTarget": "SmartWoodLabel",
-      "notes": "Ready slice from first-pass split set; validate seams in component implementation."
+      "notes": "Passes functional autosize behavior but failed visual quality in production header seam; requires improved art/crops before production rollout."
     },
     {
       "file": "src/assets/visual/tags-labels-set.png",
