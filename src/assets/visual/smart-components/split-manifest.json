@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "status": "first-pass-candidates",
+  "notes": [
+    "This is an initial split candidate set and requires visual review before production component wiring.",
+    "Do not wire source sheets directly into production UI.",
+    "SmartWoodLabel and SmartTornPaperCard must render real HTML text/content; no baked image text.",
+    "SmartWoodLabel must auto-size to content and prevent clipping/overflow using stretchable center art and text layout controls.",
+    "Acceptance strings for label fit checks: Inputs, Materials, Results, Teacher Planning Studio, Curriculum Materials Uploaded, Used with caution, These materials were analyzed with caution"
+  ],
+  "sources": {
+    "woodLabelSheet": {
+      "path": "src/assets/visual/generated-smart/wooden_sign_components_with_floral_accents.png",
+      "dimensions": "1448x1086",
+      "variant": "top-simple"
+    },
+    "tornPaperSheet": {
+      "path": "src/assets/visual/generated-smart/torn_paper_frame_set_with_accents.png",
+      "dimensions": "1448x1086",
+      "variant": "single-frame-set"
+    }
+  },
+  "woodLabel": {
+    "outputDir": "src/assets/visual/smart-components/wood-label",
+    "requiredRuntimeBehavior": {
+      "text": "real-html",
+      "autoSize": true,
+      "centerStretchable": true,
+      "mustSupport": ["minWidth", "maxWidth", "paddingInline", "wrapMode", "largeVariant"],
+      "mustPrevent": ["text-clip", "text-overflow", "baked-image-text"]
+    },
+    "slices": [
+      {
+        "file": "wood-label-left-cap.png",
+        "x": 68,
+        "y": 166,
+        "width": 246,
+        "height": 272,
+        "description": "Left cap with floral accent and nail detail"
+      },
+      {
+        "file": "wood-label-center-tile.png",
+        "x": 610,
+        "y": 194,
+        "width": 228,
+        "height": 218,
+        "description": "Center tile candidate for horizontal repeat/stretch"
+      },
+      {
+        "file": "wood-label-right-cap.png",
+        "x": 1172,
+        "y": 166,
+        "width": 220,
+        "height": 272,
+        "description": "Right cap with floral accent and nail detail"
+      }
+    ]
+  },
+  "tornPaperCard": {
+    "outputDir": "src/assets/visual/smart-components/torn-paper-card",
+    "requiredRuntimeBehavior": {
+      "content": "real-html-children",
+      "nineSlice": true,
+      "mustPrevent": ["fixed-screenshot-panel", "baked-text"]
+    },
+    "slices": [
+      { "file": "torn-card-tl.png", "x": 113, "y": 126, "width": 208, "height": 165 },
+      { "file": "torn-card-t.png", "x": 356, "y": 129, "width": 590, "height": 134 },
+      { "file": "torn-card-tr.png", "x": 981, "y": 128, "width": 183, "height": 162 },
+      { "file": "torn-card-l.png", "x": 112, "y": 317, "width": 145, "height": 436 },
+      { "file": "torn-card-center.png", "x": 303, "y": 301, "width": 696, "height": 519 },
+      { "file": "torn-card-r.png", "x": 1044, "y": 318, "width": 121, "height": 432 },
+      { "file": "torn-card-bl.png", "x": 112, "y": 791, "width": 227, "height": 186 },
+      { "file": "torn-card-b.png", "x": 347, "y": 835, "width": 601, "height": 141 },
+      { "file": "torn-card-br.png", "x": 981, "y": 791, "width": 185, "height": 186 }
+    ]
+  }
+}
