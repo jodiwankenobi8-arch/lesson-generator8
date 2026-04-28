@@ -1,14 +1,24 @@
 import type { CSSProperties } from "react"
-import brickRibbon from "../assets/visual/ribbon-labels/brick-floral-stitched-ribbon-label.png"
+import ribbonInputsMedium from "../assets/visual/ribbon-labels/fixed-page-labels/ribbon-inputs-medium.png"
+import ribbonMaterialsMedium from "../assets/visual/ribbon-labels/fixed-page-labels/ribbon-materials-medium.png"
+import ribbonResultsMedium from "../assets/visual/ribbon-labels/fixed-page-labels/ribbon-results-medium.png"
 
 type OrchardRibbonProps = {
   text: string
 }
 
-// Display size for the brick ribbon (source: 852×293).
-// Scale to ~356px wide to fit the page header. Height follows aspect ratio.
-const DISPLAY_W = 356
-const DISPLAY_H = Math.round(293 * (DISPLAY_W / 852)) // ~122px
+// Mapping from label text to baked-text ribbon asset
+// Using "medium" variant for standard page headers (356-400px display width)
+const LABEL_TO_ASSET: Record<string, string> = {
+  "Planning Notebook": ribbonInputsMedium,
+  "Source Workbench": ribbonMaterialsMedium,
+  "Planning Binder": ribbonResultsMedium,
+}
+
+// Display dimensions for medium variant ribbons
+// Source: 856×345, scaled to responsive width
+const DISPLAY_W = 356 // ~356px for desktop, responsive on mobile
+const DISPLAY_H = Math.round(345 * (DISPLAY_W / 856)) // ~143px
 
 const wrapStyle: CSSProperties = {
   position: "relative",
@@ -16,52 +26,40 @@ const wrapStyle: CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   alignSelf: "start",
-  width: DISPLAY_W,
-  height: DISPLAY_H,
+  // Responsive width: use max 356px on desktop, scale down on narrow screens
+  width: "min(100%, 356px)",
+  height: "auto",
+  aspectRatio: "856 / 345",
   marginBottom: 8,
-  // Drop shadow on the ribbon image via the img layer
+  // Role and aria-label provided dynamically
 }
 
 const imgStyle: CSSProperties = {
-  position: "absolute",
-  inset: 0,
+  position: "relative",
+  display: "block",
   width: "100%",
-  height: "100%",
-  objectFit: "fill",
+  height: "auto",
   filter: "drop-shadow(0 6px 14px rgba(63, 90, 64, 0.16))",
   pointerEvents: "none",
   userSelect: "none",
 }
 
-const textStyle: CSSProperties = {
-  position: "relative",
-  zIndex: 1,
-  // Keep text within the center band of the ribbon (tails are ~15% each side)
-  paddingInline: "15%",
-  paddingBottom: "6%",
-  color: "#FDF8EE",
-  fontFamily: '"Playfair Display", Georgia, "Times New Roman", serif',
-  fontSize: 15,
-  fontWeight: 700,
-  lineHeight: 1.2,
-  textAlign: "center",
-  textShadow: "0 1px 1px rgba(55, 71, 45, 0.20)",
-  userSelect: "none",
-  // Prevent the text from ever spilling outside the ribbon
-  maxWidth: "100%",
-  overflowWrap: "break-word",
-}
-
 export function OrchardRibbon({ text }: OrchardRibbonProps) {
+  // Get the appropriate baked-text ribbon asset for this label
+  const ribbonAsset = LABEL_TO_ASSET[text] || ribbonInputsMedium
+
   return (
-    <div style={wrapStyle}>
+    <div
+      style={wrapStyle}
+      role="img"
+      aria-label={text}
+    >
       <img
-        src={brickRibbon}
+        src={ribbonAsset}
         alt=""
         aria-hidden="true"
         style={imgStyle}
       />
-      <span style={textStyle}>{text}</span>
     </div>
   )
 }
