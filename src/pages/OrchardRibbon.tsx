@@ -40,7 +40,7 @@ const imgStyle: CSSProperties = {
   display: "block",
   width: "100%",
   height: "auto",
-  filter: "drop-shadow(0 6px 14px rgba(63, 90, 64, 0.16))",
+  filter: "drop-shadow(0 3px 8px rgba(63, 90, 64, 0.12))",
   pointerEvents: "none",
   userSelect: "none",
 }

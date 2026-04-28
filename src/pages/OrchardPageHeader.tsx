@@ -4,37 +4,72 @@ import {
   orchardSectionTitleStyle,
 } from "./orchardUi"
 import { OrchardRibbon } from "./OrchardRibbon"
-import orchardHeaderAccent from "../assets/visual/extra-orchard-elements/apple-stickers-01-single-apple-moss.png"
+import orchardHeaderBacking from "../assets/visual/panel-notebook-stack.png"
+import orchardHeaderBlossom from "../assets/visual/extra-orchard-elements/apple-stickers-04-apple-blossom-cluster.png"
 
 const headerStyle: CSSProperties = {
   position: "relative",
-  display: "grid",
-  gap: 12,
-  marginBottom: 8,
+  marginBottom: 6,
 }
 
-const accentStyle: CSSProperties = {
+const clusterStyle: CSSProperties = {
+  position: "relative",
+  maxWidth: 920,
+}
+
+const backingStyle: CSSProperties = {
   position: "absolute",
-  top: -6,
-  right: 8,
-  width: "clamp(44px, 7vw, 74px)",
-  height: "auto",
-  opacity: 0.78,
+  inset: "10px 8px -10px 4px",
+  width: "calc(100% - 12px)",
+  height: "calc(100% + 12px)",
+  objectFit: "cover",
+  opacity: 0.2,
+  transform: "rotate(-0.8deg)",
   pointerEvents: "none",
   userSelect: "none",
+  zIndex: 0,
+}
+
+const cardStyle: CSSProperties = {
+  ...orchardPageHeaderCardStyle,
+  position: "relative",
   zIndex: 1,
+  marginBottom: 0,
+  overflow: "visible",
+  paddingTop: "clamp(94px, 12vw, 118px)",
+}
+
+const ribbonDockStyle: CSSProperties = {
+  position: "absolute",
+  top: "clamp(-54px, -6vw, -38px)",
+  left: "clamp(8px, 2.5vw, 24px)",
+  width: "min(100%, 330px)",
+  zIndex: 3,
+}
+
+const blossomStyle: CSSProperties = {
+  position: "absolute",
+  top: "clamp(-34px, -3vw, -18px)",
+  right: "clamp(12px, 3vw, 30px)",
+  width: "clamp(44px, 8vw, 88px)",
+  height: "auto",
+  opacity: 0.9,
+  pointerEvents: "none",
+  userSelect: "none",
+  zIndex: 2,
 }
 
 const titleStyle: CSSProperties = {
   ...orchardSectionTitleStyle,
   fontSize: 32,
   margin: 0,
-  maxWidth: "18ch",
+  marginBottom: 4,
+  maxWidth: "22ch",
 }
 
 const introContentStyle: CSSProperties = {
   display: "grid",
-  gap: 12,
+  gap: 8,
 }
 
 type OrchardPageHeaderProps = {
@@ -52,20 +87,25 @@ export function OrchardPageHeader({
   titleId,
   introMaxWidth = 920,
 }: OrchardPageHeaderProps) {
-  const introCardStyle: CSSProperties = {
-    ...orchardPageHeaderCardStyle,
+  const headerClusterStyle: CSSProperties = {
+    ...clusterStyle,
     maxWidth: introMaxWidth,
   }
 
   return (
     <header style={headerStyle}>
-      <img src={orchardHeaderAccent} alt="" aria-hidden="true" style={accentStyle} />
-      <OrchardRibbon text={label} />
-      <h2 id={titleId} style={titleStyle}>
-        {title}
-      </h2>
-      <div style={introCardStyle}>
-        <div style={introContentStyle}>{children}</div>
+      <div style={headerClusterStyle}>
+        <img src={orchardHeaderBacking} alt="" aria-hidden="true" style={backingStyle} />
+        <div style={cardStyle}>
+          <div style={ribbonDockStyle}>
+            <OrchardRibbon text={label} />
+          </div>
+          <img src={orchardHeaderBlossom} alt="" aria-hidden="true" style={blossomStyle} />
+          <h2 id={titleId} style={titleStyle}>
+            {title}
+          </h2>
+          <div style={introContentStyle}>{children}</div>
+        </div>
       </div>
     </header>
   )
