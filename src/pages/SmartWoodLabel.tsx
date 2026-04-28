@@ -104,7 +104,8 @@ export function SmartWoodLabel({
     textAlign: "center",
     textShadow: "0 1px 2px rgba(22, 17, 10, 0.4)",
     whiteSpace: allowWrap ? "normal" : "nowrap",
-    overflowWrap: allowWrap ? "anywhere" : "normal",
+    overflowWrap: allowWrap ? "break-word" : "normal",
+    wordBreak: "normal",
   }
 
   return (
