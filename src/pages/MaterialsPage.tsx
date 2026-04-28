@@ -26,6 +26,7 @@ import { OrchardPageHeader } from "./OrchardPageHeader"
 import {
   buildUploadSourceMetadata,
   getTeacherVisibleMaterialNote,
+  getExtractionMethodLabel,
   inferMimeTypeFromName,
   isSupportedUploadFile,
 } from "./materialsPageUploadHelpers"
@@ -1287,6 +1288,11 @@ export default function MaterialsPage() {
                         <div style={materialMetaStyle}>
                           <span style={roleBadgeStyle(material.role)}>{formatRoleLabel(material.role)}</span>
                           <span style={statusBadgeStyle(material.status)}>{formatStatus(material.status)}</span>
+                          {getExtractionMethodLabel(material) ? (
+                            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>
+                              {getExtractionMethodLabel(material)}
+                            </span>
+                          ) : null}
                         </div>
                       </div>
 

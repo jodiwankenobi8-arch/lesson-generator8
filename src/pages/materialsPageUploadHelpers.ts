@@ -3,7 +3,7 @@ import {
   isSupportedImageExtension,
   isSupportedImageMimeType,
 } from "../engine/materials/sourceIntakeContract"
-import type { MaterialFile, MaterialSourceKind } from "../engine/types"
+import type { ExtractionQuality, MaterialFile, MaterialSourceKind } from "../engine/types"
 
 export type UploadSourceMetadata = {
   sourceKind: MaterialSourceKind
@@ -59,4 +59,47 @@ export function getTeacherVisibleMaterialNote(
   }
 
   return "Checking what this material can support."
+}
+
+export function getExtractionMethodLabel(
+  material: Pick<MaterialFile, "status" | "analysis">
+): string | null {
+  if (material.status !== "ready" || !material.analysis?.extractionMetadata) {
+    return null
+  }
+
+  const { method, quality, confidence } = material.analysis.extractionMetadata
+
+  // Format based on method and quality
+  if (method === "fallback_notice") {
+    return "No text extracted"
+  }
+
+  if (method === "ocr" || method === "mixed") {
+    const qualityLabel = getQualityLabel(quality)
+    const confidencePercent = confidence ? Math.round(confidence * 100) : 0
+    return `${qualityLabel} OCR (${confidencePercent}%)`
+  }
+
+  if (method === "parser") {
+    const qualityLabel = getQualityLabel(quality)
+    return qualityLabel
+  }
+
+  return null
+}
+
+function getQualityLabel(quality?: ExtractionQuality | string): string {
+  if (!quality) return "Unknown"
+  
+  switch (quality) {
+    case "high":
+      return "Strong"
+    case "medium":
+      return "Fair"
+    case "low":
+      return "Weak"
+    default:
+      return "Unknown"
+  }
 }
