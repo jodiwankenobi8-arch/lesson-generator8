@@ -8,7 +8,7 @@ Use these as realistic image/material assets and tactile stationery elements:
 - paper labels and torn paper strips
 - apple orchard accents
 - stitched fabric ribbons and gingham pieces
-- teacher-planner scrapbook vignettes
+- classy scrapbook feel vignettes for a lesson creation workspace
 - small woodland/mushroom accents used sparingly
 
 ## App-use rules
@@ -18,7 +18,7 @@ Use these as realistic image/material assets and tactile stationery elements:
 - Add one visual seam at a time and run `npm run verify:release` after each code/styling pass.
 - Do not replace app screens with screenshots.
 - Do not wire the whole pack into the UI at once.
-- Do not let the mushroom set overwhelm the apple-orchard/teacher-planner identity.
+- Do not let the mushroom set overwhelm the apple-orchard storybook identity.
 
 ## Suggested next seams
 

@@ -428,7 +428,7 @@ describe("Results explainability rendering contracts", () => {
     expect(centerRotationIndex).toBeGreaterThan(studentCentersIndex)
 
     expect(source).toContain("Start with a quick package scan")
-    expect(source).toContain("Teacher Binder Snapshot")
+    expect(source).toContain("Package Snapshot")
     expect(source).toContain("Primary focus:")
     expect(source).toContain("Additional focus:")
     expect(source).toContain("Integrated focus:")
@@ -965,7 +965,7 @@ describe("Results export routing - PDF and ZIP", () => {
 })
 
 describe("Results package output section parity", () => {
-  it("summarizes visible package sections and bundled artifact labels for the teacher binder snapshot", () => {
+  it("summarizes visible package sections and bundled artifact labels for the package snapshot", () => {
     const lessonPackage = makeLessonPackage({
       centers: ["Word Sort: Sort long a and short a words."],
       rotationPlan: [
@@ -1111,7 +1111,7 @@ describe("Results package output section parity", () => {
     expect(markup).toContain("Intervention Support")
     expect(markup).toContain("Centers / Independent Work")
     expect(markup).toContain("Centers / Independent Work Rotation")
-    expect(markup).toContain("Teacher Binder Snapshot")
+    expect(markup).toContain("Package Snapshot")
     expect(markup).toContain("Included in this teacher package")
     expect(markup).toContain("Available exports")
     expect(markup).toContain("Package ZIP")

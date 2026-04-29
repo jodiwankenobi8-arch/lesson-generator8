@@ -24,9 +24,11 @@ Use these as **real image-like material assets**, not as Photoshop-only mockups.
 The product should feel like:
 - premium stationery
 - realistic paper materials
-- warm teacher planning desk
+- warm orchard storybook workspace
 - tactile collage
 - mature, image-like UI elements
+
+This visual direction applies to app/interface presentation. Generated lesson output styling remains exemplar- and teacher-request-driven.
 
 Avoid:
 - fake vector wood/paper

@@ -519,7 +519,7 @@ export default function ResultsPage() {
 
   return (
     <div style={pageStyle}>
-      <OrchardPageHeader label="Planning Binder" title="Results">
+      <OrchardPageHeader label="Lesson Package" title="Results">
         <p style={introStyle}>
           Review the lesson package below. Content comes from your curriculum materials. Structure comes from your exemplar materials. Missing pieces are generated to complete the lesson.
         </p>
@@ -673,7 +673,7 @@ export function PackageSummarySection({
         <div>
           <h3 style={sectionHeadingStyle}>Teacher Package Overview</h3>
           <p style={sectionLeadStyle}>
-            Start with a quick package scan, then move into the full teacher binder preview.
+            Start with a quick package scan, then move into the completed lesson package review.
           </p>
         </div>
         <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
@@ -779,8 +779,8 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
     <div style={sectionStyle}>
       <div style={orchardSectionHeaderRowStyle}>
         <div style={{ display: "grid", gap: 8 }}>
-          <h3 style={sectionHeadingStyle}>Teacher Binder Snapshot</h3>
-          <p style={sectionLeadStyle}>{getTeacherBinderLeadText()}</p>
+          <h3 style={sectionHeadingStyle}>Package Snapshot</h3>
+          <p style={sectionLeadStyle}>Review what is included, then download only the files you need.</p>
         </div>
         <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
           {getBinderReadinessLabel(lessonPackage)}
@@ -826,7 +826,7 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
         <div style={subHeadingStyle}>Available exports</div>
         <div style={smallNoteStyle}>
           {hasFullPackageZip
-            ? "Use the package ZIP when you want the whole generated binder together, or use the individual downloads when you only need one file."
+            ? "Use the package ZIP when you want the whole generated lesson package together, or use the individual downloads when you only need one file."
             : "Only individual downloads are available in this package right now."}
         </div>
         {(hasFullPackageZip || bundledArtifactLabels.length > 0) ? (
@@ -1877,7 +1877,7 @@ function BlockedResultsState({
 }) {
   return (
     <div style={pageStyle}>
-      <OrchardPageHeader label="Planning Binder" title={title}>
+      <OrchardPageHeader label="Lesson Package" title={title}>
         <p style={introStyle}>{message}</p>
         <div style={{ ...noticeStyle, marginTop: "var(--space-sm)" }}>{details}</div>
       </OrchardPageHeader>

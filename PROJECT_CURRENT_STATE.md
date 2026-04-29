@@ -24,8 +24,11 @@
   - preserve the structural parts that make those outputs effective
   - support exemplar-driven transformation when exemplars exist
   - support trustworthy default artifact shells when exemplars are absent
+- App/interface visual direction may be Apple Orchard Storybook + classy scrapbook, but that identity applies to UI presentation, not forced output styling.
 - Curriculum is the content authority.
 - Exemplar is the optional presentation / structure authority.
+- Generated output styling is exemplar/teacher-request driven and must also respect selected style settings, output type, and accessibility/readability.
+- Do not describe outputs as orchard/storybook themed by default unless the teacher requests that style or exemplars support it.
 - Any requested final output may have its own scoped exemplar.
 - Missing exemplar should not block generation by itself.
 - Content-bearing outputs still require sufficient content grounding.

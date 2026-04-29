@@ -14,7 +14,7 @@ until every file in the table below is physically present and has passed visual 
 |---|---|---|---|
 | `ribbon-inputs.png` | Planning Notebook | Inputs page header | Primary header ribbon |
 | `ribbon-materials.png` | Source Workbench | Materials page header | Primary header ribbon |
-| `ribbon-results.png` | Planning Binder | Results page header | Primary header ribbon |
+| `ribbon-results.png` | Lesson Package | Results page header | Primary header ribbon |
 | `ribbon-teacher-planning-studio.png` | Teacher Planning Studio | App-level header (reserved) | Wire only when needed |
 
 ---

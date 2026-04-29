@@ -26,8 +26,11 @@
   10. export helpers and local workspace persistence
 - Active product charter: Lesson Generator 8 is a template-preserving lesson transformation system, not a generic AI lesson-package generator.
 - The primary engine should support trusted output-shell transformation when exemplars are present and solid default artifact shells when exemplars are absent.
+- App/interface visual identity may use an Apple Orchard Storybook + classy scrapbook feel, but that visual direction is UI chrome only.
 - Curriculum remains the content authority for content-bearing outputs.
 - Exemplar remains the optional presentation / structure authority and may be scoped per artifact.
+- Generated output styling must be driven by exemplar materials, teacher requests, selected style settings, output type, and accessibility/readability.
+- Do not force generated outputs to match the app visual theme unless the teacher explicitly asks for that style or supporting exemplars justify it.
 - Multiple exemplars are supported. Different exemplars may target shared structure, slides, lesson plan, centers / rotation, teacher-led support, intervention, or printables.
 - Any requested final output may use its own exemplar.
 - Missing exemplar should not block output generation by itself.
