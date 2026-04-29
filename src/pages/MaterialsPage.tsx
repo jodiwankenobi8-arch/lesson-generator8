@@ -25,6 +25,7 @@ import {
 import { OrchardPageHeader } from "./OrchardPageHeader"
 import {
   buildUploadSourceMetadata,
+  getTeacherVisibleMaterialSummary,
   getTeacherVisibleMaterialNote,
   getExtractionMethodLabel,
   inferMimeTypeFromName,
@@ -56,6 +57,7 @@ import { buildCompactInferredMaterialReview } from "../engine/materials/buildCom
 
 export {
   buildUploadSourceMetadata,
+  getTeacherVisibleMaterialSummary,
   getTeacherVisibleMaterialNote,
   inferMimeTypeFromName,
   isSupportedUploadFile,
@@ -170,6 +172,40 @@ const materialMetaStyle: React.CSSProperties = {
   gap: 8,
   flexWrap: "wrap",
   marginTop: 6,
+}
+
+const materialSummaryStripBaseStyle: React.CSSProperties = {
+  border: "1px solid var(--border-paper)",
+  borderRadius: "var(--radius-sm)",
+  padding: "8px 10px",
+  marginTop: 8,
+  display: "grid",
+  gap: 6,
+  background: "rgba(255,255,255,0.85)",
+}
+
+const materialSummaryHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  flexWrap: "wrap",
+}
+
+const materialSummaryListStyle: React.CSSProperties = {
+  margin: 0,
+  paddingLeft: 16,
+  display: "grid",
+  gap: 4,
+  color: "var(--text-secondary)",
+  fontSize: 12,
+  lineHeight: 1.45,
+}
+
+const materialSummaryNextStepStyle: React.CSSProperties = {
+  fontSize: 12,
+  color: "var(--text-secondary)",
+  lineHeight: 1.45,
 }
 
 const materialStatusTextStyle: React.CSSProperties = {
@@ -1279,6 +1315,10 @@ export default function MaterialsPage() {
               <div style={listStyle}>
                 {materials.map((material) => (
                   <div key={material.id} style={{ display: "grid", gap: 10 }}>
+                    {(() => {
+                      const summary = getTeacherVisibleMaterialSummary(material)
+
+                      return (
                     <div style={rowStyle}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-word" }}>
@@ -1294,6 +1334,53 @@ export default function MaterialsPage() {
                             </span>
                           ) : null}
                         </div>
+
+                        {summary ? (
+                          <div
+                            style={{
+                              ...materialSummaryStripBaseStyle,
+                              ...(summary.tone === "strong"
+                                ? {
+                                    border: "1px solid var(--border-moss)",
+                                    background: "rgba(110, 139, 107, 0.10)",
+                                  }
+                                : summary.tone === "blocked"
+                                  ? {
+                                      border: "1px solid var(--border-cranberry)",
+                                      background: "rgba(184, 84, 90, 0.10)",
+                                    }
+                                  : {
+                                      border: "1px solid var(--border-honey)",
+                                      background: "rgba(242, 192, 120, 0.14)",
+                                    }),
+                            }}
+                          >
+                            <div style={materialSummaryHeaderStyle}>
+                              <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 12 }}>
+                                What we found
+                              </div>
+                              <span
+                                style={orchardTagStyle(
+                                  summary.tone === "strong"
+                                    ? "moss"
+                                    : summary.tone === "blocked"
+                                      ? "cranberry"
+                                      : "honey"
+                                )}
+                              >
+                                {summary.statusLabel}
+                              </span>
+                            </div>
+                            <ul style={materialSummaryListStyle}>
+                              {summary.summaryLines.map((line) => (
+                                <li key={`${material.id}-${line}`}>{line}</li>
+                              ))}
+                            </ul>
+                            {summary.nextStep ? (
+                              <div style={materialSummaryNextStepStyle}>{summary.nextStep}</div>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
 
                       <div style={{ minWidth: 220, display: "grid", gap: 8, justifyItems: "end" }}>
@@ -1313,6 +1400,8 @@ export default function MaterialsPage() {
                         </button>
                       </div>
                     </div>
+                      )
+                    })()}
 
                     {material.role === "exemplar" || (material.status === "ready" && material.analysis) ? (
                       <details>

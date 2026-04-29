@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   buildMaterialAnalysisReviewDraft,
   buildUploadSourceMetadata,
+  getTeacherVisibleMaterialSummary,
   getTeacherVisibleMaterialNote,
   inferMimeTypeFromName,
   isSupportedUploadFile,
@@ -155,6 +156,159 @@ describe("getTeacherVisibleMaterialNote", () => {
         analysis: null,
       } as never)
     ).toBe("Unsupported file content")
+  })
+})
+
+describe("getTeacherVisibleMaterialSummary", () => {
+  it("surfaces curriculum signals with teacher-facing summary lines", () => {
+    const summary = getTeacherVisibleMaterialSummary({
+      role: "curriculum",
+      status: "ready",
+      errorMessage: null,
+      analysis: {
+        extractionMetadata: {
+          method: "parser",
+          quality: "high",
+          confidence: 0.93,
+          notes: [],
+          ocrCandidate: false,
+          ocrReason: null,
+        },
+        reliability: {
+          level: "high",
+          score: 92,
+          usableForContent: true,
+          usableForStructure: false,
+          contentDecision: "allow",
+          structureDecision: "block",
+          reasons: [],
+          warnings: [],
+        },
+        curriculum: {
+          standards: ["ELA.K.F.1.3"],
+          instructionalTargets: ["long a", "CVCe words"],
+          vocabulary: ["silent e"],
+          wordLists: ["cake", "game", "lake"],
+          examples: ["same"],
+          practiceTasks: ["blend and read", "sort long a words"],
+          texts: [],
+        },
+      },
+    } as never)
+
+    expect(summary).toBeTruthy()
+    expect(summary?.statusLabel).toBe("Strong signal")
+    expect(summary?.summaryLines.join(" ")).toContain("Standards detected: ELA.K.F.1.3")
+    expect(summary?.summaryLines.join(" ")).toContain("Skill/content: long a, CVCe words")
+    expect(summary?.summaryLines.join(" ")).toContain("Word list/examples:")
+    expect(summary?.summaryLines.join(" ")).toContain("Practice ideas:")
+  })
+
+  it("surfaces exemplar structure, pacing, and style signals", () => {
+    const summary = getTeacherVisibleMaterialSummary({
+      role: "exemplar",
+      status: "ready",
+      errorMessage: null,
+      analysis: {
+        extractionMetadata: {
+          method: "parser",
+          quality: "high",
+          confidence: 0.88,
+          notes: [],
+          ocrCandidate: false,
+          ocrReason: null,
+        },
+        reliability: {
+          level: "high",
+          score: 90,
+          usableForContent: false,
+          usableForStructure: true,
+          contentDecision: "block",
+          structureDecision: "allow",
+          reasons: [],
+          warnings: [],
+        },
+        exemplar: {
+          slideFlow: ["Opening", "Model", "Guided Practice", "Closure"],
+          pacing: ["5 min launch", "10 min model"],
+          reusableStructure: ["large word cards", "partner read"],
+          layoutCues: [],
+          promptStyle: [],
+          teacherMoves: [],
+          tone: [],
+        },
+      },
+    } as never)
+
+    expect(summary).toBeTruthy()
+    expect(summary?.summaryLines.join(" ")).toContain("Structure detected: Opening -> Model -> Guided Practice -> Closure")
+    expect(summary?.summaryLines.join(" ")).toContain("Pacing: 5 min launch, 10 min model")
+    expect(summary?.summaryLines.join(" ")).toContain("Reusable style: large word cards, partner read")
+  })
+
+  it("uses plain-language caution wording for weak or fallback extraction", () => {
+    const summary = getTeacherVisibleMaterialSummary({
+      role: "curriculum",
+      status: "ready",
+      errorMessage: null,
+      analysis: {
+        extractionMetadata: {
+          method: "fallback_notice",
+          quality: "low",
+          confidence: 0.2,
+          notes: [],
+          ocrCandidate: true,
+          ocrReason: "parser failed",
+        },
+        reliability: {
+          level: "low",
+          score: 22,
+          usableForContent: true,
+          usableForStructure: false,
+          contentDecision: "caution",
+          structureDecision: "block",
+          reasons: [],
+          warnings: [],
+        },
+        curriculum: {
+          standards: [],
+          instructionalTargets: [],
+          vocabulary: [],
+          wordLists: [],
+          examples: [],
+          practiceTasks: [],
+          texts: [],
+        },
+      },
+    } as never)
+
+    expect(summary?.statusLabel).toBe("Use with caution")
+    expect(summary?.summaryLines.join(" ")).toContain("Very little usable text was found.")
+    expect(summary?.nextStep).toContain("used with caution")
+  })
+
+  it("does not show a final summary while files are still processing", () => {
+    const summary = getTeacherVisibleMaterialSummary({
+      role: "curriculum",
+      status: "extracting",
+      errorMessage: null,
+      analysis: null,
+    } as never)
+
+    expect(summary).toBeNull()
+  })
+
+  it("shows useful next-step wording for failed materials", () => {
+    const summary = getTeacherVisibleMaterialSummary({
+      role: "curriculum",
+      status: "error",
+      errorMessage: "Unsupported file content",
+      analysis: null,
+    } as never)
+
+    expect(summary?.statusLabel).toBe("Needs attention")
+    expect(summary?.summaryLines.join(" ")).toContain("could not be prepared")
+    expect(summary?.nextStep).toContain("Unsupported file content")
   })
 })
 
@@ -385,6 +539,7 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain("Technical details")
     expect(source).toContain("Files in this lesson")
     expect(source).toContain("Open file details")
+    expect(source).toContain("What we found")
     expect(source).toContain("Words")
     expect(source).toContain("Upload curriculum files that provide the lesson content.")
     expect(source).toContain("Upload exemplar files that provide structure and presentation.")
@@ -399,6 +554,9 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain("This shows whether readable text came from the parser, OCR, both, or only a fallback notice.")
     expect(source).toContain("OCR status")
     expect(source).toContain("Usable for content")
+    expect(source).toContain("formatRoleLabel(material.role)")
+    expect(source).toContain("formatStatus(material.status)")
+    expect(source).toContain("getExtractionMethodLabel(material)")
 
     expect(source).not.toContain(
       "Lesson generation stays paused until uploads finish processing."
