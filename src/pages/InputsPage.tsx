@@ -141,9 +141,9 @@ const cardContentStyle: React.CSSProperties = {
 
 const cardAccentStyle: React.CSSProperties = {
   position: "absolute",
-  top: "clamp(-8px, -1vw, -2px)",
-  right: "clamp(8px, 2vw, 18px)",
-  width: "clamp(52px, 8vw, 82px)",
+  top: "clamp(-14px, -1.2vw, -6px)",
+  right: "clamp(2px, 1.2vw, 10px)",
+  width: "clamp(46px, 6.5vw, 70px)",
   height: "auto",
   opacity: 0.92,
   pointerEvents: "none",
