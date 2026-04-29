@@ -37,13 +37,13 @@ import {
   formatRoleLabel,
   formatStatus,
   miniTagStyle,
-  noticeStyle,
   primaryButtonStyle,
   roleBadgeStyle,
   secondaryButtonStyle,
   statusBadgeStyle,
   uploadCardStyle,
 } from "./materialsPageUiHelpers"
+import { MaterialsGenerationStatusSection } from "./components/materials/MaterialsGenerationStatusSection"
 import { getDefaultExemplarStyleSettings } from "./materialsPageExemplarHelpers"
 import {
   normalizeAndDedupeStandards,
@@ -989,6 +989,16 @@ export default function MaterialsPage() {
             : !hasUsableMaterialsForGeneration
               ? "Add at least one ready file before generating."
               : "Ready to generate."
+  const showGenerationStatus = hasProcessingMaterials || (!primaryCurriculumReview && !primaryExemplarReview)
+  const generationStatusMode: "idle" | "processing" | "ready" =
+    hasProcessingMaterials
+      ? "processing"
+      : hasUsableMaterialsForGeneration
+        ? "ready"
+        : "idle"
+  const generationStatusMessage = hasProcessingMaterials
+    ? `Processing ${processingCount} file${processingCount === 1 ? "" : "s"}.`
+    : "Upload files, review the lesson draft, then generate."
   const standardsSummaryLabel = needsStandardsConfirmation
     ? "Standards to confirm"
     : `Standards (${confirmedStandardsCount} selected)`
@@ -1080,23 +1090,13 @@ export default function MaterialsPage() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: "var(--space-md)" }}>
-        {(hasProcessingMaterials || (!primaryCurriculumReview && !primaryExemplarReview)) ? (
-          <div
-            style={noticeStyle(
-              hasProcessingMaterials
-                ? "processing"
-                : hasUsableMaterialsForGeneration
-                  ? "ready"
-                  : "idle"
-            )}
-          >
-            {hasProcessingMaterials
-              ? `Processing ${processingCount} file${processingCount === 1 ? "" : "s"}.`
-              : "Upload files, review the lesson draft, then generate."}
-          </div>
-        ) : null}
+        <MaterialsGenerationStatusSection
+          visible={showGenerationStatus}
+          mode={generationStatusMode}
+          message={generationStatusMessage}
+        />
 
-        <div style={{ display: "grid", gap: 10, marginTop: hasProcessingMaterials || (!primaryCurriculumReview && !primaryExemplarReview) ? "var(--space-sm)" : 0 }}>
+        <div style={{ display: "grid", gap: 10, marginTop: showGenerationStatus ? "var(--space-sm)" : 0 }}>
           {primaryCurriculumReview || primaryExemplarReview ? (
             <div style={quickDraftCardStyle}>
               <div style={reviewHeaderRowStyle}>
