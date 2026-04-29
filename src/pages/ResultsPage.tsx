@@ -123,33 +123,46 @@ const noticeStyle: React.CSSProperties = {
 
 const sectionStyle: React.CSSProperties = {
   ...orchardCardStyle,
+  background:
+    "linear-gradient(180deg, rgba(255, 252, 246, 0.98) 0%, rgba(250, 245, 236, 0.94) 100%)",
+  border: "1px solid rgba(151, 127, 87, 0.22)",
+  boxShadow: "0 16px 34px rgba(60, 43, 24, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.78)",
 }
 
 const subCardStyle: React.CSSProperties = {
   ...orchardSoftCardStyle,
   padding: 14,
+  background:
+    "linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(251, 246, 238, 0.88) 100%)",
+  border: "1px solid rgba(151, 127, 87, 0.16)",
+  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 8px 18px rgba(72, 54, 30, 0.05)",
 }
 
 const primaryLayoutStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "minmax(0, 1.55fr) minmax(300px, 0.95fr)",
-  gap: "var(--space-md)",
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+  gap: "var(--space-lg)",
   alignItems: "start",
 }
 
 const mainColumnStyle: React.CSSProperties = {
   display: "grid",
-  gap: "var(--space-md)",
+  gap: "var(--space-lg)",
   minWidth: 0,
+  width: "100%",
+  maxWidth: "100%",
+  alignContent: "start",
 }
 
 const sideColumnStyle: React.CSSProperties = {
   display: "grid",
-  gap: "var(--space-md)",
+  gap: "var(--space-lg)",
   minWidth: 0,
+  width: "100%",
+  maxWidth: "100%",
   alignSelf: "start",
   position: "sticky",
-  top: 16,
+  top: 20,
 }
 
 const sidebarCardStyle: React.CSSProperties = {
@@ -157,11 +170,20 @@ const sidebarCardStyle: React.CSSProperties = {
   padding: 14,
   display: "grid",
   gap: 10,
+  minWidth: 0,
+  width: "100%",
+  maxWidth: "100%",
+  background:
+    "linear-gradient(180deg, rgba(245, 239, 228, 0.96) 0%, rgba(237, 230, 218, 0.92) 100%)",
+  border: "1px solid rgba(151, 127, 87, 0.24)",
+  boxShadow: "0 14px 28px rgba(66, 47, 24, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.62)",
 }
 
 const heroGridStyle: React.CSSProperties = {
   ...orchardStatGridStyle,
-  marginBottom: 12,
+  gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+  gap: 14,
+  marginBottom: 16,
 }
 
 const heroCardStyle: React.CSSProperties = {
@@ -169,6 +191,11 @@ const heroCardStyle: React.CSSProperties = {
   padding: 14,
   display: "grid",
   gap: 8,
+  minHeight: "100%",
+  background:
+    "linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(249, 244, 235, 0.9) 100%)",
+  border: "1px solid rgba(151, 127, 87, 0.18)",
+  boxShadow: "0 10px 22px rgba(72, 54, 30, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)",
 }
 
 const heroLabelStyle: React.CSSProperties = {
@@ -227,8 +254,11 @@ const reviewStripStyle: React.CSSProperties = {
   padding: 14,
   display: "grid",
   gap: 8,
-  border: "1px solid var(--border-moss)",
-  background: "rgba(110, 139, 107, 0.08)",
+  border: "1px solid rgba(151, 127, 87, 0.22)",
+  borderLeft: "6px solid var(--border-moss)",
+  background:
+    "linear-gradient(90deg, rgba(110, 139, 107, 0.12) 0%, rgba(250, 246, 238, 0.95) 20%, rgba(250, 246, 238, 0.95) 100%)",
+  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.72)",
 }
 
 const reviewSequenceListStyle: React.CSSProperties = {
@@ -245,8 +275,12 @@ const exportBundleCardStyle: React.CSSProperties = {
   marginBottom: 14,
   display: "grid",
   gap: 10,
-  border: "1px solid var(--border-moss)",
-  background: "rgba(110, 139, 107, 0.08)",
+  padding: 16,
+  border: "1px solid rgba(151, 127, 87, 0.22)",
+  borderTop: "4px solid var(--border-moss)",
+  background:
+    "linear-gradient(180deg, rgba(248, 243, 234, 0.98) 0%, rgba(239, 247, 239, 0.78) 100%)",
+  boxShadow: "0 10px 22px rgba(72, 54, 30, 0.05)",
 }
 
 const exportBundleNoteStyle: React.CSSProperties = {
@@ -257,8 +291,8 @@ const exportBundleNoteStyle: React.CSSProperties = {
 
 const exportArtifactGridStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-  gap: 10,
+  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+  gap: 14,
 }
 
 const exportArtifactCardStyle: React.CSSProperties = {
@@ -285,7 +319,9 @@ const exportButtonRowStyle: React.CSSProperties = {
 
 const binderSnapshotGridStyle: React.CSSProperties = {
   ...orchardStatGridStyle,
-  marginBottom: 12,
+  gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+  gap: 14,
+  marginBottom: 16,
 }
 
 const binderSnapshotCardStyle: React.CSSProperties = {
@@ -293,6 +329,10 @@ const binderSnapshotCardStyle: React.CSSProperties = {
   padding: 14,
   display: "grid",
   gap: 8,
+  background:
+    "linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 244, 235, 0.88) 100%)",
+  border: "1px solid rgba(151, 127, 87, 0.16)",
+  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 8px 18px rgba(72, 54, 30, 0.05)",
 }
 
 const binderSnapshotStatLabelStyle: React.CSSProperties = {
@@ -310,9 +350,9 @@ const binderSnapshotStatValueStyle: React.CSSProperties = {
 }
 
 const detailsSectionGridStyle: React.CSSProperties = {
-  marginTop: 12,
+  marginTop: 14,
   display: "grid",
-  gap: 12,
+  gap: 14,
 }
 
 const previewHeaderStyle: React.CSSProperties = {
@@ -357,11 +397,21 @@ const groundingBarStyle: React.CSSProperties = {
   flexWrap: "wrap",
   gap: 8,
   marginBottom: 12,
+  padding: "10px 12px",
+  border: "1px solid rgba(151, 127, 87, 0.18)",
+  borderRadius: "var(--radius-sm)",
+  background: "rgba(248, 242, 231, 0.78)",
+  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.7)",
 }
 
 const signalCardBaseStyle: React.CSSProperties = {
   ...orchardSoftCardStyle,
   padding: 12,
+  border: "1px solid rgba(151, 127, 87, 0.16)",
+  borderLeft: "4px solid rgba(151, 127, 87, 0.35)",
+  background:
+    "linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(249, 244, 235, 0.86) 100%)",
+  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 8px 18px rgba(72, 54, 30, 0.05)",
 }
 
 const actionsStyle: React.CSSProperties = {
