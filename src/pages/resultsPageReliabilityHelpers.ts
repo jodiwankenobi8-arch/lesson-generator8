@@ -119,3 +119,25 @@ export function formatReliabilityDecision(decision: string): string {
 
   return decision.charAt(0).toUpperCase() + decision.slice(1)
 }
+
+export type MaterialGroundingCounts = {
+  used: number
+  needsReview: number
+  blocked: number
+}
+
+export function buildMaterialGroundingCounts(
+  materials: MaterialFile[],
+  selectedCurriculumMaterialIds: string[],
+  selectedExemplarMaterialIds: string[]
+): MaterialGroundingCounts {
+  const curriculumItems = buildReliabilityDecisions(materials, "curriculum", "content", selectedCurriculumMaterialIds)
+  const exemplarItems = buildReliabilityDecisions(materials, "exemplar", "structure", selectedExemplarMaterialIds)
+  const allItems = [...curriculumItems, ...exemplarItems]
+
+  return {
+    used: allItems.filter((item) => item.outcome === "used").length,
+    needsReview: allItems.filter((item) => item.outcome === "down-ranked").length,
+    blocked: allItems.filter((item) => item.outcome === "blocked").length,
+  }
+}

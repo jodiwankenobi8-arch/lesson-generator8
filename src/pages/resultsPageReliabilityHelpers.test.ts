@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { analyzeMaterial } from "../engine/materials/analyzeMaterial"
-import { buildReliabilityDecisions } from "./resultsPageReliabilityHelpers"
+import { buildMaterialGroundingCounts, buildReliabilityDecisions } from "./resultsPageReliabilityHelpers"
 import type { MaterialFile } from "../engine/types"
 
 async function makeMaterialFile(
@@ -333,5 +333,90 @@ describe("resultsPageReliabilityHelpers — extraction quality in UI reasons", (
     // Results UI will show first 3
     const displayedReasons = decision.reasons.slice(0, 3)
     expect(displayedReasons.length).toBeGreaterThanOrEqual(1)
+  })
+})
+
+function makeCountMaterial(args: {
+  id: string
+  role: "curriculum" | "exemplar"
+  decision: "allow" | "caution" | "block"
+}): MaterialFile {
+  return {
+    id: args.id,
+    name: `${args.id}.txt`,
+    role: args.role,
+    status: "ready",
+    analysis: {
+      summary: "count test material",
+      extractedText: [],
+      tags: [],
+      sourceRole: args.role,
+      reliability: {
+        level: "high",
+        score: 80,
+        usableForContent: true,
+        usableForStructure: true,
+        contentDecision: args.role === "curriculum" ? args.decision : "allow",
+        structureDecision: args.role === "exemplar" ? args.decision : "allow",
+        reasons: [],
+        warnings: [],
+      },
+      curriculum: args.role === "curriculum"
+        ? {
+            standards: ["RF.1.3"],
+            vocabulary: [],
+            wordLists: [],
+            texts: [],
+            practiceTasks: [],
+            instructionalTargets: ["blend words"],
+            examples: [],
+          }
+        : undefined,
+      exemplar: args.role === "exemplar"
+        ? {
+            slideFlow: ["Opening"],
+            pacing: ["5 min"],
+            teacherMoves: ["Model"],
+            promptStyle: ["Turn and talk"],
+            layoutCues: ["Cards"],
+            tone: ["supportive"],
+            reusableStructure: ["I do, we do, you do"],
+          }
+        : undefined,
+    },
+    analysisReview: null,
+    errorMessage: null,
+    styleSettings: null,
+    transformationRequest: null,
+    sourceKind: "file_upload",
+    sourceLabel: `${args.id}.txt`,
+    sourceMimeType: "text/plain",
+    fileBuffer: null,
+    fileContent: null,
+  }
+}
+
+describe("buildMaterialGroundingCounts", () => {
+  it("returns correct counts for mixed used, down-ranked, blocked, and ignored states", () => {
+    const materials: MaterialFile[] = [
+      makeCountMaterial({ id: "curr-used", role: "curriculum", decision: "allow" }),
+      makeCountMaterial({ id: "curr-caution", role: "curriculum", decision: "caution" }),
+      makeCountMaterial({ id: "curr-blocked", role: "curriculum", decision: "block" }),
+      makeCountMaterial({ id: "ex-used", role: "exemplar", decision: "allow" }),
+      makeCountMaterial({ id: "ex-allow-down-ranked", role: "exemplar", decision: "allow" }),
+      makeCountMaterial({ id: "ex-blocked", role: "exemplar", decision: "block" }),
+    ]
+
+    const counts = buildMaterialGroundingCounts(
+      materials,
+      ["curr-used"],
+      ["ex-used"]
+    )
+
+    expect(counts).toEqual({
+      used: 2,
+      needsReview: 2,
+      blocked: 2,
+    })
   })
 })

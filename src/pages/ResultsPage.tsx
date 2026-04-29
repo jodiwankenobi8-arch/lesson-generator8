@@ -1,10 +1,12 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import {
+  buildMaterialGroundingCounts,
   buildReliabilityDecisions,
   formatReliabilityDecision,
   formatReliabilityOutcome,
   getSelectedMaterialNames,
+  type MaterialGroundingCounts,
   type ReliabilityOutcome,
   type ReliabilityUiItem,
 } from "./resultsPageReliabilityHelpers"
@@ -350,6 +352,13 @@ const smallNoteStyle: React.CSSProperties = {
   lineHeight: 1.5,
 }
 
+const groundingBarStyle: React.CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 8,
+  marginBottom: 12,
+}
+
 const signalCardBaseStyle: React.CSSProperties = {
   ...orchardSoftCardStyle,
   padding: 12,
@@ -493,6 +502,8 @@ export default function ResultsPage() {
             selectedLessonMode={selectedLessonMode}
             materials={materials}
             lessonTrace={lessonTrace}
+            planningIdeas={planningIdeas}
+            decisions={missingAreaDecisions}
           />
           <PackageOutputsSection lessonPackage={lessonPackage} />
         </div>
@@ -546,18 +557,30 @@ function ReviewFlowCard({ lessonPackage }: { lessonPackage: LessonPackage }) {
   )
 }
 
+function buildPendingDecisionsCount(
+  planningIdeas: LessonPlanningIdeas,
+  decisions: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
+): number {
+  const prompts = planningIdeas.missingAreaPrompts ?? []
+  return prompts.filter((prompt) => (decisions[prompt.component] ?? "undecided") === "undecided").length
+}
+
 export function PackageSummarySection({
   blueprint,
   lessonPackage,
   selectedLessonMode,
   materials,
   lessonTrace,
+  planningIdeas = null,
+  decisions = {},
 }: {
   blueprint: LessonBlueprint
   lessonPackage: LessonPackage
   selectedLessonMode: string
   materials: MaterialFile[]
   lessonTrace: LessonPipelineTrace | null
+  planningIdeas?: LessonPlanningIdeas | null
+  decisions?: Partial<Record<PlanningComponentKey, MissingAreaDecisionChoice>>
 }) {
   const teacherLedSupportCount = countTeacherLedSupportLines(lessonPackage.rotationPlan)
   const selectedContentSourceNames = getSelectedMaterialNames(
@@ -585,6 +608,14 @@ export function PackageSummarySection({
   const fallbackUsageLabel = getFallbackUsageLabel(blueprint, lessonPackage)
   const addedLessonSummary = getAddedLessonSummary(lessonTrace, fallbackUsageLabel)
   const addedLessonReviewLabel = getAddedLessonReviewLabel(lessonTrace)
+  const groundingCounts = buildMaterialGroundingCounts(
+    materials,
+    blueprint.sourceReadiness.selectedCurriculumMaterialIds,
+    blueprint.sourceReadiness.selectedExemplarMaterialIds
+  )
+  const pendingDecisionsCount = planningIdeas
+    ? buildPendingDecisionsCount(planningIdeas, decisions)
+    : 0
 
   return (
     <div style={sectionStyle}>
@@ -598,6 +629,21 @@ export function PackageSummarySection({
         <span style={orchardStatusBadgeStyle(getBinderReadinessTone(lessonPackage))}>
           {getBinderReadinessLabel(lessonPackage)}
         </span>
+
+            <div style={groundingBarStyle} data-testid="grounding-bar">
+              <span style={orchardTagStyle("moss")}>{groundingCounts.used} used</span>
+              {groundingCounts.needsReview > 0 ? (
+                <span style={orchardTagStyle("honey")}>{groundingCounts.needsReview} needs review</span>
+              ) : null}
+              {groundingCounts.blocked > 0 ? (
+                <span style={orchardTagStyle("cranberry")}>{groundingCounts.blocked} blocked</span>
+              ) : null}
+              {pendingDecisionsCount > 0 ? (
+                <span style={orchardTagStyle("honey")}>
+                  {pendingDecisionsCount} decision{pendingDecisionsCount === 1 ? "" : "s"} {pendingDecisionsCount === 1 ? "needs" : "need"} review
+                </span>
+              ) : null}
+            </div>
       </div>
 
       <div style={heroGridStyle}>

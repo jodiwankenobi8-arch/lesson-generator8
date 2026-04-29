@@ -25,7 +25,7 @@ import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
 import { exportSlidesPptx, parseSlidesExportContent } from "../engine/exports/exportSlidesPptx"
 import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
-import { CoverageDecisionsSection, PackageOutputsSection, PackageSummarySection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription, getBundledArtifactLabels, getVisiblePackageSectionLabels } from "./ResultsPage"
+import ResultsPage, { CoverageDecisionsSection, PackageOutputsSection, PackageSummarySection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription, getBundledArtifactLabels, getVisiblePackageSectionLabels } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
 import type { ExportArtifact, LessonInputs, LessonPackage, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
 
@@ -110,6 +110,88 @@ function makeExemplarMaterial(): MaterialFile {
       aspects: ["slide_flow", "pacing"],
       customInstructions: "",
       targets: ["lesson_slides", "lesson_plan"],
+    },
+  }
+}
+
+function makeReliableCurriculumMaterial(
+  id: string,
+  name: string,
+  decision: "allow" | "caution" | "block"
+): MaterialFile {
+  return makeMaterial({
+    id,
+    name,
+    role: "curriculum",
+    analysis: {
+      sourceRole: "curriculum",
+      summary: "Reliable curriculum coverage",
+      extractedText: ["RF.1.3", "Objective", "Practice"],
+      tags: ["curriculum"],
+      reliability: {
+        level: "high",
+        score: 80,
+        usableForContent: decision !== "block",
+        usableForStructure: false,
+        contentDecision: decision,
+        structureDecision: "block",
+        reasons: [],
+        warnings: [],
+      },
+      curriculum: {
+        standards: ["RF.1.3"],
+        vocabulary: ["short a"],
+        wordLists: ["cat, map"],
+        texts: ["Short text"],
+        practiceTasks: ["blend words"],
+        instructionalTargets: ["blend short vowel words"],
+        examples: ["cat"],
+      },
+    },
+  })
+}
+
+function makeReliableExemplarMaterial(
+  id: string,
+  name: string,
+  decision: "allow" | "caution" | "block"
+): MaterialFile {
+  return {
+    ...makeMaterial({
+      id,
+      name,
+      role: "exemplar",
+      analysis: {
+        sourceRole: "exemplar",
+        summary: "Reliable exemplar structure",
+        extractedText: ["Opening", "Model", "Closure"],
+        tags: ["exemplar"],
+        reliability: {
+          level: "high",
+          score: 85,
+          usableForContent: false,
+          usableForStructure: decision !== "block",
+          contentDecision: "block",
+          structureDecision: decision,
+          reasons: [],
+          warnings: [],
+        },
+        exemplar: {
+          slideFlow: ["Opening", "Model", "Closure"],
+          pacing: ["5 min", "10 min"],
+          teacherMoves: ["Model and release"],
+          promptStyle: ["Turn and talk"],
+          layoutCues: ["Large display"],
+          tone: ["supportive"],
+          reusableStructure: ["I do, we do, you do"],
+        },
+      },
+    }),
+    styleSettings: {
+      mode: "selected_aspects",
+      aspects: ["slide_flow"],
+      customInstructions: "",
+      targets: ["lesson_slides"],
     },
   }
 }
@@ -400,6 +482,123 @@ describe("Results explainability rendering contracts", () => {
     expect(coverageMarkup).toContain("Teacher Decisions")
     expect(coverageMarkup).toContain("No extra teacher decisions are needed for this lesson.")
     expect(coverageMarkup).toContain("No extra teacher decisions are needed for this lesson.")
+  })
+
+  it("renders grounding bar counts for used, needs review, and blocked materials", () => {
+    const state = useLessonStore.getState()
+    const blueprint = {
+      ...state.blueprint!,
+      sourceReadiness: {
+        ...state.blueprint!.sourceReadiness,
+        selectedCurriculumMaterialIds: ["curr-used"],
+        selectedExemplarMaterialIds: ["ex-used"],
+      },
+    }
+    const materials = [
+      makeReliableCurriculumMaterial("curr-used", "curr-used.pdf", "allow"),
+      makeReliableCurriculumMaterial("curr-caution", "curr-caution.pdf", "caution"),
+      makeReliableCurriculumMaterial("curr-blocked", "curr-blocked.pdf", "block"),
+      makeReliableExemplarMaterial("ex-used", "ex-used.pptx", "allow"),
+    ]
+
+    const packageMarkup = renderToStaticMarkup(
+      <PackageSummarySection
+        blueprint={blueprint}
+        lessonPackage={state.lessonPackage!}
+        selectedLessonMode="single"
+        materials={materials}
+        lessonTrace={state.lessonTrace}
+      />
+    )
+
+    expect(packageMarkup).toContain("2 used")
+    expect(packageMarkup).toContain("1 needs review")
+    expect(packageMarkup).toContain("1 blocked")
+  })
+
+  it("renders pending decisions badge with the correct count", () => {
+    const state = useLessonStore.getState()
+    const planningIdeas = {
+      ...state.planningIdeas!,
+      missingAreaPrompts: [
+        {
+          component: "centers",
+          importance: "high",
+          prompt: "Add centers?",
+          rationale: "Missing center tasks.",
+        },
+        {
+          component: "intervention",
+          importance: "medium",
+          prompt: "Add intervention support?",
+          rationale: "Missing intervention support.",
+        },
+      ],
+    }
+
+    const packageMarkup = renderToStaticMarkup(
+      <PackageSummarySection
+        blueprint={state.blueprint!}
+        lessonPackage={state.lessonPackage!}
+        selectedLessonMode="single"
+        materials={state.materials}
+        lessonTrace={state.lessonTrace}
+        planningIdeas={planningIdeas}
+        decisions={{ centers: "add", intervention: "undecided" }}
+      />
+    )
+
+    expect(packageMarkup).toContain("1 decision needs review")
+  })
+
+  it("does not render pending decisions badge when all decisions are resolved", () => {
+    const state = useLessonStore.getState()
+    const planningIdeas = {
+      ...state.planningIdeas!,
+      missingAreaPrompts: [
+        {
+          component: "centers",
+          importance: "high",
+          prompt: "Add centers?",
+          rationale: "Missing center tasks.",
+        },
+      ],
+    }
+
+    const packageMarkup = renderToStaticMarkup(
+      <PackageSummarySection
+        blueprint={state.blueprint!}
+        lessonPackage={state.lessonPackage!}
+        selectedLessonMode="single"
+        materials={state.materials}
+        lessonTrace={state.lessonTrace}
+        planningIdeas={planningIdeas}
+        decisions={{ centers: "add" }}
+      />
+    )
+
+    expect(packageMarkup).not.toContain("decision needs review")
+    expect(packageMarkup).not.toContain("decisions need review")
+  })
+
+  it("does not render the grounding bar in blocked results state before package generation exists", () => {
+    useLessonStore.setState((state) => ({
+      ...state,
+      blueprint: null,
+      planningIdeas: null,
+      lessonSpec: null,
+      lessonPackage: null,
+      lessonTrace: null,
+    }))
+
+    const markup = renderToStaticMarkup(
+      <MemoryRouter>
+        <ResultsPage />
+      </MemoryRouter>
+    )
+
+    expect(markup).toContain("no generated lesson is currently loaded")
+    expect(markup).not.toContain("data-testid=\"grounding-bar\"")
   })
 
   it("keeps explainability rendering synchronized after regeneration decisions", async () => {
