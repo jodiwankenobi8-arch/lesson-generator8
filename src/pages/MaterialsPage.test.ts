@@ -517,6 +517,7 @@ describe("analysis review helpers", () => {
 describe("Materials page teacher-facing copy", () => {
   it("keeps the visible workbench language simple and classroom-facing", () => {
     const source = readFileSync("src/pages/MaterialsPage.tsx", "utf8")
+    const materialRowSource = readFileSync("src/pages/components/materials/MaterialRow.tsx", "utf8")
 
     expect(source).toContain(
       "Upload your curriculum and exemplar files. The lesson draft fills in once they're ready."
@@ -539,7 +540,7 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain("Technical details")
     expect(source).toContain("Files in this lesson")
     expect(source).toContain("Open file details")
-    expect(source).toContain("What we found")
+    expect(materialRowSource).toContain("What we found")
     expect(source).toContain("Words")
     expect(source).toContain("Upload curriculum files that provide the lesson content.")
     expect(source).toContain("Upload exemplar files that provide structure and presentation.")
@@ -554,9 +555,9 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain("This shows whether readable text came from the parser, OCR, both, or only a fallback notice.")
     expect(source).toContain("OCR status")
     expect(source).toContain("Usable for content")
-    expect(source).toContain("formatRoleLabel(material.role)")
-    expect(source).toContain("formatStatus(material.status)")
-    expect(source).toContain("getExtractionMethodLabel(material)")
+    expect(materialRowSource).toContain("formatRoleLabel(material.role)")
+    expect(materialRowSource).toContain("formatStatus(material.status)")
+    expect(materialRowSource).toContain("getExtractionMethodLabel(material)")
 
     expect(source).not.toContain(
       "Lesson generation stays paused until uploads finish processing."
