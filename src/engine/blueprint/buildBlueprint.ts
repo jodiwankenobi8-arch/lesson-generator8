@@ -8,6 +8,8 @@ import { resolveBlueprintStructure } from "./resolveBlueprintStructure"
 import { buildBlueprintSourceReadiness } from "./buildBlueprintSourceReadiness"
 import { selectStrongestEligibleMaterials } from "./materialSelection"
 import {
+  BlueprintScopedTemplateShells,
+  BlueprintTemplateShell,
   CurriculumAnalysis,
   ExemplarAnalysis,
   ExemplarStyleSettings,
@@ -82,7 +84,11 @@ export function buildBlueprint(
     target,
   })
 
-  const scopedTemplateShells = buildScopedTemplateShells(exemplarMaterials, target)
+  const scopedTemplateShells = buildScopedTemplateShells(
+    exemplarMaterials,
+    target,
+    baseStructure.templateShell
+  )
   const structure = {
     ...baseStructure,
     scopedTemplateShells,
@@ -228,7 +234,8 @@ function buildResolvedTarget(
 
 function buildScopedTemplateShells(
   exemplarMaterials: MaterialFile[],
-  target: LessonBlueprint["content"]["target"]
+  target: LessonBlueprint["content"]["target"],
+  baseTemplateShell: BlueprintTemplateShell
 ) {
   const scopeKeys = [
     "lesson_slides",
@@ -238,6 +245,10 @@ function buildScopedTemplateShells(
     "intervention",
     "printables",
   ] as const
+
+  if (exemplarMaterials.length === 0) {
+    return buildDefaultScopedTemplateShells(baseTemplateShell, target)
+  }
 
   const sharedFallback = selectScopedExemplarMaterials(exemplarMaterials, "shared", {
     fallbackToAll: true,
@@ -270,6 +281,64 @@ function buildScopedTemplateShells(
   })
 
   return entries.length > 0 ? Object.fromEntries(entries) : undefined
+}
+
+function buildDefaultScopedTemplateShells(
+  baseTemplateShell: BlueprintTemplateShell,
+  target: LessonBlueprint["content"]["target"]
+): BlueprintScopedTemplateShells {
+  const supportTone =
+    target.primary.toLowerCase() === "phonics"
+      ? ["explicit and supportive"]
+      : ["clear and supportive"]
+
+  return {
+    lesson_plan: cloneTemplateShell(baseTemplateShell),
+    lesson_slides: cloneTemplateShell(baseTemplateShell),
+    centers: {
+      segmentOrder: ["Rotation Launch", "Centers / Rotation", "Independent Rotation", "Share / Closure"],
+      slideShell: ["Rotation Launch", "Centers / Rotation", "Independent Rotation", "Share / Closure"],
+      timingShell: ["Rotation Launch", "Center Work", "Independent Rotation", "Share / Closure"],
+      teacherMoveShell: ["Set up the rotation", "Monitor groups and confer"],
+      promptShell: ["Review the directions", "Coach students through the rotation"],
+      toneShell: ["clear and organized"],
+    },
+    small_group: {
+      segmentOrder: ["Warm-Up Review", "Reteach / Model", "Guided Practice", "Check for Understanding"],
+      slideShell: ["Warm-Up Review", "Reteach / Model", "Guided Practice", "Check for Understanding"],
+      timingShell: ["Warm-Up Review", "Reteach / Model", "Guided Practice", "Check for Understanding"],
+      teacherMoveShell: ["Warm up the target skill", "Model and prompt the next step"],
+      promptShell: ["What do you notice?", "Try it with me."],
+      toneShell: supportTone,
+    },
+    intervention: {
+      segmentOrder: ["Re-Engage", "Targeted Reteach", "Supported Practice", "Exit Check"],
+      slideShell: ["Re-Engage", "Targeted Reteach", "Supported Practice", "Exit Check"],
+      timingShell: ["Re-Engage", "Targeted Reteach", "Supported Practice", "Exit Check"],
+      teacherMoveShell: ["Reconnect the missed step", "Guide students through supported practice"],
+      promptShell: ["Let's fix the tricky part.", "Show me the next step."],
+      toneShell: ["explicit and scaffolded"],
+    },
+    printables: {
+      segmentOrder: ["Directions", "Warm-Up", "Practice", "Exit Ticket"],
+      slideShell: ["Directions", "Warm-Up", "Practice", "Exit Ticket"],
+      timingShell: [],
+      teacherMoveShell: ["Set students up for independent work"],
+      promptShell: ["Read the directions.", "Complete the practice and exit ticket."],
+      toneShell: ["student-facing and clear"],
+    },
+  }
+}
+
+function cloneTemplateShell(shell: BlueprintTemplateShell): BlueprintTemplateShell {
+  return {
+    segmentOrder: [...shell.segmentOrder],
+    slideShell: [...shell.slideShell],
+    timingShell: [...shell.timingShell],
+    teacherMoveShell: [...shell.teacherMoveShell],
+    promptShell: [...shell.promptShell],
+    toneShell: [...shell.toneShell],
+  }
 }
 
 function selectScopedExemplarMaterials(

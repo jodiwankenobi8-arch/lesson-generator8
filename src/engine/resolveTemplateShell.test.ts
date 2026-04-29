@@ -105,4 +105,51 @@ describe("resolveTemplateShell guardrails", () => {
       ])
     )
   })
+
+  it("preserves artifact-specific scoped defaults for support outputs", () => {
+    const blueprint = makeBlueprint()
+    const shell = resolveTemplateShell(
+      {
+        ...blueprint,
+        structure: {
+          ...blueprint.structure,
+          scopedTemplateShells: {
+            centers: {
+              segmentOrder: ["Rotation Launch", "Centers / Rotation", "Independent Rotation", "Share / Closure"],
+              slideShell: ["Rotation Launch", "Centers / Rotation", "Independent Rotation", "Share / Closure"],
+              timingShell: ["Rotation Launch", "Center Work", "Independent Rotation", "Share / Closure"],
+              teacherMoveShell: ["Set up the rotation", "Monitor groups and confer"],
+              promptShell: ["Review the directions", "Coach students through the rotation"],
+              toneShell: ["clear and organized"],
+            },
+          },
+        },
+      },
+      {
+        scope: "centers",
+        lessonSegmentsCount: 4,
+        slideShellCount: 4,
+        timingCount: 4,
+      }
+    )
+
+    expect(shell.lessonSegments).toEqual([
+      "Rotation Launch",
+      "Centers / Rotation",
+      "Independent Rotation",
+      "Share / Closure",
+    ])
+    expect(shell.slideShell).toEqual([
+      "Rotation Launch",
+      "Centers / Rotation",
+      "Independent Rotation",
+      "Share / Closure",
+    ])
+    expect(shell.timing).toEqual([
+      "Rotation Launch",
+      "Center Work",
+      "Independent Rotation",
+      "Share / Closure",
+    ])
+  })
 })

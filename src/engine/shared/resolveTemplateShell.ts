@@ -45,9 +45,10 @@ export function resolveTemplateShell(
     toneCount?: number
   }
 ): ResolvedTemplateShell {
-  const templateShell =
-    (options?.scope ? blueprint.structure.scopedTemplateShells?.[options.scope] : undefined) ??
-    blueprint.structure.templateShell
+  const scopedTemplateShell = options?.scope
+    ? blueprint.structure.scopedTemplateShells?.[options.scope]
+    : undefined
+  const templateShell = scopedTemplateShell ?? blueprint.structure.templateShell
 
   const lessonSegmentsCount = options?.lessonSegmentsCount ?? 6
   const slideShellCount = options?.slideShellCount ?? Math.max(lessonSegmentsCount, 3)
@@ -86,6 +87,29 @@ export function resolveTemplateShell(
     toneCount,
     ["clear instructional tone"]
   )
+
+  if (
+    options?.scope &&
+    (options.scope === "centers" ||
+      options.scope === "small_group" ||
+      options.scope === "intervention" ||
+      options.scope === "printables") &&
+    scopedTemplateShell &&
+    templateShell.segmentOrder.length > 0
+  ) {
+    return {
+      lessonSegments: take(templateShell.segmentOrder, lessonSegmentsCount, templateShell.segmentOrder),
+      slideShell: take(
+        templateShell.slideShell.length > 0 ? templateShell.slideShell : templateShell.segmentOrder,
+        slideShellCount,
+        templateShell.segmentOrder
+      ),
+      timing: take(templateShell.timingShell, options?.timingCount ?? lessonSegmentsCount, []),
+      teacherMoves,
+      promptStyle,
+      tone,
+    }
+  }
 
   return {
     lessonSegments: resolvedRows.map((item) => item.segmentLabel).slice(0, lessonSegmentsCount),

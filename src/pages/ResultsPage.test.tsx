@@ -459,7 +459,47 @@ describe("Results explainability rendering contracts", () => {
     expect(coverageMarkup).toContain("No extra teacher decisions are needed for this lesson.")
     expect(coverageMarkup).toContain("No extra teacher decisions are needed for this lesson.")
   })
+
+  it("does not render exemplar payoff when scoped shells are defaults without exemplar support", () => {
+    const state = useLessonStore.getState()
+    const lessonTrace = state.lessonTrace
+    const blueprint = {
+      ...state.blueprint!,
+      sourceReadiness: {
+        ...state.blueprint!.sourceReadiness,
+        exemplarSupport: "limited",
+        selectedExemplarMaterialIds: [],
+      },
+      structure: {
+        ...state.blueprint!.structure,
+        scopedTemplateShells: {
+          ...state.blueprint!.structure.scopedTemplateShells,
+          centers: {
+            segmentOrder: ["Rotation Launch", "Centers / Rotation"],
+            slideShell: ["Rotation Launch", "Centers / Rotation"],
+            timingShell: ["Rotation Launch"],
+            teacherMoveShell: ["Set up the rotation"],
+            promptShell: ["Review the directions"],
+            toneShell: ["clear and organized"],
+          },
+        },
+      },
+    }
+    const lessonPackage = state.lessonPackage!
+
+    const traceabilityMarkup = renderToStaticMarkup(
+      <TraceabilitySection
+        blueprint={blueprint}
+        lessonPackage={lessonPackage}
+        materials={state.materials}
+        lessonTrace={lessonTrace}
+      />
+    )
+
+    expect(traceabilityMarkup).not.toContain("How the exemplar shaped this lesson")
+  })
 })
+
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 

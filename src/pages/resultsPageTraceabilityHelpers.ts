@@ -175,6 +175,10 @@ export type ExemplarPayoffSummary = {
 export function summarizeExemplarPayoff(
   blueprint: LessonBlueprint
 ): ExemplarPayoffSummary | null {
+  if (blueprint.sourceReadiness.selectedExemplarMaterialIds.length === 0) {
+    return null
+  }
+
   const scoped = blueprint.structure.scopedTemplateShells
   if (!scoped) {
     return null

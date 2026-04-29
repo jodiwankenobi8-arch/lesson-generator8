@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { buildBlueprint } from "./blueprint/buildBlueprint"
+import { resolveTemplateShell } from "./shared/resolveTemplateShell"
 import {
   ExemplarAnalysis,
   ExemplarDetectedFeatures,
@@ -256,5 +257,122 @@ describe("blueprint respects exemplar style settings", () => {
     expect(result.structure.templateShell.slideShell).toEqual(
       expect.arrayContaining(["Opening", "Teach", "Guided Practice", "Closure"])
     )
+  })
+
+  it("builds deterministic default scoped shells for all six scopes when no exemplar is selected", () => {
+    const result = buildBlueprint(
+      {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      [],
+      "single"
+    )
+
+    expect(result.structure.scopedTemplateShells).toBeDefined()
+    expect(Object.keys(result.structure.scopedTemplateShells ?? {})).toEqual([
+      "lesson_plan",
+      "lesson_slides",
+      "centers",
+      "small_group",
+      "intervention",
+      "printables",
+    ])
+
+    expect(result.structure.scopedTemplateShells?.centers?.segmentOrder).toEqual([
+      "Rotation Launch",
+      "Centers / Rotation",
+      "Independent Rotation",
+      "Share / Closure",
+    ])
+    expect(result.structure.scopedTemplateShells?.small_group?.segmentOrder).toEqual([
+      "Warm-Up Review",
+      "Reteach / Model",
+      "Guided Practice",
+      "Check for Understanding",
+    ])
+    expect(result.structure.scopedTemplateShells?.intervention?.segmentOrder).toEqual([
+      "Re-Engage",
+      "Targeted Reteach",
+      "Supported Practice",
+      "Exit Check",
+    ])
+    expect(result.structure.scopedTemplateShells?.printables?.segmentOrder).toEqual([
+      "Directions",
+      "Warm-Up",
+      "Practice",
+      "Exit Ticket",
+    ])
+  })
+
+  it("resolves artifact-specific default shells for support and printable scopes when no exemplar is selected", () => {
+    const result = buildBlueprint(
+      {
+        grade: "1",
+        subject: "ELA",
+        standard: "RF.1.3",
+        skill: "Long A",
+        topic: "Long a words",
+        duration: "30 minutes",
+      },
+      [],
+      "single"
+    )
+
+    expect(
+      resolveTemplateShell(result, {
+        scope: "centers",
+        lessonSegmentsCount: 4,
+        slideShellCount: 4,
+        timingCount: 4,
+      }).lessonSegments
+    ).toEqual([
+      "Rotation Launch",
+      "Centers / Rotation",
+      "Independent Rotation",
+      "Share / Closure",
+    ])
+    expect(
+      resolveTemplateShell(result, {
+        scope: "small_group",
+        lessonSegmentsCount: 4,
+        slideShellCount: 4,
+        timingCount: 4,
+      }).lessonSegments
+    ).toEqual([
+      "Warm-Up Review",
+      "Reteach / Model",
+      "Guided Practice",
+      "Check for Understanding",
+    ])
+    expect(
+      resolveTemplateShell(result, {
+        scope: "intervention",
+        lessonSegmentsCount: 4,
+        slideShellCount: 4,
+        timingCount: 4,
+      }).lessonSegments
+    ).toEqual([
+      "Re-Engage",
+      "Targeted Reteach",
+      "Supported Practice",
+      "Exit Check",
+    ])
+    expect(
+      resolveTemplateShell(result, {
+        scope: "printables",
+        lessonSegmentsCount: 4,
+        slideShellCount: 4,
+      }).lessonSegments
+    ).toEqual([
+      "Directions",
+      "Warm-Up",
+      "Practice",
+      "Exit Ticket",
+    ])
   })
 })
