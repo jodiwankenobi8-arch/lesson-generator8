@@ -2,6 +2,7 @@ import React from "react"
 import type { MaterialFile } from "../../../engine/types"
 import { orchardCardStyle, orchardTagStyle } from "../../orchardUi"
 import { MaterialRow } from "./MaterialRow"
+import emptyStateAppleAccent from "../../../assets/visual/extra-orchard-elements/apple-stickers-01-single-apple-moss.png"
 
 const filesSectionStyle: React.CSSProperties = {
   ...orchardCardStyle,
@@ -37,6 +38,28 @@ const listStyle: React.CSSProperties = {
   gap: 12,
 }
 
+const emptyStateContainerStyle: React.CSSProperties = {
+  position: "relative",
+  padding: "18px",
+}
+
+const emptyStateTextStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  margin: 0,
+  maxWidth: "calc(100% - clamp(56px, 15vw, 92px))",
+}
+
+const emptyStateAccentStyle: React.CSSProperties = {
+  position: "absolute",
+  top: 10,
+  right: 10,
+  width: "clamp(34px, 9vw, 52px)",
+  height: "auto",
+  opacity: 0.9,
+  pointerEvents: "none",
+  userSelect: "none",
+}
+
 type UploadedMaterialsSectionProps = {
   materials: MaterialFile[]
   readyCount: number
@@ -57,8 +80,9 @@ export function UploadedMaterialsSection({
   return (
     <div style={filesSectionStyle}>
       {materials.length === 0 ? (
-        <div style={{ padding: "18px" }}>
-          <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+        <div style={emptyStateContainerStyle}>
+          <img src={emptyStateAppleAccent} alt="" aria-hidden="true" style={emptyStateAccentStyle} />
+          <p style={emptyStateTextStyle}>
             No files added yet. Upload curriculum or exemplar files above.
           </p>
         </div>
