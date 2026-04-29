@@ -39,7 +39,7 @@ import {
   uploadCardStyle,
 } from "./materialsPageUiHelpers"
 import { MaterialsGenerationStatusSection } from "./components/materials/MaterialsGenerationStatusSection"
-import { MaterialRow } from "./components/materials/MaterialRow"
+import { UploadedMaterialsSection } from "./components/materials/UploadedMaterialsSection"
 import { getDefaultExemplarStyleSettings } from "./materialsPageExemplarHelpers"
 import {
   normalizeAndDedupeStandards,
@@ -95,11 +95,6 @@ const summaryGridStyle: React.CSSProperties = {
 
 const hiddenInputStyle: React.CSSProperties = {
   display: "none",
-}
-
-const listStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 12,
 }
 
 const laneMetaStyle: React.CSSProperties = {
@@ -372,35 +367,6 @@ const quietDetailsSummaryStyle: React.CSSProperties = {
   fontSize: 13,
   color: "var(--text-secondary)",
   userSelect: "none",
-}
-
-const filesSectionStyle: React.CSSProperties = {
-  ...cardStyle,
-  marginTop: "var(--space-md)",
-  padding: 0,
-  overflow: "hidden",
-}
-
-const filesDetailsStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 0,
-}
-
-const filesSummaryStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 8,
-  flexWrap: "wrap",
-  padding: "16px 18px",
-  cursor: "pointer",
-  userSelect: "none",
-}
-
-const filesBodyStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 12,
-  padding: "0 18px 18px",
 }
 
 type ReviewListKey = Exclude<keyof MaterialAnalysisReview, "teacherSummary">
@@ -1232,66 +1198,45 @@ export default function MaterialsPage() {
         </div>
       </div>
 
-      <div style={filesSectionStyle}>
-        {materials.length === 0 ? (
-          <div style={{ padding: "18px" }}>
-            <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-              No files added yet. Upload curriculum or exemplar files above.
-            </p>
-          </div>
-        ) : (
-          <details style={filesDetailsStyle}>
-            <summary style={filesSummaryStyle}>
-              <span style={{ fontWeight: 700, color: "var(--orchard-green)" }}>Files in this lesson</span>
-              <span style={orchardTagStyle("neutral")}>
-                {counts.ready} ready
-                {processingCount > 0 ? ` · ${processingCount} processing` : ""}
-                {counts.error > 0 ? ` · ${counts.error} needs attention` : ""}
-              </span>
-            </summary>
-
-            <div style={filesBodyStyle}>
-              <div style={listStyle}>
-                {materials.map((material) => (
-                  <MaterialRow key={material.id} material={material} onRemove={removeMaterial}>
-
-                    {material.role === "exemplar" || (material.status === "ready" && material.analysis) ? (
-                      <details>
-                        <summary style={quietDetailsSummaryStyle}>
-                          Open file details
-                        </summary>
-                        <div style={{ display: "grid", gap: 10, marginTop: 8 }}>
-                          {material.role === "exemplar" ? (
-                            <SimplifiedExemplarControls
-                              material={material}
-                              onChange={(settings) => setMaterialStyleSettings(material.id, settings)}
-                            />
-                          ) : null}
-                          {material.status === "ready" && material.analysis ? (
-                            <>
-                              <MaterialReviewEditor
-                                material={material}
-                                onChange={(review) => setMaterialAnalysisReview(material.id, review)}
-                                onReset={() => setMaterialAnalysisReview(material.id, null)}
-                              />
-                              <details>
-                                <summary style={quietDetailsSummaryStyle}>Technical details</summary>
-                                <div style={{ marginTop: 8 }}>
-                                  <MaterialExtractionStatusCard material={material} />
-                                </div>
-                              </details>
-                            </>
-                          ) : null}
-                        </div>
-                      </details>
-                    ) : null}
-                  </MaterialRow>
-                ))}
+      <UploadedMaterialsSection
+        materials={materials}
+        readyCount={counts.ready}
+        processingCount={processingCount}
+        errorCount={counts.error}
+        onRemoveMaterial={removeMaterial}
+        renderMaterialDetails={(material) =>
+          material.role === "exemplar" || (material.status === "ready" && material.analysis) ? (
+            <details>
+              <summary style={quietDetailsSummaryStyle}>
+                Open file details
+              </summary>
+              <div style={{ display: "grid", gap: 10, marginTop: 8 }}>
+                {material.role === "exemplar" ? (
+                  <SimplifiedExemplarControls
+                    material={material}
+                    onChange={(settings) => setMaterialStyleSettings(material.id, settings)}
+                  />
+                ) : null}
+                {material.status === "ready" && material.analysis ? (
+                  <>
+                    <MaterialReviewEditor
+                      material={material}
+                      onChange={(review) => setMaterialAnalysisReview(material.id, review)}
+                      onReset={() => setMaterialAnalysisReview(material.id, null)}
+                    />
+                    <details>
+                      <summary style={quietDetailsSummaryStyle}>Technical details</summary>
+                      <div style={{ marginTop: 8 }}>
+                        <MaterialExtractionStatusCard material={material} />
+                      </div>
+                    </details>
+                  </>
+                ) : null}
               </div>
-            </div>
-          </details>
-        )}
-      </div>
+            </details>
+          ) : null
+        }
+      />
 
       {!isNarrowViewport ? (
         <button

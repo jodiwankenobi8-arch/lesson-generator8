@@ -518,13 +518,14 @@ describe("Materials page teacher-facing copy", () => {
   it("keeps the visible workbench language simple and classroom-facing", () => {
     const source = readFileSync("src/pages/MaterialsPage.tsx", "utf8")
     const materialRowSource = readFileSync("src/pages/components/materials/MaterialRow.tsx", "utf8")
+    const uploadedSectionSource = readFileSync("src/pages/components/materials/UploadedMaterialsSection.tsx", "utf8")
 
     expect(source).toContain(
       "Upload your curriculum and exemplar files. The lesson draft fills in once they're ready."
     )
     expect(source).toContain("Upload files, review the lesson draft, then generate.")
     expect(source).toContain("Review this draft, make any quick changes, and generate when it looks right.")
-    expect(source).toContain(
+    expect(uploadedSectionSource).toContain(
       "No files added yet. Upload curriculum or exemplar files above."
     )
     expect(source).toContain("Exemplar setup")
@@ -538,7 +539,7 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).toContain("Confirm details to continue")
     expect(source).toContain("Still preparing files")
     expect(source).toContain("Technical details")
-    expect(source).toContain("Files in this lesson")
+    expect(uploadedSectionSource).toContain("Files in this lesson")
     expect(source).toContain("Open file details")
     expect(materialRowSource).toContain("What we found")
     expect(source).toContain("Words")
