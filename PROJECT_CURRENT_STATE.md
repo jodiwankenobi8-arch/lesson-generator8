@@ -56,3 +56,13 @@
 5. Prefer seams that improve exemplar payoff, artifact-scoped exemplar behavior, default-shell behavior, parsing quality, and teacher-facing coherence.
 6. Use automated verification plus targeted browser/manual checks before claiming regressions or completion.
 7. Do not reopen broad architecture changes without fresh evidence from the live repo or browser behavior.
+
+## Deferred visual future work
+
+- A later asset and color-code integration pass should start with inspection, not implementation.
+- Review the real asset elements in `src/assets/visual` before deciding whether any belong in page bodies.
+- Preserve all controls, generated outputs, upload states, export buttons, and dynamic content as real accessible HTML rather than asset-backed UI.
+- Use assets only as decorative or tactile support unless a fixed decorative label pattern has already been approved.
+- Verify palette compliance by code by comparing `theme.css` tokens, `OFFICIAL_DESIGN_SOURCE_OF_TRUTH`, and asset colors.
+- Keep the approved palette constrained to warm cream, moss green, honey, brick / terracotta, muted cranberry, and paper tones.
+- Flag any off-palette assets before use.

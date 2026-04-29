@@ -65,3 +65,15 @@ Use take-over mode by default:
   3. grounded output quality and parsing quality
   4. teacher-facing coherence and trust
 - Do not reintroduce stale completion framing that treats narrow lesson-type buckets or one export proof as the only current metric.
+
+## Deferred future seam
+
+- Future visual seam: run an inspect-first asset and color-code integration pass before any implementation.
+- Inspect the actual visual asset elements in `src/assets/visual` and decide where the best assets belong inside page bodies.
+- Keep controls, generated content, upload states, export buttons, and dynamic content as real accessible HTML.
+- Use assets only as decorative or tactile supporting elements unless a fixed decorative label has already been explicitly approved.
+- Verify page styling against the official color scheme by code, not rough visual guesswork.
+- Compare `theme.css` tokens, `OFFICIAL_DESIGN_SOURCE_OF_TRUTH`, and asset colors before using any asset in-product.
+- Keep approved colors within the warm cream, moss green, honey, brick / terracotta, muted cranberry, and paper palette.
+- Flag off-palette assets before use.
+- Treat this as a later polish seam, not an implementation-first request.
