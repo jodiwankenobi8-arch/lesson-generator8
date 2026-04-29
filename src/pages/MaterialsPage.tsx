@@ -34,11 +34,10 @@ import {
   buttonStyle,
   dropZoneStyle,
   miniTagStyle,
-  primaryButtonStyle,
   secondaryButtonStyle,
   uploadCardStyle,
 } from "./materialsPageUiHelpers"
-import { MaterialsGenerationStatusSection } from "./components/materials/MaterialsGenerationStatusSection"
+import { CreateLessonSection } from "./components/materials/CreateLessonSection"
 import { UploadedMaterialsSection } from "./components/materials/UploadedMaterialsSection"
 import { getDefaultExemplarStyleSettings } from "./materialsPageExemplarHelpers"
 import {
@@ -934,6 +933,105 @@ export default function MaterialsPage() {
 
   const draftReadinessTagColor: Parameters<typeof orchardTagStyle>[0] =
     draftReadinessState === "ready" ? "moss" : draftReadinessState === "processing" ? "neutral" : "honey"
+  const hasLessonDraft = Boolean(primaryCurriculumReview || primaryExemplarReview)
+  const curriculumSummary =
+    primaryCurriculumMaterial && primaryCurriculumReview
+      ? {
+          summaryText: buildTeacherFacingDraftSummary(primaryCurriculumMaterial, primaryCurriculumReview),
+          materialName: primaryCurriculumMaterial.name,
+          additionalReadyCount: additionalReadyCurriculumCount,
+        }
+      : null
+  const exemplarSummary =
+    primaryExemplarMaterial && primaryExemplarReview
+      ? {
+          summaryText: buildTeacherFacingDraftSummary(primaryExemplarMaterial, primaryExemplarReview),
+          materialName: primaryExemplarMaterial.name,
+          additionalReadyCount: additionalReadyExemplarCount,
+        }
+      : null
+  const standardsDetails = showStandardsConfirmationCard ? (
+    <details>
+      <summary style={quietDetailsSummaryStyle}>
+        {standardsSummaryLabel}
+      </summary>
+      <div style={{ marginTop: 8 }}>
+        <StandardsConfirmationCard
+          suggestedStandards={suggestedStandards}
+          confirmedStandards={inputs.standard}
+          required={needsStandardsConfirmation}
+          onApplySuggestions={() => setInputs({ standard: serializeStandardsText(suggestedStandards) })}
+          onChange={(value) => setInputs({ standard: value })}
+          onToggleStandard={(value) =>
+            setInputs({ standard: toggleStandardInText(inputs.standard, value) })
+          }
+        />
+      </div>
+    </details>
+  ) : null
+  const compactDraftFields = (
+    <div style={{ display: "grid", gap: 10 }}>
+      {primaryCurriculumReview ? (
+        <>
+          <CompactFieldDisplay label="Vocabulary" items={primaryCurriculumReview.vocabulary ?? []} />
+          <CompactFieldDisplay label="Words" items={primaryCurriculumReview.wordLists ?? []} />
+          <CompactFieldDisplay label="Texts / topic" items={primaryCurriculumReview.texts ?? []} />
+          <CompactFieldDisplay label="Practice" items={primaryCurriculumReview.practiceIdeas ?? []} />
+        </>
+      ) : null}
+      {primaryExemplarReview && (primaryExemplarReview.exemplarStructure ?? []).length > 0 ? (
+        <CompactFieldDisplay label="Structure" items={primaryExemplarReview.exemplarStructure} />
+      ) : null}
+      {!primaryCurriculumReview && !((primaryExemplarReview?.exemplarStructure ?? []).length > 0) ? (
+        <div style={exemplarSubtleTextStyle}>No lesson draft available yet. Upload a curriculum file to get started.</div>
+      ) : null}
+    </div>
+  )
+  const editDraftFields = (
+    <div style={{ display: "grid", gap: 10 }}>
+      {primaryCurriculumReview ? (
+        <>
+          <ReviewTextAreaField
+            label="Vocabulary"
+            help="One per line."
+            value={serializeReviewList(primaryCurriculumReview.vocabulary ?? [])}
+            onChange={(value) => updatePrimaryCurriculumReviewField("vocabulary", value)}
+            placeholder="long a&#10;silent e&#10;blend"
+          />
+          <ReviewTextAreaField
+            label="Words"
+            help="One per line."
+            value={serializeReviewList(primaryCurriculumReview.wordLists ?? [])}
+            onChange={(value) => updatePrimaryCurriculumReviewField("wordLists", value)}
+            placeholder="cake&#10;game&#10;lake"
+          />
+          <ReviewTextAreaField
+            label="Texts / topic"
+            help="One per line."
+            value={serializeReviewList(primaryCurriculumReview.texts ?? [])}
+            onChange={(value) => updatePrimaryCurriculumReviewField("texts", value)}
+            placeholder="Decodable passage for long A"
+          />
+          <ReviewTextAreaField
+            label="Practice"
+            help="One per line."
+            value={serializeReviewList(primaryCurriculumReview.practiceIdeas ?? [])}
+            onChange={(value) => updatePrimaryCurriculumReviewField("practiceIdeas", value)}
+            placeholder="Blend and sort long a words"
+          />
+        </>
+      ) : null}
+      {primaryExemplarReview ? (
+        <ReviewTextAreaField
+          label="Structure"
+          help="One per line."
+          value={serializeReviewList(primaryExemplarReview.exemplarStructure ?? [])}
+          onChange={(value) => updatePrimaryExemplarReviewField("exemplarStructure", value)}
+          placeholder="Opening&#10;Model&#10;Guided practice&#10;Closure"
+        />
+      ) : null}
+    </div>
+  )
 
   return (
     <div style={pageStyle}>
@@ -994,209 +1092,27 @@ export default function MaterialsPage() {
         />
       </div>
 
-      <div style={{ ...cardStyle, marginTop: "var(--space-md)" }}>
-        <MaterialsGenerationStatusSection
-          visible={showGenerationStatus}
-          mode={generationStatusMode}
-          message={generationStatusMessage}
-        />
-
-        <div style={{ display: "grid", gap: 10, marginTop: showGenerationStatus ? "var(--space-sm)" : 0 }}>
-          {primaryCurriculumReview || primaryExemplarReview ? (
-            <div style={quickDraftCardStyle}>
-              <div style={reviewHeaderRowStyle}>
-                <div style={{ display: "grid", gap: 6 }}>
-                  <div style={{ fontWeight: 700, color: "var(--deep-orchard)", fontSize: 14 }}>
-                    Lesson draft
-                  </div>
-                  <div style={exemplarSubtleTextStyle}>{lessonDraftStatusText}</div>
-                </div>
-                {!compactEditMode ? (
-                  <button
-                    type="button"
-                    onClick={() => setCompactEditMode(true)}
-                    style={secondaryButtonStyle()}
-                  >
-                    Edit
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setCompactEditMode(false)}
-                    style={secondaryButtonStyle()}
-                  >
-                    Done editing
-                  </button>
-                )}
-              </div>
-
-              <div style={draftSupportRowStyle}>
-                <span style={orchardTagStyle(draftReadinessTagColor)}>{draftReadinessLabel}</span>
-              </div>
-
-              {primaryCurriculumMaterial || primaryExemplarMaterial ? (
-                <div style={draftSummaryGridStyle}>
-                  {primaryCurriculumMaterial && primaryCurriculumReview ? (
-                    <div style={draftSummaryCardStyle}>
-                      <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>Content</div>
-                      <div style={exemplarSubtleTextStyle}>
-                        {buildTeacherFacingDraftSummary(primaryCurriculumMaterial, primaryCurriculumReview)}
-                      </div>
-                      <div style={exemplarSubtleTextStyle}>
-                        From {primaryCurriculumMaterial.name}{additionalReadyCurriculumCount > 0 ? ` (+${additionalReadyCurriculumCount} more ready)` : ""}
-                      </div>
-                    </div>
-                  ) : null}
-                  {primaryExemplarMaterial && primaryExemplarReview ? (
-                    <div style={draftSummaryCardStyle}>
-                      <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>Structure</div>
-                      <div style={exemplarSubtleTextStyle}>
-                        {buildTeacherFacingDraftSummary(primaryExemplarMaterial, primaryExemplarReview)}
-                      </div>
-                      <div style={exemplarSubtleTextStyle}>
-                        From {primaryExemplarMaterial.name}{additionalReadyExemplarCount > 0 ? ` (+${additionalReadyExemplarCount} more ready)` : ""}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {!compactEditMode ? (
-                <div style={{ display: "grid", gap: 10 }}>
-                  {primaryCurriculumReview ? (
-                    <>
-                      <CompactFieldDisplay label="Vocabulary" items={primaryCurriculumReview.vocabulary ?? []} />
-                      <CompactFieldDisplay label="Words" items={primaryCurriculumReview.wordLists ?? []} />
-                      <CompactFieldDisplay label="Texts / topic" items={primaryCurriculumReview.texts ?? []} />
-                      <CompactFieldDisplay label="Practice" items={primaryCurriculumReview.practiceIdeas ?? []} />
-                    </>
-                  ) : null}
-                  {primaryExemplarReview && (primaryExemplarReview.exemplarStructure ?? []).length > 0 ? (
-                    <CompactFieldDisplay label="Structure" items={primaryExemplarReview.exemplarStructure} />
-                  ) : null}
-                  {!primaryCurriculumReview && !((primaryExemplarReview?.exemplarStructure ?? []).length > 0) ? (
-                    <div style={exemplarSubtleTextStyle}>No lesson draft available yet. Upload a curriculum file to get started.</div>
-                  ) : null}
-                </div>
-              ) : (
-                <div style={{ display: "grid", gap: 10 }}>
-                  {primaryCurriculumReview ? (
-                    <>
-                      <ReviewTextAreaField
-                        label="Vocabulary"
-                        help="One per line."
-                        value={serializeReviewList(primaryCurriculumReview.vocabulary ?? [])}
-                        onChange={(value) => updatePrimaryCurriculumReviewField("vocabulary", value)}
-                        placeholder="long a&#10;silent e&#10;blend"
-                      />
-                      <ReviewTextAreaField
-                        label="Words"
-                        help="One per line."
-                        value={serializeReviewList(primaryCurriculumReview.wordLists ?? [])}
-                        onChange={(value) => updatePrimaryCurriculumReviewField("wordLists", value)}
-                        placeholder="cake&#10;game&#10;lake"
-                      />
-                      <ReviewTextAreaField
-                        label="Texts / topic"
-                        help="One per line."
-                        value={serializeReviewList(primaryCurriculumReview.texts ?? [])}
-                        onChange={(value) => updatePrimaryCurriculumReviewField("texts", value)}
-                        placeholder="Decodable passage for long A"
-                      />
-                      <ReviewTextAreaField
-                        label="Practice"
-                        help="One per line."
-                        value={serializeReviewList(primaryCurriculumReview.practiceIdeas ?? [])}
-                        onChange={(value) => updatePrimaryCurriculumReviewField("practiceIdeas", value)}
-                        placeholder="Blend and sort long a words"
-                      />
-                    </>
-                  ) : null}
-                  {primaryExemplarReview ? (
-                    <ReviewTextAreaField
-                      label="Structure"
-                      help="One per line."
-                      value={serializeReviewList(primaryExemplarReview.exemplarStructure ?? [])}
-                      onChange={(value) => updatePrimaryExemplarReviewField("exemplarStructure", value)}
-                      placeholder="Opening&#10;Model&#10;Guided practice&#10;Closure"
-                    />
-                  ) : null}
-                </div>
-              )}
-
-              {showStandardsConfirmationCard ? (
-                <details>
-                  <summary style={quietDetailsSummaryStyle}>
-                    {standardsSummaryLabel}
-                  </summary>
-                  <div style={{ marginTop: 8 }}>
-                    <StandardsConfirmationCard
-                      suggestedStandards={suggestedStandards}
-                      confirmedStandards={inputs.standard}
-                      required={needsStandardsConfirmation}
-                      onApplySuggestions={() => setInputs({ standard: serializeStandardsText(suggestedStandards) })}
-                      onChange={(value) => setInputs({ standard: value })}
-                      onToggleStandard={(value) =>
-                        setInputs({ standard: toggleStandardInText(inputs.standard, value) })
-                      }
-                    />
-                  </div>
-                </details>
-              ) : null}
-
-              <div style={draftFooterStyle}>
-                <div style={helperTextStyle}>{generationHelperText}</div>
-                <button
-                  type="button"
-                  onClick={handleGenerateLesson}
-                  disabled={generateBlocked}
-                  style={primaryButtonStyle(generateBlocked)}
-                >
-                  {isGenerating ? "Generating..." : "Generate Lesson"}
-                </button>
-              </div>
-
-              {generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
-            </div>
-          ) : null}
-
-          {!primaryCurriculumReview && !primaryExemplarReview && showStandardsConfirmationCard ? (
-            <details>
-              <summary style={quietDetailsSummaryStyle}>
-                {standardsSummaryLabel}
-              </summary>
-              <div style={{ marginTop: 8 }}>
-                <StandardsConfirmationCard
-                  suggestedStandards={suggestedStandards}
-                  confirmedStandards={inputs.standard}
-                  required={needsStandardsConfirmation}
-                  onApplySuggestions={() => setInputs({ standard: serializeStandardsText(suggestedStandards) })}
-                  onChange={(value) => setInputs({ standard: value })}
-                  onToggleStandard={(value) =>
-                    setInputs({ standard: toggleStandardInText(inputs.standard, value) })
-                  }
-                />
-              </div>
-            </details>
-          ) : null}
-
-          {!primaryCurriculumReview && !primaryExemplarReview ? (
-            <div style={draftFooterStyle}>
-              <div style={helperTextStyle}>{generationHelperText}</div>
-              <button
-                type="button"
-                onClick={handleGenerateLesson}
-                disabled={generateBlocked}
-                style={primaryButtonStyle(generateBlocked)}
-              >
-                {isGenerating ? "Generating..." : "Generate Lesson"}
-              </button>
-            </div>
-          ) : null}
-
-          {!primaryCurriculumReview && !primaryExemplarReview && generationError ? <div style={errorTextStyle}>{generationError}</div> : null}
-        </div>
-      </div>
+      <CreateLessonSection
+        showGenerationStatus={showGenerationStatus}
+        generationStatusMode={generationStatusMode}
+        generationStatusMessage={generationStatusMessage}
+        hasLessonDraft={hasLessonDraft}
+        lessonDraftStatusText={lessonDraftStatusText}
+        compactEditMode={compactEditMode}
+        onToggleCompactEditMode={setCompactEditMode}
+        draftReadinessLabel={draftReadinessLabel}
+        draftReadinessTagColor={draftReadinessTagColor}
+        curriculumSummary={curriculumSummary}
+        exemplarSummary={exemplarSummary}
+        compactDraftFields={compactDraftFields}
+        editDraftFields={editDraftFields}
+        standardsDetails={standardsDetails}
+        generationHelperText={generationHelperText}
+        onGenerateLesson={handleGenerateLesson}
+        generateBlocked={generateBlocked}
+        isGenerating={isGenerating}
+        generationError={generationError}
+      />
 
       <UploadedMaterialsSection
         materials={materials}

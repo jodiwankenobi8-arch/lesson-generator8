@@ -519,6 +519,7 @@ describe("Materials page teacher-facing copy", () => {
     const source = readFileSync("src/pages/MaterialsPage.tsx", "utf8")
     const materialRowSource = readFileSync("src/pages/components/materials/MaterialRow.tsx", "utf8")
     const uploadedSectionSource = readFileSync("src/pages/components/materials/UploadedMaterialsSection.tsx", "utf8")
+    const createLessonSectionSource = readFileSync("src/pages/components/materials/CreateLessonSection.tsx", "utf8")
 
     expect(source).toContain(
       "Upload your curriculum and exemplar files. The lesson draft fills in once they're ready."
@@ -533,7 +534,7 @@ describe("Materials page teacher-facing copy", () => {
       "The app auto-detects what kind of exemplar each one most likely is, and you can change it only when the guess is wrong."
     )
     expect(source).toContain("Review the standards you want in this lesson package.")
-    expect(source).toContain("Lesson draft")
+    expect(createLessonSectionSource).toContain("Lesson draft")
     expect(source).toContain("Ready to generate")
     expect(source).toContain("Add vocabulary or word examples")
     expect(source).toContain("Confirm details to continue")
