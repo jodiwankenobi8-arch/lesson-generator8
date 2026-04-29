@@ -21,6 +21,7 @@ import {
 } from "./orchardUi"
 import { useLessonStore } from "../state/useLessonStore"
 import { OrchardPageHeader } from "./OrchardPageHeader"
+import inputsCornerAccent from "../assets/visual/extra-orchard-elements/apple-stickers-06-apple-corner-moss.png"
 
 type LessonPartOption = {
   key: LessonPlanContentPartKey
@@ -124,13 +125,35 @@ const introStyle: React.CSSProperties = {
 
 const cardStyle: React.CSSProperties = {
   ...orchardCardStyle,
+  position: "relative",
   padding: "var(--space-xl)",
+  display: "grid",
+  gap: "var(--space-xl)",
+  overflow: "visible",
+}
+
+const cardContentStyle: React.CSSProperties = {
+  position: "relative",
+  zIndex: 1,
   display: "grid",
   gap: "var(--space-xl)",
 }
 
+const cardAccentStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "clamp(-8px, -1vw, -2px)",
+  right: "clamp(8px, 2vw, 18px)",
+  width: "clamp(52px, 8vw, 82px)",
+  height: "auto",
+  opacity: 0.92,
+  pointerEvents: "none",
+  userSelect: "none",
+  zIndex: 0,
+}
+
 const sectionCardStyle: React.CSSProperties = {
   ...orchardSoftCardStyle,
+  boxSizing: "border-box",
   padding: "var(--space-lg)",
   display: "grid",
   gap: "var(--space-md)",
@@ -275,6 +298,9 @@ export default function InputsPage() {
       </OrchardPageHeader>
 
       <div style={cardStyle}>
+        <img src={inputsCornerAccent} alt="" aria-hidden="true" style={cardAccentStyle} />
+
+        <div style={cardContentStyle}>
         <div style={sectionCardStyle}>
           <div style={sectionLabelStyle}>1. Lesson info</div>
           <div style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
@@ -383,6 +409,7 @@ export default function InputsPage() {
           <div style={{ ...orchardTagStyle(hasRequiredInputs ? "moss" : "honey"), fontWeight: 700 }}>{hasRequiredInputs ? "Ready for Materials" : "Complete grade, subject, and skill / focus"}</div>
           <button type="button" onClick={() => navigate("/materials")} style={hasRequiredInputs ? buttonStyle : disabledButtonStyle} disabled={!hasRequiredInputs}>Continue to Materials</button>
         </div>
+        </div>
       </div>
     </div>
   )
@@ -477,11 +504,11 @@ function RequestToggleCard({ checked, title, description, onToggle }: {
     : { background: "rgba(255, 255, 255, 0.98)", border: "1px solid var(--border-paper)" }
 
   return (
-    <label style={{ ...orchardSoftCardStyle, ...activeStyle, display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 14px", cursor: "pointer" }}>
+    <label style={{ ...orchardSoftCardStyle, ...activeStyle, boxSizing: "border-box", minWidth: 0, maxWidth: "100%", display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 14px", cursor: "pointer" }}>
       <input type="checkbox" checked={checked} onChange={onToggle} style={{ marginTop: 3 }} />
-      <div>
+      <div style={{ minWidth: 0, maxWidth: "100%" }}>
         <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{title}</div>
-        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>{description}</div>
+        <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2, overflowWrap: "anywhere" }}>{description}</div>
       </div>
     </label>
   )
