@@ -54,4 +54,49 @@ describe("exportFullPackageZip PPTX packaging", () => {
 
     expect(slideFiles).toHaveLength(4)
   })
+
+  it("bundles PDF printables into the full package ZIP manifest", async () => {
+    const zipBlob = await exportFullPackageZip("Full Lesson Package", [
+      {
+        kind: "lesson_plan",
+        format: "docx",
+        label: "Lesson Plan Export",
+        fileName: "ELA-lesson-plan-export.docx",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        content: "Lesson plan body",
+      },
+      {
+        kind: "slides",
+        format: "pptx",
+        label: "Slides Export",
+        fileName: "ELA-slides-export.pptx",
+        mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        content: "Slides Export\n\nSlide 1: Opening",
+      },
+      {
+        kind: "printables",
+        format: "pdf",
+        label: "Centers & Support Printables Export",
+        fileName: "ELA-printables-export.pdf",
+        mimeType: "application/pdf",
+        content: "Centers & Support Printables Export",
+      },
+    ])
+
+    const zip = await JSZip.loadAsync(await zipBlob.arrayBuffer())
+    const fileNames = Object.keys(zip.files)
+
+    expect(fileNames).toEqual(
+      expect.arrayContaining([
+        "ELA-lesson-plan-export.docx",
+        "ELA-slides-export.pptx",
+        "ELA-printables-export.pdf",
+        "manifest.txt",
+      ])
+    )
+
+    const manifest = await zip.file("manifest.txt")!.async("string")
+    expect(manifest).toContain("ELA-printables-export.pdf")
+    expect(manifest).toContain("Centers & Support Printables Export")
+  })
 })

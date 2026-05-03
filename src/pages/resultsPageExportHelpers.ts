@@ -44,9 +44,17 @@ export function getArtifactDescription(artifact: ExportArtifact): string {
 }
 
 export function getBundledArtifactLabels(exports: ExportArtifact[]): string[] {
-  return exports
-    .filter((artifact) => artifact.kind !== "full_package")
-    .map((artifact) => artifact.label)
+  return getBundledArtifacts(exports).map((artifact) => artifact.label)
+}
+
+function hasExportableContent(artifact: ExportArtifact): boolean {
+  return Boolean((artifact.content ?? "").trim())
+}
+
+export function getBundledArtifacts(exports: ExportArtifact[]): ExportArtifact[] {
+  return exports.filter(
+    (artifact) => artifact.kind !== "full_package" && hasExportableContent(artifact)
+  )
 }
 
 export async function downloadExportArtifact(artifact: ExportArtifact, artifacts: ExportArtifact[] = []) {
@@ -56,7 +64,11 @@ export async function downloadExportArtifact(artifact: ExportArtifact, artifacts
 
   if (artifact.format === "zip" || artifact.mimeType === ZIP_MIME) {
     const { exportFullPackageZip } = await import("../engine/exports/exportFullPackageZip")
-    blob = await exportFullPackageZip(artifact.label, artifacts.length ? artifacts : [artifact])
+    const bundledArtifacts = getBundledArtifacts(artifacts)
+    blob = await exportFullPackageZip(
+      artifact.label,
+      bundledArtifacts.length > 0 ? bundledArtifacts : artifacts
+    )
   } else if (artifact.format === "pptx" || artifact.mimeType === PPTX_MIME) {
     const { exportSlidesPptx, parseSlidesExportContent } = await import("../engine/exports/exportSlidesPptx")
     const slides = parseSlidesExportContent(artifact.content)

@@ -43,6 +43,7 @@ import {
   getArtifactDescription,
   getArtifactFormatLabel,
   getArtifactKindLabel,
+  getBundledArtifacts,
   getBundledArtifactLabels,
 } from "./resultsPageExportHelpers"
 import {
@@ -76,6 +77,7 @@ export {
   getArtifactDescription,
   getArtifactFormatLabel,
   getBundledArtifactLabels,
+  getBundledArtifacts,
   getPackageWarningsMessage,
   getResultsHeaderStatusText,
   getTeacherBinderLeadText,
@@ -1258,6 +1260,7 @@ function readLegacySlideField(parts: string[], label: string): string {
 export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] }) {
   const fullPackageArtifact = exports.find((artifact) => artifact.kind === "full_package")
   const sectionArtifacts = exports.filter((artifact) => artifact.kind !== "full_package")
+  const bundledArtifacts = getBundledArtifacts(exports)
   const bundledArtifactLabels = getBundledArtifactLabels(exports)
   const bundleSummary = bundledArtifactLabels.length > 0
     ? `Current package ZIP includes: ${bundledArtifactLabels.join(", ")}.`
@@ -1291,7 +1294,7 @@ export function ExportArtifactsSection({ exports }: { exports: ExportArtifact[] 
           <div style={exportButtonRowStyle}>
             <button
               type="button"
-              onClick={() => void downloadExportArtifact(fullPackageArtifact, exports)}
+              onClick={() => void downloadExportArtifact(fullPackageArtifact, bundledArtifacts)}
               style={{ ...orchardButtonStyle(), cursor: "pointer", fontWeight: 700 }}
             >
               Download Package ZIP

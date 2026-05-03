@@ -25,7 +25,7 @@ import { exportLessonPlanDocx } from "../engine/exports/exportLessonPlanDocx"
 import { exportPrintablesPdf } from "../engine/exports/exportPrintablesPdf"
 import { exportSlidesPptx, parseSlidesExportContent } from "../engine/exports/exportSlidesPptx"
 import { exportFullPackageZip } from "../engine/exports/exportFullPackageZip"
-import ResultsPage, { CoverageDecisionsSection, PackageOutputsSection, PackageSummarySection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription, getBundledArtifactLabels, getVisiblePackageSectionLabels } from "./ResultsPage"
+import ResultsPage, { CoverageDecisionsSection, PackageOutputsSection, PackageSummarySection, PipelineTraceSection, TraceabilitySection, downloadExportArtifact, getArtifactButtonLabel, getArtifactDescription, getBundledArtifactLabels, getBundledArtifacts, getVisiblePackageSectionLabels } from "./ResultsPage"
 import { useLessonStore } from "../state/useLessonStore"
 import type { ExportArtifact, LessonInputs, LessonPackage, MaterialAnalysis, MaterialFile, MaterialRole, MissingAreaDecisionChoice, PlanningComponentKey } from "../engine/types"
 
@@ -952,9 +952,43 @@ describe("Results export routing - PDF and ZIP", () => {
         content: "bundle marker",
       } as const
 
-      await downloadExportArtifact(artifact, [artifact])
+      const lessonPlanArtifact = {
+        kind: "lesson_plan",
+        format: "docx",
+        label: "Lesson Plan Export",
+        fileName: "ELA-lesson-plan-export.docx",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        content: "Lesson plan body",
+      } as const
+      const slidesArtifact = {
+        kind: "slides",
+        format: "pptx",
+        label: "Slides Export",
+        fileName: "ELA-slides-export.pptx",
+        mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        content: "Slides Export\n\nSlide 1: Opening",
+      } as const
+      const printablesArtifact = {
+        kind: "printables",
+        format: "pdf",
+        label: "Centers & Support Printables Export",
+        fileName: "ELA-printables-export.pdf",
+        mimeType: "application/pdf",
+        content: "Centers & Support Printables Export",
+      } as const
 
-      expect(exportFullPackageZip).toHaveBeenCalledWith(artifact.label, [artifact])
+      await downloadExportArtifact(artifact, [
+        artifact,
+        lessonPlanArtifact,
+        slidesArtifact,
+        printablesArtifact,
+      ])
+
+      expect(exportFullPackageZip).toHaveBeenCalledWith(artifact.label, [
+        lessonPlanArtifact,
+        slidesArtifact,
+        printablesArtifact,
+      ])
       expect(harness.urlStub.createObjectURL).toHaveBeenCalledTimes(1)
       expect(harness.createdLinks).toHaveLength(1)
       expect(harness.createdLinks[0]!.download).toBe(artifact.fileName)
@@ -1023,6 +1057,11 @@ describe("Results package output section parity", () => {
       "Lesson Plan Export",
       "Slides Export",
       "Centers & Support Printables Export",
+    ])
+    expect(getBundledArtifacts(lessonPackage.exports ?? []).map((artifact) => artifact.fileName)).toEqual([
+      "ELA-lesson-plan-export.docx",
+      "ELA-slides-export.pptx",
+      "ELA-printables-export.pdf",
     ])
   })
 
