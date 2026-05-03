@@ -222,9 +222,62 @@ describe("buildPackageOutputs", () => {
     })
 
     expect(result.lessonPlan).toContain("- Standards: No grounded standard identified yet")
+    expect(result.lessonPlan).toContain(
+      "- Curriculum source use: No curriculum source used; content comes from teacher inputs and generated defaults."
+    )
+    expect(result.lessonPlan).toContain("- Teacher review needs: Not needed for an input-only run.")
     expect(result.lessonPlan).toContain("- Requested / grounded standards: No grounded standard identified yet")
     expect(result.lessonPlan).toContain("- Word examples: cake, game, lake, name")
     expect(result.lessonPlan).toContain("- Practice Ideas: Read and sort long a CVCe words")
+  })
+
+  it("surfaces curriculum payoff and review needs inside canonical package text", () => {
+    const curriculumGroundedBlueprint: LessonBlueprint = {
+      ...blueprint,
+      content: {
+        ...blueprint.content,
+        vocabulary: ["adaptation", "habitat"],
+        wordLists: ["beak shape", "webbed feet", "camouflage"],
+        texts: ["Article: Animal adaptations in wetlands"],
+        practiceIdeas: ["Compare examples and non-examples of adaptations"],
+        reviewStatus: {
+          vocabulary: "reviewed",
+          wordLists: "extracted",
+          texts: "review-needed",
+          practiceIdeas: "extracted",
+        },
+      },
+      sourceReadiness: {
+        ...blueprint.sourceReadiness,
+        selectedCurriculumMaterialIds: ["curriculum-1"],
+        selectedExemplarMaterialIds: [],
+      },
+    }
+
+    const result = buildPackageOutputs({
+      inputs: {
+        grade: "4",
+        subject: "Science",
+        standard: "SC.4.L.17.1",
+        skill: "Compare animal adaptations",
+        topic: "Wetland animal adaptations",
+        duration: "40 minutes",
+      },
+      blueprint: curriculumGroundedBlueprint,
+      spec,
+      planningIdeas: makePlanningIdeas(),
+      outputContents: makeOutputContents(),
+    })
+
+    expect(result.lessonPlan).toContain(
+      "- Curriculum source use: 1 curriculum source selected; vocabulary, word examples, and practice tasks came from reviewed or extracted curriculum content; text/topic needs review."
+    )
+    expect(result.lessonPlan).toContain(
+      "- Curriculum details used: vocabulary: adaptation, habitat | word examples: beak shape, webbed feet, camouflage | text/topic: Article: Animal adaptations in wetlands | practice: Compare examples and non-examples of adaptations"
+    )
+    expect(result.lessonPlan).toContain(
+      "- Teacher review needs: Review text/topic before treating that lane as fully source-grounded."
+    )
   })
 
   it("builds package outputs using outputContents-selected planning ideas when available", () => {

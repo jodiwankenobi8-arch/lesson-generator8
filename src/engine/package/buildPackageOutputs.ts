@@ -633,6 +633,9 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
     `- Additional focus: ${blueprint.content.target.secondary ?? "None"}`,
     `- Lesson coverage: ${blueprint.content.target.isMixedTarget ? "Integrated focus" : "Single focus"}`,
     `- Standards: ${formatGroundingStandards(blueprint)}`,
+    `- Curriculum source use: ${buildCurriculumSourceUseLine(blueprint)}`,
+    `- Curriculum details used: ${buildCurriculumDetailsUsedLine(blueprint)}`,
+    `- Teacher review needs: ${buildTeacherReviewNeedsLine(blueprint)}`,
     `- Vocabulary: ${joinOrFallback(
       getPackageDisplayValues(blueprint, "vocabulary", 4),
       REVIEW_VOCABULARY_STATUS
@@ -655,6 +658,122 @@ function buildLessonGroundingBlock(blueprint: LessonBlueprint): string {
 function formatGroundingStandards(blueprint: LessonBlueprint): string {
   const standards = getPackageDisplayValues(blueprint, "standard", 3)
   return standards.length > 0 ? standards.join(", ") : "No grounded standard identified yet"
+}
+
+type CurriculumLaneStatus = NonNullable<
+  LessonBlueprint["content"]["reviewStatus"]
+>[keyof NonNullable<LessonBlueprint["content"]["reviewStatus"]>]
+
+type CurriculumLaneKey = keyof NonNullable<LessonBlueprint["content"]["reviewStatus"]>
+
+const CURRICULUM_LANE_LABELS: Record<CurriculumLaneKey, string> = {
+  vocabulary: "vocabulary",
+  wordLists: "word examples",
+  texts: "text/topic",
+  practiceIdeas: "practice tasks",
+}
+
+function buildCurriculumSourceUseLine(blueprint: LessonBlueprint): string {
+  const selectedCount = blueprint.sourceReadiness.selectedCurriculumMaterialIds.length
+
+  if (selectedCount === 0) {
+    return "No curriculum source used; content comes from teacher inputs and generated defaults."
+  }
+
+  const groundedLanes = getCurriculumLanesByStatus(blueprint, ["reviewed", "extracted"])
+  const reviewLanes = getCurriculumLanesByStatus(blueprint, ["review-needed", "blocked"])
+  const sourceLabel = `${selectedCount} curriculum source${selectedCount === 1 ? "" : "s"}`
+
+  if (groundedLanes.length === 0) {
+    return `${sourceLabel} selected, but content lanes need teacher review before the curriculum can be treated as grounded.`
+  }
+
+  const groundedSummary = `${formatCurriculumLaneList(groundedLanes)} came from reviewed or extracted curriculum content`
+  const reviewSummary =
+    reviewLanes.length > 0 ? `; ${formatCurriculumLaneList(reviewLanes)} needs review` : ""
+
+  return `${sourceLabel} selected; ${groundedSummary}${reviewSummary}.`
+}
+
+function buildCurriculumDetailsUsedLine(blueprint: LessonBlueprint): string {
+  return [
+    `vocabulary: ${joinOrFallback(
+      getPackageDisplayValues(blueprint, "vocabulary", 3),
+      REVIEW_VOCABULARY_STATUS
+    )}`,
+    `word examples: ${joinOrFallback(
+      getPackageDisplayValues(blueprint, "wordList", 4),
+      REVIEW_WORD_EXAMPLES_STATUS
+    )}`,
+    `text/topic: ${joinOrFallback(
+      getPackageDisplayValues(blueprint, "text", 2),
+      REVIEW_TEXT_STATUS
+    )}`,
+    `practice: ${joinOrFallback(
+      getPackageDisplayValues(blueprint, "practice", 3),
+      REVIEW_PRACTICE_STATUS
+    )}`,
+  ].join(" | ")
+}
+
+function buildTeacherReviewNeedsLine(blueprint: LessonBlueprint): string {
+  if (blueprint.sourceReadiness.selectedCurriculumMaterialIds.length === 0) {
+    return "Not needed for an input-only run."
+  }
+
+  const reviewNeeded = getCurriculumLanesByStatus(blueprint, ["review-needed"])
+  const blocked = getCurriculumLanesByStatus(blueprint, ["blocked"])
+
+  if (reviewNeeded.length === 0 && blocked.length === 0) {
+    return "No required curriculum review flags for the content used in this package."
+  }
+
+  const messages: string[] = []
+
+  if (reviewNeeded.length > 0) {
+    messages.push(
+      `Review ${formatCurriculumLaneList(reviewNeeded)} before treating that lane as fully source-grounded`
+    )
+  }
+
+  if (blocked.length > 0) {
+    messages.push(
+      `Replace or clarify ${formatCurriculumLaneList(blocked)} before using that lane as curriculum-grounded content`
+    )
+  }
+
+  return `${messages.join("; ")}.`
+}
+
+function getCurriculumLanesByStatus(
+  blueprint: LessonBlueprint,
+  statuses: CurriculumLaneStatus[]
+): string[] {
+  const reviewStatus = blueprint.content.reviewStatus
+
+  if (!reviewStatus) {
+    return []
+  }
+
+  return (Object.entries(reviewStatus) as Array<[CurriculumLaneKey, CurriculumLaneStatus]>)
+    .filter(([, status]) => statuses.includes(status))
+    .map(([key]) => CURRICULUM_LANE_LABELS[key])
+}
+
+function formatCurriculumLaneList(lanes: string[]): string {
+  if (lanes.length === 0) {
+    return "no curriculum lanes"
+  }
+
+  if (lanes.length === 1) {
+    return lanes[0]
+  }
+
+  if (lanes.length === 2) {
+    return `${lanes[0]} and ${lanes[1]}`
+  }
+
+  return `${lanes.slice(0, -1).join(", ")}, and ${lanes[lanes.length - 1]}`
 }
 
 function buildSectionNarrativeBlock(
