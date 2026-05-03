@@ -522,9 +522,9 @@ describe("Materials page teacher-facing copy", () => {
     const createLessonSectionSource = readFileSync("src/pages/components/materials/CreateLessonSection.tsx", "utf8")
 
     expect(source).toContain(
-      "Upload your curriculum and exemplar files. The lesson draft fills in once they're ready."
+      "Upload curriculum and exemplar files when you have them, or generate from the lesson inputs only."
     )
-    expect(source).toContain("Upload files, review the lesson draft, then generate.")
+    expect(source).toContain("No files added. Generate from teacher inputs with default artifact shells, or upload sources for grounding.")
     expect(source).toContain("Review this draft, make any quick changes, and generate when it looks right.")
     expect(uploadedSectionSource).toContain(
       "No files added yet. Upload curriculum or exemplar files above."

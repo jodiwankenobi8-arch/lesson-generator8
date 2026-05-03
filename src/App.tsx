@@ -119,7 +119,7 @@ function getResultsBlockedReason({
   }
 
   if (!hasUsableMaterialsForGeneration) {
-    return "Results stay locked until at least one curriculum or exemplar material is usable for grounded generation."
+    return "Results stay locked until added materials are usable for grounded generation. Remove unusable files to generate from teacher inputs only."
   }
 
   return null

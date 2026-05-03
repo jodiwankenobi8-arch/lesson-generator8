@@ -99,7 +99,18 @@ describe("App route integration: results gating", () => {
     expect(markup).toContain("Results stay locked until material processing finishes. Currently processing: 1.")
   })
 
-  it("shows the usable-material block reason when inputs are complete but nothing usable is available", () => {
+  it("does not block Results navigation when inputs are complete and no materials are uploaded", () => {
+    seedState({
+      materials: [],
+    })
+
+    const markup = renderAppAt("/results")
+
+    expect(markup).toContain("Results")
+    expect(markup).not.toContain("Results stay locked until")
+  })
+
+  it("shows the usable-material block reason when inputs are complete but added materials are not usable", () => {
     seedState({
       materials: [
         makeMaterial({
@@ -120,7 +131,7 @@ describe("App route integration: results gating", () => {
     const markup = renderAppAt("/results")
 
     expect(markup).toContain(
-      "Results stay locked until at least one curriculum or exemplar material is usable for grounded generation."
+      "Results stay locked until added materials are usable for grounded generation. Remove unusable files to generate from teacher inputs only."
     )
   })
 

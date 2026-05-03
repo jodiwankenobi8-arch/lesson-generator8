@@ -59,15 +59,32 @@ function makeCurriculumMaterial(overrides: Partial<MaterialFile> = {}): Material
 }
 
 describe("evaluateGenerationReadiness", () => {
-  it("blocks generation when no ready curriculum source is available", () => {
+  it("allows input-only generation when no materials are uploaded", () => {
     const result = evaluateGenerationReadiness({
       inputs: makeInputs(),
       materials: [],
       selectedLessonMode: "single",
     })
 
+    expect(result.ready).toBe(true)
+    expect(result.blockerMessage).toBeNull()
+  })
+
+  it("blocks generation when a curriculum source was added but no usable curriculum content is ready", () => {
+    const result = evaluateGenerationReadiness({
+      inputs: makeInputs(),
+      materials: [
+        makeCurriculumMaterial({
+          status: "error",
+          analysis: null,
+          errorMessage: "No readable text was found.",
+        }),
+      ],
+      selectedLessonMode: "single",
+    })
+
     expect(result.ready).toBe(false)
-    expect(result.blockerMessage).toContain("add at least one curriculum source")
+    expect(result.blockerMessage).toContain("no usable curriculum content is ready")
   })
 
   it("blocks generation when required curriculum grounding is still missing", () => {

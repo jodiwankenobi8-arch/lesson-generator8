@@ -639,12 +639,14 @@ export default function MaterialsPage() {
   )()
   const hasRequiredInputs = useLessonStore((state) => state.hasRequiredInputs)()
   const canGenerate = useLessonStore((state) => state.canGenerate)()
+  const isInputOnlyGeneration = materials.length === 0
+  const hasCurriculumMaterials = materials.some((material) => material.role === "curriculum")
   const suggestedStandards = useMemo(
     () => buildSuggestedStandards(materials, inputs),
     [materials, inputs]
   )
   const confirmedStandards = useMemo(() => normalizeAndDedupeStandards([inputs.standard]), [inputs.standard])
-  const needsStandardsConfirmation = confirmedStandards.length === 0
+  const needsStandardsConfirmation = hasCurriculumMaterials && confirmedStandards.length === 0
   const confirmedStandardsCount = confirmedStandards.length
   const showStandardsConfirmationCard = useMemo(
     () => shouldShowStandardsConfirmationCard(materials.length, suggestedStandards, inputs.standard),
@@ -879,7 +881,9 @@ export default function MaterialsPage() {
   const lessonDraftStatusText =
     primaryCurriculumReview || primaryExemplarReview
       ? "Review this draft, make any quick changes, and generate when it looks right."
-      : "Add a ready curriculum file to fill the lesson draft."
+      : isInputOnlyGeneration
+        ? "No files are attached. This run will use teacher inputs and default lesson shells."
+        : "Add a ready curriculum file to fill the lesson draft."
   const generationHelperText = !hasRequiredInputs
     ? "Finish the lesson basics on Inputs first."
     : hasProcessingMaterials
@@ -890,9 +894,13 @@ export default function MaterialsPage() {
           ? "Add vocabulary or word examples to the lesson draft, then generate."
           : generationReadinessMessage
             ? generationReadinessMessage
-            : !hasUsableMaterialsForGeneration
-              ? "Add at least one ready file before generating."
-              : "Ready to generate."
+            : isInputOnlyGeneration
+              ? "Ready to generate from teacher inputs. No curriculum source will be used."
+              : !hasCurriculumMaterials
+                ? "Ready to generate from teacher inputs and exemplar structure. No curriculum source will be used."
+                : !hasUsableMaterialsForGeneration
+                  ? "Added materials need review or replacement before generating."
+                  : "Ready to generate."
   const showGenerationStatus = hasProcessingMaterials || (!primaryCurriculumReview && !primaryExemplarReview)
   const generationStatusMode: "idle" | "processing" | "ready" =
     hasProcessingMaterials
@@ -902,7 +910,11 @@ export default function MaterialsPage() {
         : "idle"
   const generationStatusMessage = hasProcessingMaterials
     ? `Processing ${processingCount} file${processingCount === 1 ? "" : "s"}.`
-    : "Upload files, review the lesson draft, then generate."
+    : isInputOnlyGeneration
+      ? "No files added. Generate from teacher inputs with default artifact shells, or upload sources for grounding."
+      : hasCurriculumMaterials
+        ? "Review the lesson draft, then generate."
+        : "No curriculum source added. Structure can come from exemplars; content will come from teacher inputs and generated defaults."
   const standardsSummaryLabel = needsStandardsConfirmation
     ? "Standards to confirm"
     : `Standards (${confirmedStandardsCount} selected)`
@@ -929,7 +941,9 @@ export default function MaterialsPage() {
             : "Confirm details to continue"
           : draftReadinessState === "processing"
             ? "Still preparing files"
-            : "Upload a file to get started"
+            : isInputOnlyGeneration
+              ? "Input-only ready"
+              : "Upload a file to get started"
 
   const draftReadinessTagColor: Parameters<typeof orchardTagStyle>[0] =
     draftReadinessState === "ready" ? "moss" : draftReadinessState === "processing" ? "neutral" : "honey"
@@ -983,7 +997,11 @@ export default function MaterialsPage() {
         <CompactFieldDisplay label="Structure" items={primaryExemplarReview.exemplarStructure} />
       ) : null}
       {!primaryCurriculumReview && !((primaryExemplarReview?.exemplarStructure ?? []).length > 0) ? (
-        <div style={exemplarSubtleTextStyle}>No lesson draft available yet. Upload a curriculum file to get started.</div>
+        <div style={exemplarSubtleTextStyle}>
+          {isInputOnlyGeneration
+            ? "No material draft yet. The generator will use teacher inputs and default artifact shells."
+            : "No lesson draft available yet. Upload a curriculum file to get started."}
+        </div>
       ) : null}
     </div>
   )
@@ -1037,8 +1055,8 @@ export default function MaterialsPage() {
     <div style={pageStyle}>
       <OrchardPageHeader label="Source Workbench" title="Materials" introMaxWidth={760}>
         <p style={introStyle}>
-          Upload your curriculum and exemplar files. The lesson draft fills in once they're ready.
-          Supports {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
+          Upload curriculum and exemplar files when you have them, or generate from the lesson inputs only.
+          No-material runs use default artifact shells and clearly note that no curriculum source was used. Supports {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
         </p>
       </OrchardPageHeader>
 

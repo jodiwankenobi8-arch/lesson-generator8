@@ -88,20 +88,22 @@ export async function generateLessonForStore(
   const refreshed = dependencies.getCurrentStoreData()
   const readyMaterials = refreshed.materials.filter(isReady)
   const usableMaterials = readyMaterials.filter(isUsableForGeneration)
+  const isInputOnlyGeneration = refreshed.materials.length === 0
+  const generationMaterials = isInputOnlyGeneration ? [] : readyMaterials
 
-  if (readyMaterials.length === 0) {
+  if (!isInputOnlyGeneration && readyMaterials.length === 0) {
     throw new Error("No analyzed materials are ready for lesson generation.")
   }
 
-  if (usableMaterials.length === 0) {
+  if (!isInputOnlyGeneration && usableMaterials.length === 0) {
     throw new Error(
-      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source material."
+      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source material, or remove unusable sources to generate from teacher inputs only."
     )
   }
 
   const readiness = evaluateGenerationReadiness({
     inputs: refreshed.inputs,
-    materials: readyMaterials,
+    materials: generationMaterials,
     selectedLessonMode: refreshed.selectedLessonMode,
   })
 
@@ -111,7 +113,7 @@ export async function generateLessonForStore(
 
   const result = runLessonPipeline(
     refreshed.inputs,
-    readyMaterials,
+    generationMaterials,
     refreshed.selectedLessonMode,
     refreshed.outputContents,
     refreshed.missingAreaDecisions
@@ -120,7 +122,7 @@ export async function generateLessonForStore(
   const { enhanceLessonGenerationWithAI } = await import("../../engine/ai/lessonConstructionAi")
   const enhanced = await enhanceLessonGenerationWithAI({
     inputs: refreshed.inputs,
-    materials: readyMaterials,
+    materials: generationMaterials,
     outputContents: refreshed.outputContents,
     missingAreaDecisions: refreshed.missingAreaDecisions,
     baseResult: result,

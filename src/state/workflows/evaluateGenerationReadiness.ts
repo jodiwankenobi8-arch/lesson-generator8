@@ -24,18 +24,26 @@ export function evaluateGenerationReadiness(args: {
 }): GenerationReadinessResult {
   const { inputs, materials, selectedLessonMode } = args
 
-  const readyCurriculumCount = materials.filter(
+  const curriculumMaterials = materials.filter((material) => material.role === "curriculum")
+
+  if (curriculumMaterials.length === 0) {
+    return {
+      ready: true,
+      blockerMessage: null,
+    }
+  }
+
+  const readyCurriculumCount = curriculumMaterials.filter(
     (material) =>
-      material.role === "curriculum" &&
       material.status === "ready" &&
       Boolean(material.analysis?.curriculum)
   ).length
 
-  if (readyCurriculumCount === 0) {
+  if (curriculumMaterials.length > 0 && readyCurriculumCount === 0) {
     return {
       ready: false,
       blockerMessage:
-        "Before generating, add at least one curriculum source and confirm the lesson content details on Materials.",
+        "A curriculum source was added, but no usable curriculum content is ready yet. Review, remove, or replace the curriculum source before generating.",
     }
   }
 

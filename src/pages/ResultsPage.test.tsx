@@ -468,8 +468,9 @@ describe("Results explainability rendering contracts", () => {
     expect(source).toContain('const hasUsableMaterialsForGeneration = useLessonStore((state) => state.hasUsableMaterialsForGeneration)()')
     expect(source).not.toContain('const hasReadyMaterials = useLessonStore((state) => state.hasReadyMaterials)()')
 
-    expect(source).toContain("Results are blocked until at least one curriculum or exemplar material is usable for grounded generation.")
-    expect(source).toContain("Inputs are complete and at least one material is usable, but no generated lesson is currently loaded.")
+    expect(source).toContain("Results are blocked because the added materials are not usable for grounded generation.")
+    expect(source).toContain("Inputs are complete, but no generated lesson is currently loaded.")
+    expect(source).toContain("input-only run used teacher inputs")
     expect(source).toContain("Ready files:")
 
     expect(source).not.toContain("Results are blocked until at least one material is analyzed and ready.")

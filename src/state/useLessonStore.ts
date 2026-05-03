@@ -801,6 +801,11 @@ export const useLessonStore = create<LessonStore>((set, get) => ({
 
   hasUsableMaterialsForGeneration: () => {
     const { materials } = get()
+
+    if (materials.length === 0) {
+      return true
+    }
+
     return materials.some((material) => {
       if (material.status !== "ready" || !material.analysis) {
         return false

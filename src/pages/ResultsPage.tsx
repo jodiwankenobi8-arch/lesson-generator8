@@ -497,8 +497,8 @@ export default function ResultsPage() {
     return (
       <BlockedResultsState
         title="Results"
-        message="Results are blocked until at least one curriculum or exemplar material is usable for grounded generation."
-        details="Add curriculum or exemplar materials and wait for analysis to complete. Results unlock when at least one material is ready to use."
+        message="Results are blocked because the added materials are not usable for grounded generation."
+        details="Review, remove, or replace unusable materials. If you want an input-only lesson, remove the unusable files and generate from teacher inputs on Materials."
         linkTo="/materials"
         linkLabel="Go to Materials"
       />
@@ -509,19 +509,22 @@ export default function ResultsPage() {
     return (
       <BlockedResultsState
         title="Results"
-        message="Inputs are complete and at least one material is usable, but no generated lesson is currently loaded."
-        details="Return to the generation flow to create the lesson content, planning ideas, lesson details, and lesson package."
-        linkTo="/inputs"
-        linkLabel="Go to Inputs"
+        message="Inputs are complete, but no generated lesson is currently loaded."
+        details="Return to Materials to generate the lesson package. If no files are added, the package will use teacher inputs and default artifact shells."
+        linkTo="/materials"
+        linkLabel="Go to Materials"
       />
     )
   }
+
+  const hasSelectedCurriculumSources = blueprint.sourceReadiness.selectedCurriculumMaterialIds.length > 0
+  const hasSelectedExemplarSources = blueprint.sourceReadiness.selectedExemplarMaterialIds.length > 0
 
   return (
     <div style={pageStyle}>
       <OrchardPageHeader label="Lesson Package" title="Results">
         <p style={introStyle}>
-          Review the lesson package below. Content comes from your curriculum materials. Structure comes from your exemplar materials. Missing pieces are generated to complete the lesson.
+          {getResultsIntroText(hasSelectedCurriculumSources, hasSelectedExemplarSources)}
         </p>
         <p style={introStyle}>{getResultsHeaderStatusText()}</p>
       </OrchardPageHeader>
@@ -585,6 +588,25 @@ export default function ResultsPage() {
       ) : null}
     </div>
   )
+}
+
+function getResultsIntroText(
+  hasSelectedCurriculumSources: boolean,
+  hasSelectedExemplarSources: boolean
+): string {
+  if (hasSelectedCurriculumSources && hasSelectedExemplarSources) {
+    return "Review the lesson package below. Content comes from your curriculum materials. Structure comes from your exemplar materials. Missing pieces are generated to complete the lesson."
+  }
+
+  if (hasSelectedCurriculumSources) {
+    return "Review the lesson package below. Content comes from your curriculum materials. Structure uses a default classroom-ready shell because no exemplar source was selected."
+  }
+
+  if (hasSelectedExemplarSources) {
+    return "Review the lesson package below. Content comes from teacher inputs and generated gap-filling. Structure comes from your exemplar materials; no curriculum source was used."
+  }
+
+  return "Review the lesson package below. This input-only run used teacher inputs, generated gap-filling, and default classroom-ready artifact shells; no curriculum or exemplar source was used."
 }
 
 function ReviewFlowCard({ lessonPackage }: { lessonPackage: LessonPackage }) {

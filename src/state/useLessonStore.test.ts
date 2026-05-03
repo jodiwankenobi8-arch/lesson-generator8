@@ -352,6 +352,40 @@ describe("useLessonStore regeneration", () => {
     )
   }, 10000)
 
+  it("generateLesson creates a default-shell package when no materials are uploaded", async () => {
+    useLessonStore.setState((state) => ({
+      ...state,
+      inputs: makeInputs({ standard: "" }),
+      selectedLessonMode: "single",
+      materials: [],
+      blueprint: null,
+      planningIdeas: null,
+      lessonSpec: null,
+      lessonPackage: null,
+      lessonTrace: null,
+      outputContents: createDefaultOutputContents(),
+      missingAreaDecisions: {},
+    }))
+
+    expect(useLessonStore.getState().hasUsableMaterialsForGeneration()).toBe(true)
+    expect(useLessonStore.getState().canGenerate()).toBe(true)
+
+    await useLessonStore.getState().generateLesson()
+
+    const state = useLessonStore.getState()
+
+    expect(state.blueprint).toBeTruthy()
+    expect(state.planningIdeas).toBeTruthy()
+    expect(state.lessonSpec).toBeTruthy()
+    expect(state.lessonPackage).toBeTruthy()
+    expect(state.lessonTrace?.materialCounts.total).toBe(0)
+    expect(state.lessonTrace?.selectedSources.curriculumMaterialIds).toEqual([])
+    expect(state.lessonTrace?.selectedSources.exemplarMaterialIds).toEqual([])
+    expect(state.blueprint?.sourceReadiness.warnings.join(" ")).toContain(
+      "No usable curriculum materials"
+    )
+  })
+
   it("generateLesson rejects ready-but-blocked materials with an honest usable-material error", async () => {
     useLessonStore.setState((state) => ({
       ...state,
@@ -386,7 +420,7 @@ describe("useLessonStore regeneration", () => {
     }))
 
     await expect(useLessonStore.getState().generateLesson()).rejects.toThrow(
-      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source material."
+      "No usable materials are available for grounded generation. Add at least one usable curriculum or exemplar source material, or remove unusable sources to generate from teacher inputs only."
     )
   })
 })
