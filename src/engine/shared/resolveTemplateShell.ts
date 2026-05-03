@@ -111,9 +111,17 @@ export function resolveTemplateShell(
     }
   }
 
+  const resolvedLessonSegments = resolvedRows
+    .map((item) => item.segmentLabel)
+    .slice(0, lessonSegmentsCount)
+  const resolvedSlideShell = mergeShellLabels(
+    resolvedRows.map((item) => item.shellLabel),
+    extractReusableShellSlots(rawSlideShell)
+  ).slice(0, slideShellCount)
+
   return {
-    lessonSegments: resolvedRows.map((item) => item.segmentLabel).slice(0, lessonSegmentsCount),
-    slideShell: resolvedRows.map((item) => item.shellLabel).slice(0, slideShellCount),
+    lessonSegments: resolvedLessonSegments,
+    slideShell: resolvedSlideShell,
     timing: resolvedRows.map((item) => inferTimingLabel(item.kind)).slice(0, lessonSegmentsCount),
     teacherMoves,
     promptStyle,
@@ -260,12 +268,71 @@ function normalizeInstructionalKind(value: string): InstructionalKind {
     lower.includes("text") ||
     lower.includes("word list") ||
     lower.includes("cards") ||
-    lower.includes("practice task")
+    lower.includes("practice task") ||
+    lower.includes("example") ||
+    lower.includes("non-example") ||
+    lower.includes("anchor chart") ||
+    lower.includes("teacher prompt") ||
+    lower.includes("call and response") ||
+    lower.includes("curriculum content") ||
+    lower.includes("small group") ||
+    lower.includes("teacher table")
   ) {
     return "layout"
   }
 
   return "other"
+}
+
+function cleanUnique(values: string[]): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+
+  for (const value of values) {
+    const cleaned = value.trim()
+
+    if (!cleaned) continue
+
+    const key = cleaned.toLowerCase()
+    if (seen.has(key)) continue
+
+    seen.add(key)
+    result.push(cleaned)
+  }
+
+  return result
+}
+
+function extractReusableShellSlots(slideShell: string[]): string[] {
+  return cleanUnique(
+    slideShell
+      .map(normalizeReusableShellSlot)
+      .filter((slot): slot is string => slot.length > 0)
+  )
+}
+
+function normalizeReusableShellSlot(value: string): string {
+  const lower = value.trim().toLowerCase()
+
+  if (!lower) return ""
+  if (lower.includes("word list") || lower.includes("target words") || lower.includes("heart words") || lower.includes("decodable words")) return "Word List / Practice"
+  if (lower.includes("passage") || lower.includes("story") || lower.includes("article") || lower.includes("selection") || /\\btext\\b/.test(lower)) return "Passage / Text"
+  if (lower.includes("practice task") || lower.includes("activity") || lower.includes("work time")) return "Practice Task"
+  if (lower.includes("hero image") || lower.includes("visual") || lower.includes("image") || lower.includes("photo") || lower.includes("picture") || lower.includes("illustration")) return "Visual / Image"
+  if (lower.includes("example / non-example") || lower.includes("example/non-example") || lower.includes("non-example") || lower.includes("non example")) return "Example / Non-Example"
+  if (lower.includes("anchor chart")) return "Anchor Chart / Model"
+  if (lower.includes("table") || lower.includes("chart") || lower.includes("grid") || lower.includes("sort")) return "Table / Sort"
+  if (lower.includes("split view") || lower.includes("side by side") || lower.includes("two column") || lower.includes("compare")) return "Compare / Split View"
+  if (lower.includes("teacher prompt") || lower.includes("prompt block") || lower.includes("question stem") || lower.includes("sentence stem")) return "Teacher Prompt Block"
+  if (lower.includes("call and response") || lower.includes("choral response") || lower.includes("students echo") || lower.includes("echo response")) return "Call and Response"
+  if (lower.includes("curriculum content slot") || lower.includes("curriculum slide") || lower.includes("content slot") || lower.includes("materials slot")) return "Curriculum Content Slot"
+  if (lower.includes("small group") || lower.includes("teacher table") || lower.includes("reteach")) return "Small Group / Teacher Table"
+
+  return ""
+}
+
+function mergeShellLabels(primary: string[], secondary: string[]): string[] {
+  return cleanUnique([...primary, ...secondary])
 }
 
 function getDefaultSegmentLabel(kind: InstructionalKind): string {

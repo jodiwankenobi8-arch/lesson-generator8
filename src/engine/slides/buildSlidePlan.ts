@@ -248,10 +248,20 @@ function normalizeSlideKind(value: string): SlideKind {
 
   if (lower.includes("objective")) return "objective"
   if (lower.includes("opening")) return "opening"
-  if (lower.includes("teach")) return "teach"
+  if (lower.includes("teach") || lower.includes("model") || lower.includes("anchor chart")) return "teach"
   if (lower.includes("guided")) return "guided_practice"
   if (lower.includes("independent")) return "independent_practice"
-  if (lower.includes("center")) return "centers"
+  if (lower.includes("center") || lower.includes("small group") || lower.includes("teacher table")) return "centers"
+  if (
+    lower.includes("word list") ||
+    lower.includes("passage") ||
+    /\btext\b/.test(lower) ||
+    lower.includes("practice task") ||
+    lower.includes("teacher prompt") ||
+    lower.includes("call and response") ||
+    lower.includes("example / non-example") ||
+    lower.includes("curriculum content")
+  ) return "guided_practice"
   if (lower.includes("closure") || lower.includes("close")) return "closure"
 
   return "guided_practice"

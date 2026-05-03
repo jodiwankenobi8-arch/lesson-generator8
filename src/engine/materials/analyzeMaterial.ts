@@ -928,6 +928,56 @@ function detectExemplarFeatures(lines: string[]) {
 
   pushFeatureIfAny(items, {
 
+    key: "mini_lesson",
+
+    label: "Mini-Lesson / Teach",
+
+    description: "Includes an explicit modeling or teaching segment.",
+
+    category: "instructional_flow",
+
+    evidence: takeBestMatches(
+
+      lines,
+
+      (line) =>
+
+        containsAny(line, ["mini lesson", "mini-lesson", "model / teach", "explicit teaching", "i do", "model the", "teacher models"]),
+
+      3
+
+    ),
+
+  })
+
+
+
+  pushFeatureIfAny(items, {
+
+    key: "call_and_response",
+
+    label: "Call and Response",
+
+    description: "Includes choral response, echo, or repeat-after-me interaction patterns.",
+
+    category: "interaction",
+
+    evidence: takeBestMatches(
+
+      lines,
+
+      (line) => containsAny(line, ["call and response", "choral response", "students echo", "echo", "repeat after me", "say it with me"]),
+
+      3
+
+    ),
+
+  })
+
+
+
+  pushFeatureIfAny(items, {
+
     key: "guided_practice",
 
     label: "Guided Practice",
@@ -1048,6 +1098,30 @@ function detectExemplarFeatures(lines: string[]) {
 
   pushFeatureIfAny(items, {
 
+    key: "small_group",
+
+    label: "Small Group / Teacher Table",
+
+    description: "Includes a small-group or teacher-table support structure.",
+
+    category: "instructional_flow",
+
+    evidence: takeBestMatches(
+
+      lines,
+
+      (line) => containsAny(line, ["small group", "teacher table", "reteach", "intervention group", "strategy group"]),
+
+      3
+
+    ),
+
+  })
+
+
+
+  pushFeatureIfAny(items, {
+
     key: "timers",
 
     label: "Timers",
@@ -1116,6 +1190,30 @@ function detectExemplarFeatures(lines: string[]) {
 
   pushFeatureIfAny(items, {
 
+    key: "hero_image_slot",
+
+    label: "Hero Image Slot",
+
+    description: "Includes a prominent visual placeholder or cover-image slot.",
+
+    category: "visual_layout",
+
+    evidence: takeBestMatches(
+
+      lines,
+
+      (line) => containsAny(line, ["hero image", "cover image", "main visual", "large picture", "feature image"]),
+
+      3
+
+    ),
+
+  })
+
+
+
+  pushFeatureIfAny(items, {
+
     key: "image_slots",
 
     label: "Image Slots",
@@ -1129,6 +1227,54 @@ function detectExemplarFeatures(lines: string[]) {
       lines,
 
       (line) => containsAny(line, ["image", "photo", "picture", "illustration"]),
+
+      3
+
+    ),
+
+  })
+
+
+
+  pushFeatureIfAny(items, {
+
+    key: "example_non_example",
+
+    label: "Example / Non-Example",
+
+    description: "Includes example and non-example comparison formatting.",
+
+    category: "content_slots",
+
+    evidence: takeBestMatches(
+
+      lines,
+
+      (line) => containsAny(line, ["example / non-example", "example/non-example", "non-example", "non example", "examples and nonexamples"]),
+
+      3
+
+    ),
+
+  })
+
+
+
+  pushFeatureIfAny(items, {
+
+    key: "anchor_chart_layout",
+
+    label: "Anchor Chart Layout",
+
+    description: "Includes an anchor-chart or model-chart presentation shell.",
+
+    category: "visual_layout",
+
+    evidence: takeBestMatches(
+
+      lines,
+
+      (line) => containsAny(line, ["anchor chart", "model chart", "class chart", "reference chart"]),
 
       3
 
@@ -1225,6 +1371,30 @@ function detectExemplarFeatures(lines: string[]) {
       lines,
 
       (line) => containsAny(line, ["visual", "style", "theme", "icon", "layout"]),
+
+      3
+
+    ),
+
+  })
+
+
+
+  pushFeatureIfAny(items, {
+
+    key: "curriculum_slide_slots",
+
+    label: "Curriculum Content Slots",
+
+    description: "Includes reusable slots where new curriculum material should replace old lesson content.",
+
+    category: "content_slots",
+
+    evidence: takeBestMatches(
+
+      lines,
+
+      (line) => containsAny(line, ["curriculum slide", "content slot", "materials slot", "source text", "lesson-specific content"]),
 
       3
 

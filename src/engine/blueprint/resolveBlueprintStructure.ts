@@ -167,10 +167,11 @@ function buildTemplateShell(
     .map(normalizeSegmentLabel)
     .filter((segment) => segment.length > 0)
 
+  const featureShellSignals = buildTemplateShellSignalsFromFeatures(exemplarAnalyses)
   const rawSlideCandidates = cleanUnique([
     ...exemplarAnalyses.flatMap((analysis) => analysis.reusableStructure),
     ...exemplarAnalyses.flatMap((analysis) => analysis.slideFlow),
-    ...buildTemplateShellSignalsFromFeatures(exemplarAnalyses),
+    ...featureShellSignals,
     ...lessonSegments,
   ])
 
@@ -179,7 +180,7 @@ function buildTemplateShell(
       .map(normalizeSlideShellLabel)
       .filter((label) => label.length > 0),
     "slideShell"
-  ).slice(0, Math.max(reusableSegments.length, 3))
+  ).slice(0, Math.min(8, Math.max(reusableSegments.length, featureShellSignals.length, 3)))
 
   return {
     segmentOrder: reusableSegments.length > 0 ? reusableSegments : ["Teach", "Practice", "Closure"],
@@ -294,6 +295,22 @@ function buildTemplateShellSignalsFromFeatures(exemplarAnalyses: ExemplarAnalysi
     shellSignals.push("Objective / Opening")
   }
 
+  if (hasFeature(features, "mini_lesson")) {
+    shellSignals.push("Model / Teach")
+  }
+
+  if (hasFeature(features, "teacher_prompt_blocks")) {
+    shellSignals.push("Teacher Prompt Block")
+  }
+
+  if (hasFeature(features, "call_and_response")) {
+    shellSignals.push("Call and Response")
+  }
+
+  if (hasFeature(features, "small_group")) {
+    shellSignals.push("Small Group / Teacher Table")
+  }
+
   if (hasFeature(features, "word_list_slots")) {
     shellSignals.push("Word List / Practice")
   }
@@ -306,8 +323,16 @@ function buildTemplateShellSignalsFromFeatures(exemplarAnalyses: ExemplarAnalysi
     shellSignals.push("Practice Task")
   }
 
-  if (hasFeature(features, "image_slots")) {
+  if (hasFeature(features, "hero_image_slot") || hasFeature(features, "image_slots")) {
     shellSignals.push("Visual / Image")
+  }
+
+  if (hasFeature(features, "example_non_example")) {
+    shellSignals.push("Example / Non-Example")
+  }
+
+  if (hasFeature(features, "anchor_chart_layout")) {
+    shellSignals.push("Anchor Chart / Model")
   }
 
   if (hasFeature(features, "table_layout")) {
@@ -316,6 +341,10 @@ function buildTemplateShellSignalsFromFeatures(exemplarAnalyses: ExemplarAnalysi
 
   if (hasFeature(features, "split_layout")) {
     shellSignals.push("Compare / Split View")
+  }
+
+  if (hasFeature(features, "curriculum_slide_slots")) {
+    shellSignals.push("Curriculum Content Slot")
   }
 
   if (hasFeature(features, "exit_ticket")) {
@@ -376,7 +405,35 @@ function normalizeSlideShellLabel(value: string): string {
     return ""
   }
 
+  const explicitShellLabel = normalizeExplicitSlideShellLabel(cleaned)
+
+  if (explicitShellLabel) {
+    return explicitShellLabel
+  }
+
   return normalizeSegmentLabel(cleaned)
+}
+
+function normalizeExplicitSlideShellLabel(value: string): string {
+  const lower = value.toLowerCase()
+
+  if (lower.includes("objective") && lower.includes("opening")) return "Objective / Opening"
+  if (lower.includes("model / teach") || lower.includes("mini-lesson") || lower.includes("mini lesson")) return "Model / Teach"
+  if (lower.includes("word list") || lower.includes("target words") || lower.includes("heart words") || lower.includes("decodable words")) return "Word List / Practice"
+  if (lower.includes("passage") || lower.includes("story") || lower.includes("article") || lower.includes("selection") || /\\btext\\b/.test(lower)) return "Passage / Text"
+  if (lower.includes("practice task") || lower.includes("activity") || lower.includes("work time")) return "Practice Task"
+  if (lower.includes("hero image") || lower.includes("visual") || lower.includes("image") || lower.includes("photo") || lower.includes("picture") || lower.includes("illustration")) return "Visual / Image"
+  if (lower.includes("example / non-example") || lower.includes("example/non-example") || lower.includes("non-example") || lower.includes("non example")) return "Example / Non-Example"
+  if (lower.includes("anchor chart")) return "Anchor Chart / Model"
+  if (lower.includes("table") || lower.includes("chart") || lower.includes("grid") || lower.includes("sort")) return "Table / Sort"
+  if (lower.includes("split view") || lower.includes("side by side") || lower.includes("two column") || lower.includes("compare")) return "Compare / Split View"
+  if (lower.includes("teacher prompt") || lower.includes("prompt block") || lower.includes("question stem") || lower.includes("sentence stem")) return "Teacher Prompt Block"
+  if (lower.includes("call and response") || lower.includes("choral response") || lower.includes("students echo") || lower.includes("echo response")) return "Call and Response"
+  if (lower.includes("curriculum content slot") || lower.includes("curriculum slide") || lower.includes("content slot") || lower.includes("materials slot")) return "Curriculum Content Slot"
+  if (lower.includes("small group") || lower.includes("teacher table") || lower.includes("reteach")) return "Small Group / Teacher Table"
+  if (lower.includes("closure") && (lower.includes("check") || lower.includes("exit"))) return "Closure / Check"
+
+  return ""
 }
 
 function normalizeSegmentLabel(value: string): string {
@@ -543,7 +600,32 @@ function isWeakStructureValue(value: string, kind: StructureValueKind): boolean 
   }
 
   if (kind === "slideShell") {
-    return !["opening", "teach", "practice", "guided practice", "independent practice", "centers", "closure", "teaching notes", "passage / text", "practice task", "visual / image", "word list / cards"].includes(lower)
+    return ![
+      "opening",
+      "teach",
+      "practice",
+      "guided practice",
+      "independent practice",
+      "centers",
+      "closure",
+      "teaching notes",
+      "objective / opening",
+      "model / teach",
+      "closure / check",
+      "passage / text",
+      "practice task",
+      "visual / image",
+      "word list / cards",
+      "word list / practice",
+      "table / sort",
+      "compare / split view",
+      "example / non-example",
+      "anchor chart / model",
+      "teacher prompt block",
+      "call and response",
+      "curriculum content slot",
+      "small group / teacher table",
+    ].includes(lower)
   }
 
   if (kind === "tone") {

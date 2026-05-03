@@ -156,8 +156,8 @@ describe("blueprint structure from exemplar detected features", () => {
 
     expect(result.structure.templateShell.slideShell).toEqual(
       expect.arrayContaining([
-        "Opening",
-        "Closure",
+        "Objective / Opening",
+        "Closure / Check",
       ])
     )
 
@@ -166,6 +166,77 @@ describe("blueprint structure from exemplar detected features", () => {
         ["Word List / Practice", "Guided Practice", "Independent Practice"].includes(label)
       )
     ).toBe(true)
+  })
+
+  it("adds reusable interaction and layout slots from detected exemplar features", () => {
+    const result = buildBlueprint(
+      {
+        grade: "4",
+        subject: "Science",
+        standard: "Teacher-selected standard",
+        skill: "Compare examples and non-examples",
+        topic: "Animal adaptations",
+        duration: "35 minutes",
+      },
+      [
+        makeExemplarMaterial("ex-structure", {
+          items: [
+            {
+              key: "mini_lesson",
+              label: "Mini-Lesson",
+              description: "Includes explicit modeling.",
+              evidence: ["Mini-lesson: model the comparison routine."],
+              confidence: 0.8,
+              category: "instructional_flow",
+            },
+            {
+              key: "call_and_response",
+              label: "Call and Response",
+              description: "Includes echo responses.",
+              evidence: ["Students echo the key phrase."],
+              confidence: 0.8,
+              category: "interaction",
+            },
+            {
+              key: "example_non_example",
+              label: "Example / Non-Example",
+              description: "Includes example/non-example formatting.",
+              evidence: ["Example / Non-example"],
+              confidence: 0.8,
+              category: "content_slots",
+            },
+            {
+              key: "anchor_chart_layout",
+              label: "Anchor Chart Layout",
+              description: "Includes anchor chart shell.",
+              evidence: ["Anchor chart: adaptation evidence."],
+              confidence: 0.8,
+              category: "visual_layout",
+            },
+            {
+              key: "curriculum_slide_slots",
+              label: "Curriculum Content Slots",
+              description: "Includes replaceable source-content slots.",
+              evidence: ["Curriculum slide: source text goes here."],
+              confidence: 0.8,
+              category: "content_slots",
+            },
+          ],
+          warnings: [],
+        }),
+      ],
+      "single"
+    )
+
+    expect(result.structure.templateShell.slideShell).toEqual(
+      expect.arrayContaining([
+        "Model / Teach",
+        "Call and Response",
+        "Example / Non-Example",
+        "Anchor Chart / Model",
+        "Curriculum Content Slot",
+      ])
+    )
   })
 
   it("adds content-slot shell signals from detected exemplar features", () => {

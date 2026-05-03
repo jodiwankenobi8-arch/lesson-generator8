@@ -106,6 +106,35 @@ describe("resolveTemplateShell guardrails", () => {
     )
   })
 
+  it("keeps reusable content-slot shell cues without letting old content become lesson segments", () => {
+    const shell = resolveTemplateShell(
+      makeBlueprint({
+        segmentOrder: ["Opening", "Teach", "Guided Practice", "Independent Practice", "Closure"],
+        slideShell: [
+          "Objective / Opening",
+          "Model / Teach",
+          "Old Lesson Word List: cake, game, late",
+          "Example / Non-Example",
+          "Table / Sort",
+          "Closure / Check",
+        ],
+      }),
+      {
+        lessonSegmentsCount: 6,
+        slideShellCount: 8,
+      }
+    )
+
+    expect(shell.lessonSegments.join(" -> ")).not.toContain("Old Lesson Word List")
+    expect(shell.slideShell).toEqual(
+      expect.arrayContaining([
+        "Word List / Practice",
+        "Example / Non-Example",
+        "Table / Sort",
+      ])
+    )
+  })
+
   it("preserves artifact-specific scoped defaults for support outputs", () => {
     const blueprint = makeBlueprint()
     const shell = resolveTemplateShell(
