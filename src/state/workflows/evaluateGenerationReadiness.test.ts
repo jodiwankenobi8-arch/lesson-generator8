@@ -98,6 +98,53 @@ describe("evaluateGenerationReadiness", () => {
     expect(result.blockerMessage).toContain("classroom-ready")
   })
 
+  it("allows generation when teacher-confirmed math practice is present even if the extracted lane needed review", () => {
+    const baseMaterial = makeCurriculumMaterial()
+    const readyMaterial = makeCurriculumMaterial({
+      analysis: {
+        ...baseMaterial.analysis!,
+        curriculum: {
+          ...baseMaterial.analysis!.curriculum!,
+          standards: ["2.NBT.B.5"],
+          vocabulary: ["tens", "ones", "regroup", "sum", "equation"],
+          wordLists: ["27 + 15", "38 + 24", "46 + 17"],
+          texts: ["Use base-ten blocks to regroup ones into a ten."],
+          practiceTasks: [],
+          instructionalTargets: ["Add two-digit numbers with regrouping."],
+          examples: ["27 + 15"],
+        },
+      },
+      analysisReview: {
+        standards: ["2.NBT.B.5"],
+        vocabulary: ["tens", "ones", "regroup", "sum", "equation"],
+        wordLists: ["27 + 15", "38 + 24", "46 + 17"],
+        instructionalTargets: ["Add two-digit numbers with regrouping."],
+        texts: ["Use base-ten blocks to regroup ones into a ten."],
+        practiceIdeas: [
+          "Students solve two-digit addition problems with base-ten blocks and explain when they regroup.",
+        ],
+        exemplarStructure: [],
+        teacherSummary: "",
+      },
+    })
+
+    const result = evaluateGenerationReadiness({
+      inputs: makeInputs({
+        grade: "2",
+        subject: "Math",
+        standard: "2.NBT.B.5",
+        skill: "Two-digit addition with regrouping",
+        topic: "Regrouping with base-ten blocks",
+        duration: "35 minutes",
+      }),
+      materials: [readyMaterial],
+      selectedLessonMode: "single",
+    })
+
+    expect(result.ready).toBe(true)
+    expect(result.blockerMessage).toBeNull()
+  })
+
   it("allows generation when confirmed curriculum word examples and practice are present", () => {
     const readyMaterial = makeCurriculumMaterial({
       analysisReview: {

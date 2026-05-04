@@ -51,9 +51,18 @@ export function evaluateGenerationReadiness(args: {
   const requiredCurriculumLanes = getRequiredCurriculumLanes(blueprint)
   const unresolvedRequiredLanes = requiredCurriculumLanes.filter((lane) => {
     const status = getBlueprintCurriculumLaneStatus(blueprint, lane)
-    return status === "review-needed" || status === "blocked"
+    return (
+      (status === "review-needed" || status === "blocked") &&
+      !hasTeacherConfirmedLaneValue(materials, lane)
+    )
   })
   const groundingReview = evaluateGroundingReviewState(blueprint)
+  const missingRequiredGrounding = groundingReview.missingRequired.filter(
+    (kind) => !hasTeacherConfirmedGroundingKind(materials, kind)
+  )
+  const hasTeacherConfirmedContentAnchor =
+    hasTeacherConfirmedLaneValue(materials, "wordLists") ||
+    hasTeacherConfirmedLaneValue(materials, "texts")
 
   if (unresolvedRequiredLanes.length > 0) {
     return {
@@ -64,18 +73,18 @@ export function evaluateGenerationReadiness(args: {
     }
   }
 
-  if (groundingReview.needsContentAnchor) {
+  if (groundingReview.needsContentAnchor && !hasTeacherConfirmedContentAnchor) {
     return {
       ready: false,
       blockerMessage: `${REVIEW_CONTENT_ANCHOR_STATUS}. Add concrete word examples or a text/topic on Materials before generating.`,
     }
   }
 
-  if (groundingReview.missingRequired.length > 0) {
+  if (missingRequiredGrounding.length > 0) {
     return {
       ready: false,
       blockerMessage: `Before generating, confirm ${formatGroundingReviewKinds(
-        groundingReview.missingRequired
+        missingRequiredGrounding
       )} on Materials so the lesson is classroom-ready.`,
     }
   }
@@ -124,6 +133,49 @@ function getRequiredCurriculumLanes(
       return ["vocabulary", "practiceIdeas"]
     default:
       return ["practiceIdeas"]
+  }
+}
+
+function hasTeacherConfirmedLaneValue(
+  materials: MaterialFile[],
+  lane: BlueprintCurriculumLaneKey
+): boolean {
+  return materials.some((material) => {
+    if (material.role !== "curriculum" || material.status !== "ready" || !material.analysis) {
+      return false
+    }
+
+    const review = material.analysisReview
+    if (!review) {
+      return false
+    }
+
+    switch (lane) {
+      case "vocabulary":
+        return review.vocabulary.length > 0
+      case "wordLists":
+        return (review.wordLists ?? []).length > 0
+      case "texts":
+        return review.texts.length > 0
+      case "practiceIdeas":
+        return review.practiceIdeas.length > 0
+    }
+  })
+}
+
+function hasTeacherConfirmedGroundingKind(
+  materials: MaterialFile[],
+  kind: "vocabulary" | "wordList" | "text" | "practice"
+): boolean {
+  switch (kind) {
+    case "vocabulary":
+      return hasTeacherConfirmedLaneValue(materials, "vocabulary")
+    case "wordList":
+      return hasTeacherConfirmedLaneValue(materials, "wordLists")
+    case "text":
+      return hasTeacherConfirmedLaneValue(materials, "texts")
+    case "practice":
+      return hasTeacherConfirmedLaneValue(materials, "practiceIdeas")
   }
 }
 

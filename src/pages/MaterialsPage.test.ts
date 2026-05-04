@@ -21,6 +21,8 @@ import {
 import { EXEMPLAR_INFLUENCE_MODE_OPTIONS, EXEMPLAR_TARGET_OPTIONS } from "./materialsPageExemplarHelpers"
 import { dropZoneStyle, uploadCardStyle } from "./materialsPageUiHelpers"
 
+const MATERIALS_PAGE_SOURCE = readFileSync("src/pages/MaterialsPage.tsx", "utf8")
+
 describe("buildUploadSourceMetadata", () => {
   it("classifies image uploads as bounded OCR recovery sources with traceable metadata", () => {
     const metadata = buildUploadSourceMetadata({
@@ -516,7 +518,7 @@ describe("analysis review helpers", () => {
 
 describe("Materials page teacher-facing copy", () => {
   it("keeps the visible workbench language simple and classroom-facing", () => {
-    const source = readFileSync("src/pages/MaterialsPage.tsx", "utf8")
+    const source = MATERIALS_PAGE_SOURCE
     const materialRowSource = readFileSync("src/pages/components/materials/MaterialRow.tsx", "utf8")
     const uploadedSectionSource = readFileSync("src/pages/components/materials/UploadedMaterialsSection.tsx", "utf8")
     const createLessonSectionSource = readFileSync("src/pages/components/materials/CreateLessonSection.tsx", "utf8")
@@ -570,6 +572,16 @@ describe("Materials page teacher-facing copy", () => {
     expect(source).not.toContain(
       "Status stays visible while each file moves through upload, extraction, analysis, and ready."
     )
+  })
+})
+
+describe("MaterialsPage stale-source copy", () => {
+  it("includes a clear new-lesson source cleanup affordance", () => {
+    const source = MATERIALS_PAGE_SOURCE
+
+    expect(source).toContain("Sources from your current workspace are still attached.")
+    expect(source).toContain("Clear sources for new lesson")
+    expect(source).toContain("prior standards")
   })
 })
 

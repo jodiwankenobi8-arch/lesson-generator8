@@ -833,6 +833,13 @@ export default function MaterialsPage() {
     event.target.value = ""
   }
 
+  function handleClearSourcesForNewLesson() {
+    setGenerationError(null)
+    materials.forEach((material) => removeMaterial(material.id))
+    setInputs({ standard: "" })
+    setCompactEditMode(false)
+  }
+
   function handleDrop(role: MaterialRole, event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault()
     setDraggingRole(null)
@@ -891,7 +898,7 @@ export default function MaterialsPage() {
       : needsStandardsConfirmation
         ? "Check at least one standard before generating."
         : contentAnchorBlocker
-          ? "Add vocabulary or word examples to the lesson draft, then generate."
+          ? "Add vocabulary, word examples, or a text/topic to the lesson draft, then generate."
           : generationReadinessMessage
             ? generationReadinessMessage
             : isInputOnlyGeneration
@@ -1059,6 +1066,30 @@ export default function MaterialsPage() {
           No-material runs use default artifact shells and clearly note that no curriculum source was used. Supports {SUPPORTED_SOURCE_UPLOAD_FORMATS_TEXT}.
         </p>
       </OrchardPageHeader>
+
+      {materials.length > 0 ? (
+        <div
+          style={{
+            ...orchardNoticeStyle,
+            marginBottom: "var(--space-md)",
+            border: "1px solid var(--border-honey)",
+            background: "rgba(242, 192, 120, 0.16)",
+          }}
+        >
+          <strong>Sources from your current workspace are still attached.</strong>{" "}
+          If you are starting a different lesson, clear old curriculum/exemplar sources first so prior standards,
+          draft review details, or materials do not shape the new lesson.
+          <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              style={secondaryButtonStyle()}
+              onClick={handleClearSourcesForNewLesson}
+            >
+              Clear sources for new lesson
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <input
         ref={curriculumInputRef}
