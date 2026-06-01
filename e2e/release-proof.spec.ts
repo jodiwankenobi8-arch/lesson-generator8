@@ -225,6 +225,15 @@ function buildSeededWorkspaceSnapshot() {
   }
 }
 
+function buildCurriculumOnlyWorkspaceSnapshot() {
+  const snapshot = buildSeededWorkspaceSnapshot()
+
+  return {
+    ...snapshot,
+    materials: snapshot.materials.filter((material) => material.role === "curriculum"),
+  }
+}
+
 test("release browser and export proof for phonics flow", async ({ page }) => {
   await page.addInitScript(({ key, snapshot }) => {
     window.localStorage.setItem(key, JSON.stringify(snapshot))
@@ -313,4 +322,34 @@ test("release browser and export proof for phonics flow", async ({ page }) => {
   expect(zipEntries.some((entry) => entry.toLowerCase().endsWith(".pptx"))).toBeTruthy()
   expect(zipEntries.some((entry) => entry.toLowerCase().endsWith(".docx"))).toBeTruthy()
   expect(zipEntries.some((entry) => entry.toLowerCase().endsWith(".pdf"))).toBeTruthy()
+})
+
+test("release proof covers curriculum-only default-shell flow", async ({ page }) => {
+  await page.addInitScript(({ key, snapshot }) => {
+    window.localStorage.setItem(key, JSON.stringify(snapshot))
+  }, { key: SNAPSHOT_KEY, snapshot: buildCurriculumOnlyWorkspaceSnapshot() })
+
+  await page.goto("/inputs")
+  await expect(page.getByRole("heading", { name: "Inputs" })).toBeVisible()
+
+  await page.getByRole("button", { name: "Continue to Materials" }).click()
+  await expect(page).toHaveURL(/\/materials$/)
+  await expect(page.getByRole("heading", { name: "Materials" })).toBeVisible()
+
+  await page.getByRole("button", { name: "Generate Lesson" }).click()
+  await expect(page).toHaveURL(/\/results$/)
+  await expect(page.getByRole("heading", { name: "Results" })).toBeVisible()
+
+  const resultsText = await page.locator("body").innerText()
+  expect(resultsText).toContain(
+    "Structure uses a default classroom-ready shell because no exemplar source was selected."
+  )
+  expect(resultsText).not.toContain("How the exemplar shaped this lesson")
+  expect(resultsText).toMatch(/EXPORTS READY\s+4/)
+  expect(resultsText).toMatch(/NEEDS REVIEW\s+0/)
+
+  await expect(page.getByRole("button", { name: "Download Package ZIP" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Download PPTX" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Download DOCX" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Download PDF" })).toBeVisible()
 })
