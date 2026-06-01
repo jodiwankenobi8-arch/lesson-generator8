@@ -60,7 +60,7 @@
     linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
 
   /* Visual assets */
-  --visual-paper-bg: url("../assets/visual/paper-bg-cream-aged.png");
+  --visual-paper-bg: url("../assets/visual/paper-bg-cream-aged.webp");
   --visual-desktop-scrapbook-bg: none;
 
   /* Overlay helper to keep center content readable over richer shell imagery */
@@ -108,7 +108,7 @@ body {
 
 @media (min-width: 1024px) {
   :root {
-    --visual-desktop-scrapbook-bg: url("../assets/visual/generated-smart/rustic_country_kraft_scrapbook_layout.png");
+    --visual-desktop-scrapbook-bg: url("../assets/visual/generated-smart/rustic_country_kraft_scrapbook_layout.webp");
   }
 }
 

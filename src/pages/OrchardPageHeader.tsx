@@ -4,7 +4,7 @@ import {
   orchardSectionTitleStyle,
 } from "./orchardUi"
 import { OrchardRibbon } from "./OrchardRibbon"
-import orchardHeaderBacking from "../assets/visual/panel-notebook-stack.png"
+import orchardHeaderBacking from "../assets/visual/panel-notebook-stack.webp"
 import orchardHeaderBlossom from "../assets/visual/extra-orchard-elements/apple-stickers-04-apple-blossom-cluster.png"
 
 const headerStyle: CSSProperties = {
