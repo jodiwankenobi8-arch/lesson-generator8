@@ -1276,7 +1276,14 @@ describe("Results export format labels", () => {
     )
 
     expect(markup).toContain("Exports stay blocked until you review Materials and confirm the missing lesson content.")
+    expect(markup).toContain("Exports remain blocked until missing lesson content is confirmed in Materials.")
     expect(markup).toContain("Return to Materials")
+    expect(markup).not.toContain("Exports ready")
+    expect(markup).not.toContain("Download Package ZIP")
+    expect(markup).not.toContain("Download PPTX")
+    expect(markup).not.toContain("Download DOCX")
+    expect(markup).not.toContain("Download PDF")
+    expect(markup).not.toContain("classroom-ready format")
   })
 
   it("keeps explicit source grounding labels in results traceability", () => {

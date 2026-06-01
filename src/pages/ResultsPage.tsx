@@ -614,6 +614,7 @@ function getResultsIntroText(
 function ReviewFlowCard({ lessonPackage }: { lessonPackage: LessonPackage }) {
   const visibleSections = buildVisiblePackageSectionItems(lessonPackage)
   const exports = lessonPackage.exports ?? []
+  const exportsBlockedForReview = exports.length === 0 && lessonPackage.readiness.warnings.length > 0
 
   return (
     <div style={sidebarCardStyle}>
@@ -625,7 +626,9 @@ function ReviewFlowCard({ lessonPackage }: { lessonPackage: LessonPackage }) {
         <li>Use exports after the package reads coherently.</li>
       </ul>
       <div style={smallNoteStyle}>
-        Current package surface: {visibleSections.length} teacher-facing section{visibleSections.length === 1 ? "" : "s"}. Exports ready: {exports.length}.
+        {exportsBlockedForReview
+          ? `Current package surface: ${visibleSections.length} teacher-facing section${visibleSections.length === 1 ? "" : "s"}. Exports remain blocked until missing lesson content is confirmed in Materials.`
+          : `Current package surface: ${visibleSections.length} teacher-facing section${visibleSections.length === 1 ? "" : "s"}. Exports ready: ${exports.length}.`}
       </div>
     </div>
   )
@@ -798,6 +801,7 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
   const bundledArtifactLabels = getBundledArtifactLabels(exports)
   const hasFullPackageZip = exports.some((artifact) => artifact.kind === "full_package")
   const warningCount = lessonPackage.readiness.warnings.length
+  const exportsBlockedForReview = exports.length === 0 && warningCount > 0
 
   return (
     <div style={sectionStyle}>
@@ -819,9 +823,15 @@ function TeacherBinderSnapshotSection({ lessonPackage }: { lessonPackage: Lesson
         </div>
 
         <div style={binderSnapshotCardStyle}>
-          <div style={binderSnapshotStatLabelStyle}>Exports ready</div>
-          <div style={binderSnapshotStatValueStyle}>{exports.length}</div>
-          <div style={smallNoteStyle}>Package ZIP plus individual downloads when available.</div>
+          <div style={binderSnapshotStatLabelStyle}>
+            {exportsBlockedForReview ? "Export status" : "Exports ready"}
+          </div>
+          <div style={binderSnapshotStatValueStyle}>{exportsBlockedForReview ? "Blocked" : exports.length}</div>
+          <div style={smallNoteStyle}>
+            {exportsBlockedForReview
+              ? "Exports remain blocked until missing lesson content is confirmed in Materials."
+              : "Package ZIP plus individual downloads when available."}
+          </div>
         </div>
 
         <div style={binderSnapshotCardStyle}>
