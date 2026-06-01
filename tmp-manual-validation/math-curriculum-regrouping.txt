@@ -1,0 +1,6 @@
+﻿Topic: Two-digit addition with regrouping
+Vocabulary: tens, ones, regroup, sum, equation
+Examples: 27 + 15, 38 + 24, 46 + 17
+Model: Use base-ten blocks to show ones first, regroup ten ones as one ten, then add tens.
+Practice: Students solve two-digit addition problems with base-ten blocks and explain when they regroup.
+Assessment: Students solve one two-digit addition problem and explain the regrouping step.
