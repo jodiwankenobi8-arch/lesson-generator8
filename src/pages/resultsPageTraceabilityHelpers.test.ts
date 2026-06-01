@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { summarizeExemplarPayoff } from "./resultsPageTraceabilityHelpers"
+import {
+  summarizeContentAuthorityLead,
+  summarizeResolvedContentSource,
+} from "./resultsPageTraceabilityHelpers"
 import type { BlueprintTemplateShell, LessonBlueprint } from "../engine/types"
 
 function makeEmptyShell(): BlueprintTemplateShell {
@@ -95,5 +99,38 @@ describe("summarizeExemplarPayoff", () => {
 
     expect(summary?.title).toBe("How the exemplar shaped this lesson")
     expect(summary?.lines.length).toBeGreaterThan(0)
+  })
+})
+
+describe("traceability authority language", () => {
+  it("keeps content authority messaging curriculum-first when curriculum sources exist", () => {
+    const blueprint = makeBlueprint(undefined, {
+      curriculumSupport: "strong",
+      selectedCurriculumMaterialIds: ["curr-1"],
+    })
+
+    const contentLead = summarizeContentAuthorityLead(["curriculum-main.pdf"], blueprint)
+    const resolvedSource = summarizeResolvedContentSource(["curriculum-main.pdf"], blueprint)
+
+    expect(contentLead).toContain("curriculum materials")
+    expect(contentLead.toLowerCase()).not.toContain("exemplar")
+    expect(resolvedSource).toBe("curriculum-main.pdf")
+  })
+
+  it("keeps exemplar out of content-authority claims when no curriculum source is selected", () => {
+    const blueprint = makeBlueprint(undefined, {
+      curriculumSupport: "limited",
+      exemplarSupport: "strong",
+      selectedCurriculumMaterialIds: [],
+      selectedExemplarMaterialIds: ["ex-1"],
+    })
+
+    const contentLead = summarizeContentAuthorityLead([], blueprint)
+    const resolvedSource = summarizeResolvedContentSource([], blueprint)
+
+    expect(contentLead).toContain("No curriculum source is currently selected")
+    expect(contentLead).toContain("teacher inputs")
+    expect(contentLead.toLowerCase()).not.toContain("exemplar")
+    expect(resolvedSource).toBe("Teacher inputs and fallback lesson grounding")
   })
 })

@@ -387,6 +387,7 @@ test("release proof blocks exemplar-only generation without curriculum grounding
   expect(materialsText).toContain(
     "Exemplar sources can shape structure, but they cannot provide curriculum grounding"
   )
+  expect(materialsText.toLowerCase()).not.toContain("content comes from your exemplar materials")
 
   await page.goto("/results")
   await expect(page).toHaveURL(/\/results$/)
@@ -395,6 +396,9 @@ test("release proof blocks exemplar-only generation without curriculum grounding
   const resultsText = await page.locator("body").innerText()
   expect(resultsText).toContain("no generated lesson is currently loaded")
   expect(resultsText).toContain("Go to Materials")
+  expect(resultsText).not.toMatch(/EXPORTS READY\s+\d+/)
+  expect(resultsText).not.toContain("Structure comes from your exemplar materials")
+  expect(resultsText).not.toContain("Content comes from your exemplar materials")
   await expect(page.getByRole("button", { name: "Download Package ZIP" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Download PPTX" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Download DOCX" })).toHaveCount(0)
