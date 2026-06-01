@@ -234,6 +234,20 @@ function buildCurriculumOnlyWorkspaceSnapshot() {
   }
 }
 
+function buildExemplarOnlyWorkspaceSnapshot() {
+  const snapshot = buildSeededWorkspaceSnapshot()
+
+  return {
+    ...snapshot,
+    materials: snapshot.materials.filter((material) => material.role === "exemplar"),
+    blueprint: null,
+    planningIdeas: null,
+    lessonSpec: null,
+    lessonPackage: null,
+    lessonTrace: null,
+  }
+}
+
 test("release browser and export proof for phonics flow", async ({ page }) => {
   await page.addInitScript(({ key, snapshot }) => {
     window.localStorage.setItem(key, JSON.stringify(snapshot))
@@ -352,4 +366,37 @@ test("release proof covers curriculum-only default-shell flow", async ({ page })
   await expect(page.getByRole("button", { name: "Download PPTX" })).toBeVisible()
   await expect(page.getByRole("button", { name: "Download DOCX" })).toBeVisible()
   await expect(page.getByRole("button", { name: "Download PDF" })).toBeVisible()
+})
+
+test("release proof blocks exemplar-only generation without curriculum grounding", async ({ page }) => {
+  await page.addInitScript(({ key, snapshot }) => {
+    window.localStorage.setItem(key, JSON.stringify(snapshot))
+  }, { key: SNAPSHOT_KEY, snapshot: buildExemplarOnlyWorkspaceSnapshot() })
+
+  await page.goto("/inputs")
+  await expect(page.getByRole("heading", { name: "Inputs" })).toBeVisible()
+
+  await page.getByRole("button", { name: "Continue to Materials" }).click()
+  await expect(page).toHaveURL(/\/materials$/)
+  await expect(page.getByRole("heading", { name: "Materials" })).toBeVisible()
+
+  const generateButton = page.getByRole("button", { name: "Generate Lesson" })
+  await expect(generateButton).toBeDisabled()
+
+  const materialsText = await page.locator("body").innerText()
+  expect(materialsText).toContain(
+    "Exemplar sources can shape structure, but they cannot provide curriculum grounding"
+  )
+
+  await page.goto("/results")
+  await expect(page).toHaveURL(/\/results$/)
+  await expect(page.getByRole("heading", { name: "Results" })).toBeVisible()
+
+  const resultsText = await page.locator("body").innerText()
+  expect(resultsText).toContain("no generated lesson is currently loaded")
+  expect(resultsText).toContain("Go to Materials")
+  await expect(page.getByRole("button", { name: "Download Package ZIP" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Download PPTX" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Download DOCX" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Download PDF" })).toHaveCount(0)
 })

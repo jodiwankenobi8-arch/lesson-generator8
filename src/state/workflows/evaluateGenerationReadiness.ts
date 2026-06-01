@@ -25,8 +25,17 @@ export function evaluateGenerationReadiness(args: {
   const { inputs, materials, selectedLessonMode } = args
 
   const curriculumMaterials = materials.filter((material) => material.role === "curriculum")
+  const exemplarMaterials = materials.filter((material) => material.role === "exemplar")
 
   if (curriculumMaterials.length === 0) {
+    if (exemplarMaterials.length > 0) {
+      return {
+        ready: false,
+        blockerMessage:
+          "Exemplar sources can shape structure, but they cannot provide curriculum grounding. Add at least one curriculum source before generating content-bearing lesson outputs.",
+      }
+    }
+
     return {
       ready: true,
       blockerMessage: null,

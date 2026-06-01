@@ -58,6 +58,63 @@ function makeCurriculumMaterial(overrides: Partial<MaterialFile> = {}): Material
   }
 }
 
+function makeExemplarMaterial(overrides: Partial<MaterialFile> = {}): MaterialFile {
+  return {
+    id: "ex-1",
+    name: "exemplar.pdf",
+    role: "exemplar",
+    status: "ready",
+    analysis: {
+      summary: "Exemplar analysis",
+      extractedText: ["Opening", "Model", "Guided Practice", "Closure"],
+      tags: ["exemplar", "structure"],
+      sourceRole: "exemplar",
+      reliability: {
+        level: "high",
+        usableForContent: false,
+        usableForStructure: true,
+        warnings: [],
+        reasons: [],
+        score: 90,
+        contentDecision: "block",
+        structureDecision: "allow",
+      },
+      exemplar: {
+        slideFlow: ["Opening", "Model / Teach", "Guided Practice", "Closure / Check"],
+        pacing: ["5 min launch", "10 min model", "10 min guided", "5 min closure"],
+        teacherMoves: ["Model and think aloud"],
+        promptStyle: ["What do you notice?"],
+        layoutCues: ["Word cards"],
+        tone: ["supportive"],
+        reusableStructure: ["Opening", "Model / Teach", "Guided Practice", "Closure / Check"],
+      },
+    },
+    analysisReview: {
+      standards: [],
+      vocabulary: [],
+      wordLists: [],
+      instructionalTargets: [],
+      texts: [],
+      practiceIdeas: [],
+      exemplarStructure: ["Opening", "Model / Teach", "Guided Practice", "Closure / Check"],
+      teacherSummary: "",
+    },
+    errorMessage: null,
+    styleSettings: {
+      mode: "selected_aspects",
+      aspects: ["slide_flow"],
+      customInstructions: "",
+      targets: ["lesson_slides"],
+    },
+    sourceKind: "file_upload",
+    sourceLabel: "exemplar.pdf",
+    sourceMimeType: "application/pdf",
+    fileBuffer: null,
+    fileContent: "seed",
+    ...overrides,
+  }
+}
+
 describe("evaluateGenerationReadiness", () => {
   it("allows input-only generation when no materials are uploaded", () => {
     const result = evaluateGenerationReadiness({
@@ -68,6 +125,17 @@ describe("evaluateGenerationReadiness", () => {
 
     expect(result.ready).toBe(true)
     expect(result.blockerMessage).toBeNull()
+  })
+
+  it("blocks exemplar-only generation until curriculum grounding is available", () => {
+    const result = evaluateGenerationReadiness({
+      inputs: makeInputs(),
+      materials: [makeExemplarMaterial()],
+      selectedLessonMode: "single",
+    })
+
+    expect(result.ready).toBe(false)
+    expect(result.blockerMessage).toContain("cannot provide curriculum grounding")
   })
 
   it("blocks generation when a curriculum source was added but no usable curriculum content is ready", () => {
