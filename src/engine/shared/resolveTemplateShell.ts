@@ -95,14 +95,19 @@ export function resolveTemplateShell(
       options.scope === "intervention" ||
       options.scope === "printables") &&
     scopedTemplateShell &&
-    templateShell.segmentOrder.length > 0
+    (templateShell.segmentOrder.length > 0 || templateShell.slideShell.length > 0)
   ) {
+    const scopedSegments =
+      templateShell.segmentOrder.length > 0
+        ? templateShell.segmentOrder
+        : templateShell.slideShell
+
     return {
-      lessonSegments: take(templateShell.segmentOrder, lessonSegmentsCount, templateShell.segmentOrder),
+      lessonSegments: take(scopedSegments, lessonSegmentsCount, scopedSegments),
       slideShell: take(
-        templateShell.slideShell.length > 0 ? templateShell.slideShell : templateShell.segmentOrder,
+        templateShell.slideShell.length > 0 ? templateShell.slideShell : scopedSegments,
         slideShellCount,
-        templateShell.segmentOrder
+        scopedSegments
       ),
       timing: take(templateShell.timingShell, options?.timingCount ?? lessonSegmentsCount, []),
       teacherMoves,

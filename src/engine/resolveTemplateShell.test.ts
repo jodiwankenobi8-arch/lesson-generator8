@@ -181,4 +181,44 @@ describe("resolveTemplateShell guardrails", () => {
       "Share / Closure",
     ])
   })
+
+  it("preserves scoped printable shell cues when only slide-shell cues are present", () => {
+    const blueprint = makeBlueprint()
+    const shell = resolveTemplateShell(
+      {
+        ...blueprint,
+        structure: {
+          ...blueprint.structure,
+          scopedTemplateShells: {
+            printables: {
+              segmentOrder: [],
+              slideShell: ["Directions", "Passage / Text", "Word List / Practice", "Exit Ticket"],
+              timingShell: [],
+              teacherMoveShell: ["Introduce printable routine"],
+              promptShell: ["Direct students to annotate the printable"],
+              toneShell: ["clear and focused"],
+            },
+          },
+        },
+      },
+      {
+        scope: "printables",
+        lessonSegmentsCount: 4,
+        slideShellCount: 4,
+      }
+    )
+
+    expect(shell.lessonSegments).toEqual([
+      "Directions",
+      "Passage / Text",
+      "Word List / Practice",
+      "Exit Ticket",
+    ])
+    expect(shell.slideShell).toEqual([
+      "Directions",
+      "Passage / Text",
+      "Word List / Practice",
+      "Exit Ticket",
+    ])
+  })
 })
